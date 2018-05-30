@@ -2,11 +2,11 @@
 # Name:         ProjectEditor.py
 # Purpose:      IDE-style Project Editor for wx.lib.pydocview
 #
-# Author:       Morgan Hua, Peter Yared
+# Author:       wukan
 #
 # Created:      8/15/03
 # CVS-ID:       $Id$
-# Copyright:    (c) 2003-2006 ActiveGrid, Inc.
+# Copyright:    (c) 2003-2006 Genetalks, Inc.
 # License:      wxWindows License
 #----------------------------------------------------------------------------
 
@@ -2965,17 +2965,7 @@ class ProjectView(wx.lib.docview.View):
             self.GetDocument().GetCommandProcessor().Submit(ProjectRemoveFilesCommand(self.GetDocument(), files))
 
     def OnAddFileToProject(self, event):
-        if wx.Platform == "__WXMSW__" or wx.Platform == "__WXGTK__" or wx.Platform == "__WXMAC__":
-            descr = ''
-            for temp in self.GetDocumentManager()._templates:
-                if temp.IsVisible() and temp.GetDocumentType() != ProjectDocument:
-                    if len(descr) > 0:
-                        descr = descr + _('|')
-                    descr = descr + temp.GetDescription() + _(" (") + temp.GetFileFilter() + _(") |") + temp.GetFileFilter()  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
-            descr = _("All|*.*|%s") % descr # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
-        else:
-            descr = _("*.*")
-
+        descr = strutils.GenFileFilters(ProjectDocument)
         dialog = wx.FileDialog(self.GetFrame(), _("Add Files"), wildcard=descr, style=wx.OPEN|wx.MULTIPLE|wx.CHANGE_DIR)
         # dialog.CenterOnParent()  # wxBug: caused crash with wx.FileDialog
         if dialog.ShowModal() != wx.ID_OK:
@@ -3317,7 +3307,7 @@ class ProjectView(wx.lib.docview.View):
         newName = event.GetLabel()
         if item == self._treeCtrl.GetRootItem():
             if not newName:
-                wx.MessageBox(_("project name could not be empty"),style=wx.OK|wx.ICON_ERROR)
+                #wx.MessageBox(_("project name could not be empty"),style=wx.OK|wx.ICON_ERROR)
                 event.Veto()
             else:
                 self.GetDocument().GetModel().Name = newName
@@ -4750,17 +4740,35 @@ class ProjectService(Service.Service):
 
     def OnAddCurrentFileToProject(self, event):
         doc = self.GetDocumentManager().GetCurrentDocument()
-        file = doc.GetFilename()
+        filepath = doc.GetFilename()
         projectDoc = self.GetView().GetDocument()
+        if projectDoc.IsFileInProject(filepath):
+            wx.MessageBox(_("Current document is already in the project"),style = wx.OK|wx.ICON_WARNING)
+            return
         folderPath = None
         if self.GetView().GetMode() == ProjectView.PROJECT_VIEW:
             selections = self.GetView()._treeCtrl.GetSelections()
             if selections:
                 item = selections[0]
                 folderPath = self.GetView()._GetItemFolderPath(item)
-        projectDoc.GetCommandProcessor().Submit(ProjectAddFilesCommand(projectDoc, [file],folderPath=folderPath))
-        AddProjectMapping(doc, projectDoc)
-        self.GetView().Activate()  # after add, should put focus on project editor
+        if projectDoc.GetCommandProcessor().Submit(ProjectAddFilesCommand(projectDoc, [filepath],folderPath=folderPath)):
+            AddProjectMapping(doc, projectDoc)
+            self.GetView().Activate()  # after add, should put focus on project editor
+            if folderPath is None:
+                folderPath = ""
+            newFilePath = os.path.join(projectDoc.GetModel().homeDir,folderPath,os.path.basename(filepath))
+            if not os.path.exists(newFilePath):
+                return
+            if not parserutils.ComparePath(newFilePath,filepath):
+                openDoc = doc.GetOpenDocument(newFilePath)
+                if openDoc:
+                    wx.MessageBox(_("Project file is already opened"),style = wx.OK|wx.ICON_WARNING)
+                    openDoc.GetFirstView().GetFrame().SetFocus()
+                    return
+                doc.FileWatcher.StopWatchFile(doc)
+                doc.SetFilename(newFilePath)
+                doc.FileWatcher.StartWatchFile(doc)
+            doc.SetDocumentModificationDate()
 
     def OnFileCloseAll(self, event):
         for document in self.GetDocumentManager().GetDocuments()[:]:  # Cloning list to make sure we go through all docs even as they are deleted

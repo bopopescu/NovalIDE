@@ -11,6 +11,9 @@
 #----------------------------------------------------------------------------
 import os
 import re
+import wx
+
+_ = wx.GetTranslation
 
 def caseInsensitiveCompare(s1, s2):
     """ Method used by sort() to sort values in case insensitive order """
@@ -146,3 +149,21 @@ def get_python_coding_declare(lines):
 def emphasis_path(path):
     path = "\"%s\"" % path
     return path
+    
+
+def GenFileFilters(exclude_template_type = None):
+    
+    if wx.Platform == "__WXMSW__" or wx.Platform == "__WXGTK__" or wx.Platform == "__WXMAC__":
+        descr = ''
+        for temp in wx.GetApp().GetDocumentManager()._templates:
+            if exclude_template_type is not None and temp.GetDocumentType() == exclude_template_type:
+                continue
+            if temp.IsVisible() :
+                if len(descr) > 0:
+                    descr = descr + _('|')
+                descr = descr + temp.GetDescription() + _(" (") + temp.GetFileFilter() + _(") |") + temp.GetFileFilter()  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
+        descr = _("All (*.*) |*.*|%s") % descr # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
+    else:
+        descr = _("*.*")
+        
+    return descr

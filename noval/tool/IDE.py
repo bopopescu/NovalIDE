@@ -211,6 +211,19 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 HtmlEditor.HtmlView,
                 icon = HtmlEditor.getHTMLIcon())
         docManager.AssociateTemplate(htmlTemplate)
+        
+        webViewTemplate = wx.lib.docview.DocTemplate(docManager,
+                _("WebView"),
+                "*.com;*.org",
+                _("WebView"),
+                _(".com"),
+                _("WebView Document"),
+                _("WebView"),
+                HtmlEditor.WebDocument,
+                HtmlEditor.WebView,
+                wx.lib.docview.TEMPLATE_INVISIBLE,
+                icon = HtmlEditor.getHTMLIcon())
+        docManager.AssociateTemplate(webViewTemplate)
 
         imageTemplate = wx.lib.docview.DocTemplate(docManager,
                 _("Image"),

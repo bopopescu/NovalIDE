@@ -16,6 +16,10 @@ import os.path
 import string
 import STCTextEditor
 import CodeEditor
+import wx.html2 as webview
+import consts
+import noval.util.sysutils as sysutilslib
+
 _ = wx.GetTranslation
         
 
@@ -153,6 +157,166 @@ class HtmlCtrl(CodeEditor.CodeCtrl):
         self.StyleSetSpec(wx.stc.STC_H_TAG, "face:%(font)s,fore:#00007F,bold,size:%(size)d" % faces)
         # Attributes
         self.StyleSetSpec(wx.stc.STC_H_ATTRIBUTE, "face:%(font)s,fore:#00007F,bold,size:%(size)d" % faces)
+            
+
+
+class WebDocument(wx.lib.docview.Document):
+    def OnOpenDocument(self, filename):
+        return True
+
+class WebView(wx.lib.docview.View):
+
+    def __init__(self):
+        wx.lib.docview.View.__init__(self)
+        self._ctrl = None
+
+    def OnCreate(self, doc, flags):
+        frame = wx.GetApp().CreateDocumentFrame(self, doc, flags, style = wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
+        self.panel = wx.Panel(frame, -1)
+        self.current = doc.GetFilename()
+
+        self.wv = webview.WebView.New(self.panel)
+        self.Bind(webview.EVT_WEBVIEW_NAVIGATING, self.OnWebViewNavigating, self.wv)
+        self.Bind(webview.EVT_WEBVIEW_LOADED, self.OnWebViewLoaded, self.wv)
+        
+        
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        btnSizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        go_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "web","go.png")
+        go_bmp = wx.BitmapFromImage(wx.Image(go_bmp_path,wx.BITMAP_TYPE_ANY))
+        btn = wx.BitmapButton(self.panel,-1,go_bmp)
+        btn.Bind(wx.EVT_BUTTON, self.OnOpenButton)
+        btnSizer.Add(btn, 0, wx.EXPAND|wx.ALL, 2)
+
+        back_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "web","go_back.png")
+        back_bmp = wx.BitmapFromImage(wx.Image(back_bmp_path,wx.BITMAP_TYPE_ANY))
+        btn = wx.BitmapButton(self.panel,-1,back_bmp)
+        btn.Bind(wx.EVT_BUTTON, self.OnPrevPageButton)
+        btnSizer.Add(btn, 0, wx.EXPAND|wx.ALL, 2)
+        btn.Bind(wx.EVT_UPDATE_UI, self.OnCheckCanGoBack)
+
+        forward_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "web","go_forward.png")
+        forward_bmp = wx.BitmapFromImage(wx.Image(forward_bmp_path,wx.BITMAP_TYPE_ANY))
+        btn = wx.BitmapButton(self.panel,-1,forward_bmp)
+        btn.Bind(wx.EVT_BUTTON, self.OnNextPageButton)
+        btnSizer.Add(btn, 0, wx.EXPAND|wx.ALL, 2)
+        btn.Bind(wx.EVT_UPDATE_UI, self.OnCheckCanGoForward)
+
+        stop_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "web","stop.png")
+        stop_bmp = wx.BitmapFromImage(wx.Image(stop_bmp_path,wx.BITMAP_TYPE_ANY))
+        btn = wx.BitmapButton(self.panel,-1,stop_bmp)
+        btn.Bind(wx.EVT_BUTTON, self.OnStopButton)
+        btnSizer.Add(btn, 0, wx.EXPAND|wx.ALL, 2)
+
+        fresh_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "web","fresh.png")
+        fresh_bmp = wx.BitmapFromImage(wx.Image(fresh_bmp_path,wx.BITMAP_TYPE_ANY))
+        btn = wx.BitmapButton(self.panel,-1,fresh_bmp)
+        btn.Bind(wx.EVT_BUTTON, self.OnRefreshPageButton)
+        btnSizer.Add(btn, 0, wx.EXPAND|wx.ALL, 2)
+
+        txt = wx.StaticText(self.panel, -1, "URL:")
+        btnSizer.Add(txt, 0, wx.CENTER|wx.ALL, 2)
+
+        self.location = wx.ComboBox(
+            self.panel, -1, "", style=wx.CB_DROPDOWN|wx.TE_PROCESS_ENTER)
+        self.location.AppendItems(['http://wxPython.org',
+                                   'http://wxwidgets.org',
+                                   'http://google.com'])
+        wx.EVT_COMBOBOX(self.location,-1,self.OnLocationSelect)
+        self.location.Bind(wx.EVT_TEXT_ENTER, self.OnLocationEnter)
+        
+        btnSizer.Add(self.location, 1, wx.EXPAND|wx.ALL, 2)
+        
+        self.wv.LoadURL(self.current)
+        
+        sizer.Add(btnSizer, 0, wx.EXPAND)
+        sizer.Add(self.wv, 1, wx.EXPAND)
+        self.panel.SetSizer(sizer)
+        
+        self._CreateSizer(frame)
+        
+        self.Activate()
+        frame.Show(True)
+        frame.Layout()
+        return True
+
+    def OnFocus(self, event):
+        self.panel.SetFocus()
+        event.Skip()
+
+    def OnClose(self, deleteWindow = True):
+        statusC = wx.GetApp().CloseChildDocuments(self.GetDocument())
+        statusP = wx.lib.docview.View.OnClose(self, deleteWindow = deleteWindow)
+        if not (statusC and statusP):
+            return False
+        self.Activate(False)
+        if deleteWindow:
+            self.GetFrame().Destroy()
+        return True
+        
+    def _CreateSizer(self, frame):
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(self.panel, 1, wx.EXPAND)
+        frame.SetSizer(sizer)
+
+    def GetType(self):
+        return consts.HTML_WEB_VIEW
+        
+    # WebView events
+    def OnWebViewNavigating(self, evt):
+        # this event happens prior to trying to get a resource
+        if evt.GetURL() == 'http://www.microsoft.com/':
+            if wx.MessageBox("Are you sure you want to visit Microsoft?",
+                             style=wx.YES_NO|wx.ICON_QUESTION) == wx.NO:
+                # This is how you can cancel loading a page.
+                evt.Veto()
+
+    def OnWebViewLoaded(self, evt):
+        # The full document has loaded
+        self.current = evt.GetURL()
+        self.location.SetValue(self.current)
+
+    # Control bar events
+    def OnLocationSelect(self, evt):
+        url = self.location.GetStringSelection()
+        self.wv.LoadURL(url)
+
+    def OnLocationEnter(self, evt):
+        url = self.location.GetValue()
+        self.location.Append(url)
+        self.wv.LoadURL(url)
+
+    def OnOpenButton(self, event):
+        dlg = wx.TextEntryDialog(self.GetFrame(), _("Open URL"),
+                                _("Enter a full URL or local path"),
+                                self.current, wx.OK|wx.CANCEL)
+        dlg.CentreOnParent()
+
+        if dlg.ShowModal() == wx.ID_OK:
+            self.current = dlg.GetValue()
+            self.wv.LoadURL(self.current)
+
+        dlg.Destroy()
+
+    def OnPrevPageButton(self, event):
+        self.wv.GoBack()
+
+    def OnNextPageButton(self, event):
+        self.wv.GoForward()
+
+    def OnCheckCanGoBack(self, event):
+        event.Enable(self.wv.CanGoBack())
+        
+    def OnCheckCanGoForward(self, event):
+        event.Enable(self.wv.CanGoForward())
+
+    def OnStopButton(self, evt):
+        self.wv.Stop()
+
+    def OnRefreshPageButton(self, evt):
+        self.wv.Reload()
+        
 
 
 class HtmlOptionsPanel(STCTextEditor.TextOptionsPanel):

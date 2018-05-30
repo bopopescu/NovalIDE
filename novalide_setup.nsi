@@ -2,7 +2,7 @@
 
 ; 安装程序初始定义常量
 !define PRODUCT_NAME "NovalIDE"
-!define PRODUCT_VERSION "1.1.0"
+!define PRODUCT_VERSION "1.1.1"
 !define PRODUCT_PUBLISHER "wukan"
 !define PRODUCT_WEB_SITE "http://www.genetalks.com"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\NovalIDE.exe"
@@ -47,7 +47,7 @@ SetCompressor lzma
 ; ------ MUI 现代界面定义结束 ------
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
-OutFile "NovalIDE_Setup.exe"
+OutFile "NovalIDE_Setup_${PRODUCT_VERSION}.exe"
 InstallDir "$PROGRAMFILES\NovalIDE"
 InstallDirRegKey HKLM "${PRODUCT_UNINST_KEY}" "UninstallString"
 ShowInstDetails show

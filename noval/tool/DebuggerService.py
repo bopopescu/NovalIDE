@@ -2734,21 +2734,25 @@ class DebuggerService(Service.Service):
         python_executable_path = interpreter.Path
         sys_encoding = locale.getdefaultlocale()[1]
         fileToRun = run_parameter.FilePath
-        startIn = os.path.dirname(fileToRun)
+        #startIn = os.path.dirname(fileToRun)
         startIn,environment,initialArgs = run_parameter.StartUp,run_parameter.Environment,run_parameter.Arg
+        if not os.path.exists(startIn):
+            initDir = None
+        else:
+            initDir = startIn.encode(sys_encoding)
         if sysutilslib.isWindows():
             command = u"cmd.exe /c call %s \"%s\""  % (strutils.emphasis_path(python_executable_path),fileToRun)
             if initialArgs is not None:
                 command += " " + initialArgs
             command += " &pause"
-            subprocess.Popen(command.encode(sys_encoding),shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=startIn.encode(sys_encoding),env=environment)
+            subprocess.Popen(command.encode(sys_encoding),shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=initDir,env=environment)
         else:
             python_cmd = u"%s \"%s\"" % (strutils.emphasis_path(python_executable_path),fileToRun)
             if initialArgs is not None:
                 python_cmd += " " + initialArgs
             python_cmd += ";echo 'Please enter any to continue';read"
             cmd_list = ['gnome-terminal','-x','bash','-c',python_cmd]
-            subprocess.Popen(cmd_list,shell = False,cwd=startIn.encode(sys_encoding),env=environment)
+            subprocess.Popen(cmd_list,shell = False,cwd = initDir,env=environment)
             
     def GetLastRunParameter(self,is_debug,showDialog):
         if not Executor.GetPythonExecutablePath():

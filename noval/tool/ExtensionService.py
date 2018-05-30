@@ -144,6 +144,10 @@ class ExtensionService(Service.BaseService):
             id = wx.NewId()
             toolsMenu.Append(id,_("&Interpreter"))
             wx.EVT_MENU(frame, id, self.OpenInterpreter)
+            
+            id = wx.NewId()
+            toolsMenu.Append(id,_("&Web Browser"))
+            wx.EVT_MENU(frame, id, self.GotoDefaultWebView)
         
         helpMenuIndex = menuBar.FindMenu(_("&Help"))
         helpMenu = menuBar.GetMenu(helpMenuIndex)
@@ -183,6 +187,12 @@ class ExtensionService(Service.BaseService):
         
     def GotoWebsite(self,event):
         fileutils.start_file(UserDataDb.HOST_SERVER_ADDR)
+        
+    def GotoDefaultWebView(self,event):
+        self.GotoWebView(UserDataDb.HOST_SERVER_ADDR)
+        
+    def GotoWebView(self,web_addr):
+        wx.GetApp().GetDocumentManager().CreateDocument(web_addr, wx.lib.docview.DOC_SILENT|wx.lib.docview.DOC_OPEN_ONCE)
         
     def CheckforUpdate(self,event):
         self.CheckAppUpdate()
@@ -347,18 +357,23 @@ class ExtensionService(Service.BaseService):
 
         else:
             cmd = extension.command
-            if extension.commandPreArgs:
-                cmd = cmd + ' ' + extension.commandPreArgs
-            if extension.commandPostArgs:
-                cmd = cmd + ' ' + extension.commandPostArgs
-            f = os.popen(cmd)
-            messageService = wx.GetApp().GetService(MessageService.MessageService)
-            messageService.ShowWindow()
-            view = messageService.GetView()
-            for line in f.readlines():
-                view.AddLines(line)
-            view.GetControl().EnsureCaretVisible()
-            f.close()
+            if sysutilslib.isWindows():
+                import win32api
+                win32api.ShellExecute(0,"open",cmd," " + extension.commandPreArgs + " " +extension.commandPostArgs , '', 1)
+            else:
+                if extension.commandPreArgs:
+                    cmd = cmd + ' ' + extension.commandPreArgs
+                if extension.commandPostArgs:
+                    cmd = cmd + ' ' + extension.commandPostArgs
+                subprocess.call(cmd,shell=True)
+##            f = os.popen(cmd)
+##            messageService = wx.GetApp().GetService(MessageService.MessageService)
+##            messageService.ShowWindow()
+##            view = messageService.GetView()
+##            for line in f.readlines():
+##                view.AddLines(line)
+##            view.GetControl().EnsureCaretVisible()
+##            f.close()
 
 
 class ExtensionOptionsPanel(wx.Panel):
