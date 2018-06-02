@@ -14,7 +14,7 @@ import wx
 import wx.lib.docview
 import wx.lib.pydocview
 import wx.lib.buttons
-import Service
+import noval.tool.Service as Service
 import copy
 import os
 import os.path
@@ -26,27 +26,28 @@ import noval.util.appdirs as appdirs
 import noval.util.strutils as strutils
 import noval.util.fileutils as fileutils
 import noval.util.logger as logger
-import UICommon
-import Wizard
-import SVNService
+import noval.tool.UICommon as UICommon
+import noval.tool.Wizard as Wizard
+import noval.tool.SVNService as SVNService
 import project as projectlib
-import ExtensionService
-import ResourceView
+import noval.tool.ExtensionService as ExtensionService
+import noval.tool.ResourceView as ResourceView
 import noval.util.sysutils as sysutilslib
 import ImportFiles
 from noval.tool.consts import SPACE,HALF_SPACE,_,PROJECT_SHORT_EXTENSION,PROJECT_EXTENSION
 import threading
 import shutil
-import WxThreadSafe
+import noval.tool.WxThreadSafe as WxThreadSafe
 import noval.parser.utils as parserutils
 from wx.lib.pubsub import pub as Publisher
 import ProjectUI
 from noval.model import configuration as projectconfiguration
 import uuid
-import FileObserver
+import noval.tool.FileObserver as FileObserver
 import cPickle
+import NewFile
 
-from IDE import ACTIVEGRID_BASE_IDE
+from noval.tool.IDE import ACTIVEGRID_BASE_IDE
 if not ACTIVEGRID_BASE_IDE:
     import activegrid.server.deployment as deploymentlib
     import ProcessModelEditor
@@ -64,7 +65,7 @@ if not ACTIVEGRID_BASE_IDE:
     DataServiceExistenceException = DeploymentGeneration.DataServiceExistenceException
     import WebBrowserService
 
-from SVNService import SVN_INSTALLED
+from noval.tool.SVNService import SVN_INSTALLED
 
 
 if wx.Platform == '__WXMSW__':
@@ -2302,6 +2303,9 @@ class ProjectView(wx.lib.docview.View):
             return True
         elif id == ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID:
             return False  # Implement this one in the service
+        elif id == ProjectService.ADD_NEW_FILE_ID:
+            self.OnAddNewFile(event)
+            return True
         elif id == ProjectService.ADD_FOLDER_ID:
             self.OnAddFolder(event)
             return True
@@ -2495,7 +2499,8 @@ class ProjectView(wx.lib.docview.View):
             event.Enable(False)  # Implement this one in the service
             return True
         elif (id == ProjectService.ADD_FOLDER_ID
-            or id == ProjectService.ADD_PACKAGE_FOLDER_ID):
+            or id == ProjectService.ADD_PACKAGE_FOLDER_ID
+            or id == ProjectService.ADD_NEW_FILE_ID):
             event.Enable((self.GetDocument() != None) and (self.GetMode() == ProjectView.PROJECT_VIEW))
             return True            
         elif id == wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID:
@@ -2856,7 +2861,16 @@ class ProjectView(wx.lib.docview.View):
                 else:  # ID_CANCEL
                     finished = True
             dlg.Destroy()
-
+            
+    def OnAddNewFile(self,event):
+        item = self._treeCtrl.GetSelections()[0]
+        folderPath = self._GetItemFolderPath(item)
+        frame = NewFile.NewFileDialog(self.GetFrame(),-1,_("New FileType"),folderPath)
+        frame.CenterOnParent()
+        if frame.ShowModal() == wx.ID_OK:
+            if self.GetDocument().GetCommandProcessor().Submit(ProjectAddFilesCommand(self.GetDocument(), [frame.file_path], folderPath=folderPath)):
+                self.OnOpenSelection(None)
+        frame.Destroy()
 
     def OnAddFolder(self, event):
         if self.GetDocument():
@@ -3198,7 +3212,7 @@ class ProjectView(wx.lib.docview.View):
             if is_root_item:
                 itemIDs = [ProjectService.NEW_PROJECT_ID,ProjectService.OPEN_PROJECT_ID] 
             itemIDs.extend([ProjectService.IMPORT_FILES_ID,ProjectService.ADD_FILES_TO_PROJECT_ID, \
-                           ProjectService.ADD_DIR_FILES_TO_PROJECT_ID,ProjectService.ADD_FOLDER_ID, ProjectService.ADD_PACKAGE_FOLDER_ID])
+                           ProjectService.ADD_DIR_FILES_TO_PROJECT_ID,ProjectService.ADD_NEW_FILE_ID,ProjectService.ADD_FOLDER_ID, ProjectService.ADD_PACKAGE_FOLDER_ID])
         menuBar = self._GetParentFrame().GetMenuBar()
         #itemIDs = itemIDs + [ ProjectService.REMOVE_FROM_PROJECT, None]
         if is_root_item:
@@ -3819,6 +3833,8 @@ class ProjectView(wx.lib.docview.View):
                           msgTitle,
                           wx.OK | wx.ICON_EXCLAMATION,
                           self.GetFrame())
+        if event is None:
+            return
         event.Skip()
 
     #----------------------------------------------------------------------------
@@ -4185,6 +4201,7 @@ class ProjectService(Service.Service):
     SAVE_PROJECT_ID = wx.NewId()
     ADD_PACKAGE_FOLDER_ID = wx.NewId()
     SET_PROJECT_STARTUP_FILE_ID = wx.NewId()
+    ADD_NEW_FILE_ID = wx.NewId()
     
 
     #----------------------------------------------------------------------------
@@ -4272,6 +4289,12 @@ class ProjectService(Service.Service):
                 projectMenu.Append(ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID, _("&Add Active File to Project..."), _("Adds the active document to a project"))
                 wx.EVT_MENU(frame, ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID, frame.ProcessEvent)
                 wx.EVT_UPDATE_UI(frame, ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID, frame.ProcessUpdateUIEvent)
+            
+            if not menuBar.FindItemById(ProjectService.ADD_NEW_FILE_ID):
+                projectMenu.Append(ProjectService.ADD_NEW_FILE_ID, _("New File"), _("Creates a new file"))
+                wx.EVT_MENU(frame, ProjectService.ADD_NEW_FILE_ID, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, ProjectService.ADD_NEW_FILE_ID, frame.ProcessUpdateUIEvent)
+                
             if not menuBar.FindItemById(ProjectService.ADD_FOLDER_ID):
                 projectMenu.Append(ProjectService.ADD_FOLDER_ID, _("New Folder"), _("Creates a new folder"))
                 wx.EVT_MENU(frame, ProjectService.ADD_FOLDER_ID, frame.ProcessEvent)
@@ -4501,6 +4524,7 @@ class ProjectService(Service.Service):
             return True
         elif (id == ProjectService.PROJECT_PROPERTIES_ID
         or id == wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID
+        or id == ProjectService.ADD_NEW_FILE_ID
         or id == ProjectService.ADD_FOLDER_ID
         or id == ProjectService.ADD_PACKAGE_FOLDER_ID
         or id == ProjectService.DELETE_PROJECT_ID
@@ -4509,7 +4533,8 @@ class ProjectService(Service.Service):
         or id == ProjectService.NEW_PROJECT_ID
         or id == ProjectService.OPEN_PROJECT_PATH_ID
         or id == ProjectService.OPEN_PROJECT_ID
-        or id == ProjectService.SAVE_PROJECT_ID):
+        or id == ProjectService.SAVE_PROJECT_ID
+        or id == ProjectService.ADD_NEW_FILE_ID):
             if self.GetView():
                 return self.GetView().ProcessEvent(event)
             else:
@@ -4546,6 +4571,7 @@ class ProjectService(Service.Service):
         elif id in [wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID,
             ProjectService.ADD_FOLDER_ID,
             ProjectService.ADD_PACKAGE_FOLDER_ID,
+            ProjectService.ADD_NEW_FILE_ID,
             ProjectService.DELETE_PROJECT_ID,
             ProjectService.CLOSE_PROJECT_ID,
             ProjectService.SAVE_PROJECT_ID,

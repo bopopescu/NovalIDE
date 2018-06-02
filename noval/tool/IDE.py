@@ -134,8 +134,8 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import TextService
         import FindInDirService
         import MarkerService
-        import project as projectlib
-        import ProjectEditor
+        import project.project as projectlib
+        import project.ProjectEditor as ProjectEditor
         import PythonEditor
         import OutlineService
         import XmlEditor

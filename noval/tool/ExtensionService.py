@@ -13,7 +13,7 @@
 import wx
 import wx.lib.pydocview
 import MessageService
-import ProjectEditor
+import noval.tool.project as project
 import os
 import os.path
 import noval.util.xmlutils as xmlutils
@@ -319,7 +319,7 @@ class ExtensionService(Service.BaseService):
                             if fileExt in doc.GetDocumentTemplate().GetFileFilter():
                                 event.Enable(True)
                                 return True
-                        if extension.opOnSelectedFile and isinstance(doc, ProjectEditor.ProjectDocument):
+                        if extension.opOnSelectedFile and isinstance(doc, project.ProjectEditor.ProjectDocument):
                             filename = doc.GetFirstView().GetSelectedFile()
                             if filename:
                                 template = wx.GetApp().GetDocumentManager().FindTemplateForPath(filename)
@@ -337,7 +337,7 @@ class ExtensionService(Service.BaseService):
             doc = wx.GetApp().GetDocumentManager().GetCurrentDocument()
             if not doc:
                 return
-            if extension.opOnSelectedFile and isinstance(doc, ProjectEditor.ProjectDocument):
+            if extension.opOnSelectedFile and isinstance(doc, project.ProjectEditor.ProjectDocument):
                 filename = doc.GetFirstView().GetSelectedFile()
                 if not filename:
                     filename = doc.GetFilename()

@@ -45,7 +45,7 @@ if sys.platform == "win32":
                      ("noval/parser",glob.glob("noval/parser/*.py")),
                       ("noval/locale/en_US/LC_MESSAGES",['noval/locale/en_US/LC_MESSAGES/novalide.mo']),
                        ("noval/locale/zh_CN/LC_MESSAGES",['noval/locale/zh_CN/LC_MESSAGES/novalide.mo']),
-                       ('',['version.txt'])],)
+                       ('',['version.txt','template.xml'])],)
 
 elif sys.platform.find('linux') != -1:
     from distutils.core import setup
@@ -77,7 +77,7 @@ elif sys.platform.find('linux') != -1:
                         'locale/zh_CN/LC_MESSAGES/*.mo'
                         ],
             },
-            data_files = [('',['version.txt']),],
+            data_files = [('',['version.txt','template.xml']),],
             classifiers=[
             'Development Status :: 4 - Beta',
             'Environment :: Console',

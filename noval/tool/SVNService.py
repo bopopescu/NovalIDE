@@ -13,7 +13,7 @@
 import wx
 import os
 import os.path
-import ProjectEditor
+#import project.ProjectEditor as ProjectEditor
 import MessageService
 
 import sys        # for errors

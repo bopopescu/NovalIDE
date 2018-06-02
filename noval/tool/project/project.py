@@ -17,13 +17,13 @@ import noval.util.xmlutils as xmlutils
 import noval.util.logger as logger
 import noval.tool.interpreter.manager as interpretermanager
 import noval.util.sysutils as sysutilslib
-from consts import PROJECT_NAMESPACE_URL
+from noval.tool.consts import PROJECT_NAMESPACE_URL
 
 # REVIEW 07-Mar-06 stoens@activegrid.com -- Ideally move the pieces required
 # to generate the .dpl file out of this module so there's no dependency on wx,
 # instead of doing this try/catch (IDE drags in wx).
 try:
-    from IDE import ACTIVEGRID_BASE_IDE
+    from noval.tool.IDE import ACTIVEGRID_BASE_IDE
 except:
     ACTIVEGRID_BASE_IDE = False
     
