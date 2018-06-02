@@ -134,8 +134,8 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import TextService
         import FindInDirService
         import MarkerService
-        import project as projectlib
-        import ProjectEditor
+        import project.project as projectlib
+        import project.ProjectEditor as ProjectEditor
         import PythonEditor
         import OutlineService
         import XmlEditor
@@ -211,6 +211,19 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 HtmlEditor.HtmlView,
                 icon = HtmlEditor.getHTMLIcon())
         docManager.AssociateTemplate(htmlTemplate)
+        
+        webViewTemplate = wx.lib.docview.DocTemplate(docManager,
+                _("WebView"),
+                "*.com;*.org",
+                _("WebView"),
+                _(".com"),
+                _("WebView Document"),
+                _("WebView"),
+                HtmlEditor.WebDocument,
+                HtmlEditor.WebView,
+                wx.lib.docview.TEMPLATE_INVISIBLE,
+                icon = HtmlEditor.getHTMLIcon())
+        docManager.AssociateTemplate(webViewTemplate)
 
         imageTemplate = wx.lib.docview.DocTemplate(docManager,
                 _("Image"),

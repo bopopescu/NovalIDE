@@ -14,7 +14,7 @@ import os
 import os.path
 import wx
 import string
-import ProjectEditor
+import noval.tool.project as project
 import noval.util.appdirs as appdirs
 import noval.util.fileutils as fileutils
 import noval.util.strutils as strutils
@@ -35,15 +35,15 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
         projectDirs = []
 
         if appDirDefaultStartDir:
-            appDirectory = wx.ConfigBase_Get().Read(ProjectEditor.PROJECT_DIRECTORY_KEY, ProjectEditor.NEW_PROJECT_DIRECTORY_DEFAULT)
+            appDirectory = wx.ConfigBase_Get().Read(project.ProjectEditor.PROJECT_DIRECTORY_KEY, project.ProjectEditor.NEW_PROJECT_DIRECTORY_DEFAULT)
         else:
-            appDirectory = wx.ConfigBase_Get().Read(ProjectEditor.PROJECT_DIRECTORY_KEY)
+            appDirectory = wx.ConfigBase_Get().Read(project.ProjectEditor.PROJECT_DIRECTORY_KEY)
         if appDirectory:
             choiceDirs.append(appDirectory)
             if appDirDefaultStartDir and not startingDirectory:
                 startingDirectory = appDirectory
 
-        projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
+        projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
         if projectService:
             curProjectDoc = projectService.GetCurrentProject()
             if curProjectDoc:
@@ -267,15 +267,15 @@ def CreateDirectoryOnlyControl( parent, dirLabel=_("Location:"), startingDirecto
         projectDirs = []
 
         if appDirDefaultStartDir:
-            appDirectory = wx.ConfigBase_Get().Read(ProjectEditor.PROJECT_DIRECTORY_KEY, ProjectEditor.NEW_PROJECT_DIRECTORY_DEFAULT)
+            appDirectory = wx.ConfigBase_Get().Read(project.ProjectEditor.PROJECT_DIRECTORY_KEY, project.ProjectEditor.NEW_PROJECT_DIRECTORY_DEFAULT)
         else:
-            appDirectory = wx.ConfigBase_Get().Read(ProjectEditor.PROJECT_DIRECTORY_KEY)
+            appDirectory = wx.ConfigBase_Get().Read(project.ProjectEditor.PROJECT_DIRECTORY_KEY)
         if appDirectory:
             choiceDirs.append(appDirectory)
             if appDirDefaultStartDir and not startingDirectory:
                 startingDirectory = appDirectory
 
-        projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
+        projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
         if projectService:
             curProjectDoc = projectService.GetCurrentProject()
             if curProjectDoc:
@@ -429,13 +429,13 @@ def ValidateName(name, ext=None, hint="name"):
 
 def GetCurrentProject():
     projectDocument = None
-    projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
+    projectService = wx.GetApp().GetService(proejct.ProjectEditor.ProjectService)
     if projectService:
         projectDocument = projectService.GetCurrentProject()
     return projectDocument
 
 def AddFilesToCurrentProject(paths, folderPath=None, types=None, names=None, save=False):
-    projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
+    projectService = wx.GetApp().GetService(proejct.ProjectEditor.ProjectService)
     if projectService:
         projectDocument = projectService.GetCurrentProject()
         if projectDocument:
@@ -444,7 +444,7 @@ def AddFilesToCurrentProject(paths, folderPath=None, types=None, names=None, sav
                 if path in files:
                     paths.remove(path)
             if paths:
-                projectDocument.GetCommandProcessor().Submit(ProjectEditor.ProjectAddFilesCommand(projectDocument, paths, folderPath=folderPath, types=types, names=names))
+                projectDocument.GetCommandProcessor().Submit(project.ProjectEditor.ProjectAddFilesCommand(projectDocument, paths, folderPath=folderPath, types=types, names=names))
                 if save:
                     projectDocument.OnSaveDocument(projectDocument.GetFilename())
 
@@ -455,7 +455,7 @@ def AddFilesToProject(projectDocument, paths, types=None, names=None, save=False
             if path in files:
                 paths.remove(path)
         if paths:
-            projectDocument.GetCommandProcessor().Submit(ProjectEditor.ProjectAddFilesCommand(projectDocument, paths, types=types, names=names))
+            projectDocument.GetCommandProcessor().Submit(project.ProjectEditor.ProjectAddFilesCommand(projectDocument, paths, types=types, names=names))
             if save:
                 projectDocument.OnSaveDocument(projectDocument.GetFilename())
 
@@ -584,7 +584,7 @@ def GetProjectForDoc(doc):
     """ Given a document find which project it belongs to.
         Tries to intelligently resolve conflicts if it is in more than one open project.
     """
-    projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
+    projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
 
     projectDoc = projectService.FindProjectFromMapping(doc)
     if projectDoc:
@@ -601,7 +601,7 @@ def GetProjectForDoc(doc):
     for openDoc in openDocs:
         if openDoc == projectDoc:
             continue
-        if(isinstance(openDoc, ProjectEditor.ProjectDocument)):
+        if(isinstance(openDoc, project.ProjectEditor.ProjectDocument)):
             if openDoc.IsFileInProject(doc.GetFilename()):
                 projects.append(openDoc)
                 
@@ -648,7 +648,7 @@ def GetAppInfoLanguage(doc=None):
         
     if not language:
         config = wx.ConfigBase_Get()
-        language = config.Read(ProjectEditor.APP_LAST_LANGUAGE, LANGUAGE_DEFAULT)
+        language = config.Read(project.ProjectEditor.APP_LAST_LANGUAGE, LANGUAGE_DEFAULT)
         
         if doc:
             doc.GetAppInfo().language = language  # once it is selected, it must be set.
@@ -754,7 +754,7 @@ def _AddToProject(agwsDoc, addWsdl=False):
             types.append(None)
             names.append(wsdlName)
     
-    ProjectEditor.ProjectAddFilesCommand(projectDoc, files, types=types,
+    project.ProjectEditor.ProjectAddFilesCommand(projectDoc, files, types=types,
                                          names=names).Do()
     
 

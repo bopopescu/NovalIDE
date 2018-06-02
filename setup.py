@@ -45,7 +45,7 @@ if sys.platform == "win32":
                      ("noval/parser",glob.glob("noval/parser/*.py")),
                       ("noval/locale/en_US/LC_MESSAGES",['noval/locale/en_US/LC_MESSAGES/novalide.mo']),
                        ("noval/locale/zh_CN/LC_MESSAGES",['noval/locale/zh_CN/LC_MESSAGES/novalide.mo']),
-                       ('',['version.txt'])],)
+                       ('',['version.txt','template.xml'])],)
 
 elif sys.platform.find('linux') != -1:
     from distutils.core import setup
@@ -54,13 +54,13 @@ elif sys.platform.find('linux') != -1:
     with open("version.txt") as f:
         version = f.read()
 
-    install_requires = ['wxpython','pyyaml',"watchdog","chardet","pyperclip","psutil"]
+    install_requires = ['pyyaml',"watchdog","chardet","pyperclip","psutil"]
     setup(name='NovalIDE',
             version = version,
-            description='''noval ide is a cross platform code editor''',
+            description='''NovalIDE is a cross platform Python IDE''',
             author='wukan',
             author_email='wekay102200@sohu.com',
-            url='https://github.com/noval102200/Noval.git',
+            url='https://github.com/noval102200/NovalIDE.git',
             license='Genetalks',
             packages=find_packages(),
             install_requires=install_requires,
@@ -77,7 +77,7 @@ elif sys.platform.find('linux') != -1:
                         'locale/zh_CN/LC_MESSAGES/*.mo'
                         ],
             },
-            data_files = [('',['version.txt']),],
+            data_files = [('',['version.txt','template.xml']),],
             classifiers=[
             'Development Status :: 4 - Beta',
             'Environment :: Console',

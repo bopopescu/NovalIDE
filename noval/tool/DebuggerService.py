@@ -35,7 +35,7 @@ import os
 import threading
 import Queue
 import SocketServer
-import ProjectEditor
+import noval.tool.project as project
 import types
 from xml.dom.minidom import parse, parseString
 import bz2
@@ -2520,7 +2520,7 @@ class DebuggerService(Service.Service):
             if interpreter and interpreter.IsBuiltIn:
                 event.Enable(False)
             else:
-                if wx.GetApp().GetService(ProjectEditor.ProjectService).GetView().GetDocument() is None:
+                if wx.GetApp().GetService(project.ProjectEditor.ProjectService).GetView().GetDocument() is None:
                     event.Enable(self.HasAnyFiles() and \
                             self.GetActiveView().GetLangLexer() == parserconfig.LANG_PYTHON_LEXER)
                 else:
@@ -2530,7 +2530,7 @@ class DebuggerService(Service.Service):
         or an_id == DebuggerService.DEBUG_LAST_ID
         or an_id == DebuggerService.CHECK_ID
         or an_id == DebuggerService.SET_PARAMETER_ENVIRONMENT_ID):
-            if wx.GetApp().GetService(ProjectEditor.ProjectService).GetView().GetDocument() is None:
+            if wx.GetApp().GetService(project.ProjectEditor.ProjectService).GetView().GetDocument() is None:
                 event.Enable(self.HasAnyFiles() and \
                         self.GetActiveView().GetLangLexer() == parserconfig.LANG_PYTHON_LEXER)
             else:
@@ -2571,7 +2571,7 @@ class DebuggerService(Service.Service):
             
     def SaveRunParameter(self,run_parameter):
         config = wx.ConfigBase_Get()
-        cur_project_document = wx.GetApp().GetService(ProjectEditor.ProjectService).GetView().GetDocument()
+        cur_project_document = wx.GetApp().GetService(project.ProjectEditor.ProjectService).GetView().GetDocument()
         if cur_project_document is None:
             project_name = NOT_IN_ANY_PROJECT
         else:
@@ -2639,9 +2639,9 @@ class DebuggerService(Service.Service):
         python_interpreter_view.shell.run(command)
         sys.argv = old_argv
 
-    def IsProjectContainBreakPoints(self,project):
+    def IsProjectContainBreakPoints(self,cur_project):
         for key in self._masterBPDict:
-            if project.FindFile(key) and len(self._masterBPDict[key]) > 0:
+            if cur_project.FindFile(key) and len(self._masterBPDict[key]) > 0:
                 return True
         return False
         
@@ -2656,7 +2656,7 @@ class DebuggerService(Service.Service):
         if not Executor.GetPythonExecutablePath():
             return None
         interpreter = wx.GetApp().GetCurrentInterpreter()
-        projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
+        projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
         cur_project_document = projectService.GetView().GetDocument()
         is_debug_breakpoint = False
         if cur_project_document is None:
@@ -2681,8 +2681,8 @@ class DebuggerService(Service.Service):
                         return None
             fileToRun = startup_file.filePath
             run_parameter = cur_project_document.RunParameter
-            project = cur_project_document.GetModel()
-            if self.IsProjectContainBreakPoints(project):
+            cur_project = cur_project_document.GetModel()
+            if self.IsProjectContainBreakPoints(cur_project):
                 is_debug_breakpoint = True
         if run_parameter is None:
             startIn = os.path.dirname(fileToRun)
@@ -2734,26 +2734,30 @@ class DebuggerService(Service.Service):
         python_executable_path = interpreter.Path
         sys_encoding = locale.getdefaultlocale()[1]
         fileToRun = run_parameter.FilePath
-        startIn = os.path.dirname(fileToRun)
+        #startIn = os.path.dirname(fileToRun)
         startIn,environment,initialArgs = run_parameter.StartUp,run_parameter.Environment,run_parameter.Arg
+        if not os.path.exists(startIn):
+            initDir = None
+        else:
+            initDir = startIn.encode(sys_encoding)
         if sysutilslib.isWindows():
             command = u"cmd.exe /c call %s \"%s\""  % (strutils.emphasis_path(python_executable_path),fileToRun)
             if initialArgs is not None:
                 command += " " + initialArgs
             command += " &pause"
-            subprocess.Popen(command.encode(sys_encoding),shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=startIn.encode(sys_encoding),env=environment)
+            subprocess.Popen(command.encode(sys_encoding),shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=initDir,env=environment)
         else:
             python_cmd = u"%s \"%s\"" % (strutils.emphasis_path(python_executable_path),fileToRun)
             if initialArgs is not None:
                 python_cmd += " " + initialArgs
             python_cmd += ";echo 'Please enter any to continue';read"
             cmd_list = ['gnome-terminal','-x','bash','-c',python_cmd]
-            subprocess.Popen(cmd_list,shell = False,cwd=startIn.encode(sys_encoding),env=environment)
+            subprocess.Popen(cmd_list,shell = False,cwd = initDir,env=environment)
             
     def GetLastRunParameter(self,is_debug,showDialog):
         if not Executor.GetPythonExecutablePath():
             return None
-        projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
+        projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
         dlg_title = _('Run File')
         btn_name = _("Run")
         if is_debug:
@@ -2836,7 +2840,7 @@ class DebuggerService(Service.Service):
             return
 
         self.ShowWindow(True)
-        projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
+        projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
         dlg = CommandPropertiesDialog(self.GetView().GetFrame(), 'Debug File', projectService, None, okButtonName="Debug", debugging=True)
         dlg.CenterOnParent()
         if not showDialog:
@@ -2927,14 +2931,14 @@ class DebuggerService(Service.Service):
         #    wx.GetApp().Yield(True)
         #    print "After Yield"
         time.sleep(2.0)
-        projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
+        projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
         projects = projectService.FindProjectByFile(self.projectPath)
         if not projects:
             return
         project = projects[0]
         try:
             deployFilePath = project.GenerateDeployment()
-        except ProjectEditor.DataServiceExistenceException, e:
+        except project.ProjectEditor.DataServiceExistenceException, e:
             dataSourceName = str(e)
             projectService.PromptForMissingDataSource(dataSourceName)
             return
@@ -3019,7 +3023,7 @@ class DebuggerService(Service.Service):
         RunCommandUI.ShutdownAllRunners()
 
     def SetParameterAndEnvironment(self):
-        projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
+        projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
         dlg = CommandPropertiesDialog(wx.GetApp().GetTopWindow(), _('Set Parameter And Environment'), projectService, None,okButtonName=_("&OK"))
         dlg.CenterOnParent()
         if dlg.ShowModal() == wx.ID_OK:
@@ -3045,7 +3049,7 @@ class DebuggerService(Service.Service):
             return
         if not Executor.GetPythonExecutablePath():
             return
-        projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
+        projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
         try:
             dlg = CommandPropertiesDialog(self.GetView().GetFrame(), 'Run', projectService, None)
         except:
@@ -3069,7 +3073,7 @@ class DebuggerService(Service.Service):
             project = projects[0]
             try:
                 deployFilePath = project.GenerateDeployment()
-            except ProjectEditor.DataServiceExistenceException, e:
+            except project.ProjectEditor.DataServiceExistenceException, e:
                 dataSourceName = str(e)
                 projectService.PromptForMissingDataSource(dataSourceName)
                 return
@@ -3387,7 +3391,7 @@ class CommandPropertiesDialog(wx.Dialog):
     def GetKey(self, lastPart):
         if self._currentProj:
             return self._currentProj.GetKey(lastPart)
-            #return "%s/{%s}/%s" % (ProjectEditor.PROJECT_KEY, self._currentProj.GetModel().Id, lastPart)
+            #return "%s/{%s}/%s" % (project.ProjectEditor.PROJECT_KEY, self._currentProj.GetModel().Id, lastPart)
         return lastPart
 
 
@@ -3516,7 +3520,7 @@ class CommandPropertiesDialog(wx.Dialog):
         index = -1
         count = 0
         for document in self._projService.GetDocumentManager().GetDocuments():
-            if document.GetDocumentTemplate().GetDocumentType() == ProjectEditor.ProjectDocument and len(document.GetFiles()):
+            if document.GetDocumentTemplate().GetDocumentType() == project.ProjectEditor.ProjectDocument and len(document.GetFiles()):
                 docList.append(document)
                 nameList.append(os.path.basename(document.GetFilename()))
                 if document == self._currentProj:
@@ -3540,7 +3544,7 @@ class CommandPropertiesDialog(wx.Dialog):
                     unprojectedFiles.append(document.GetFilename())
 
         if unprojectedFiles:
-            unprojProj = ProjectEditor.ProjectDocument()
+            unprojProj = project.ProjectEditor.ProjectDocument()
             unprojProj.SetFilename(NOT_IN_ANY_PROJECT)
             unprojProj.AddFiles(unprojectedFiles)
             docList.append(unprojProj)

@@ -44,6 +44,9 @@ import noval.util.sysutils as sysutilslib
 import noval.tool.interpreter.manager as interpretermanager
 import threading
 import PyShell
+import noval.util.fileutils as fileutils
+import TextService
+import consts
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
@@ -68,6 +71,7 @@ class PythonDocument(CodeEditor.CodeDocument):
     UTF_8_ENCODING = 0
     GBK_ENCODING = 1
     ANSI_ENCODING = 2
+    UNKNOWN_ENCODING = -1
     
     def __init__(self):
         CodeEditor.CodeDocument.__init__(self)
@@ -95,28 +99,47 @@ class PythonDocument(CodeEditor.CodeDocument):
             # The standard encoding error does not indicate the encoding
             raise LookupError, "Unknown encoding " + name
         return name
-
+        
     def DoSaveBefore(self):
         CodeEditor.CodeDocument.DoSaveBefore(self)
+        docTemplate = self.GetDocumentTemplate()
         view = self.GetFirstView()
-        lines = view.GetTopLines(3)
+        lines = view.GetTopLines(consts.ENCODING_DECLARE_LINE_NUM)
         declare_encoding = self.get_coding_spec(lines)
-        if None == declare_encoding:
-            declare_encoding = CodeEditor.CodeDocument.DEFAULT_FILE_ENCODING
-        if self.IsDocEncodingChanged(declare_encoding):
-            self.file_encoding = declare_encoding
+        interpreter = wx.GetApp().GetCurrentInterpreter()
+        #when python version is 2,should check the encoding declare if python file contain
+        #chinse character,which python3 is not necessary
+        if interpreter.IsV2():
+            if None == declare_encoding and self.file_encoding != self.ASC_FILE_ENCODING:
+                ret = wx.MessageBox(_("Detect your python file contain chinese character,please insert encoding declare.\n\nClick 'Yes' to insert,or 'No' to cancel?"),_("Declare Encoding"),style = wx.YES_NO | wx.ICON_QUESTION)
+                if ret == wx.YES:
+                    txt_service = wx.GetApp().GetService(TextService.TextService)
+                    if txt_service.InsertEncodingDeclare(view):
+                        lines = view.GetTopLines(consts.ENCODING_DECLARE_LINE_NUM)
+                        declare_encoding = self.get_coding_spec(lines)
+        if declare_encoding is None:
+            #only python2 must need encoding declare,while python3 is not must need
+            if interpreter.IsV2():
+                declare_encoding = CodeEditor.CodeDocument.DEFAULT_FILE_ENCODING
+                if self.IsDocEncodingChanged(declare_encoding):
+                    self.file_encoding = declare_encoding
+        else:
+            if self.IsDocEncodingChanged(declare_encoding):
+                self.file_encoding = declare_encoding
     
     def DoSaveBehind(self):
         pass
         
     def GetDocEncoding(self,encoding):
         lower_encoding = encoding.lower() 
-        if lower_encoding == "utf-8" or lower_encoding == "utf-8-sig":
+        if lower_encoding == self.UTF_8_FILE_ENCODING or lower_encoding == "utf-8-sig":
             return self.UTF_8_ENCODING
         elif lower_encoding == "gbk" or lower_encoding == "gb2312" \
-             or lower_encoding == "gb18030" or lower_encoding == "cp936":
+             or lower_encoding == "gb18030" or lower_encoding == self.ANSI_FILE_ENCODING:
             return self.GBK_ENCODING
-        return self.ANSI_ENCODING
+        elif lower_encoding == self.ASC_FILE_ENCODING:
+            return self.ANSI_ENCODING
+        return self.UNKNOWN_ENCODING
 
     def IsUtf8Doc(self,encoding):
         if encoding.lower().find("utf-8"):

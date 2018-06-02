@@ -53,7 +53,6 @@
   <noval:file filePath="./noval/tool/HtmlEditor.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/IDE.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/ImageEditor.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/ImportFiles.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/MarkerService.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/MessageService.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/NavigationService.py" logicalFolder="noval/tool" isStartup="false"/>
@@ -64,9 +63,6 @@
   <noval:file filePath="./noval/tool/PHPDebugger.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/PHPEditor.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/process.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/project.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/ProjectEditor.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/ProjectUI.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/PyShell.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/PythonEditor.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/ResourceView.py" logicalFolder="noval/tool" isStartup="false"/>
@@ -138,5 +134,12 @@
   <noval:file filePath="./noval/tool/download.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./novalide_setup.nsi" isStartup="false"/>
   <noval:file filePath="./buildide" isStartup="false"/>
+  <noval:file filePath="./noval/tool/project/__init__.py" logicalFolder="noval/tool/project" isStartup="false"/>
+  <noval:file filePath="./noval/tool/project/project.py" logicalFolder="noval/tool/project" isStartup="false"/>
+  <noval:file filePath="./noval/tool/project/ProjectEditor.py" logicalFolder="noval/tool/project" isStartup="false"/>
+  <noval:file filePath="./noval/tool/project/ProjectUI.py" logicalFolder="noval/tool/project" isStartup="false"/>
+  <noval:file filePath="./noval/tool/project/ImportFiles.py" logicalFolder="noval/tool/project" isStartup="false"/>
+  <noval:file filePath="./noval/tool/project/NewFile.py" logicalFolder="noval/tool/project" isStartup="false"/>
+  <noval:file filePath="./template.xml" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>

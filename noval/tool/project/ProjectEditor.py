@@ -2,11 +2,11 @@
 # Name:         ProjectEditor.py
 # Purpose:      IDE-style Project Editor for wx.lib.pydocview
 #
-# Author:       Morgan Hua, Peter Yared
+# Author:       wukan
 #
 # Created:      8/15/03
 # CVS-ID:       $Id$
-# Copyright:    (c) 2003-2006 ActiveGrid, Inc.
+# Copyright:    (c) 2003-2006 Genetalks, Inc.
 # License:      wxWindows License
 #----------------------------------------------------------------------------
 
@@ -14,7 +14,7 @@ import wx
 import wx.lib.docview
 import wx.lib.pydocview
 import wx.lib.buttons
-import Service
+import noval.tool.Service as Service
 import copy
 import os
 import os.path
@@ -26,27 +26,28 @@ import noval.util.appdirs as appdirs
 import noval.util.strutils as strutils
 import noval.util.fileutils as fileutils
 import noval.util.logger as logger
-import UICommon
-import Wizard
-import SVNService
+import noval.tool.UICommon as UICommon
+import noval.tool.Wizard as Wizard
+import noval.tool.SVNService as SVNService
 import project as projectlib
-import ExtensionService
-import ResourceView
+import noval.tool.ExtensionService as ExtensionService
+import noval.tool.ResourceView as ResourceView
 import noval.util.sysutils as sysutilslib
 import ImportFiles
 from noval.tool.consts import SPACE,HALF_SPACE,_,PROJECT_SHORT_EXTENSION,PROJECT_EXTENSION
 import threading
 import shutil
-import WxThreadSafe
+import noval.tool.WxThreadSafe as WxThreadSafe
 import noval.parser.utils as parserutils
 from wx.lib.pubsub import pub as Publisher
 import ProjectUI
 from noval.model import configuration as projectconfiguration
 import uuid
-import FileObserver
+import noval.tool.FileObserver as FileObserver
 import cPickle
+import NewFile
 
-from IDE import ACTIVEGRID_BASE_IDE
+from noval.tool.IDE import ACTIVEGRID_BASE_IDE
 if not ACTIVEGRID_BASE_IDE:
     import activegrid.server.deployment as deploymentlib
     import ProcessModelEditor
@@ -64,7 +65,7 @@ if not ACTIVEGRID_BASE_IDE:
     DataServiceExistenceException = DeploymentGeneration.DataServiceExistenceException
     import WebBrowserService
 
-from SVNService import SVN_INSTALLED
+from noval.tool.SVNService import SVN_INSTALLED
 
 
 if wx.Platform == '__WXMSW__':
@@ -2302,6 +2303,9 @@ class ProjectView(wx.lib.docview.View):
             return True
         elif id == ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID:
             return False  # Implement this one in the service
+        elif id == ProjectService.ADD_NEW_FILE_ID:
+            self.OnAddNewFile(event)
+            return True
         elif id == ProjectService.ADD_FOLDER_ID:
             self.OnAddFolder(event)
             return True
@@ -2495,7 +2499,8 @@ class ProjectView(wx.lib.docview.View):
             event.Enable(False)  # Implement this one in the service
             return True
         elif (id == ProjectService.ADD_FOLDER_ID
-            or id == ProjectService.ADD_PACKAGE_FOLDER_ID):
+            or id == ProjectService.ADD_PACKAGE_FOLDER_ID
+            or id == ProjectService.ADD_NEW_FILE_ID):
             event.Enable((self.GetDocument() != None) and (self.GetMode() == ProjectView.PROJECT_VIEW))
             return True            
         elif id == wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID:
@@ -2856,7 +2861,16 @@ class ProjectView(wx.lib.docview.View):
                 else:  # ID_CANCEL
                     finished = True
             dlg.Destroy()
-
+            
+    def OnAddNewFile(self,event):
+        item = self._treeCtrl.GetSelections()[0]
+        folderPath = self._GetItemFolderPath(item)
+        frame = NewFile.NewFileDialog(self.GetFrame(),-1,_("New FileType"),folderPath)
+        frame.CenterOnParent()
+        if frame.ShowModal() == wx.ID_OK:
+            if self.GetDocument().GetCommandProcessor().Submit(ProjectAddFilesCommand(self.GetDocument(), [frame.file_path], folderPath=folderPath)):
+                self.OnOpenSelection(None)
+        frame.Destroy()
 
     def OnAddFolder(self, event):
         if self.GetDocument():
@@ -2965,17 +2979,7 @@ class ProjectView(wx.lib.docview.View):
             self.GetDocument().GetCommandProcessor().Submit(ProjectRemoveFilesCommand(self.GetDocument(), files))
 
     def OnAddFileToProject(self, event):
-        if wx.Platform == "__WXMSW__" or wx.Platform == "__WXGTK__" or wx.Platform == "__WXMAC__":
-            descr = ''
-            for temp in self.GetDocumentManager()._templates:
-                if temp.IsVisible() and temp.GetDocumentType() != ProjectDocument:
-                    if len(descr) > 0:
-                        descr = descr + _('|')
-                    descr = descr + temp.GetDescription() + _(" (") + temp.GetFileFilter() + _(") |") + temp.GetFileFilter()  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
-            descr = _("All|*.*|%s") % descr # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
-        else:
-            descr = _("*.*")
-
+        descr = strutils.GenFileFilters(ProjectDocument)
         dialog = wx.FileDialog(self.GetFrame(), _("Add Files"), wildcard=descr, style=wx.OPEN|wx.MULTIPLE|wx.CHANGE_DIR)
         # dialog.CenterOnParent()  # wxBug: caused crash with wx.FileDialog
         if dialog.ShowModal() != wx.ID_OK:
@@ -3208,7 +3212,7 @@ class ProjectView(wx.lib.docview.View):
             if is_root_item:
                 itemIDs = [ProjectService.NEW_PROJECT_ID,ProjectService.OPEN_PROJECT_ID] 
             itemIDs.extend([ProjectService.IMPORT_FILES_ID,ProjectService.ADD_FILES_TO_PROJECT_ID, \
-                           ProjectService.ADD_DIR_FILES_TO_PROJECT_ID,ProjectService.ADD_FOLDER_ID, ProjectService.ADD_PACKAGE_FOLDER_ID])
+                           ProjectService.ADD_DIR_FILES_TO_PROJECT_ID,ProjectService.ADD_NEW_FILE_ID,ProjectService.ADD_FOLDER_ID, ProjectService.ADD_PACKAGE_FOLDER_ID])
         menuBar = self._GetParentFrame().GetMenuBar()
         #itemIDs = itemIDs + [ ProjectService.REMOVE_FROM_PROJECT, None]
         if is_root_item:
@@ -3317,7 +3321,7 @@ class ProjectView(wx.lib.docview.View):
         newName = event.GetLabel()
         if item == self._treeCtrl.GetRootItem():
             if not newName:
-                wx.MessageBox(_("project name could not be empty"),style=wx.OK|wx.ICON_ERROR)
+                #wx.MessageBox(_("project name could not be empty"),style=wx.OK|wx.ICON_ERROR)
                 event.Veto()
             else:
                 self.GetDocument().GetModel().Name = newName
@@ -3829,6 +3833,8 @@ class ProjectView(wx.lib.docview.View):
                           msgTitle,
                           wx.OK | wx.ICON_EXCLAMATION,
                           self.GetFrame())
+        if event is None:
+            return
         event.Skip()
 
     #----------------------------------------------------------------------------
@@ -4195,6 +4201,7 @@ class ProjectService(Service.Service):
     SAVE_PROJECT_ID = wx.NewId()
     ADD_PACKAGE_FOLDER_ID = wx.NewId()
     SET_PROJECT_STARTUP_FILE_ID = wx.NewId()
+    ADD_NEW_FILE_ID = wx.NewId()
     
 
     #----------------------------------------------------------------------------
@@ -4282,6 +4289,12 @@ class ProjectService(Service.Service):
                 projectMenu.Append(ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID, _("&Add Active File to Project..."), _("Adds the active document to a project"))
                 wx.EVT_MENU(frame, ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID, frame.ProcessEvent)
                 wx.EVT_UPDATE_UI(frame, ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID, frame.ProcessUpdateUIEvent)
+            
+            if not menuBar.FindItemById(ProjectService.ADD_NEW_FILE_ID):
+                projectMenu.Append(ProjectService.ADD_NEW_FILE_ID, _("New File"), _("Creates a new file"))
+                wx.EVT_MENU(frame, ProjectService.ADD_NEW_FILE_ID, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, ProjectService.ADD_NEW_FILE_ID, frame.ProcessUpdateUIEvent)
+                
             if not menuBar.FindItemById(ProjectService.ADD_FOLDER_ID):
                 projectMenu.Append(ProjectService.ADD_FOLDER_ID, _("New Folder"), _("Creates a new folder"))
                 wx.EVT_MENU(frame, ProjectService.ADD_FOLDER_ID, frame.ProcessEvent)
@@ -4511,6 +4524,7 @@ class ProjectService(Service.Service):
             return True
         elif (id == ProjectService.PROJECT_PROPERTIES_ID
         or id == wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID
+        or id == ProjectService.ADD_NEW_FILE_ID
         or id == ProjectService.ADD_FOLDER_ID
         or id == ProjectService.ADD_PACKAGE_FOLDER_ID
         or id == ProjectService.DELETE_PROJECT_ID
@@ -4519,7 +4533,8 @@ class ProjectService(Service.Service):
         or id == ProjectService.NEW_PROJECT_ID
         or id == ProjectService.OPEN_PROJECT_PATH_ID
         or id == ProjectService.OPEN_PROJECT_ID
-        or id == ProjectService.SAVE_PROJECT_ID):
+        or id == ProjectService.SAVE_PROJECT_ID
+        or id == ProjectService.ADD_NEW_FILE_ID):
             if self.GetView():
                 return self.GetView().ProcessEvent(event)
             else:
@@ -4556,6 +4571,7 @@ class ProjectService(Service.Service):
         elif id in [wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID,
             ProjectService.ADD_FOLDER_ID,
             ProjectService.ADD_PACKAGE_FOLDER_ID,
+            ProjectService.ADD_NEW_FILE_ID,
             ProjectService.DELETE_PROJECT_ID,
             ProjectService.CLOSE_PROJECT_ID,
             ProjectService.SAVE_PROJECT_ID,
@@ -4750,17 +4766,35 @@ class ProjectService(Service.Service):
 
     def OnAddCurrentFileToProject(self, event):
         doc = self.GetDocumentManager().GetCurrentDocument()
-        file = doc.GetFilename()
+        filepath = doc.GetFilename()
         projectDoc = self.GetView().GetDocument()
+        if projectDoc.IsFileInProject(filepath):
+            wx.MessageBox(_("Current document is already in the project"),style = wx.OK|wx.ICON_WARNING)
+            return
         folderPath = None
         if self.GetView().GetMode() == ProjectView.PROJECT_VIEW:
             selections = self.GetView()._treeCtrl.GetSelections()
             if selections:
                 item = selections[0]
                 folderPath = self.GetView()._GetItemFolderPath(item)
-        projectDoc.GetCommandProcessor().Submit(ProjectAddFilesCommand(projectDoc, [file],folderPath=folderPath))
-        AddProjectMapping(doc, projectDoc)
-        self.GetView().Activate()  # after add, should put focus on project editor
+        if projectDoc.GetCommandProcessor().Submit(ProjectAddFilesCommand(projectDoc, [filepath],folderPath=folderPath)):
+            AddProjectMapping(doc, projectDoc)
+            self.GetView().Activate()  # after add, should put focus on project editor
+            if folderPath is None:
+                folderPath = ""
+            newFilePath = os.path.join(projectDoc.GetModel().homeDir,folderPath,os.path.basename(filepath))
+            if not os.path.exists(newFilePath):
+                return
+            if not parserutils.ComparePath(newFilePath,filepath):
+                openDoc = doc.GetOpenDocument(newFilePath)
+                if openDoc:
+                    wx.MessageBox(_("Project file is already opened"),style = wx.OK|wx.ICON_WARNING)
+                    openDoc.GetFirstView().GetFrame().SetFocus()
+                    return
+                doc.FileWatcher.StopWatchFile(doc)
+                doc.SetFilename(newFilePath)
+                doc.FileWatcher.StartWatchFile(doc)
+            doc.SetDocumentModificationDate()
 
     def OnFileCloseAll(self, event):
         for document in self.GetDocumentManager().GetDocuments()[:]:  # Cloning list to make sure we go through all docs even as they are deleted

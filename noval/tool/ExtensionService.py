@@ -13,7 +13,7 @@
 import wx
 import wx.lib.pydocview
 import MessageService
-import ProjectEditor
+import noval.tool.project as project
 import os
 import os.path
 import noval.util.xmlutils as xmlutils
@@ -144,6 +144,10 @@ class ExtensionService(Service.BaseService):
             id = wx.NewId()
             toolsMenu.Append(id,_("&Interpreter"))
             wx.EVT_MENU(frame, id, self.OpenInterpreter)
+            
+            id = wx.NewId()
+            toolsMenu.Append(id,_("&Web Browser"))
+            wx.EVT_MENU(frame, id, self.GotoDefaultWebView)
         
         helpMenuIndex = menuBar.FindMenu(_("&Help"))
         helpMenu = menuBar.GetMenu(helpMenuIndex)
@@ -183,6 +187,12 @@ class ExtensionService(Service.BaseService):
         
     def GotoWebsite(self,event):
         fileutils.start_file(UserDataDb.HOST_SERVER_ADDR)
+        
+    def GotoDefaultWebView(self,event):
+        self.GotoWebView(UserDataDb.HOST_SERVER_ADDR)
+        
+    def GotoWebView(self,web_addr):
+        wx.GetApp().GetDocumentManager().CreateDocument(web_addr, wx.lib.docview.DOC_SILENT|wx.lib.docview.DOC_OPEN_ONCE)
         
     def CheckforUpdate(self,event):
         self.CheckAppUpdate()
@@ -309,7 +319,7 @@ class ExtensionService(Service.BaseService):
                             if fileExt in doc.GetDocumentTemplate().GetFileFilter():
                                 event.Enable(True)
                                 return True
-                        if extension.opOnSelectedFile and isinstance(doc, ProjectEditor.ProjectDocument):
+                        if extension.opOnSelectedFile and isinstance(doc, project.ProjectEditor.ProjectDocument):
                             filename = doc.GetFirstView().GetSelectedFile()
                             if filename:
                                 template = wx.GetApp().GetDocumentManager().FindTemplateForPath(filename)
@@ -327,7 +337,7 @@ class ExtensionService(Service.BaseService):
             doc = wx.GetApp().GetDocumentManager().GetCurrentDocument()
             if not doc:
                 return
-            if extension.opOnSelectedFile and isinstance(doc, ProjectEditor.ProjectDocument):
+            if extension.opOnSelectedFile and isinstance(doc, project.ProjectEditor.ProjectDocument):
                 filename = doc.GetFirstView().GetSelectedFile()
                 if not filename:
                     filename = doc.GetFilename()
@@ -347,18 +357,23 @@ class ExtensionService(Service.BaseService):
 
         else:
             cmd = extension.command
-            if extension.commandPreArgs:
-                cmd = cmd + ' ' + extension.commandPreArgs
-            if extension.commandPostArgs:
-                cmd = cmd + ' ' + extension.commandPostArgs
-            f = os.popen(cmd)
-            messageService = wx.GetApp().GetService(MessageService.MessageService)
-            messageService.ShowWindow()
-            view = messageService.GetView()
-            for line in f.readlines():
-                view.AddLines(line)
-            view.GetControl().EnsureCaretVisible()
-            f.close()
+            if sysutilslib.isWindows():
+                import win32api
+                win32api.ShellExecute(0,"open",cmd," " + extension.commandPreArgs + " " +extension.commandPostArgs , '', 1)
+            else:
+                if extension.commandPreArgs:
+                    cmd = cmd + ' ' + extension.commandPreArgs
+                if extension.commandPostArgs:
+                    cmd = cmd + ' ' + extension.commandPostArgs
+                subprocess.call(cmd,shell=True)
+##            f = os.popen(cmd)
+##            messageService = wx.GetApp().GetService(MessageService.MessageService)
+##            messageService.ShowWindow()
+##            view = messageService.GetView()
+##            for line in f.readlines():
+##                view.AddLines(line)
+##            view.GetControl().EnsureCaretVisible()
+##            f.close()
 
 
 class ExtensionOptionsPanel(wx.Panel):

@@ -7,6 +7,7 @@ import getpass
 import os
 import noval.util.strutils as strutils
 import noval.util.sysutils as sysutilslib
+import consts
 _ = wx.GetTranslation
 
 #----------------------------------------------------------------------------
@@ -303,26 +304,36 @@ class TextService(Service.BaseService):
                     text_view.AddText(f.read())
             return True
         elif id == INSERT_DECLARE_ENCODING_ID:
-            lines = text_view.GetTopLines(3)
-            coding_name,line_num = strutils.get_python_coding_declare(lines)
-            if  coding_name is not None:
-                ret = wx.MessageBox(_("The Python Document have already declare coding,Do you want to overwrite it?"),_("Declare Encoding"),wx.YES_NO|wx.ICON_QUESTION,\
-                    text_view.GetFrame())
-                if ret == wx.YES:
-                    text_view.GetCtrl().SetSelection(text_view.GetCtrl().PositionFromLine(line_num),text_view.GetCtrl().PositionFromLine(line_num+1))
-                    text_view.GetCtrl().DeleteBack()
-                else:
-                    return True
-            dlg = EncodingDeclareDialog(wx.GetApp().GetTopWindow(),-1,_("Declare Encoding"))
-            dlg.CenterOnParent()
-            if dlg.ShowModal() == wx.ID_OK:
-                text_view.GetCtrl().GotoPos(0)
-                text_view.AddText(dlg.name_ctrl.GetValue() + "\n")
+            self.InsertEncodingDeclare(text_view)
             return True
         elif id == ID_TAB_TO_SPACE or id == ID_SPACE_TO_TAB:
             self.ConvertWhitespace(text_view,id)
         else:
             return False
+            
+
+    def InsertEncodingDeclare(self,text_view = None):
+        if text_view is None:
+            text_view = self.GetActiveView()
+        
+        lines = text_view.GetTopLines(consts.ENCODING_DECLARE_LINE_NUM)
+        coding_name,line_num = strutils.get_python_coding_declare(lines)
+        if  coding_name is not None:
+            ret = wx.MessageBox(_("The Python Document have already declare coding,Do you want to overwrite it?"),_("Declare Encoding"),wx.YES_NO|wx.ICON_QUESTION,\
+                text_view.GetFrame())
+            if ret == wx.YES:
+                text_view.GetCtrl().SetSelection(text_view.GetCtrl().PositionFromLine(line_num),text_view.GetCtrl().PositionFromLine(line_num+1))
+                text_view.GetCtrl().DeleteBack()
+            else:
+                return True
+                
+        dlg = EncodingDeclareDialog(wx.GetApp().GetTopWindow(),-1,_("Declare Encoding"))
+        dlg.CenterOnParent()
+        if dlg.ShowModal() == wx.ID_OK:
+            text_view.GetCtrl().GotoPos(0)
+            text_view.AddText(dlg.name_ctrl.GetValue() + "\n")
+            return True
+        return False
 
     def ProcessUpdateUIEvent(self, event):
         text_view = self.GetActiveView()

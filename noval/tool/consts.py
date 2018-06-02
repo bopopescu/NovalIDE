@@ -24,6 +24,7 @@ ID_MRU_FILE20 = wx.NewId()
 
 TEXT_VIEW = 1
 IMAGE_VIEW = 2
+HTML_WEB_VIEW = 3
 
 SPACE = 10
 HALF_SPACE = 5
@@ -41,3 +42,6 @@ PROJECT_NAMESPACE_URL = "noval"
 DEFAULT_FILE_ENCODING_KEY = "DefaultFileEncoding"
 
 NOT_IN_ANY_PROJECT = "Not in any Project"
+
+#the first 2 line no of python file to place encoding declare
+ENCODING_DECLARE_LINE_NUM = 2

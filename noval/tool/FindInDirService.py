@@ -15,7 +15,7 @@ import wx.lib.docview
 import os
 from os.path import join
 import re
-import ProjectEditor
+import project.ProjectEditor as ProjectEditor
 import MessageService
 import FindService
 import OutlineService

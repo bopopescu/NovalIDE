@@ -21,7 +21,7 @@ class ImportFilesDialog(wx.Dialog):
         projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
         self.project_view = projectService.GetView()
         project_path = os.path.dirname(self.project_view.GetDocument().GetFilename())
-        self.dest_path = os.path.basename(project_path)
+        self.dest_path = project_path
         if folderPath != "":
             self.dest_path = os.path.join(self.dest_path,folderPath)
         if sysutilslib.isWindows():

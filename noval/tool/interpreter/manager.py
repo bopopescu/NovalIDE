@@ -112,11 +112,13 @@ class InterpreterManager(Singleton):
             data = config.Read(self.KEY_PREFIX)
             if not data:
                 return False
+            has_builtin_interpreter = False
             lst = pickle.loads(data.encode('ascii'))
             for l in lst:
                 is_builtin = l.get('is_builtin',False)
                 if is_builtin:
                     interpreter = Interpreter.BuiltinPythonInterpreter(l['name'],l['path'],l['id'])
+                    has_builtin_interpreter = True
                 else:
                     interpreter = Interpreter.PythonInterpreter(l['name'],l['path'],l['id'],True)
                 interpreter.Default = l['default']
@@ -137,7 +139,7 @@ class InterpreterManager(Singleton):
                 self.interpreters.append(interpreter)
                 app_debugLogger.info('load python interpreter from app config success,name is %s,path is %s,version is %s,is builtin %s',\
                                      interpreter.Name,interpreter.Path,interpreter.Version,interpreter.IsBuiltIn)
-            if len(self.interpreters) > 1:
+            if len(self.interpreters) > 1 or (len(self.interpreters) == 1 and not has_builtin_interpreter):
                 return True
         else:
             prefix = self.KEY_PREFIX

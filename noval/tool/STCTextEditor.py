@@ -41,7 +41,11 @@ _ = wx.GetTranslation
 
 class TextDocument(wx.lib.docview.Document):
     
-    DEFAULT_FILE_ENCODING = "ascii"
+    ASC_FILE_ENCODING = "ascii"
+    UTF_8_FILE_ENCODING = "utf-8"
+    ANSI_FILE_ENCODING = "cp936"
+    
+    DEFAULT_FILE_ENCODING = ASC_FILE_ENCODING
     
     def __init__(self):
         wx.lib.docview.Document .__init__(self)
@@ -59,6 +63,8 @@ class TextDocument(wx.lib.docview.Document):
     def DoSaveBefore(self):
         if self._is_watched:
             self.file_watcher.StopWatchFile(self)
+        #should check document data encoding first before save document
+        self.file_encoding = self.DetectDocumentEncoding()
     
     def DoSaveBehind(self):
         pass
@@ -81,23 +87,31 @@ class TextDocument(wx.lib.docview.Document):
             return False
 
         descr = docTemplate.GetDescription() + _(" (") + docTemplate.GetFileFilter() + _(") |") + docTemplate.GetFileFilter()  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
+        if docTemplate.GetDocumentType() == TextDocument and docTemplate.GetFileFilter() != "*.*":
+            default_ext = ""
+            descr = _("All (*.*) |*.*|%s") % descr
+        else:
+            default_ext = docTemplate.GetDefaultExtension()
         filename = wx.FileSelector(_("Save As"),
                                    docTemplate.GetDirectory(),
                                    wx.lib.docview.FileNameFromPath(self.GetFilename()),
-                                   docTemplate.GetDefaultExtension(),
+                                   default_ext,
                                    wildcard = descr,
                                    flags = wx.SAVE | wx.OVERWRITE_PROMPT,
                                    parent = self.GetDocumentWindow())
         if filename == "":
             return False
 
-        name, ext = os.path.splitext(filename)
-        if ext == "":
-            filename += '.' + docTemplate.GetDefaultExtension()
+        #name, ext = os.path.splitext(filename)
+        #if ext == "":
+         #   filename += '.' + docTemplate.GetDefaultExtension()
             
         if self.GetOpenDocument(filename):
             wx.MessageBox(_("File has already been opened,could not overwrite it."),wx.GetApp().GetAppName(),wx.OK | wx.ICON_WARNING,
                                   self.GetDocumentWindow())
+            return False
+            
+        if not self.OnSaveDocument(filename):
             return False
 
         self.SetFilename(filename)
@@ -105,9 +119,6 @@ class TextDocument(wx.lib.docview.Document):
 
         for view in self._documentViews:
             view.OnChangeFilename()
-
-        if not self.OnSaveDocument(filename):
-            return False
 
         if docTemplate.FileMatchesTemplate(filename):
             self.GetDocumentManager().AddFileToHistory(filename)
@@ -172,10 +183,11 @@ class TextDocument(wx.lib.docview.Document):
                           msgTitle,
                           wx.OK | wx.ICON_ERROR,
                           self.GetDocumentWindow())
-            self.SetDocumentModificationDate()
+                          
+            if not self._is_new_doc:
+                self.SetDocumentModificationDate()
             return False
 
-        self.SetDocumentModificationDate()
         self.SetFilename(filename, True)
         self.Modify(False)
         self.SetDocumentSaved(True)
@@ -183,6 +195,7 @@ class TextDocument(wx.lib.docview.Document):
         self._is_new_doc = False
         self.file_watcher.StartWatchFile(self)
         self.DoSaveBehind()
+        self.SetDocumentModificationDate()
         #if wx.Platform == '__WXMAC__':  # Not yet implemented in wxPython
         #    wx.FileName(file).MacSetDefaultTypeAndCreator()
         return True
@@ -197,8 +210,22 @@ class TextDocument(wx.lib.docview.Document):
                 file_encoding = result['encoding']
         except:
             pass
-        if None == file_encoding:
-            file_encoding = TextDocument.DEFAULT_FILE_ENCODING
+        #if detect file encoding is None,we should assume the file encoding is ansi,which cp936 encoding is instead
+        if None == file_encoding or file_encoding.lower().find('iso') != -1:
+            file_encoding = TextDocument.ANSI_FILE_ENCODING
+        return file_encoding
+        
+    def DetectDocumentEncoding(self):
+        view = self.GetFirstView()
+        file_encoding = self.file_encoding
+        #when the file encoding is accii,we should check the document data contain chinese character,
+        #the we should change the document encoding to utf-8 to save chinese character
+        if file_encoding == self.ASC_FILE_ENCODING:
+            guess_encoding = file_encoding.lower()
+            if guess_encoding == self.ASC_FILE_ENCODING:
+                guess_encoding = self.UTF_8_FILE_ENCODING
+            result = fileutils.detect(view.GetValue().encode(guess_encoding))
+            file_encoding = result['encoding']
         return file_encoding
 
     def OnOpenDocument(self, filename):
