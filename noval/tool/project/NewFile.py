@@ -7,6 +7,8 @@ import xml.etree.ElementTree as ET
 import noval.tool.GeneralOption as GeneralOption
 from bz2 import BZ2File
 import ProjectEditor
+if not sysutilslib.isWindows():
+    import noval.tool.FileObserver as FileObserver
 
 COMMON_MASK_COLOR = wx.Colour(255, 0, 255)
 
@@ -68,6 +70,7 @@ class NewFileDialog(wx.Dialog):
         lineSizer.Add(self.treeCtrl,flag=wx.LEFT|wx.RIGHT,border=SPACE)
         
         self.lc = wx.ListCtrl(self, -1, size=(300,280),style = wx.LC_ICON|wx.BORDER_THEME)
+        wx.EVT_LIST_ITEM_ACTIVATED(self.lc, self.lc.GetId(), self.OnOKClick)
         lineSizer.Add(self.lc,1,flag=wx.TOP|wx.EXPAND,border=0)
 
         self.small_iconList = wx.ImageList(16, 16)
@@ -119,6 +122,11 @@ class NewFileDialog(wx.Dialog):
         pass
         
     def OnOKClick(self,event):
+        
+        def startPathWatcher():
+            if path_watcher is not None:
+                path_watcher.Start()
+            
         item = self.treeCtrl.GetSelection()
         select_item = self.lc.GetFirstSelected()
         if item is None or select_item == -1:
@@ -138,16 +146,34 @@ class NewFileDialog(wx.Dialog):
             if not os.path.exists(self.file_path):
                 break
             i += 1
+        #when new file template on linux ,should stop path wather of the file teplate path
+        #after create file success,then restart path watcher
+        #otherwise it will alarm a modify event after the file been created
+        if not sysutilslib.isWindows():
+            path_watcher = None
+            dir_path = os.path.dirname(self.file_path)
+            if FileObserver.FileAlarmWatcher.path_watchers.has_key(dir_path):
+                path_watcher = FileObserver.FileAlarmWatcher.path_watchers[dir_path]
+                path_watcher.Stop()
         try:
             with open(self.file_path,"w") as fp:
-                with BZ2File(content_zip_path,"r") as f:
-                    for i,line in enumerate(f):
-                        if i == 0:
-                            continue
-                        fp.write(line.strip('\0'))
+                try:
+                    with BZ2File(content_zip_path,"r") as f:
+                        for i,line in enumerate(f):
+                            if i == 0:
+                                continue
+                            fp.write(line.strip('\0').strip('\r').strip('\n'))
+                            fp.write('\n')
+                except Exception as e:
+                    wx.MessageBox(_("Load File Template Content Error.%s") % e,style=wx.OK | wx.ICON_ERROR)
+                    return
         except Exception as e:
-            wx.MessageBox(_("Load Template File Error"),style=wx.ID_OK | wx.ICON_ERROR)
+            if not sysutilslib.isWindows():
+                startPathWatcher()
+            wx.MessageBox(_("New File Error.%s") % e,style=wx.OK | wx.ICON_ERROR)
             return
+        if not sysutilslib.isWindows():
+            startPathWatcher()
         self.EndModal(wx.ID_OK)
         
     def SelectViewStyle(self,style):
@@ -162,7 +188,7 @@ class NewFileDialog(wx.Dialog):
     def LoadFileTemplate(self):
         self.lc.DeleteAllItems()
         item = self.treeCtrl.GetSelection()
-        if item is None:
+        if item is None or 0 == self.treeCtrl.GetCount():
             return
         templates = self.treeCtrl.GetPyData(item)
         for i,template in enumerate(templates):
@@ -195,14 +221,17 @@ class NewFileDialog(wx.Dialog):
         return file_type
         
     def LoadFileTypes(self):
-
-        file_template_path = os.path.join(sysutilslib.mainModuleDir, "template.xml")
-        tree = ET.parse(file_template_path)
-        doc = tree.getroot()
-        root_item = self.treeCtrl.AddRoot(_("FileTypes"))
+        try:
+            file_template_path = os.path.join(sysutilslib.mainModuleDir, "template.xml")
+            tree = ET.parse(file_template_path)
+            doc = tree.getroot()
+            root_item = self.treeCtrl.AddRoot(_("FileTypes"))
+        except Exception as e:
+            wx.MessageBox(_("Load Template File Error.%s") % e,style=wx.OK | wx.ICON_ERROR)
+            return
         
         config = wx.ConfigBase_Get()
-        langId = GeneralOption.GetLangId(config.Read("Language",""))
+        langId = GeneralOption.GetLangId(config.Read("Language",sysutilslib.GetLangConfig()))
         lang = wx.Locale.GetLanguageInfo(langId).CanonicalName
         for element in doc.getchildren():
             if element.tag == lang:

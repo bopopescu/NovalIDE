@@ -61,7 +61,7 @@ def _getSystemDir(kind):
                 endIfDef()
                 if ((path is None) or (len(path) < 1)):
                     path = "/"
-                path = os.path.join(path, "ActiveGrid")
+                path = os.path.join(path, "NovalIDE")
             
         return path
         

@@ -27,7 +27,7 @@ import noval.util.strutils as strutils
 import noval.util.fileutils as fileutils
 import noval.util.logger as logger
 import noval.tool.UICommon as UICommon
-import noval.tool.Wizard as Wizard
+import Wizard
 import noval.tool.SVNService as SVNService
 import project as projectlib
 import noval.tool.ExtensionService as ExtensionService
@@ -2459,7 +2459,11 @@ class ProjectView(wx.lib.docview.View):
         fileutils.open_file_directory(document.GetFilename())
 
     def ImportFilesToProject(self,event):
-        item = self._treeCtrl.GetSelections()[0]
+        items = self._treeCtrl.GetSelections()
+        if items:
+            item = items[0]
+        else:
+            item = self._treeCtrl.GetRootItem()
         folderPath = self._GetItemFolderPath(item)
         frame = ImportFiles.ImportFilesDialog(self.GetFrame(),-1,_("Import Files"),folderPath)
         frame.CenterOnParent()
@@ -2863,8 +2867,12 @@ class ProjectView(wx.lib.docview.View):
             dlg.Destroy()
             
     def OnAddNewFile(self,event):
-        item = self._treeCtrl.GetSelections()[0]
-        folderPath = self._GetItemFolderPath(item)
+        items = self._treeCtrl.GetSelections()
+        if items:
+            item = items[0]
+            folderPath = self._GetItemFolderPath(item)
+        else:
+            folderPath = ""
         frame = NewFile.NewFileDialog(self.GetFrame(),-1,_("New FileType"),folderPath)
         frame.CenterOnParent()
         if frame.ShowModal() == wx.ID_OK:
@@ -3207,7 +3215,10 @@ class ProjectView(wx.lib.docview.View):
                     break
         else:  # Project context
             itemIDs = []
-            if self._treeCtrl.GetSelections()[0] == self._treeCtrl.GetRootItem():
+            items = self._treeCtrl.GetSelections()
+            if 0 == len(items):
+                return
+            if items[0] == self._treeCtrl.GetRootItem():
                 is_root_item = True
             if is_root_item:
                 itemIDs = [ProjectService.NEW_PROJECT_ID,ProjectService.OPEN_PROJECT_ID] 

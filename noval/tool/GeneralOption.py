@@ -71,9 +71,12 @@ def GetLangId(lang_n):
     @return: wx.LANGUAGE_*** id of language
 
     """
-    if lang_n == "Default" or lang_n == '':
+    if lang_n == "Default" or lang_n == '' or lang_n.lower() == "english":
         # No language set, default to English
         return wx.LANGUAGE_ENGLISH_US
+    elif lang_n.lower() == "chinese":
+        return wx.LANGUAGE_CHINESE_SIMPLIFIED
+        
     lang_desc = GetLocaleDict(GetAvailLocales(), OPT_DESCRIPT)
     return lang_desc.get(lang_n, wx.LANGUAGE_DEFAULT)
 

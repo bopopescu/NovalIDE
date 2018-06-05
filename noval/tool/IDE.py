@@ -174,7 +174,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
 
         ##my_locale must be set as app member property,otherwise it will only workable when app start up
         ##it will not workable after app start up,the translation also will not work
-        lang_id = GeneralOption.GetLangId(config.Read("Language",""))
+        lang_id = GeneralOption.GetLangId(config.Read("Language",sysutilslib.GetLangConfig()))
         if wx.Locale.IsAvailable(lang_id):
             self.my_locale = wx.Locale(lang_id)
             if self.my_locale.IsOk():

@@ -40,6 +40,7 @@ SetCompressor lzma
 !insertmacro MUI_UNPAGE_INSTFILES
 
 ; 安装界面包含的语言设置
+!insertmacro MUI_LANGUAGE "English"
 !insertmacro MUI_LANGUAGE "SimpChinese"
 
 ; 安装预释放文件
@@ -68,6 +69,7 @@ Section "MainSection" SEC01
   File "dist\wxbase30u_vc90.dll"
   File "dist\wxbase30u_net_vc90.dll"
   File "dist\wxmsw30u_aui_vc90.dll"
+  File "dist\wxmsw30u_webview_vc90.dll"
   File "dist\wx._xrc.pyd"
   File "dist\wx._wizard.pyd"
   File "dist\wx._windows_.pyd"
@@ -92,8 +94,10 @@ Section "MainSection" SEC01
   File "dist\win32api.pyd"
   File "dist\w9xpopen.exe"
   File "dist\version.txt"
+  File "dist\template.xml"
   File "dist\unicodedata.pyd"
   File "dist\psutil._psutil_windows.pyd"
+  File "dist\wx._html2.pyd"
   File "dist\tk85.dll"
   File "dist\tcl85.dll"
   File "dist\select.pyd"
@@ -172,7 +176,9 @@ Section Uninstall
   Delete "$INSTDIR\_ssl.pyd"
   Delete "$INSTDIR\_tkinter.pyd"
   Delete "$INSTDIR\_win32sysloader.pyd"
+  Delete "$INSTDIR\wx._html2.pyd"
   Delete "$INSTDIR\psutil._psutil_windows.pyd"
+  Delete "$INSTDIR\wxmsw30u_webview_vc90.dll"
   Delete "$INSTDIR\API-MS-Win-Core-Debug-L1-1-0.dll"
   Delete "$INSTDIR\API-MS-Win-Core-DelayLoad-L1-1-0.dll"
   Delete "$INSTDIR\API-MS-Win-Core-ErrorHandling-L1-1-0.dll"
@@ -203,6 +209,7 @@ Section Uninstall
   Delete "$INSTDIR\tk85.dll"
   Delete "$INSTDIR\unicodedata.pyd"
   Delete "$INSTDIR\version.txt"
+  Delete "$INSTDIR\template.xml"
   Delete "$INSTDIR\w9xpopen.exe"
   Delete "$INSTDIR\win32api.pyd"
   Delete "$INSTDIR\win32com.shell.shell.pyd"
@@ -266,6 +273,13 @@ SectionEnd
 
 #-- 根据 NSIS 脚本编辑规则，所有 Function 区段必须放置在 Section 区段之后编写，以避免安装程序出现未可预知的问题。--#
 
+Function .onInit
+  IfFileExists "$INSTDIR\config.ini" 0 +2
+  Goto end
+  !insertmacro MUI_LANGDLL_DISPLAY
+end:
+FunctionEnd
+
 Function un.onInit
   MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "您确实要完全移除 $(^Name) ，及其所有的组件？" IDYES +2
   Abort
@@ -274,4 +288,18 @@ FunctionEnd
 Function un.onUninstSuccess
   HideWindow
   MessageBox MB_ICONINFORMATION|MB_OK "$(^Name) 已成功地从您的计算机移除。"
+FunctionEnd
+
+Function .onInstSuccess
+  IntCmp $Language 2052 SetLangChinese
+  IntCmp $Language 1033 SetLangEnglish
+
+SetLangChinese:
+  WriteINIStr "$INSTDIR\config.ini" "IDE" "Language" "Chinese"
+  Goto SetLangEnd
+
+SetLangEnglish:
+  WriteINIStr "$INSTDIR\config.ini" "IDE" "Language" "English"
+
+SetLangEnd:
 FunctionEnd

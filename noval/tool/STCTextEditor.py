@@ -218,9 +218,9 @@ class TextDocument(wx.lib.docview.Document):
     def DetectDocumentEncoding(self):
         view = self.GetFirstView()
         file_encoding = self.file_encoding
-        #when the file encoding is accii,we should check the document data contain chinese character,
+        #when the file encoding is accii or new document,we should check the document data contain chinese character,
         #the we should change the document encoding to utf-8 to save chinese character
-        if file_encoding == self.ASC_FILE_ENCODING:
+        if file_encoding == self.ASC_FILE_ENCODING or self.IsNewDocument:
             guess_encoding = file_encoding.lower()
             if guess_encoding == self.ASC_FILE_ENCODING:
                 guess_encoding = self.UTF_8_FILE_ENCODING

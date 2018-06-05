@@ -16,6 +16,7 @@ import time
 import pyperclip
 import wx
 import psutil
+from ConfigParser import ConfigParser
 
 # this will be set to true in IDE.py when we are running release builds.
 isRelease = False
@@ -167,3 +168,11 @@ def GetAppVersion():
     else:
         version = _("Version Unknown - %s not found" % versionFilepath)
     return version
+    
+def GetLangConfig():
+    config_path = os.path.join(mainModuleDir,"config.ini")
+    if not os.path.exists(config_path):
+        return ''
+    cfg = ConfigParser()
+    cfg.read(config_path)
+    return cfg.get('IDE','Language')

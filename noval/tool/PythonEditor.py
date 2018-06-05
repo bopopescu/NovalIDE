@@ -45,8 +45,10 @@ import noval.tool.interpreter.manager as interpretermanager
 import threading
 import PyShell
 import noval.util.fileutils as fileutils
+import noval.parser.utils as parserutils
 import TextService
 import consts
+import noval.tool.project as project
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
@@ -893,6 +895,8 @@ class PythonCtrl(CodeEditor.CodeCtrl):
                 self.AutoCompShow(0, string.join(member_list))
             elif self.IsImportType(pos) or self.IsFromType(pos):
                 import_list = intellisence.IntellisenceManager().GetImportList()
+                import_list.extend(self.GetCurdirImports())
+                import_list.sort(parserutils.CmpMember)
                 if import_list == []:
                     return
                 self.AutoCompShow(0, string.join(import_list))
@@ -900,6 +904,25 @@ class PythonCtrl(CodeEditor.CodeCtrl):
                 self.AutoCompShow(0, string.join([self.TYPE_IMPORT_WORD]))
         else:
             event.Skip()
+            
+
+    def GetCurdirImports(self):
+        cur_project = wx.GetApp().GetService(project.ProjectEditor.ProjectService).GetView().GetDocument()
+        if cur_project is None:
+            return []
+        file_path_name = wx.GetApp().GetDocumentManager().GetCurrentView().GetDocument().GetFilename()
+        cur_file_name = os.path.basename(file_path_name)
+        dir_path = os.path.dirname(file_path_name)
+        imports = []
+        for file_name in os.listdir(dir_path):
+            if parserutils.ComparePath(cur_file_name,file_name) or not fileutils.is_python_file(file_name) \
+                    or file_name.find(" ") != -1:
+                continue
+            file_path_name = os.path.join(dir_path,file_name)
+            if os.path.isdir(file_path_name) and not parser.is_package_dir(file_path_name):
+                continue
+            imports.append(os.path.splitext(file_name)[0])
+        return imports
             
     def GetArgTip(self,pos):
         text = self.GetTypeWord(pos)
