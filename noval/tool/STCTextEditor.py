@@ -226,6 +226,8 @@ class TextDocument(wx.lib.docview.Document):
                 guess_encoding = self.UTF_8_FILE_ENCODING
             result = fileutils.detect(view.GetValue().encode(guess_encoding))
             file_encoding = result['encoding']
+            if None == file_encoding:
+                file_encoding = TextDocument.ASC_FILE_ENCODING
         return file_encoding
 
     def OnOpenDocument(self, filename):

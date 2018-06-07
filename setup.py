@@ -42,6 +42,7 @@ if sys.platform == "win32":
                     ("noval/tool/bmp_source/toolbar",glob.glob("noval/tool/bmp_source/toolbar/*.png")),
                     ("noval/tool",glob.glob("noval/tool/DebuggerHarness.py")),
                     ("noval/tool/data",["noval/tool/data/tips.txt"]),
+                    ("noval/tool/data/template",glob.glob("noval/tool/data/template/*.tar.bz2")),
                      ("noval/parser",glob.glob("noval/parser/*.py")),
                       ("noval/locale/en_US/LC_MESSAGES",['noval/locale/en_US/LC_MESSAGES/novalide.mo']),
                        ("noval/locale/zh_CN/LC_MESSAGES",['noval/locale/zh_CN/LC_MESSAGES/novalide.mo']),
@@ -70,6 +71,7 @@ elif sys.platform.find('linux') != -1:
                 'noval': [
                         'tool/data/intellisence/builtins/2/*',
                         'tool/data/intellisence/builtins/3/*',
+                        'tool/data/template/*.tar.bz2',
                         'tool/data/*.txt',
                         'tool/bmp_source/*', 
                         'tool/bmp_source/toolbar/*', 

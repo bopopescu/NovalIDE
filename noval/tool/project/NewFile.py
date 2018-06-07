@@ -41,13 +41,13 @@ class NewFileDialog(wx.Dialog):
         typeLabelText = wx.StaticText(self, -1, _('Type:'),size=(100,-1))
         lineSizer.Add(typeLabelText,0,flag=wx.LEFT,border = SPACE)
         templateLabelText = wx.StaticText(self, -1, _('Template:'),size=(100,-1))
-        lineSizer.Add(templateLabelText,0,flag=wx.LEFT,border = 4*SPACE)
+        lineSizer.Add(templateLabelText,1,flag=wx.LEFT|wx.EXPAND,border = 4*SPACE)
         
         large_view_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "ViewLarge.ico")
         large_view_image = wx.Image(large_view_image_path,wx.BITMAP_TYPE_ANY)
         
         self._largeviewBtn = wx.lib.buttons.GenBitmapToggleButton(self, -1, wx.BitmapFromImage(large_view_image), size=(16,16))
-        lineSizer.Add(self._largeviewBtn,0,flag=wx.LEFT,border = 18*SPACE)
+        lineSizer.Add(self._largeviewBtn,0,flag=wx.RIGHT,border = HALF_SPACE)
        # self._largeviewBtn.SetBitmapSelected(getLogicalModeOnBitmap())
         self._largeviewBtn.SetToolTipString(_("Listed as Large Icon"))
         self.Bind(wx.EVT_BUTTON, self.OnSelectMode, self._largeviewBtn)
@@ -61,7 +61,7 @@ class NewFileDialog(wx.Dialog):
         self._smallviewBtn.SetToolTipString(_("Listed as Samll Icon"))
         
         self.Bind(wx.EVT_BUTTON, self.OnSelectMode, self._smallviewBtn)
-        boxsizer.Add(lineSizer,0,flag = wx.EXPAND|wx.RIGHT|wx.TOP,border = SPACE)
+        boxsizer.Add(lineSizer,0,flag = wx.EXPAND|wx.TOP,border = SPACE)
         
         #self.lc = wx.ListCtrl(self, -1, size=(500,250),style = wx.LC_SMALL_ICON)
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
