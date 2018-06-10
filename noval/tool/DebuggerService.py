@@ -2652,14 +2652,14 @@ class DebuggerService(Service.Service):
             return None
         return startup_file
         
-    def GetRunParameter(self):
+    def GetRunParameter(self,not_in_project = False):
         if not Executor.GetPythonExecutablePath():
             return None
         interpreter = wx.GetApp().GetCurrentInterpreter()
         projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
         cur_project_document = projectService.GetView().GetDocument()
         is_debug_breakpoint = False
-        if cur_project_document is None:
+        if cur_project_document is None or not_in_project:
             doc_view = self.GetActiveView()
             if doc_view:
                 document = doc_view.GetDocument()
@@ -2697,8 +2697,8 @@ class DebuggerService(Service.Service):
         run_parameter.Interpreter = interpreter
         return run_parameter
         
-    def DebugRun(self,event,showDialog=True):
-        run_parameter = self.GetRunParameter()
+    def DebugRun(self,event,not_in_project = False):
+        run_parameter = self.GetRunParameter(not_in_project)
         if run_parameter is None:
             return
         if not run_parameter.DebugBreakPoint:
@@ -2721,8 +2721,8 @@ class DebuggerService(Service.Service):
         Service.ServiceView.bottomTab.SetSelection(count)
         page.Execute(onWebServer = False)
 
-    def Run(self,event,showDialog=True):
-        run_parameter = self.GetRunParameter()
+    def Run(self,event,not_in_project = False):
+        run_parameter = self.GetRunParameter(not_in_project)
         if run_parameter is None:
             return
         self.RunScript(run_parameter)

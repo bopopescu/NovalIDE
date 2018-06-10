@@ -159,7 +159,7 @@ class TitledWizardPage(wx.wizard.PyWizardPage):
         # we should add a wx.HORIZONTAL sizer here to take care of it.
         sizer.Add(self.title, 0, wx.ALIGN_LEFT | wx.TOP | wx.BOTTOM, 5)
         sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND | wx.TOP | wx.BOTTOM, 5)
-        self.GetSizer().Add(sizer)
+        self.SetSizer(sizer)
 
 
     def GetPrev(self):

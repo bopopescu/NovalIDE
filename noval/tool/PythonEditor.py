@@ -590,10 +590,10 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         return menu
 
     def DebugRunScript(self,event):
-        wx.GetApp().GetService(DebuggerService.DebuggerService).DebugRunScript(event)
+        wx.GetApp().GetService(DebuggerService.DebuggerService).DebugRun(event,not_in_project = True)
     
     def RunScript(self,event):
-        wx.GetApp().GetService(DebuggerService.DebuggerService).RunScript(event)
+        wx.GetApp().GetService(DebuggerService.DebuggerService).Run(event,not_in_project = True)
 
     def OnPopFindDefinition(self, event):
         view = wx.GetApp().GetDocumentManager().GetCurrentView()

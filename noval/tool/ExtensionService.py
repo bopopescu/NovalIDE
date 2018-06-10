@@ -145,30 +145,31 @@ class ExtensionService(Service.BaseService):
             toolsMenu.Append(id,_("&Interpreter"))
             wx.EVT_MENU(frame, id, self.OpenInterpreter)
             
-            id = wx.NewId()
-            toolsMenu.Append(id,_("&Web Browser"))
-            wx.EVT_MENU(frame, id, self.GotoDefaultWebView)
+            if sysutilslib.isWindows():
+                id = wx.NewId()
+                toolsMenu.Append(id,_("&Web Browser"))
+                wx.EVT_MENU(frame, id, self.GotoDefaultWebView)
         
         helpMenuIndex = menuBar.FindMenu(_("&Help"))
         helpMenu = menuBar.GetMenu(helpMenuIndex)
         start_index = 0
         if sysutilslib.isWindows():
             id = wx.NewId()
-            helpMenu.Insert(0,id,_("&Python Help Document"))
+            helpMenu.Insert(0,id,_("&Python Help Document"),_("Show the help document of Python"))
             wx.EVT_MENU(frame, id, self.OpenPythonHelpDocument)
             start_index += 1
 
         id = wx.NewId()
-        helpMenu.Insert(start_index,id,_("&Tips of Day"))
+        helpMenu.Insert(start_index,id,_("&Tips of Day"),_("Display tips of day"))
         wx.EVT_MENU(frame, id, self.ShowTipsOfDay)
         start_index += 1
         
         id = wx.NewId()
-        helpMenu.Insert(start_index,id,_("&Visit Website"))
+        helpMenu.Insert(start_index,id,_("&Visit Website"),_("Goto official website of NovalIDE"))
         wx.EVT_MENU(frame, id, self.GotoWebsite)
         
         id = wx.NewId()
-        helpMenu.Insert(start_index,id,_("&Check for Updates"))
+        helpMenu.Insert(start_index,id,_("&Check for Updates"),_("Check program update information"))
         wx.EVT_MENU(frame, id, self.CheckforUpdate)
         start_index += 1
 

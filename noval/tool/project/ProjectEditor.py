@@ -3233,7 +3233,11 @@ class ProjectView(wx.lib.docview.View):
         if SVN_INSTALLED:
             itemIDs = itemIDs + [None, SVNService.SVNService.SVN_UPDATE_ID, SVNService.SVNService.SVN_CHECKIN_ID, SVNService.SVNService.SVN_REVERT_ID]
         globalIDs = [wx.ID_UNDO, wx.ID_REDO, wx.ID_CLOSE, wx.ID_SAVE, wx.ID_SAVEAS]
-        itemIDs = itemIDs + [None, wx.ID_UNDO, wx.ID_REDO, None, wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, ProjectService.REMOVE_FROM_PROJECT, None, wx.ID_SELECTALL, ProjectService.RENAME_ID, ProjectService.DELETE_FROM_PROJECT, None, wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID]
+        if is_root_item:
+            edit_item_ids = [ProjectService.RENAME_ID]
+        else:
+            edit_item_ids = [None,wx.ID_UNDO, wx.ID_REDO, None, wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, ProjectService.REMOVE_FROM_PROJECT,None, wx.ID_SELECTALL,ProjectService.RENAME_ID , ProjectService.DELETE_FROM_PROJECT, None, wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID]
+        itemIDs = itemIDs + edit_item_ids
         if is_root_item:
             itemIDs.append(ProjectService.OPEN_PROJECT_PATH_ID)
         for itemID in itemIDs:

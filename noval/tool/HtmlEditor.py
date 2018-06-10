@@ -16,9 +16,10 @@ import os.path
 import string
 import STCTextEditor
 import CodeEditor
-import wx.html2 as webview
-import consts
 import noval.util.sysutils as sysutilslib
+if sysutilslib.isWindows():
+    import wx.html2 as webview
+import consts
 
 _ = wx.GetTranslation
         

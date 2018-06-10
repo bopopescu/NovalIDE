@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2018-06-03 22:48+ÖÐ¹ú±ê×¼Ê±¼ä\n"
-"PO-Revision-Date: 2018-06-04 00:40+0800\n"
+"PO-Revision-Date: 2018-06-10 23:22+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -19,7 +19,7 @@ msgstr ""
 
 #: D:\env\Noval\noval\tool\AboutDialog.py:63
 msgid "About "
-msgstr "关于 "
+msgstr "关于"
 
 #: D:\env\Noval\noval\tool\AboutDialog.py:77
 msgid ""
@@ -1411,20 +1411,16 @@ msgstr ""
 
 #: D:\env\Noval\noval\tool\IDE.py:216 D:\env\Noval\noval\tool\IDE.py:218
 #: D:\env\Noval\noval\tool\IDE.py:221
-#, fuzzy
-#| msgid "View"
 msgid "WebView"
-msgstr "查看"
+msgstr "Web视图"
 
 #: D:\env\Noval\noval\tool\IDE.py:219
 msgid ".com"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\IDE.py:220
-#, fuzzy
-#| msgid "Keep Document.."
 msgid "WebView Document"
-msgstr "保持文档..."
+msgstr "Web视图文档"
 
 #: D:\env\Noval\noval\tool\IDE.py:229 D:\env\Noval\noval\tool\IDE.py:231
 msgid "Image"
@@ -1800,8 +1796,6 @@ msgid "All (*.*) |*.*|%s"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\STCTextEditor.py:95
-#, fuzzy
-#| msgid "SaveAs"
 msgid "Save As"
 msgstr "另存为"
 

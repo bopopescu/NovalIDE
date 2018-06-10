@@ -57,7 +57,7 @@
         <Template>
         <Icon Large="noval/tool/bmp_source/template/txt.bmp" Small="noval/tool/bmp_source/template/txt-small.bmp"/>
         <Ext>.sql</Ext>
-        <Content> noval/tool/data/template/PythonFile.tar.bz2 </Content>
+        <Content> noval/tool/data/template/TextFile.tar.bz2 </Content>
         <DefaultName>SqlFile.sql</DefaultName>
         <Name>SQL文件</Name>
         <Description>一个空的sql脚本文件</Description>
@@ -65,7 +65,7 @@
         <Template>
         <Icon Large="noval/tool/bmp_source/template/ini.bmp" Small="noval/tool/bmp_source/template/ini-small.bmp"/>
         <Ext>.ini</Ext>
-        <Content> noval/tool/data/template/PythonFile.tar.bz2 </Content>
+        <Content> noval/tool/data/template/IniFile.tar.bz2 </Content>
         <DefaultName>Config.ini</DefaultName>
         <Name>配置文件(INI)</Name>
         <Description>一个描述配置的初始化文件</Description>
@@ -137,7 +137,7 @@
         <Template>
         <Icon Large="noval/tool/bmp_source/template/txt.bmp" Small="noval/tool/bmp_source/template/txt-small.bmp"/>
         <Ext>.sql</Ext>
-        <Content> noval/tool/data/template/PythonFile.tar.bz2 </Content>
+        <Content> noval/tool/data/template/TextFile.tar.bz2 </Content>
         <DefaultName>SqlFile.sql</DefaultName>
         <Name>SQL Script</Name>
         <Description>a empty sql script</Description>
@@ -145,7 +145,7 @@
         <Template>
         <Icon Large="noval/tool/bmp_source/template/ini.bmp" Small="noval/tool/bmp_source/template/ini-small.bmp"/>
         <Ext>.ini</Ext>
-        <Content> noval/tool/data/template/PythonFile.tar.bz2 </Content>
+        <Content> noval/tool/data/template/IniFile.tar.bz2 </Content>
         <DefaultName>Config.ini</DefaultName>
         <Name>Initialization File(INI)</Name>
         <Description>a Initialization File used to application config </Description>

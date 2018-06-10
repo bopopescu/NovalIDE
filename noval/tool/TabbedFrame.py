@@ -202,7 +202,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
             menuBar.Append(viewMenu, _("&View"))
 
             helpMenu = wx.Menu()
-            helpMenu.Append(wx.ID_ABOUT, _("&About" + " " + wx.GetApp().GetAppName()), _("Displays program information, version number, and copyright"))
+            helpMenu.Append(wx.ID_ABOUT, _(_("About %s") % wx.GetApp().GetAppName()), _("Displays program information, version number, and copyright"))
             menuBar.Append(helpMenu, _("&Help"))
 
             wx.EVT_MENU(self, wx.ID_ABOUT, self.OnAbout)

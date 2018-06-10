@@ -19,6 +19,82 @@ def opj(path):
     if path.startswith('/'):
         st = '/' + st
     return st
+    
+
+class FileTemplateDialog(wx.Dialog):
+    def __init__(self,parent,dlg_id,title,file_templates):
+        wx.Dialog.__init__(self,parent,dlg_id,title,size=(550,400))
+        self._file_templates = file_templates
+        
+        boxsizer = wx.BoxSizer(wx.VERTICAL)
+        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        
+        self.lc = wx.ListCtrl(self, -1, size=(500,200),style = wx.LC_REPORT|wx.BORDER_THEME)
+        lineSizer.Add(self.lc,1,flag = wx.EXPAND,border=0)
+        
+        self.lc.InsertColumn(0, _("Name"))
+        self.lc.InsertColumn(1, _("Category"))
+        
+        self.lc.SetColumnWidth(0, 300)
+        self.lc.SetColumnWidth(1,150)
+        for file_template in self._file_templates:
+            index = self.lc.InsertStringItem(self.lc.GetItemCount(), file_template.get('Name','')); 
+            self.lc.SetStringItem(index, 1, file_template.get('Category',''))
+        
+        boxsizer.Add(lineSizer,0,flag = wx.EXPAND|wx.ALL,border = SPACE)
+        
+        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        
+        add_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "template","add.ico")
+        add_bmp = wx.BitmapFromImage(wx.Image(add_bmp_path,wx.BITMAP_TYPE_ANY))
+        self.new_btn = wx.Button(self,-1, _("New"))
+        self.new_btn.SetBitmap(add_bmp,wx.LEFT)
+        lineSizer.Add(self.new_btn, 0,flag=wx.LEFT, border=SPACE)
+        
+        delete_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "template","delete.ico")
+        delete_bmp = wx.BitmapFromImage(wx.Image(delete_bmp_path,wx.BITMAP_TYPE_ANY))
+        self.delete_btn = wx.Button(self,-1, _("Delete"))
+        self.delete_btn.SetBitmap(delete_bmp,wx.LEFT)
+        lineSizer.Add(self.delete_btn, 0,flag=wx.LEFT, border=SPACE)
+        
+        up_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "template","up.ico")
+        up_bmp = wx.BitmapFromImage(wx.Image(up_bmp_path,wx.BITMAP_TYPE_ANY))
+        self.up_btn = wx.Button(self,-1, _("Up"))
+        self.up_btn.SetBitmap(up_bmp,wx.LEFT)
+        lineSizer.Add(self.up_btn, 0,flag=wx.LEFT, border=SPACE)
+        
+        down_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "template","down.ico")
+        down_bmp = wx.BitmapFromImage(wx.Image(down_bmp_path,wx.BITMAP_TYPE_ANY))
+        self.down_btn = wx.Button(self,-1, _("Down"))
+        self.down_btn.SetBitmap(down_bmp,wx.LEFT)
+        lineSizer.Add(self.down_btn, 0,flag=wx.LEFT, border=SPACE)
+        
+        refresh_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "template","refresh.ico")
+        refresh_bmp = wx.BitmapFromImage(wx.Image(refresh_bmp_path,wx.BITMAP_TYPE_ANY))
+        self.refresh_btn = wx.Button(self,-1, _("Refresh"))
+        self.refresh_btn.SetBitmap(refresh_bmp,wx.LEFT)
+        lineSizer.Add(self.refresh_btn, 0,flag=wx.LEFT, border=SPACE)
+        
+        boxsizer.Add(lineSizer,0,flag = wx.EXPAND|wx.ALL,border = SPACE)
+        
+        sbox = wx.StaticBox(self, -1, _("Template Property"))
+        sboxSizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
+        
+        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        lineSizer.Add(wx.StaticText(self, -1, _("Name")), 0,wx.ALIGN_CENTER | wx.LEFT, SPACE)
+        self.name_ctrl = wx.TextCtrl(self, -1, "",size=(-1,-1))
+        lineSizer.Add(self.name_ctrl, 1, wx.LEFT|wx.EXPAND, SPACE)
+        
+        lineSizer.Add(wx.StaticText(self, -1, _("Category")), 0,wx.ALIGN_CENTER | wx.LEFT, SPACE)
+        self.category_ctrl = wx.TextCtrl(self, -1, "",size=(-1,-1))
+        lineSizer.Add(self.category_ctrl, 1, wx.LEFT|wx.EXPAND, SPACE)
+        
+        sboxSizer.Add(lineSizer,flag=wx.LEFT|wx.TOP, border=SPACE)
+        
+        boxsizer.Add(sboxSizer,0,flag = wx.EXPAND|wx.ALL,border = SPACE)
+        
+        self.SetSizer(boxsizer)
+        self.Fit()
 
 
 class NewFileDialog(wx.Dialog):
@@ -48,7 +124,6 @@ class NewFileDialog(wx.Dialog):
         
         self._largeviewBtn = wx.lib.buttons.GenBitmapToggleButton(self, -1, wx.BitmapFromImage(large_view_image), size=(16,16))
         lineSizer.Add(self._largeviewBtn,0,flag=wx.RIGHT,border = HALF_SPACE)
-       # self._largeviewBtn.SetBitmapSelected(getLogicalModeOnBitmap())
         self._largeviewBtn.SetToolTipString(_("Listed as Large Icon"))
         self.Bind(wx.EVT_BUTTON, self.OnSelectMode, self._largeviewBtn)
         self._largeviewBtn.SetToggle(True)
@@ -57,13 +132,11 @@ class NewFileDialog(wx.Dialog):
         small_view_image = wx.Image(small_view_image_path,wx.BITMAP_TYPE_ANY)
         self._smallviewBtn = wx.lib.buttons.GenBitmapToggleButton(self, -1, wx.BitmapFromImage(small_view_image), size=(16,16))
         lineSizer.Add(self._smallviewBtn,0,flag = wx.LEFT|wx.ALIGN_TOP|wx.RIGHT,border = SPACE)
-      #  self._smallviewBtn.SetBitmapSelected(getPhysicalModeOnBitmap())
         self._smallviewBtn.SetToolTipString(_("Listed as Samll Icon"))
         
         self.Bind(wx.EVT_BUTTON, self.OnSelectMode, self._smallviewBtn)
         boxsizer.Add(lineSizer,0,flag = wx.EXPAND|wx.TOP,border = SPACE)
         
-        #self.lc = wx.ListCtrl(self, -1, size=(500,250),style = wx.LC_SMALL_ICON)
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.treeCtrl = wx.TreeCtrl(self, -1, style = wx.TR_HAS_BUTTONS | wx.TR_DEFAULT_STYLE | wx.TR_HIDE_ROOT,size=(130,280))
         wx.EVT_TREE_SEL_CHANGED(self.treeCtrl, self.treeCtrl.GetId(), self.OnSelItemChange)
@@ -85,15 +158,15 @@ class NewFileDialog(wx.Dialog):
         boxsizer.Add(lineSizer,0,flag = wx.EXPAND|wx.BOTTOM|wx.TOP|wx.RIGHT,border = SPACE)
         
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        edit_btn = wx.Button(self, -1, _("&Edit"))
-        wx.EVT_BUTTON(edit_btn, -1, self.OnEditTemplate)
-        lineSizer.Add(edit_btn,0,flag = wx.LEFT,border = SPACE)
+##        edit_btn = wx.Button(self, -1, _("&Edit"))
+##        wx.EVT_BUTTON(edit_btn, -1, self.OnEditTemplate)
+##        lineSizer.Add(edit_btn,0,flag = wx.LEFT,border = SPACE)
         
         self.ok_btn = wx.Button(self, wx.ID_OK, _("&Create"))
         wx.EVT_BUTTON(self.ok_btn, -1, self.OnOKClick)
         #set ok button default focused
         self.ok_btn.SetDefault()
-        lineSizer.Add(self.ok_btn,0,flag = wx.LEFT,border = SPACE*20)
+        lineSizer.Add(self.ok_btn,0,flag = wx.LEFT,border = SPACE*35)
         
         cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
         lineSizer.Add(cancel_btn,0,flag = wx.LEFT,border=SPACE)
@@ -102,6 +175,7 @@ class NewFileDialog(wx.Dialog):
         
         self.SetSizer(boxsizer)
         self.Fit()
+        self.file_templates = []
         self.LoadFileTypes()
         self.LoadFileTemplate()
         
@@ -119,7 +193,9 @@ class NewFileDialog(wx.Dialog):
             self.SelectViewStyle(wx.LC_ICON)
         
     def OnEditTemplate(self,event):
-        pass
+        dlg = FileTemplateDialog(self,-1,_("File Template"),self.file_templates)
+        dlg.CenterOnParent()
+        dlg.ShowModal()
         
     def OnOKClick(self,event):
         
@@ -242,5 +318,9 @@ class NewFileDialog(wx.Dialog):
                     for child in node.getchildren():
                         file_type = self.GetFileTypeTemplate(child)
                         file_types.append(file_type)
+                        file_type.update({
+                            'Category':value_type
+                        })
+                        self.file_templates.append(file_type)
                     self.treeCtrl.SetPyData(item,file_types)
                     self.treeCtrl.SelectItem(item)
