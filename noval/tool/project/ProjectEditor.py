@@ -34,7 +34,7 @@ import noval.tool.ExtensionService as ExtensionService
 import noval.tool.ResourceView as ResourceView
 import noval.util.sysutils as sysutilslib
 import ImportFiles
-from noval.tool.consts import SPACE,HALF_SPACE,_,PROJECT_SHORT_EXTENSION,PROJECT_EXTENSION
+from noval.tool.consts import SPACE,HALF_SPACE,_,PROJECT_SHORT_EXTENSION,PROJECT_EXTENSION,ERROR_OK
 import threading
 import shutil
 import noval.tool.WxThreadSafe as WxThreadSafe
@@ -1679,6 +1679,13 @@ class ProjectTreeCtrl(wx.TreeCtrl):
                 return item
             return item
         return None
+        
+
+    def GetSingleSelectItem(self):
+        items = self.GetSelections()
+        if not items:
+            return None
+        return items[0]
 
 
 class ProjectView(wx.lib.docview.View):
@@ -2364,14 +2371,22 @@ class ProjectView(wx.lib.docview.View):
         elif id == ProjectService.SET_PROJECT_STARTUP_FILE_ID:
             self.SetProjectStartupFile()
             return True
+        elif id == ProjectService.OPEN_FOLDER_PATH_ID:
+            self.OpenFolderPath(event)
+            return True
+        elif id == ProjectService.OPEN_TERMINAL_PATH_ID:
+            self.OpenPromptPath(event)
+            return True
+        elif id == ProjectService.COPY_PATH_ID:
+            self.CopyPath(event)
+            return True
         else:
             return False
 
     def SetProjectStartupFile(self):
         if self._bold_item is not None:
             self._treeCtrl.SetItemBold(self._bold_item ,False)
-        items = self._treeCtrl.GetSelections()
-        item = items[0]
+        item = self._treeCtrl.GetSingleSelectItem()
         pjfile = self._GetItemFile(item)
         self._treeCtrl.SetItemBold(item)
         self._bold_item = item
@@ -2457,6 +2472,40 @@ class ProjectView(wx.lib.docview.View):
     def OpenProjectPath(self,event):
         document = self.GetDocument()
         fileutils.open_file_directory(document.GetFilename())
+        
+    def OpenFolderPath(self,event):
+        document = self.GetDocument()
+        project_path = os.path.dirname(document.GetFilename())
+        item = self._treeCtrl.GetSingleSelectItem()
+        if self._IsItemFile(item):
+            filePath = self._GetItemFilePath(item)
+        else:
+            filePath = fileutils.opj(os.path.join(project_path,self._GetItemFolderPath(item)))
+        err_code,msg = fileutils.open_file_directory(filePath)
+        if err_code != ERROR_OK:
+            wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
+        
+    def OpenPromptPath(self,event):
+        document = self.GetDocument()
+        project_path = os.path.dirname(document.GetFilename())
+        item = self._treeCtrl.GetSingleSelectItem()
+        if self._IsItemFile(item):
+            filePath = os.path.dirname(self._GetItemFilePath(item))
+        else:
+            filePath = fileutils.opj(os.path.join(project_path,self._GetItemFolderPath(item)))
+        err_code,msg = fileutils.open_path_in_terminator(filePath)
+        if err_code != ERROR_OK:
+            wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
+            
+    def CopyPath(self,event):
+        document = self.GetDocument()
+        project_path = os.path.dirname(document.GetFilename())
+        item = self._treeCtrl.GetSingleSelectItem()
+        if self._IsItemFile(item):
+            filePath = self._GetItemFilePath(item)
+        else:
+            filePath = fileutils.opj(os.path.join(project_path,self._GetItemFolderPath(item)))
+        sysutilslib.CopyToClipboard(filePath)
 
     def ImportFilesToProject(self,event):
         items = self._treeCtrl.GetSelections()
@@ -3183,63 +3232,99 @@ class ProjectView(wx.lib.docview.View):
                 event.Skip()
         else:
             event.Skip()
-
-    def OnRightClick(self, event):
-        self.Activate()
-        if not self.GetSelectedProject():
-            return
-        is_root_item = False
-        menu = wx.Menu()
-        if self._HasFilesSelected():  # Files context
-            menu.Append(ProjectService.OPEN_SELECTION_ID, _("&Open"), _("Opens the selection"))
-            menu.Enable(ProjectService.OPEN_SELECTION_ID, True)
-            wx.EVT_MENU(self._GetParentFrame(), ProjectService.OPEN_SELECTION_ID, self.OnOpenSelection)
             
-            extService = wx.GetApp().GetService(ExtensionService.ExtensionService)
-            if extService and extService.GetExtensions():
-                firstItem = True
-                for ext in extService.GetExtensions():
-                    if not ext.opOnSelectedFile:
-                        continue
-                    if firstItem:
-                        menu.AppendSeparator()
-                        firstItem = False
-                    menu.Append(ext.id, ext.menuItemName)
-                    wx.EVT_MENU(self._GetParentFrame(), ext.id, extService.ProcessEvent)
-                    wx.EVT_UPDATE_UI(self._GetParentFrame(), ext.id, extService.ProcessUpdateUIEvent)
-                    
-            itemIDs = [None]
-            for item in self._treeCtrl.GetSelections():
-                if self._IsItemProcessModelFile(item):
-                    itemIDs = [None, ProjectService.RUN_SELECTED_PM_ID, None]
-                    break
-        else:  # Project context
-            itemIDs = []
-            items = self._treeCtrl.GetSelections()
-            if 0 == len(items):
-                return
-            if items[0] == self._treeCtrl.GetRootItem():
-                is_root_item = True
-            if is_root_item:
-                itemIDs = [ProjectService.NEW_PROJECT_ID,ProjectService.OPEN_PROJECT_ID] 
-            itemIDs.extend([ProjectService.IMPORT_FILES_ID,ProjectService.ADD_FILES_TO_PROJECT_ID, \
-                           ProjectService.ADD_DIR_FILES_TO_PROJECT_ID,ProjectService.ADD_NEW_FILE_ID,ProjectService.ADD_FOLDER_ID, ProjectService.ADD_PACKAGE_FOLDER_ID])
-        menuBar = self._GetParentFrame().GetMenuBar()
-        #itemIDs = itemIDs + [ ProjectService.REMOVE_FROM_PROJECT, None]
-        if is_root_item:
-            itemIDs = itemIDs + [ProjectService.CLOSE_PROJECT_ID,ProjectService.SAVE_PROJECT_ID, ProjectService.DELETE_PROJECT_ID, \
-                             None, ProjectService.PROJECT_PROPERTIES_ID]
-        svnIDs = [SVNService.SVNService.SVN_UPDATE_ID, SVNService.SVNService.SVN_CHECKIN_ID, SVNService.SVNService.SVN_REVERT_ID]
+
+    def GetPopupFileMenu(self):
+        menu = wx.Menu()
+        menu.Append(ProjectService.OPEN_SELECTION_ID, _("&Open"), _("Opens the selection"))
+        menu.Enable(ProjectService.OPEN_SELECTION_ID, True)
+        wx.EVT_MENU(self._GetParentFrame(), ProjectService.OPEN_SELECTION_ID, self.OnOpenSelection)
+        
+        extService = wx.GetApp().GetService(ExtensionService.ExtensionService)
+        if extService and extService.GetExtensions():
+            firstItem = True
+            for ext in extService.GetExtensions():
+                if not ext.opOnSelectedFile:
+                    continue
+                if firstItem:
+                    menu.AppendSeparator()
+                    firstItem = False
+                menu.Append(ext.id, ext.menuItemName)
+                wx.EVT_MENU(self._GetParentFrame(), ext.id, extService.ProcessEvent)
+                wx.EVT_UPDATE_UI(self._GetParentFrame(), ext.id, extService.ProcessUpdateUIEvent)
+                
+        itemIDs = [None]
+        for item in self._treeCtrl.GetSelections():
+            if self._IsItemProcessModelFile(item):
+                itemIDs = [None, ProjectService.RUN_SELECTED_PM_ID, None]
+                break
+                
+        itemIDs.extend([None,wx.ID_UNDO, wx.ID_REDO, None, wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, ProjectService.REMOVE_FROM_PROJECT,None, \
+                         wx.ID_SELECTALL,ProjectService.RENAME_ID , ProjectService.DELETE_FROM_PROJECT, None, wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID])
+                         
+        self.GetCommonItemsMenu(menu,itemIDs)
+        item = self._treeCtrl.GetSingleSelectItem()
+        filePath = self._GetItemFilePath(item)
+        if self._IsItemFile(item) and fileutils.is_python_file(filePath) and item != self._bold_item:
+            menu.Append(ProjectService.SET_PROJECT_STARTUP_FILE_ID, _("Set as Startup File..."), _("Set the start script of project"))
+            wx.EVT_MENU(self._treeCtrl, ProjectService.SET_PROJECT_STARTUP_FILE_ID, self.ProcessEvent)
+            wx.EVT_UPDATE_UI(self._treeCtrl, ProjectService.SET_PROJECT_STARTUP_FILE_ID, self.ProcessUpdateUIEvent)
+            
+        menu.Append(ProjectService.OPEN_FOLDER_PATH_ID, _("Open Path in Explorer"))
+        wx.EVT_MENU(self._treeCtrl, ProjectService.OPEN_FOLDER_PATH_ID, self.ProcessEvent)
+        
+        menu.Append(ProjectService.OPEN_TERMINAL_PATH_ID, _("Open Command Prompt here..."))
+        wx.EVT_MENU(self._treeCtrl, ProjectService.OPEN_TERMINAL_PATH_ID, self.ProcessEvent)
+
+        menu.Append(ProjectService.COPY_PATH_ID, _("Copy Full Path"))
+        wx.EVT_MENU(self._treeCtrl, ProjectService.COPY_PATH_ID, self.ProcessEvent)
+        
+        return menu
+
+    def GetPopupFolderMenu(self):
+        menu = wx.Menu()
+        itemIDs = [ProjectService.IMPORT_FILES_ID,ProjectService.ADD_FILES_TO_PROJECT_ID, \
+                           ProjectService.ADD_DIR_FILES_TO_PROJECT_ID,ProjectService.ADD_NEW_FILE_ID,ProjectService.ADD_FOLDER_ID, ProjectService.ADD_PACKAGE_FOLDER_ID]
+        itemIDs.extend([None,wx.ID_UNDO, wx.ID_REDO, None, wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, ProjectService.REMOVE_FROM_PROJECT,None, \
+                            wx.ID_SELECTALL,ProjectService.RENAME_ID , ProjectService.DELETE_FROM_PROJECT, None, wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID])
+        self.GetCommonItemsMenu(menu,itemIDs)
+        
+        menu.Append(ProjectService.OPEN_FOLDER_PATH_ID, _("Open Path in Explorer"))
+        wx.EVT_MENU(self._treeCtrl, ProjectService.OPEN_FOLDER_PATH_ID, self.ProcessEvent)
+        
+        menu.Append(ProjectService.OPEN_TERMINAL_PATH_ID, _("Open Command Prompt here..."))
+        wx.EVT_MENU(self._treeCtrl, ProjectService.OPEN_TERMINAL_PATH_ID, self.ProcessEvent)
+
+        menu.Append(ProjectService.COPY_PATH_ID, _("Copy Full Path"))
+        wx.EVT_MENU(self._treeCtrl, ProjectService.COPY_PATH_ID, self.ProcessEvent)
+        return menu
+        
+    def GetSVNItemIds(self,itemIDs):
         if SVN_INSTALLED:
-            itemIDs = itemIDs + [None, SVNService.SVNService.SVN_UPDATE_ID, SVNService.SVNService.SVN_CHECKIN_ID, SVNService.SVNService.SVN_REVERT_ID]
+            itemIDs.extend([None, SVNService.SVNService.SVN_UPDATE_ID, SVNService.SVNService.SVN_CHECKIN_ID, SVNService.SVNService.SVN_REVERT_ID])
+
+    def GetPopupProjectMenu(self):
+        menu = wx.Menu()
+        itemIDs = [ProjectService.NEW_PROJECT_ID,ProjectService.OPEN_PROJECT_ID]
+        itemIDs.extend([ProjectService.IMPORT_FILES_ID,ProjectService.ADD_FILES_TO_PROJECT_ID, \
+                           ProjectService.ADD_DIR_FILES_TO_PROJECT_ID,ProjectService.ADD_NEW_FILE_ID,ProjectService.ADD_FOLDER_ID, ProjectService.ADD_PACKAGE_FOLDER_ID])
+        itemIDs.extend([ProjectService.CLOSE_PROJECT_ID,ProjectService.SAVE_PROJECT_ID, ProjectService.DELETE_PROJECT_ID,None, ProjectService.PROJECT_PROPERTIES_ID])
+        itemIDs.append(ProjectService.RENAME_ID)
+        itemIDs.append(ProjectService.OPEN_PROJECT_PATH_ID)
+        self.GetCommonItemsMenu(menu,itemIDs)
+
+        menu.Append(ProjectService.OPEN_TERMINAL_PATH_ID, _("Open Command Prompt here..."))
+        wx.EVT_MENU(self._treeCtrl, ProjectService.OPEN_TERMINAL_PATH_ID, self.ProcessEvent)
+
+        menu.Append(ProjectService.COPY_PATH_ID, _("Copy Full Path"))
+        wx.EVT_MENU(self._treeCtrl, ProjectService.COPY_PATH_ID, self.ProcessEvent)
+
+        return menu
+        
+    def GetCommonItemsMenu(self,menu,itemIDs):
+        menuBar = self._GetParentFrame().GetMenuBar()
+        svnIDs = [SVNService.SVNService.SVN_UPDATE_ID, SVNService.SVNService.SVN_CHECKIN_ID, SVNService.SVNService.SVN_REVERT_ID]
         globalIDs = [wx.ID_UNDO, wx.ID_REDO, wx.ID_CLOSE, wx.ID_SAVE, wx.ID_SAVEAS]
-        if is_root_item:
-            edit_item_ids = [ProjectService.RENAME_ID]
-        else:
-            edit_item_ids = [None,wx.ID_UNDO, wx.ID_REDO, None, wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, ProjectService.REMOVE_FROM_PROJECT,None, wx.ID_SELECTALL,ProjectService.RENAME_ID , ProjectService.DELETE_FROM_PROJECT, None, wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID]
-        itemIDs = itemIDs + edit_item_ids
-        if is_root_item:
-            itemIDs.append(ProjectService.OPEN_PROJECT_PATH_ID)
         for itemID in itemIDs:
             if not itemID:
                 menu.AppendSeparator()
@@ -3285,17 +3370,21 @@ class ProjectView(wx.lib.docview.View):
                         else:
                             wx.EVT_MENU(self._treeCtrl, itemID, self.ProcessEvent)
                         menu.Append(itemID, item.GetLabel())
-        if self._HasFilesSelected():
-            items = self._treeCtrl.GetSelections()
-            item = items[0]
-            filePath = self._GetItemFilePath(item)
-            if self._IsItemFile(item) and fileutils.is_python_file(filePath) and item != self._bold_item:
-                menu.Append(ProjectService.SET_PROJECT_STARTUP_FILE_ID, _("Set as Startup File..."), _("Set the start script of project"))
-                wx.EVT_MENU(self._treeCtrl, ProjectService.SET_PROJECT_STARTUP_FILE_ID, self.ProcessEvent)
-                wx.EVT_UPDATE_UI(self._treeCtrl, ProjectService.SET_PROJECT_STARTUP_FILE_ID, self.ProcessUpdateUIEvent)
+
+    def OnRightClick(self, event):
+        self.Activate()
+        items = self._treeCtrl.GetSelections()
+        if not self.GetSelectedProject() or 0 == len(items):
+            return
+        if self._HasFilesSelected():  # Files context
+            menu = self.GetPopupFileMenu()
+        else:  # Project context
+            if items[0] == self._treeCtrl.GetRootItem():
+                menu = self.GetPopupProjectMenu()
+            else:
+                menu = self.GetPopupFolderMenu()
         self._treeCtrl.PopupMenu(menu, wx.Point(event.GetX(), event.GetY()))
         menu.Destroy()
-
 
     def ProjectServiceProcessEvent(self, event):
         projectService = wx.GetApp().GetService(ProjectService)
@@ -3507,13 +3596,6 @@ class ProjectView(wx.lib.docview.View):
 
     def RemoveFromProject(self, event):
         items = self._treeCtrl.GetSelections()
-        #item = items[0]
-       # if self._treeCtrl.GetChildrenCount(item, False):
-        #    wx.MessageBox(_("Cannot remove folder '%s'.  Folder is not empty.") % self._treeCtrl.GetItemText(item),
-         #                 _("Remove Folder"),
-          #                wx.OK | wx.ICON_EXCLAMATION,
-           #               self.GetFrame())
-            #return
         files = []
         for item in items:
             if not self._IsItemFile(item):
@@ -4218,6 +4300,10 @@ class ProjectService(Service.Service):
     SET_PROJECT_STARTUP_FILE_ID = wx.NewId()
     ADD_NEW_FILE_ID = wx.NewId()
     
+    OPEN_FOLDER_PATH_ID = wx.NewId()
+    COPY_PATH_ID = wx.NewId()
+    OPEN_TERMINAL_PATH_ID = wx.NewId()
+    
 
     #----------------------------------------------------------------------------
     # Overridden methods
@@ -4336,7 +4422,7 @@ class ProjectService(Service.Service):
                 projectMenu.Append(ProjectService.PROJECT_PROPERTIES_ID, _("Project Properties"), _("Project Properties"))
                 wx.EVT_MENU(frame, ProjectService.PROJECT_PROPERTIES_ID, frame.ProcessEvent)
                 wx.EVT_UPDATE_UI(frame, ProjectService.PROJECT_PROPERTIES_ID, frame.ProcessUpdateUIEvent)
-            projectMenu.Append(ProjectService.OPEN_PROJECT_PATH_ID, _("Open Project Path in File Explower"), _("Open Project Path"))
+            projectMenu.Append(ProjectService.OPEN_PROJECT_PATH_ID, _("Open Project Path in Explorer"), _("Open Project Path"))
             wx.EVT_MENU(frame, ProjectService.OPEN_PROJECT_PATH_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, ProjectService.OPEN_PROJECT_PATH_ID, frame.ProcessUpdateUIEvent)
         index = menuBar.FindMenu(_("&Format"))

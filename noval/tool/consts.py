@@ -32,16 +32,16 @@ HALF_SPACE = 5
 _ = wx.GetTranslation
 
 PYTHON_PATH_NAME = 'PYTHONPATH'
-
 PROJECT_SHORT_EXTENSION = "nov"
 PROJECT_EXTENSION = "." + PROJECT_SHORT_EXTENSION
 
 PROJECT_NAMESPACE_URL = "noval"
-
-
 DEFAULT_FILE_ENCODING_KEY = "DefaultFileEncoding"
-
 NOT_IN_ANY_PROJECT = "Not in any Project"
-
 #the first 2 line no of python file to place encoding declare
 ENCODING_DECLARE_LINE_NUM = 2
+DEFAULT_MRU_FILE_NUM = 9
+ERROR_OK = 0
+UNKNOWN_ERROR = -1
+
+CHECK_UPDATE_ATSTARTUP_KEY = "CheckUpdateAtStartup"

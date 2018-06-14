@@ -73,8 +73,9 @@ elif sys.platform.find('linux') != -1:
                         'tool/data/intellisence/builtins/3/*',
                         'tool/data/template/*.tar.bz2',
                         'tool/data/*.txt',
-                        'tool/bmp_source/*', 
+                        'tool/bmp_source/template/*', 
                         'tool/bmp_source/toolbar/*', 
+                        'tool/bmp_source/*.*', 
                         'locale/en_US/LC_MESSAGES/*.mo',
                         'locale/zh_CN/LC_MESSAGES/*.mo'
                         ],

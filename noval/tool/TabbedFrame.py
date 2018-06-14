@@ -234,9 +234,13 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
             OnCloseAllWithoutDoc(event,closeall=True)
             self.GetStatusBar().Reset()
         def OnOpenPathInExplorer(event):
-            fileutils.open_file_directory(doc.GetFilename())
+            err_code,msg = fileutils.open_file_directory(doc.GetFilename())
+            if err_code != consts.ERROR_OK:
+                wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
         def OnOpenPathInTerminator(event):
-            fileutils.open_path_in_terminator(os.path.dirname(doc.GetFilename()))
+            err_code,msg = fileutils.open_path_in_terminator(os.path.dirname(doc.GetFilename()))
+            if err_code != consts.ERROR_OK:
+                wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
         def OnCopyFilePath(event):
             sysutilslib.CopyToClipboard(doc.GetFilename())
         def OnCopyFileName(event):
@@ -261,19 +265,19 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
             doc = view.GetDocument()
             if view.GetType() == consts.TEXT_VIEW:
                 self.AppendMenuItem(menu,_("Save"),OnSaveFile)
-                self.AppendMenuItem(menu,_("SaveAs"),OnSaveFileAs)
+                self.AppendMenuItem(menu,_("Save As"),OnSaveFileAs)
             self.AppendMenuItem(menu,_("Close"),OnCloseDoc)
-            self.AppendMenuItem(menu,_("CloseAll"),OnCloseAllDocs)
+            self.AppendMenuItem(menu,_("Close All"),OnCloseAllDocs)
             if self._notebook.GetPageCount() > 1:
                 item_name = _("Close All but \"%s\"") % doc.GetPrintableName()
                 self.AppendMenuItem(menu,item_name,OnCloseAllWithoutDoc,True)
                 tabsMenu = wx.Menu()
                 menu.AppendMenu(wx.NewId(), _("Select Tab"), tabsMenu)
             if view.GetType() == consts.TEXT_VIEW:
-                self.AppendMenuItem(menu,_("Open File Path In FileManager"),OnOpenPathInExplorer)
-                self.AppendMenuItem(menu,_("Open File Path In Terminator"),OnOpenPathInTerminator)
-            self.AppendMenuItem(menu,_("Copy File Path"),OnCopyFilePath)
-            self.AppendMenuItem(menu,_("Copy File Name"),OnCopyFileName)
+                self.AppendMenuItem(menu,_("Open Path in Explorer"),OnOpenPathInExplorer)
+                self.AppendMenuItem(menu,_("Open Path in Terminator"),OnOpenPathInTerminator)
+            self.AppendMenuItem(menu,_("Copy Path"),OnCopyFilePath)
+            self.AppendMenuItem(menu,_("Copy Name"),OnCopyFileName)
             if view.GetType() == consts.TEXT_VIEW and view.GetLangLexer() == parserconfig.LANG_PYTHON_LEXER:
                 self.AppendMenuItem(menu,_("Copy Module Name"),OnCopyModuleName)
         else:

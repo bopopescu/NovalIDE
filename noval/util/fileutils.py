@@ -23,11 +23,10 @@ import noval.util.utillang as utillang
 from noval.util.lang import *
 import subprocess
 import strutils
-from chardet.compat import PY2, PY3
 from chardet.universaldetector import UniversalDetector
-from chardet.version import __version__, VERSION
 import chardet
 import fchecker
+from noval.tool.consts import ERROR_OK,UNKNOWN_ERROR
 
 
 _Checker = fchecker.FileTypeChecker()
@@ -444,29 +443,51 @@ def open_file_directory(file_path):
     """
         Opens the parent directory of a file, selecting the file if possible.
     """
+    err_code = ERROR_OK
+    err_msg = ''
     if sysutils.isWindows():
         # Normally we can just run `explorer /select, filename`, but Python 2
         # always calls CreateProcessA, which doesn't support Unicode. We could
         # call CreateProcessW with ctypes, but the following is more robust.
         import ctypes
+        import win32api
+        
         ctypes.windll.ole32.CoInitialize(None)
         # Not sure why this is always UTF-8.
         pidl = ctypes.windll.shell32.ILCreateFromPathW(file_path)
         if 0 == pidl:
             pidl = ctypes.windll.shell32.ILCreateFromPathA(file_path)
+            
+        if 0 == pidl:
+            err_code = ctypes.windll.kernel32.GetLastError()
+            err_msg = win32api.FormatMessage(err_code)
         ctypes.windll.shell32.SHOpenFolderAndSelectItems(pidl, 0, None, 0)
         ctypes.windll.shell32.ILFree(pidl)
         ctypes.windll.ole32.CoUninitialize()
     else:
         subprocess.Popen(["nautilus", file_path])
+    return err_code,err_msg
 
 def open_path_in_terminator(file_path):
     import locale
+    err_code = ERROR_OK
+    err_msg = ''
     sys_encoding = locale.getdefaultlocale()[1]
     if sysutils.isWindows():
-        subprocess.Popen('start cmd.exe',shell=True,cwd=file_path.encode(sys_encoding))
+        import ctypes
+        import win32api
+        try:
+            subprocess.Popen('start cmd.exe',shell=True,cwd=file_path.encode(sys_encoding))
+        except:
+            err_code = ctypes.windll.kernel32.GetLastError()
+            err_msg = win32api.FormatMessage(err_code)
     else:
-        subprocess.Popen('gnome-terminal',shell=True,cwd=file_path.encode(sys_encoding))
+        try:
+            subprocess.Popen('gnome-terminal',shell=True,cwd=file_path.encode(sys_encoding))
+        except Exception as e:
+            err_code = UNKNOWN_ERROR
+            err_msg = str(e)
+    return err_code,err_msg
         
 def start_file(file_path):
     if sysutils.isWindows():
@@ -579,3 +600,12 @@ else:
             ((s[stat.ST_GID] == gid) and (mode & stat.S_IWGRP > 0)) or
             (mode & stat.S_IWOTH > 0)
          )
+
+
+def opj(path):
+    """Convert paths to the platform-specific separator"""
+    st = apply(os.path.join, tuple(path.split('/')))
+    # HACK: on Linux, a leading / gets lost...
+    if path.startswith('/'):
+        st = '/' + st
+    return st

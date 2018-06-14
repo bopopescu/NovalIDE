@@ -23,7 +23,7 @@ import shutil
 import interpreter.manager as interpretermanager,interpreter.Interpreter as Interpreter
 import noval.parser.intellisence as intellisence
 import noval.parser.config as parserconfig
-from consts import _,ID_MRU_FILE1,PROJECT_EXTENSION,PROJECT_SHORT_EXTENSION
+from consts import _,ID_MRU_FILE1,PROJECT_EXTENSION,PROJECT_SHORT_EXTENSION,DEFAULT_MRU_FILE_NUM,CHECK_UPDATE_ATSTARTUP_KEY
 from noval.util import strutils
 import noval.parser.utils as parserutils
 from noval.dummy.userdb import UserDataDb
@@ -420,7 +420,8 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         intellisence.IntellisenceManager().generate_default_intellisence_data()
 
         self.ShowTipfOfDay()
-        wx.CallAfter(self.CheckUpdate,extensionService)
+        if config.ReadInt(CHECK_UPDATE_ATSTARTUP_KEY, True):
+            wx.CallAfter(self.CheckUpdate,extensionService)
         wx.UpdateUIEvent.SetUpdateInterval(1000)  # Overhead of updating menus was too much.  Change to update every n milliseconds.
         return True
         
@@ -672,7 +673,7 @@ class IDEDocManager(wx.lib.docview.DocManager):
         A hook to allow a derived class to create a different type of file
         history. Called from Initialize.
         """
-        max_files = int(wx.ConfigBase_Get().Read("MRULength","9"))
+        max_files = int(wx.ConfigBase_Get().Read("MRULength",str(DEFAULT_MRU_FILE_NUM)))
         enableMRU = wx.ConfigBase_Get().ReadInt("EnableMRU", True)
         if enableMRU:
             self._fileHistory = wx.FileHistory(maxFiles=max_files,idBase=ID_MRU_FILE1)

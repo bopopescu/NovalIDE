@@ -176,6 +176,10 @@ class GeneralOptionsPanel(wx.Panel):
         config = wx.ConfigBase_Get()
         self._showTipsCheckBox = wx.CheckBox(self, -1, _("Show tips at start up"))
         self._showTipsCheckBox.SetValue(config.ReadInt("ShowTipAtStartup", True))
+        
+        self._chkUpdateCheckBox = wx.CheckBox(self, -1, _("Check update at start up"))
+        self._chkUpdateCheckBox.SetValue(config.ReadInt(consts.CHECK_UPDATE_ATSTARTUP_KEY, True))
+        
         if self._AllowModeChanges():
             supportedModes = wx.GetApp().GetService(GeneralOptionsService).GetSupportedModes()
             choices = []
@@ -218,6 +222,7 @@ class GeneralOptionsPanel(wx.Panel):
         if self._AllowModeChanges():
             optionsSizer.Add(self._documentRadioBox, 0, wx.ALL, HALF_SPACE)
         optionsSizer.Add(self._showTipsCheckBox, 0, wx.ALL, HALF_SPACE)
+        optionsSizer.Add(self._chkUpdateCheckBox, 0, wx.ALL, HALF_SPACE)
 
         lsizer = wx.BoxSizer(wx.HORIZONTAL)
         self.language_combox = LangListCombo(self, -1,config.Read("Language",""))
@@ -234,7 +239,7 @@ class GeneralOptionsPanel(wx.Panel):
         optionsSizer.Add(self._enableMRUCheckBox, 0, wx.ALL, HALF_SPACE)
 
         lsizer = wx.BoxSizer(wx.HORIZONTAL)
-        self._mru_ctrl = wx.TextCtrl(self, -1, config.Read("MRULength","9"), size=(30,-1))
+        self._mru_ctrl = wx.TextCtrl(self, -1, config.Read("MRULength",str(consts.DEFAULT_MRU_FILE_NUM)), size=(30,-1))
         lsizer.AddMany([(wx.StaticText(self, label=_("File History length in MRU Files") + u"(1-20): "),
                          0, wx.ALIGN_CENTER_VERTICAL), ((5, 5), 0),
                         (self._mru_ctrl,
@@ -273,6 +278,7 @@ class GeneralOptionsPanel(wx.Panel):
         """
         config = wx.ConfigBase_Get()
         config.WriteInt("ShowTipAtStartup", self._showTipsCheckBox.GetValue())
+        config.WriteInt(consts.CHECK_UPDATE_ATSTARTUP_KEY, self._chkUpdateCheckBox.GetValue())
         if self.language_combox.GetValue() != config.Read("Language",""):
             wx.MessageBox(_("Language changes will not appear until the application is restarted."),
               _("Language Options"),

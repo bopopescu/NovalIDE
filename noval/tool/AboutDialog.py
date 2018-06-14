@@ -26,7 +26,7 @@ _ = wx.GetTranslation
 
 
 licenseData = [  # add licenses for base IDE features
-    ("NovalIDE", "Apache License, Version 2.0", "http://apache.org/licenses/LICENSE-2.0"),
+    ("NovalIDE", "GPL-3.0", "https://gitee.com/wekay/NovalIDE"),
     ("Python 2.7", "Python Software Foundation License", "http://www.python.org/2.7/license.html"),
     ("wxPython 3.0", "wxWidgets 2 - LGPL", "http://wxwidgets.org/newlicen.htm"),
     ("wxWidgets", "wxWindows Library License 3", "http://www.wxwidgets.org/manuals/2.6.1/wx_wxlicense.html"),

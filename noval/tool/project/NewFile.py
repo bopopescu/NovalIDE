@@ -7,18 +7,12 @@ import xml.etree.ElementTree as ET
 import noval.tool.GeneralOption as GeneralOption
 from bz2 import BZ2File
 import ProjectEditor
+import noval.util.fileutils as fileutils
+
 if not sysutilslib.isWindows():
     import noval.tool.FileObserver as FileObserver
 
 COMMON_MASK_COLOR = wx.Colour(255, 0, 255)
-
-def opj(path):
-    """Convert paths to the platform-specific separator"""
-    st = apply(os.path.join, tuple(path.split('/')))
-    # HACK: on Linux, a leading / gets lost...
-    if path.startswith('/'):
-        st = '/' + st
-    return st
     
 
 class FileTemplateDialog(wx.Dialog):
@@ -213,7 +207,7 @@ class NewFileDialog(wx.Dialog):
         data = templates[index]
         default_name = data['DefaultName']
         content = data['Content'].strip()
-        content_zip_path = opj(os.path.join(sysutilslib.mainModuleDir,content))
+        content_zip_path = fileutils.opj(os.path.join(sysutilslib.mainModuleDir,content))
         name,ext = os.path.splitext(default_name)
         i = 1
         while True:

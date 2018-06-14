@@ -59,7 +59,7 @@ class EncodingDeclareDialog(wx.Dialog):
         
         self.name_ctrl = wx.TextCtrl(self, -1, "# -*- coding: utf-8 -*-",size=(100,-1))
         self.name_ctrl.Enable(False)
-        contentSizer.Add(self.name_ctrl, 0, wx.BOTTOM|wx.LEFT|wx.EXPAND , SPACE)
+        contentSizer.Add(self.name_ctrl, 0, wx.ALL|wx.EXPAND , SPACE)
         self.check_box = wx.CheckBox(self, -1,_("Edit"))
         self.Bind(wx.EVT_CHECKBOX,self.onChecked) 
         contentSizer.Add(self.check_box, 0, wx.BOTTOM|wx.LEFT, SPACE)
@@ -71,7 +71,7 @@ class EncodingDeclareDialog(wx.Dialog):
         cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
         bsizer.AddButton(cancel_btn)
         bsizer.Realize()
-        contentSizer.Add(bsizer, 1, wx.EXPAND,SPACE)
+        contentSizer.Add(bsizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM,SPACE)
         self.SetSizer(contentSizer)
 
     def onChecked(self,event):

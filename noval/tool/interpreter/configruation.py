@@ -4,7 +4,7 @@ import Interpreter
 import noval.parser.intellisence as intellisence
 import noval.util.sysutils as sysutils
 import os
-from noval.tool.consts import SPACE,HALF_SPACE,_ 
+from noval.tool.consts import SPACE,HALF_SPACE,_ ,ERROR_OK
 import pythonbuiltins
 import environment
 import packages
@@ -25,6 +25,7 @@ ID_COPY_INTERPRETER_PATH = wx.NewId()
 ID_MODIFY_INTERPRETER_NAME = wx.NewId()
 ID_REMOVE_INTERPRETER = wx.NewId()
 ID_NEW_INTERPRETER_VIRTUALENV = wx.NewId()
+ID_GOTO_INTERPRETER_PATH = wx.NewId()
 
 
 class NewVirtualEnvProgressDialog(wx.ProgressDialog):
@@ -282,6 +283,10 @@ class InterpreterConfigDialog(wx.Dialog):
         wx.EVT_MENU(self, ID_NEW_INTERPRETER_VIRTUALENV, self.ProcessEvent)
         wx.EVT_UPDATE_UI(self, ID_NEW_INTERPRETER_VIRTUALENV, self.ProcessUpdateUIEvent)
         
+        menu.Append(ID_GOTO_INTERPRETER_PATH,_("Open Path in Explorer"))
+        wx.EVT_MENU(self, ID_GOTO_INTERPRETER_PATH, self.ProcessEvent)
+        wx.EVT_UPDATE_UI(self, ID_GOTO_INTERPRETER_PATH, self.ProcessUpdateUIEvent)
+        
         self.dvlc.PopupMenu(menu,wx.Point(x, y))
         menu.Destroy()
         
@@ -342,6 +347,14 @@ class InterpreterConfigDialog(wx.Dialog):
                 except Exception,e:
                     wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR,self)
             return True
+        elif id == ID_GOTO_INTERPRETER_PATH:
+            self.GotoPath(interpreter)
+            return True
+            
+    def GotoPath(self,interpreter):
+        err_code,msg = fileutils.open_file_directory(interpreter.Path)
+        if err_code != ERROR_OK:
+            wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
             
     def CreateVirtualEnv(self,name,location,include_site_packages,interpreter,progress_dlg):
         t = threading.Thread(target=self.CreatePythonVirtualEnv,args=(name,location,include_site_packages,interpreter,progress_dlg))
