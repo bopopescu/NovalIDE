@@ -40,6 +40,8 @@ if sys.platform == "win32":
                 data_files=[("noval/tool/bmp_source", glob.glob("noval/tool/bmp_source/*.ico") + glob.glob("noval/tool/bmp_source/*.jpg") \
                              + glob.glob("noval/tool/bmp_source/*.png") + glob.glob("noval/tool/bmp_source/*.gif")),
                     ("noval/tool/bmp_source/toolbar",glob.glob("noval/tool/bmp_source/toolbar/*.png")),
+                    ("noval/tool/bmp_source/web",glob.glob("noval/tool/bmp_source/web/*.png")),
+                    ("noval/tool/bmp_source/template",glob.glob("noval/tool/bmp_source/template/*.*")),
                     ("noval/tool",glob.glob("noval/tool/DebuggerHarness.py")),
                     ("noval/tool/data",["noval/tool/data/tips.txt"]),
                     ("noval/tool/data/template",glob.glob("noval/tool/data/template/*.tar.bz2")),

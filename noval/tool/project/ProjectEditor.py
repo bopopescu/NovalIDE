@@ -350,7 +350,8 @@ class ProjectDocument(wx.lib.docview.Document):
             This forces the project view to show the correct project.
         """
         view = wx.lib.docview.Document.GetFirstView(self)
-        view.SetProject(self.GetFilename())  # ensure project is displayed in view
+        if view.GetMode() == ProjectView.PROJECT_VIEW:
+            view.SetProject(self.GetFilename())  # ensure project is displayed in view
         return view
 
 

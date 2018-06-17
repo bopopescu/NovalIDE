@@ -24,7 +24,10 @@ NovalIDE是一款开源，跨平台，而且免费的国产多功能，轻便的
 
 官方网址：[http://www.novalide.com](http://www.novalide.com/)
 
-相关文章: [对一款优秀国产Python IDE---NovalIDE的体验](https://my.oschina.net/u/3728672/blog/1817030)
+相关文章:
+
+- [对一款优秀国产Python IDE---NovalIDE的体验](https://my.oschina.net/u/3728672/blog/1817030)
+- [Linux如何安装NovalIDE](https://my.oschina.net/u/3728672/blog/1831452)
 
 软件概貌: ![NovalIDE_Screen](noval/tool/bmp_source/images/banner_01.png)
 

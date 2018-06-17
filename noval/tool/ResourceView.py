@@ -4,7 +4,13 @@ from noval.tool import Singleton
 import wx
 import noval.util.strutils as strutils
 import noval.util.fileutils as fileutils
-_ = wx.GetTranslation
+from consts import _,ERROR_OK
+
+
+REFRESH__PATH_ID = wx.NewId()
+OPEN_DIR_PATH_ID = wx.NewId()
+OPEN_CMD_PATH_ID = wx.NewId()
+COPY_FULLPATH_ID = wx.NewId()
 
 if sysutils.isWindows():
     from win32com.shell import shell, shellcon
@@ -39,6 +45,8 @@ class ResourceTreeCtrl(wx.TreeCtrl):
         iconList = wx.ImageList(16, 16, -1)
         wx.EVT_TREE_ITEM_ACTIVATED(self,self.GetId(),self.ExpandDir)
         wx.EVT_TREE_ITEM_EXPANDING(self,self.GetId(), self.ExpandDir)
+        
+        wx.EVT_RIGHT_DOWN(self, self.OnRightClick)
 
         folder_bmp = wx.ArtProvider.GetBitmap(wx.ART_FOLDER,wx.ART_CMN_DIALOG,(16,16))
         self._folderClosedIconIndex = iconList.Add(folder_bmp)
@@ -51,10 +59,52 @@ class ResourceTreeCtrl(wx.TreeCtrl):
         exe_bmp = wx.ArtProvider.GetBitmap(wx.ART_EXECUTABLE_FILE,wx.ART_CMN_DIALOG,(16,16))
         self._exeIconIndex = iconList.Add(exe_bmp)
         self._fileIconIndexLookup = {}
-        #self.Bind(wx.EVT_TREE_ITEM_EXPANDING,self.ExpandDir)
-        #self.Bind(wx.EVT_TREE_ITEM_ACTIVATED,self.ExpandDir)
         self.AssignImageList(iconList)
         
+    def OnRightClick(self, event):
+        
+        item = self.GetSelection()
+        item_type,item_path = self.GetPyData(item)
+        menu = wx.Menu()
+        if item_type == ResourceView.DIRECTORY_RES_TYPE:
+            menu.Append(REFRESH__PATH_ID, _("&Refresh"))
+            wx.EVT_MENU(self, REFRESH__PATH_ID, self.ProcessEvent)
+        menu.Append(OPEN_CMD_PATH_ID, _("Open Command Prompt here..."))
+        wx.EVT_MENU(self, OPEN_CMD_PATH_ID, self.ProcessEvent)
+        menu.Append(OPEN_DIR_PATH_ID, _("Open Path in Explorer"))
+        wx.EVT_MENU(self, OPEN_DIR_PATH_ID, self.ProcessEvent)
+        
+        menu.Append(COPY_FULLPATH_ID, _("Copy Full Path"))
+        wx.EVT_MENU(self, COPY_FULLPATH_ID, self.ProcessEvent)
+        self.PopupMenu(menu, wx.Point(event.GetX(), event.GetY()))
+        menu.Destroy()
+            
+    def ProcessEvent(self, event):
+        id = event.GetId()
+        item = self.GetSelection()
+        item_type,item_path = self.GetPyData(item)
+        if id == OPEN_CMD_PATH_ID:
+            if item_type == ResourceView.DIRECTORY_RES_TYPE:
+                filePath = item_path
+            else:
+                filePath = os.path.dirname(item_path)
+            err_code,msg = fileutils.open_path_in_terminator(filePath.decode('gbk'))
+            if err_code != ERROR_OK:
+                wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
+        elif id == OPEN_DIR_PATH_ID:
+            err_code,msg = fileutils.open_file_directory(item_path)
+            if err_code != ERROR_OK:
+                wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
+        elif id == COPY_FULLPATH_ID:
+            sysutils.CopyToClipboard(item_path)
+        elif id == REFRESH__PATH_ID:
+            self.Freeze()
+            self.DeleteChildren(item)
+            ResourceView(self.GetParent()).LoadDir(item,item_path)
+            if self.GetChildrenCount(item) > 0:
+                self.SetItemHasChildren(item, True)
+            self.Thaw()
+            
     def ExpandDir(self, event):
         item = event.GetItem()
         ResourceView(self).OpenSelection(item)
@@ -123,9 +173,6 @@ class ResourceView(object):
         root = self._view.dir_ctrl.AddRoot(directory.replace(":",""))
         if sysutils.isWindows():
             directory += os.sep
-   ##     self._view.dir_ctrl.SetPyData(root, Directory(directory))
-       ### project_view.dir_ctrl.SetItemImage(root, self.iconentries['directory'])
-     ##   self._view.dir_ctrl.Expand(root)
         self.LoadDir(root, directory)
             
     def LoadRoot(self,root):
@@ -146,7 +193,6 @@ class ResourceView(object):
             for f in files:
                 file_count += 1
                 # process the file extension to build image list
-           ##     imagekey = self.processFileExtension(os.path.join(directory, f))
                 # if directory, tell tree it has children
                 file_path = os.path.join(directory, f)
                 if fileutils.is_file_hiden(file_path):
@@ -189,9 +235,12 @@ class ResourceView(object):
                 wx.MessageBox(unicode(e),_("Open Directory Error"))
             self._view.dir_ctrl.SelectItem(item)
         else:
+            if not os.path.exists(item_path):
+                wx.MessageBox(_("The file '%s' doesn't exist and couldn't be opened!") % item_path.decode('gbk'),style = wx.OK | wx.ICON_ERROR)
+                return
             ext = strutils.GetFileExt(item_path)
             if sysutils.IsExtSupportable(ext):
-                wx.GetApp().GotoView(item_path,0)
+                wx.GetApp().GotoView(item_path.decode('gbk'),0)
             else:
                 try:
                     fileutils.start_file(item_path)

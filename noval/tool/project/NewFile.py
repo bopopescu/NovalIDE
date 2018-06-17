@@ -152,9 +152,9 @@ class NewFileDialog(wx.Dialog):
         boxsizer.Add(lineSizer,0,flag = wx.EXPAND|wx.BOTTOM|wx.TOP|wx.RIGHT,border = SPACE)
         
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-##        edit_btn = wx.Button(self, -1, _("&Edit"))
-##        wx.EVT_BUTTON(edit_btn, -1, self.OnEditTemplate)
-##        lineSizer.Add(edit_btn,0,flag = wx.LEFT,border = SPACE)
+        edit_btn = wx.Button(self, -1, _("&Edit"))
+        wx.EVT_BUTTON(edit_btn, -1, self.OnEditTemplate)
+        lineSizer.Add(edit_btn,0,flag = wx.LEFT,border = SPACE)
         
         self.ok_btn = wx.Button(self, wx.ID_OK, _("&Create"))
         wx.EVT_BUTTON(self.ok_btn, -1, self.OnOKClick)
