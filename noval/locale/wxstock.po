@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2018-02-07 14:57+ÖÐ¹ú±ê×¼Ê±¼ä\n"
-"PO-Revision-Date: 2018-06-10 23:25+0800\n"
+"PO-Revision-Date: 2018-06-22 23:53+0800\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -875,7 +875,7 @@ msgstr "首选项..."
 
 #: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:1416
 msgid "Sets options"
-msgstr ""
+msgstr "选项设置"
 
 #: C:\Python27\Lib\site-packages\wx-3.0-msw\wx\lib\pydocview.py:1589
 msgid "Show tips at start up"

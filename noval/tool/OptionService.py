@@ -4,6 +4,7 @@ import wx.lib.agw.customtreectrl as CT
 import GeneralOption
 import os
 import noval.util.sysutils as sysutilslib
+import noval.util.appdirs as appdirs
 _ = wx.GetTranslation
 
 class OptionsDialog(wx.Dialog):
@@ -153,4 +154,24 @@ class OptionsService(wx.lib.pydocview.DocOptionsService):
             self.category_list.append(category)
         else:
             self._optionsPanels[category].append((name,optionsPanelClass),)
+            
+    def InstallControls(self, frame, menuBar=None, toolBar=None, statusBar=None, document=None):
+        app_image_path = appdirs.GetAppImageDirLocation()
+        toolsMenuIndex = menuBar.FindMenu(_("&Tools"))
+        if toolsMenuIndex > -1:
+            toolsMenu = menuBar.GetMenu(toolsMenuIndex)
+        else:
+            toolsMenu = wx.Menu()
+        if toolsMenuIndex == -1:
+            formatMenuIndex = menuBar.FindMenu(_("&Format"))
+            menuBar.Insert(formatMenuIndex + 1, toolsMenu, _("&Tools"))
+        if toolsMenu:
+            if toolsMenu.GetMenuItemCount():
+                toolsMenu.AppendSeparator()
+            item = wx.MenuItem(toolsMenu,self._toolOptionsID, _("&Options..."), _("Sets options"))
+            item.SetBitmap(wx.BitmapFromImage(wx.Image(os.path.join(app_image_path,"configure.png"),wx.BITMAP_TYPE_ANY)))
+            toolsMenu.AppendItem(item)
+            wx.EVT_MENU(frame, self._toolOptionsID, frame.ProcessEvent)
+        
+        
         
