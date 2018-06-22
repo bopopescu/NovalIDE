@@ -70,15 +70,15 @@ class EnvironmentPanel(wx.Panel):
         right_sizer = wx.BoxSizer(wx.VERTICAL)
         self.new_btn = wx.Button(self, -1, _("New.."))
         wx.EVT_BUTTON(self.new_btn, -1, self.NewVariable)
-        right_sizer.Add(self.new_btn, 0, wx.LEFT|wx.BOTTOM|wx.EXPAND, SPACE)
+        right_sizer.Add(self.new_btn, 0, wx.LEFT|wx.BOTTOM|wx.EXPAND|wx.RIGHT, HALF_SPACE)
         
         self.edit_btn = wx.Button(self, -1, _("Edit"))
         wx.EVT_BUTTON(self.edit_btn, -1, self.EditVariable)
-        right_sizer.Add(self.edit_btn, 0, wx.LEFT|wx.BOTTOM|wx.EXPAND, SPACE)
+        right_sizer.Add(self.edit_btn, 0, wx.LEFT|wx.BOTTOM|wx.EXPAND|wx.RIGHT, HALF_SPACE)
         
         self.remove_btn = wx.Button(self, -1, _("Remove..."))
         wx.EVT_BUTTON(self.remove_btn, -1, self.RemoveVariable)
-        right_sizer.Add(self.remove_btn, 0, wx.LEFT|wx.BOTTOM|wx.EXPAND, SPACE)
+        right_sizer.Add(self.remove_btn, 0, wx.LEFT|wx.BOTTOM|wx.EXPAND|wx.RIGHT, HALF_SPACE)
         
         top_sizer.Add(right_sizer, 0, wx.TOP, SPACE*3.5)
 

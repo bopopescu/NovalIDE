@@ -54,7 +54,6 @@ import OutputThread
 import noval.parser.config as parserconfig
 import WxThreadSafe
 import DebugOutputCtrl
-import interpreter.configruation as configruation
 import noval.parser.intellisence as intellisence
 import interpreter.manager as interpretermanager
 from consts import PYTHON_PATH_NAME,NOT_IN_ANY_PROJECT
@@ -62,6 +61,7 @@ import noval.util.strutils as strutils
 import noval.parser.utils as parserutils
 import noval.util.fileutils as fileutils
 import copy
+import OptionService
 
 import sys
 reload(sys)
@@ -2441,9 +2441,8 @@ class DebuggerService(Service.Service):
         cb = wx.GetApp().ToolbarCombox
         selection = event.GetSelection()
         if selection == cb.GetCount() - 1:
-            dlg = configruation.InterpreterConfigDialog(wx.GetApp().GetTopWindow(),-1,_("Configure Interpreter"))
-            dlg.CenterOnParent()
-            dlg.ShowModal()
+            option_service = wx.GetApp().GetService(OptionService.OptionsService)
+            option_service.OnOption(option_name =_("Python Interpreter"))
             wx.GetApp().AddInterpreters()
         else:
            interpreter = cb.GetClientData(selection)

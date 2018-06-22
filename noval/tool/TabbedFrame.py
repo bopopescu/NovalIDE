@@ -7,6 +7,7 @@ import noval.util.strutils as strutils
 import noval.parser.config as parserconfig
 import consts
 import noval.tool.NavigationService
+import noval.util.appdirs as appdirs
 from wx.lib.pubsub import pub as Publisher
 
 _ = wx.GetTranslation
@@ -47,6 +48,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
         Creates the default ToolBar.
         """
         self._toolBar = self.CreateToolBar(wx.TB_HORIZONTAL | wx.NO_BORDER | wx.TB_FLAT)
+        
         toolbar_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "toolbar")
         
         tb_new_image = wx.Image(os.path.join(toolbar_image_path,"new.png"),wx.BITMAP_TYPE_ANY)
@@ -95,6 +97,8 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
         """
         if sysutilslib.isWindows():
             menuBar = wx.MenuBar()
+            
+            app_image_path = appdirs.GetAppImageDirLocation()
 
             fileMenu = wx.Menu()
             item = wx.MenuItem(fileMenu,wx.ID_NEW,_("&New...\tCtrl+N"), _("Creates a new document"), wx.ITEM_NORMAL)
@@ -202,7 +206,9 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
             menuBar.Append(viewMenu, _("&View"))
 
             helpMenu = wx.Menu()
-            helpMenu.Append(wx.ID_ABOUT, _(_("About %s") % wx.GetApp().GetAppName()), _("Displays program information, version number, and copyright"))
+            item = wx.MenuItem(helpMenu,wx.ID_ABOUT, _(_("About %s") % wx.GetApp().GetAppName()), _("Displays program information, version number, and copyright"))
+            item.SetBitmap(wx.BitmapFromImage(wx.Image(os.path.join(app_image_path,"about.png"),wx.BITMAP_TYPE_ANY)))
+            helpMenu.AppendItem(item)
             menuBar.Append(helpMenu, _("&Help"))
 
             wx.EVT_MENU(self, wx.ID_ABOUT, self.OnAbout)

@@ -207,11 +207,11 @@ class PackagePanel(wx.Panel):
         right_sizer = wx.BoxSizer(wx.VERTICAL)
         self.install_btn = wx.Button(self, -1, _("Install with pip"))
         wx.EVT_BUTTON(self.install_btn, -1, self.InstallPip)
-        right_sizer.Add(self.install_btn, 0, wx.LEFT|wx.BOTTOM|wx.EXPAND, SPACE)
+        right_sizer.Add(self.install_btn, 0, wx.LEFT|wx.BOTTOM|wx.EXPAND|wx.RIGHT, HALF_SPACE)
         
         self.uninstall_btn = wx.Button(self, -1, _("Uninstall with pip"))
         wx.EVT_BUTTON(self.uninstall_btn, -1, self.UninstallPip)
-        right_sizer.Add(self.uninstall_btn, 0, wx.LEFT|wx.BOTTOM|wx.EXPAND, SPACE)
+        right_sizer.Add(self.uninstall_btn, 0, wx.LEFT|wx.BOTTOM|wx.EXPAND|wx.RIGHT, HALF_SPACE)
         self.Sizer.Add(right_sizer, 0, wx.TOP, SPACE)
         self.interpreter = None
 

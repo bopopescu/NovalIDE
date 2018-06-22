@@ -35,7 +35,7 @@ class PythonPathPanel(wx.Panel):
         right_sizer.Add(self.remove_path_btn, 0, wx.TOP|wx.EXPAND, SPACE)
         
         self.Sizer.Add(left_sizer, 1, wx.EXPAND|wx.RIGHT,HALF_SPACE)
-        self.Sizer.Add(right_sizer, 0, wx.RIGHT,SPACE)
+        self.Sizer.Add(right_sizer, 0,wx.EXPAND|wx.LEFT|wx.RIGHT,HALF_SPACE)
         
         self._popUpMenu = None
         self._interpreter = None

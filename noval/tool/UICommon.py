@@ -23,10 +23,10 @@ import noval.util.xmlutils as xmlutils
 import interpreter.Interpreter as Interpreter
 import noval.parser.utils as dirutils
 import wx.lib.agw.hyperlink as hl
-import interpreter.configruation as configruation
 import noval.tool.interpreter.manager as interpretermanager
 from noval.tool.consts import HALF_SPACE,_ ,SPACE,PROJECT_EXTENSION
 from noval.model import configuration as projectconfiguration
+import OptionService
 
 def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Directory:"), fileExtension="*", startingName="", startingDirectory=None, choiceDirs=None, appDirDefaultStartDir=False, returnAll=False, useDirDialog=False):
 
@@ -100,9 +100,8 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
     allControls = [nameControl, nameLabelText, dirLabelText, dirControl, button]
     
     def OnGotoLink(event):
-        dlg = configruation.InterpreterConfigDialog(parent,-1,_("Configure Interpreter"))
-        dlg.CenterOnParent()
-        dlg.ShowModal()
+        option_service = wx.GetApp().GetService(OptionService.OptionsService)
+        option_service.OnOption(option_name =_("Python Interpreter"))
         choices,default_selection = interpretermanager.InterpreterManager().GetChoices()
         interpreterCombo.Clear()
         if len(choices) > 0:

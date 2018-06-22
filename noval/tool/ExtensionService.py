@@ -123,6 +123,8 @@ class ExtensionService(Service.BaseService):
             toolsMenu = menuBar.GetMenu(toolsMenuIndex)
         else:
             toolsMenu = wx.Menu()
+            
+        app_image_path = appdirs.GetAppImageDirLocation()
 
         if toolsMenuIndex == -1:
             index = menuBar.FindMenu(_("&Run"))
@@ -134,7 +136,9 @@ class ExtensionService(Service.BaseService):
                 index = menuBar.FindMenu(_("&View"))
             menuBar.Insert(index + 1, toolsMenu, _("&Tools"))
             id = wx.NewId()
-            toolsMenu.Append(id,_("&Terminator"))
+            item = wx.MenuItem(toolsMenu,id,_("&Terminator"))
+            item.SetBitmap(wx.BitmapFromImage(wx.Image(os.path.join(app_image_path,"cmd.png"),wx.BITMAP_TYPE_ANY)))
+            toolsMenu.AppendItem(item)
             wx.EVT_MENU(frame, id, self.OpenTerminator)  
 
             id = wx.NewId()
@@ -142,7 +146,9 @@ class ExtensionService(Service.BaseService):
             wx.EVT_MENU(frame, id, self.RunUnitTest)
 
             id = wx.NewId()
-            toolsMenu.Append(id,_("&Interpreter"))
+            item = wx.MenuItem(toolsMenu,id,_("&Interpreter"))
+            item.SetBitmap(wx.BitmapFromImage(wx.Image(os.path.join(app_image_path,"interpreter.png"),wx.BITMAP_TYPE_ANY)))
+            toolsMenu.AppendItem(item)
             wx.EVT_MENU(frame, id, self.OpenInterpreter)
             
             if sysutilslib.isWindows():
@@ -155,7 +161,9 @@ class ExtensionService(Service.BaseService):
         start_index = 0
         if sysutilslib.isWindows():
             id = wx.NewId()
-            helpMenu.Insert(0,id,_("&Python Help Document"),_("Show the help document of Python"))
+            item = wx.MenuItem(toolsMenu,id,_("&Python Help Document"),_("Open the help document of Python"))
+            item.SetBitmap(wx.BitmapFromImage(wx.Image(os.path.join(app_image_path,"pydoc.png"),wx.BITMAP_TYPE_ANY)))
+            helpMenu.InsertItem(0,item)
             wx.EVT_MENU(frame, id, self.OpenPythonHelpDocument)
             start_index += 1
 
@@ -165,12 +173,18 @@ class ExtensionService(Service.BaseService):
         start_index += 1
         
         id = wx.NewId()
-        helpMenu.Insert(start_index,id,_("&Visit Website"),_("Goto official website of NovalIDE"))
-        wx.EVT_MENU(frame, id, self.GotoWebsite)
-        
-        id = wx.NewId()
         helpMenu.Insert(start_index,id,_("&Check for Updates"),_("Check program update information"))
         wx.EVT_MENU(frame, id, self.CheckforUpdate)
+        start_index += 1
+        
+        id = wx.NewId()
+        helpMenu.Insert(start_index,id,_("&Visit NovalIDE Website"),_("Goto official website of NovalIDE"))
+        wx.EVT_MENU(frame, id, self.GotoWebsite)
+        start_index += 1
+        
+        id = wx.NewId()
+        helpMenu.Insert(start_index,id,_("&Python Website"),_("Goto official website of Python"))
+        wx.EVT_MENU(frame, id, self.GotoPythonWebsite)
         start_index += 1
 
         if self._extensions:
@@ -188,6 +202,9 @@ class ExtensionService(Service.BaseService):
         
     def GotoWebsite(self,event):
         fileutils.start_file(UserDataDb.HOST_SERVER_ADDR)
+        
+    def GotoPythonWebsite(self,event):
+        fileutils.start_file("http://www.python.org")
         
     def GotoDefaultWebView(self,event):
         self.GotoWebView(UserDataDb.HOST_SERVER_ADDR)

@@ -154,8 +154,10 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import ExtensionService
         import CompletionService
         import GeneralOption
+        import OptionService
         import NavigationService
         import TabbedFrame
+        import interpreter.configruation as configruation
 ##        import UpdateLogIniService
                             
         _EDIT_LAYOUTS = True
@@ -332,7 +334,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         debuggerService         = self.InstallService(DebuggerService.DebuggerService("Debugger", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         extensionService        = self.InstallService(ExtensionService.ExtensionService())
         ###optionsService          = self.InstallService(wx.lib.pydocview.DocOptionsService(supportedModes=wx.lib.docview.DOC_MDI))
-        optionsService          = self.InstallService(GeneralOption.GeneralOptionsService())
+        optionsService          = self.InstallService(OptionService.OptionsService())
         aboutService            = self.InstallService(wx.lib.pydocview.AboutService(AboutDialog.AboutDialog))
      ###   svnService              = self.InstallService(SVNService.SVNService())
         if not ACTIVEGRID_BASE_IDE:
@@ -342,16 +344,17 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             windowService       = self.InstallService(wx.lib.pydocview.WindowMenuService())
         
         # order of these added determines display order of Options Panels
-        optionsService.AddOptionsPanel(ProjectEditor.ProjectOptionsPanel)
+        optionsService.AddOptionsPanel(_("General"),_("Project"),ProjectEditor.ProjectOptionsPanel)
        ## optionsService.AddOptionsPanel(DebuggerService.DebuggerOptionsPanel)
-        optionsService.AddOptionsPanel(PythonEditor.PythonOptionsPanel)
+        optionsService.AddOptionsPanel(_("Editor"),_("Python"),PythonEditor.PythonOptionsPanel)
   ##      optionsService.AddOptionsPanel(PHPEditor.PHPOptionsPanel)
     ##    optionsService.AddOptionsPanel(PerlEditor.PerlOptionsPanel)
-        optionsService.AddOptionsPanel(XmlEditor.XmlOptionsPanel)
-        optionsService.AddOptionsPanel(HtmlEditor.HtmlOptionsPanel)
-        optionsService.AddOptionsPanel(STCTextEditor.TextOptionsPanel)
+        optionsService.AddOptionsPanel(_("Editor"),_("Xml"),XmlEditor.XmlOptionsPanel)
+        optionsService.AddOptionsPanel(_("Editor"),_("Html"),HtmlEditor.HtmlOptionsPanel)
+        optionsService.AddOptionsPanel(_("Editor"),_("Text"),STCTextEditor.TextOptionsPanel)
+        optionsService.AddOptionsPanel(_("Interpreter"),_("Python Interpreter"),configruation.InterpreterConfigurationPanel)
   ##      optionsService.AddOptionsPanel(SVNService.SVNOptionsPanel)
-        optionsService.AddOptionsPanel(ExtensionService.ExtensionOptionsPanel)
+        optionsService.AddOptionsPanel(_("Other"),_("Extension"),ExtensionService.ExtensionOptionsPanel)
 
         filePropertiesService.AddCustomEventHandler(projectService)
 

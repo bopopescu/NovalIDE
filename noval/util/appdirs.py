@@ -124,3 +124,11 @@ def createSystemDirs():
     if (not os.path.exists(getSystemDir(AG_DEMOS_DIR))):
         os.mkdir(getSystemDir(AG_DEMOS_DIR))
 endIfDef()
+
+def GetAppImageDirLocation():
+    app_image_path = os.path.join(sysutils.mainModuleDir, "noval", "tool", "bmp_source")
+    return app_image_path
+    
+def GetAppDataDirLocation():
+    app_image_path = os.path.join(sysutils.mainModuleDir, "noval", "tool", "data")
+    return app_image_path

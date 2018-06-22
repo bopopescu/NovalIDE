@@ -144,5 +144,6 @@
   <noval:file filePath="./noval/tests/test_user_db.py" logicalFolder="noval/tests" isStartup="false"/>
   <noval:file filePath="./noval/tests/test_interpreter.py" logicalFolder="noval/tests" isStartup="false"/>
   <noval:file filePath="./noval/tests/test_project.py" logicalFolder="noval/tests" isStartup="false"/>
+  <noval:file filePath="./noval/tool/OptionService.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>

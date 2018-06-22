@@ -88,7 +88,9 @@ class ResourceTreeCtrl(wx.TreeCtrl):
                 filePath = item_path
             else:
                 filePath = os.path.dirname(item_path)
-            err_code,msg = fileutils.open_path_in_terminator(filePath.decode('gbk'))
+            if sysutils.isWindows():
+                filePath = filePath.decode('gbk')
+            err_code,msg = fileutils.open_path_in_terminator(filePath)
             if err_code != ERROR_OK:
                 wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
         elif id == OPEN_DIR_PATH_ID:

@@ -8,17 +8,13 @@ import os
 import sys
 import codecs
 import consts
+import OptionService
 
 _ = wx.GetTranslation
 
 
 OPT_NO_OP    = 0
 OPT_DESCRIPT = 1
-
-class GeneralOptionsService(wx.lib.pydocview.DocOptionsService):
-    def __init__(self):
-        wx.lib.pydocview.DocOptionsService.__init__(self,False,supportedModes=wx.lib.docview.DOC_MDI)
-        self.AddOptionsPanel(GeneralOptionsPanel)
 
 def GetAvailLocales():
     """Gets a list of the available locales that have been installed
@@ -181,7 +177,7 @@ class GeneralOptionsPanel(wx.Panel):
         self._chkUpdateCheckBox.SetValue(config.ReadInt(consts.CHECK_UPDATE_ATSTARTUP_KEY, True))
         
         if self._AllowModeChanges():
-            supportedModes = wx.GetApp().GetService(GeneralOptionsService).GetSupportedModes()
+            supportedModes = wx.GetApp().GetService(OptionService.OptionsService).GetSupportedModes()
             choices = []
             self._sdiChoice = _("Show each document in its own window")
             self._mdiChoice = _("Show all documents in a single window with tabs")
@@ -268,7 +264,7 @@ class GeneralOptionsPanel(wx.Panel):
         self._mru_ctrl.Enable(enableMRU)
 
     def _AllowModeChanges(self):
-        supportedModes = wx.GetApp().GetService(GeneralOptionsService).GetSupportedModes()
+        supportedModes = wx.GetApp().GetService(OptionService.OptionsService).GetSupportedModes()
         return supportedModes & wx.lib.docview.DOC_SDI and supportedModes & wx.lib.docview.DOC_MDI or wx.Platform == "__WXMSW__" and supportedModes & wx.lib.docview.DOC_MDI  # More than one mode is supported, allow selection
 
 
