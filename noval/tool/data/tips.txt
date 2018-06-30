@@ -1,5 +1,5 @@
 Middle-Mouse-Click on the tab for an open file will close the file.
-Ctrl+Shit+Space in any editor does code completion.
+Ctrl+Shift+Space in any editor does code completion.
 Right-Mouse-Click in Outline window allows you to change display sorting.
 Ctrl+Mouse roll will zoom in/out the editor text.
 You can delete the current line via Ctrl+l.

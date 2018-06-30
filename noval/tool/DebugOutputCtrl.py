@@ -1,14 +1,15 @@
 import STCTextEditor
 import wx
 import TextService
+import BaseCtrl
 _ = wx.GetTranslation
 
-class DebugOutputCtrl(STCTextEditor.TextCtrl):
+class DebugOutputCtrl(BaseCtrl.ScintillaCtrl):
     
     ItemIDs = [wx.ID_UNDO, wx.ID_REDO,wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, wx.ID_CLEAR, wx.ID_SELECTALL,TextService.WORD_WRAP_ID]
     
     def __init__(self, parent, id=-1, style = wx.NO_FULL_REPAINT_ON_RESIZE):
-        STCTextEditor.TextCtrl.__init__(self, parent, id,bind_left_up_event = False, style=style)
+        BaseCtrl.ScintillaCtrl.__init__(self, parent, id, style=style)
         self.Bind(wx.EVT_RIGHT_UP, self.OnRightUp)
         accelTbl = wx.AcceleratorTable([(wx.ACCEL_CTRL, ord('A'), wx.ID_SELECTALL),(wx.ACCEL_CTRL, ord('C'), wx.ID_COPY),(wx.ACCEL_CTRL, ord('V'), wx.ID_PASTE)])  
         self.SetAcceleratorTable(accelTbl)

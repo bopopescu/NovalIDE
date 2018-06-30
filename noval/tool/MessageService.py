@@ -14,6 +14,7 @@ import wx
 import Service
 import STCTextEditor
 import WxThreadSafe
+import BaseCtrl
 
 #----------------------------------------------------------------------------
 # Utility
@@ -54,10 +55,9 @@ class MessageView(Service.ServiceView):
     #----------------------------------------------------------------------------
 
     def _CreateControl(self, parent, id):
-        txtCtrl = STCTextEditor.TextCtrl(parent, id, bind_left_up_event = False)
-        txtCtrl.SetMarginWidth(1, 0)  # hide line numbers
+        txtCtrl = BaseCtrl.ScintillaCtrl(parent, id)
+        txtCtrl.HideLineNumber()  # hide line numbers
         txtCtrl.SetReadOnly(True)
-        txtCtrl.SetEdgeMode(wx.stc.STC_EDGE_NONE)
 
         if wx.Platform == '__WXMSW__':
             font = "Courier New"

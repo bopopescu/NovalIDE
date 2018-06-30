@@ -17,7 +17,7 @@ import wx.gizmos
 import wx._core
 import wx.lib.pydocview
 import Service
-import STCTextEditor
+import BaseCtrl
 import CodeEditor
 import PythonEditor
 import PHPEditor
@@ -308,9 +308,8 @@ class RunCommandUI(wx.Panel):
         tb.Realize()
         self._textCtrl = DebugOutputCtrl.DebugOutputCtrl(self, wx.NewId()) #id)
         sizer.Add(self._textCtrl, 1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 1)
-        self._textCtrl.SetViewLineNumbers(False)
+        self._textCtrl.HideLineNumber()
         self._textCtrl.SetReadOnly(False)
-        self._textCtrl.SetEdgeMode(wx.stc.STC_EDGE_NONE)
         if wx.Platform == '__WXMSW__':
             font = "Courier New"
         else:
@@ -493,7 +492,7 @@ class RunCommandUI(wx.Panel):
             self._textCtrl.IsFirstInput = True
         else:
             pos = self._textCtrl.GetCurrentPos()
-            STCTextEditor.TextCtrl.OnKeyPressed(self._textCtrl, event)
+            DebugOutputCtrl.DebugOutputCtrl.OnKeyPressed(self._textCtrl, event)
             if pos-1 >= 0:
                 #should colorize input char from last pos
                 self._textCtrl.StartStyling(pos-1, 31)
@@ -1379,9 +1378,9 @@ class BaseFramesUI(wx.SplitterWindow):
     def MakeConsoleTab(self, parent, id):
         panel = wx.Panel(parent, id)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self._textCtrl = STCTextEditor.TextCtrl(panel, wx.NewId(),bind_left_up_event = False)
+        self._textCtrl = BaseCtrl.ScintillaCtrl(panel, wx.NewId())
         sizer.Add(self._textCtrl, 1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 2)
-        self._textCtrl.SetViewLineNumbers(False)
+        self._textCtrl.HideLineNumber()
         self._textCtrl.SetReadOnly(True)
         if wx.Platform == '__WXMSW__':
             font = "Courier New"
