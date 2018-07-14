@@ -1,7 +1,7 @@
 import wx
 import wx.lib.pydocview
 import Service
-import noval.parser.config as parserconfig
+import noval.tool.syntax.lang as lang
 import datetime
 import getpass
 import os
@@ -363,7 +363,7 @@ class TextService(Service.BaseService):
             return True
         elif id == INSERT_COMMENT_TEMPLATE_ID \
                 or id == INSERT_DECLARE_ENCODING_ID:
-            event.Enable(text_view is not None and text_view.GetLangLexer() == parserconfig.LANG_PYTHON_LEXER )
+            event.Enable(text_view is not None and text_view.GetLangId() == lang.ID_LANG_PYTHON )
             return True
         else:
             return False

@@ -22,11 +22,13 @@ import noval.util.logger as logger
 import shutil
 import interpreter.manager as interpretermanager,interpreter.Interpreter as Interpreter
 import noval.parser.intellisence as intellisence
-import noval.parser.config as parserconfig
+import noval.tool.syntax.lang as lang
 from consts import _,ID_MRU_FILE1,PROJECT_EXTENSION,PROJECT_SHORT_EXTENSION,DEFAULT_MRU_FILE_NUM,CHECK_UPDATE_ATSTARTUP_KEY
 from noval.util import strutils
 import noval.parser.utils as parserutils
 from noval.dummy.userdb import UserDataDb
+from noval.tool.syntax import synglob
+import images
 
 # Required for Unicode support with python
 # site.py sets this, but Windows builds don't have site.py because of py2exe problems
@@ -190,37 +192,25 @@ class IDEApplication(wx.lib.pydocview.DocApp):
 
         # Note:  These templates must be initialized in display order for the "Files of type" dropdown for the "File | Open..." dialog
         defaultTemplate = wx.lib.docview.DocTemplate(docManager,
-                _("Any"),
+                _("Any File"),
                 "*.*",
-                _("Any"),
-                _(".txt"),
-                _("Text Document"),
-                _("Text View"),
+                os.getcwd(),
+                ".txt",
+                "Text Document",
+                "Text View",
                 STCTextEditor.TextDocument,
                 STCTextEditor.TextView,
                 wx.lib.docview.TEMPLATE_INVISIBLE,
-                icon = STCTextEditor.getTextIcon())
+                icon = images.getBlankIcon())
         docManager.AssociateTemplate(defaultTemplate)
-
-        htmlTemplate = wx.lib.docview.DocTemplate(docManager,
-                _("HTML"),
-                "*.html;*.htm",
-                _("HTML"),
-                _(".html"),
-                _("HTML Document"),
-                _("HTML View"),
-                HtmlEditor.HtmlDocument,
-                HtmlEditor.HtmlView,
-                icon = HtmlEditor.getHTMLIcon())
-        docManager.AssociateTemplate(htmlTemplate)
         
         webViewTemplate = wx.lib.docview.DocTemplate(docManager,
                 _("WebView"),
                 "*.com;*.org",
-                _("WebView"),
-                _(".com"),
-                _("WebView Document"),
-                _("WebView"),
+                os.getcwd(),
+                ".com",
+                "WebView Document",
+                "WebView",
                 HtmlEditor.WebDocument,
                 HtmlEditor.WebView,
                 wx.lib.docview.TEMPLATE_INVISIBLE,
@@ -228,90 +218,32 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         docManager.AssociateTemplate(webViewTemplate)
 
         imageTemplate = wx.lib.docview.DocTemplate(docManager,
-                _("Image"),
+                _("Image File"),
                 "*.bmp;*.ico;*.gif;*.jpg;*.jpeg;*.png",
-                _("Image"),
-                _(".png"),
-                _("Image Document"),
-                _("Image View"),
+                os.getcwd(),
+                ".png",
+                "Image Document",
+                "Image View",
                 ImageEditor.ImageDocument,
                 ImageEditor.ImageView,
                 wx.lib.docview.TEMPLATE_NO_CREATE,
                 icon = ImageEditor.getImageIcon())
         docManager.AssociateTemplate(imageTemplate)
 
-        perlTemplate = wx.lib.docview.DocTemplate(docManager,
-                _("Perl"),
-                "*.pl",
-                _("Perl"),
-                _(".pl"),
-                _("Perl Document"),
-                _("Perl View"),
-                PerlEditor.PerlDocument,
-                PerlEditor.PerlView,
-                icon = PerlEditor.getPerlIcon())
-        docManager.AssociateTemplate(perlTemplate)
-
-        phpTemplate = wx.lib.docview.DocTemplate(docManager,
-                _("PHP"),
-                "*.php",
-                _("PHP"),
-                _(".php"),
-                _("PHP Document"),
-                _("PHP View"),
-                PHPEditor.PHPDocument,
-                PHPEditor.PHPView,
-                icon = PHPEditor.getPHPIcon())
-        docManager.AssociateTemplate(phpTemplate)
-
         projectTemplate = ProjectEditor.ProjectTemplate(docManager,
-                _("Project"),
+                _("Project File"),
                 "*%s" % PROJECT_EXTENSION,
-                _("Project"),
-                _(PROJECT_EXTENSION),
-                _("Project Document"),
-                _("Project View"),
+                os.getcwd(),
+                PROJECT_EXTENSION,
+                "Project Document",
+                "Project View",
                 ProjectEditor.ProjectDocument,
                 ProjectEditor.ProjectView,
              ###   wx.lib.docview.TEMPLATE_NO_CREATE,
                 icon = ProjectEditor.getProjectIcon())
         docManager.AssociateTemplate(projectTemplate)
-
-        pythonTemplate = wx.lib.docview.DocTemplate(docManager,
-                _("Python"),
-                "*.py;*.pyw",
-                _("Python"),
-                _(".py"),
-                _("Python Document"),
-                _("Python View"),
-                PythonEditor.PythonDocument,
-                PythonEditor.PythonView,
-                icon = PythonEditor.getPythonIcon())
-        docManager.AssociateTemplate(pythonTemplate)
-
-        textTemplate = wx.lib.docview.DocTemplate(docManager,
-                _("Text"),
-                "*.text;*.txt",
-                _("Text"),
-                _(".txt"),
-                _("Text Document"),
-                _("Text View"),
-                STCTextEditor.TextDocument,
-                STCTextEditor.TextView,
-                icon = STCTextEditor.getTextIcon())
-        docManager.AssociateTemplate(textTemplate)
-
-        xmlTemplate = wx.lib.docview.DocTemplate(docManager,
-                _("XML"),
-                "*.xml",
-                _("XML"),
-                _(".xml"),
-                _("XML Document"),
-                _("XML View"),
-                XmlEditor.XmlDocument,
-                XmlEditor.XmlView,
-                icon = XmlEditor.getXMLIcon())
-        docManager.AssociateTemplate(xmlTemplate)
+        
+        synglob.LexerFactory().CreateLexerTemplates(docManager)
         
         pythonService           = self.InstallService(PythonEditor.PythonService(_("Python Interpreter"),embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         if not ACTIVEGRID_BASE_IDE:
@@ -367,35 +299,6 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             outlineService.AddViewTypeForBackgroundHandler(ProcessModelEditor.ProcessModelView)
             outlineService.AddViewTypeForBackgroundHandler(PropertyService.PropertyView) # special case, don't clear outline if in property window
         outlineService.StartBackgroundTimer()
-       
-##        projectService.AddLogicalViewFolderDefault(".agp", _("Projects"))
-##        projectService.AddLogicalViewFolderDefault(".wsdlag", _("Services"))
-##        projectService.AddLogicalViewFolderDefault(".wsdl", _("Services"))
-##        projectService.AddLogicalViewFolderDefault(".xsd", _("Data Models"))
-##        projectService.AddLogicalViewFolderDefault(".bpel", _("Page Flows"))
-##        projectService.AddLogicalViewFolderDefault(".xform", _("Pages"))
-##        projectService.AddLogicalViewFolderDefault(".xacml", _("Security"))
-##        projectService.AddLogicalViewFolderDefault(".lyt", _("Presentation/Layouts"))
-##        projectService.AddLogicalViewFolderDefault(".skn", _("Presentation/Skins"))
-##        projectService.AddLogicalViewFolderDefault(".css", _("Presentation/Stylesheets"))
-##        projectService.AddLogicalViewFolderDefault(".js", _("Presentation/Javascript"))
-##        projectService.AddLogicalViewFolderDefault(".html", _("Presentation/Static"))
-##        projectService.AddLogicalViewFolderDefault(".htm", _("Presentation/Static"))
-##        projectService.AddLogicalViewFolderDefault(".gif", _("Presentation/Images"))
-##        projectService.AddLogicalViewFolderDefault(".jpeg", _("Presentation/Images"))
-##        projectService.AddLogicalViewFolderDefault(".jpg", _("Presentation/Images"))
-##        projectService.AddLogicalViewFolderDefault(".png", _("Presentation/Images"))
-##        projectService.AddLogicalViewFolderDefault(".ico", _("Presentation/Images"))
-##        projectService.AddLogicalViewFolderDefault(".bmp", _("Presentation/Images"))
-##        projectService.AddLogicalViewFolderDefault(".py", _("Code"))
-##        projectService.AddLogicalViewFolderDefault(".php", _("Code"))
-##        projectService.AddLogicalViewFolderDefault(".pl", _("Code"))
-##        projectService.AddLogicalViewFolderDefault(".sql", _("Code"))
-##        projectService.AddLogicalViewFolderDefault(".xml", _("Code"))
-##        projectService.AddLogicalViewFolderDefault(".dpl", _("Code"))
-##        
-##        projectService.AddLogicalViewFolderCollapsedDefault(_("Page Flows"), False)
-##        projectService.AddLogicalViewFolderCollapsedDefault(_("Pages"), False)
     
         iconPath = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "noval.ico")
         self.SetDefaultIcon(wx.Icon(iconPath, wx.BITMAP_TYPE_ICO))
@@ -498,7 +401,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             else:
                 lineNum = foundView.LineFromPosition(pos)
                 foundView.GetCtrl().GotoPos(pos)
-            if foundView.GetLangLexer() == parserconfig.LANG_PYTHON_LEXER:
+            if foundView.GetLangId() == lang.ID_LANG_PYTHON:
                 import OutlineService
                 self.GetService(OutlineService.OutlineService).LoadOutline(foundView, lineNum=lineNum)
 
@@ -523,7 +426,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             foundView.Activate()
             startPos = foundView.PositionFromLine(lineNum)
             foundView.GotoPos(startPos+col)
-            if foundView.GetLangLexer() == parserconfig.LANG_PYTHON_LEXER:
+            if foundView.GetLangId() == lang.ID_LANG_PYTHON:
                 import OutlineService
                 self.GetService(OutlineService.OutlineService).LoadOutline(foundView, lineNum=lineNum)
                 

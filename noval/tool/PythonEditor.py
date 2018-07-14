@@ -27,7 +27,7 @@ import MessageService # for OnCheckCode
 import OutlineService
 import FindInDirService
 import codecs
-import noval.parser.config as parserconfig
+import noval.tool.syntax.lang as lang
 import Service
 import noval.parser.fileparser as parser
 import noval.parser.scope as scope
@@ -190,8 +190,8 @@ class PythonView(CodeEditor.CodeView):
         """ Used in split window to instantiate new instances """
         return PythonCtrl
     
-    def GetLangLexer(self):
-        return parserconfig.LANG_PYTHON_LEXER
+    def GetLangId(self):
+        return lang.ID_LANG_PYTHON
 
     def ProcessUpdateUIEvent(self, event):
         if not self.GetCtrl():
@@ -549,17 +549,17 @@ class PythonCtrl(CodeEditor.CodeCtrl):
 
     def __init__(self, parent, id=-1, style=wx.NO_FULL_REPAINT_ON_RESIZE):
         CodeEditor.CodeCtrl.__init__(self, parent, id, style)
-        self.SetProperty("tab.timmy.whinge.level", "1")
-        self.SetProperty("fold.comment.python", "1")
-        self.SetProperty("fold.quotes.python", "1")
-        self.SetLexer(wx.stc.STC_LEX_PYTHON)
-        self.SetStyleBits(7)
-        self.SetKeyWords(0, string.join(keyword.kwlist))
-        self.SetKeyWords(1, self.TypeKeyWords)
+##        self.SetProperty("tab.timmy.whinge.level", "1")
+##        self.SetProperty("fold.comment.python", "1")
+##        self.SetProperty("fold.quotes.python", "1")
+##        self.SetLexer(wx.stc.STC_LEX_PYTHON)
+##        self.SetStyleBits(7)
+##        self.SetKeyWords(0, string.join(keyword.kwlist))
+##        self.SetKeyWords(1, self.TypeKeyWords)
         self.Bind(wx.EVT_CHAR, self.OnChar)
         ###self.CallTipSetBackground("yellow")
-        self.CallTipSetBackground("#FFFFB8")
-        self.CallTipSetForeground('#404040')
+    #    self.CallTipSetBackground("#FFFFB8")
+     #   self.CallTipSetForeground('#404040')
         CodeEditor.CodeCtrl.SetMarginFoldStyle(self)
 
     def CreatePopupMenu(self):
@@ -620,52 +620,6 @@ class PythonCtrl(CodeEditor.CodeCtrl):
 
     def GetFontAndColorFromConfig(self):
         return CodeEditor.CodeCtrl.GetFontAndColorFromConfig(self, configPrefix = "Python")
-
-
-    def UpdateStyles(self):
-        CodeEditor.CodeCtrl.UpdateStyles(self)
-
-        if not self.GetFont():
-            return
-
-        faces = { 'font' : self.GetFont().GetFaceName(),
-                  'size' : self.GetFont().GetPointSize(),
-                  'size2': self.GetFont().GetPointSize() - 2,
-                  'color' : "%02x%02x%02x" % (self.GetFontColor().Red(), self.GetFontColor().Green(), self.GetFontColor().Blue())
-                  }
-
-        # Python styles
-        # White space
-        self.StyleSetSpec(wx.stc.STC_P_DEFAULT, "face:%(font)s,fore:#000000,face:%(font)s,size:%(size)d" % faces)
-        # Comment
-        self.StyleSetSpec(wx.stc.STC_P_COMMENTLINE, "face:%(font)s,fore:#007F00,italic,face:%(font)s,size:%(size)d" % faces)
-        # Number
-        self.StyleSetSpec(wx.stc.STC_P_NUMBER, "face:%(font)s,fore:#007F7F,size:%(size)d" % faces)
-        # String
-        self.StyleSetSpec(wx.stc.STC_P_STRING, "face:%(font)s,fore:#7F007F,face:%(font)s,size:%(size)d" % faces)
-        # Single quoted string
-        self.StyleSetSpec(wx.stc.STC_P_CHARACTER, "face:%(font)s,fore:#7F007F,face:%(font)s,size:%(size)d" % faces)
-        # Keyword
-        self.StyleSetSpec(wx.stc.STC_P_WORD, "face:%(font)s,fore:#00007F,bold,size:%(size)d" % faces)
-        # Keyword2
-        self.StyleSetSpec(wx.stc.STC_P_WORD2, "face:%(font)s,fore:#000080,bold,size:%(size)d" % faces)
-        # Triple quotes
-        self.StyleSetSpec(wx.stc.STC_P_TRIPLE, "face:%(font)s,fore:#7F0000,size:%(size)d" % faces)
-        # Triple double quotes
-        self.StyleSetSpec(wx.stc.STC_P_TRIPLEDOUBLE, "face:%(font)s,fore:#7F0000,size:%(size)d" % faces)
-        # Class name definition
-        self.StyleSetSpec(wx.stc.STC_P_CLASSNAME, "face:%(font)s,fore:#0000FF,bold,size:%(size)d" % faces)
-        # Function or method name definition
-        self.StyleSetSpec(wx.stc.STC_P_DEFNAME, "face:%(font)s,fore:#007F7F,bold,size:%(size)d" % faces)
-        # Operators
-        self.StyleSetSpec(wx.stc.STC_P_OPERATOR, "face:%(font)s,size:%(size)d" % faces)
-        # Identifiers
-        self.StyleSetSpec(wx.stc.STC_P_IDENTIFIER, "face:%(font)s,fore:#%(color)s,face:%(font)s,size:%(size)d" % faces)
-        # Comment-blocks
-        self.StyleSetSpec(wx.stc.STC_P_COMMENTBLOCK, "face:%(font)s,fore:#7F7F7F,size:%(size)d" % faces)
-        # End of line where string is not closed
-        self.StyleSetSpec(wx.stc.STC_P_STRINGEOL, "face:%(font)s,fore:#000000,face:%(font)s,back:#E0C0E0,eol,size:%(size)d" % faces)
-
 
     def OnUpdateUI(self, evt):
         braces = self.GetMatchingBraces()
@@ -1026,7 +980,7 @@ class PythonCtrl(CodeEditor.CodeCtrl):
             line = self.LineFromPosition(position) + 1
             dwellword = self.GetTypeWord(position)
             doc_view = Service.Service.GetActiveView()
-            if doc_view.GetLangLexer() == parserconfig.LANG_PYTHON_LEXER:
+            if doc_view.GetLangId() == lang.ID_LANG_PYTHON:
                 module_scope = doc_view.ModuleScope
                 if module_scope is None:
                     scope_found = None

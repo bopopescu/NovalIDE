@@ -51,7 +51,7 @@ import interpreter.Interpreter as Interpreter
 import OutputService
 import locale
 import OutputThread
-import noval.parser.config as parserconfig
+import noval.tool.syntax.lang as lang
 import WxThreadSafe
 import DebugOutputCtrl
 import noval.parser.intellisence as intellisence
@@ -2520,7 +2520,7 @@ class DebuggerService(Service.Service):
             else:
                 if wx.GetApp().GetService(project.ProjectEditor.ProjectService).GetView().GetDocument() is None:
                     event.Enable(self.HasAnyFiles() and \
-                            self.GetActiveView().GetLangLexer() == parserconfig.LANG_PYTHON_LEXER)
+                            self.GetActiveView().GetLangId() == lang.ID_LANG_PYTHON)
                 else:
                     event.Enable(True)
             return True
@@ -2530,7 +2530,7 @@ class DebuggerService(Service.Service):
         or an_id == DebuggerService.SET_PARAMETER_ENVIRONMENT_ID):
             if wx.GetApp().GetService(project.ProjectEditor.ProjectService).GetView().GetDocument() is None:
                 event.Enable(self.HasAnyFiles() and \
-                        self.GetActiveView().GetLangLexer() == parserconfig.LANG_PYTHON_LEXER)
+                        self.GetActiveView().GetLangId() == lang.ID_LANG_PYTHON)
             else:
                 event.Enable(True)
             return True

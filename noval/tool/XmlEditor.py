@@ -65,7 +65,7 @@ class XmlCtrl(CodeEditor.CodeCtrl):
 
     def __init__(self, parent, id=-1, style=wx.NO_FULL_REPAINT_ON_RESIZE):
         CodeEditor.CodeCtrl.__init__(self, parent, id, style)
-        self.SetLexer(wx.stc.STC_LEX_XML)
+        #self.SetLexer(wx.stc.STC_LEX_XML)
         self.SetProperty("fold.html", "1")
         CodeEditor.CodeCtrl.SetMarginFoldStyle(self)
 
@@ -83,34 +83,6 @@ class XmlCtrl(CodeEditor.CodeCtrl):
 
     def GetFontAndColorFromConfig(self):
         return CodeEditor.CodeCtrl.GetFontAndColorFromConfig(self, configPrefix = "Xml")
-
-
-    def UpdateStyles(self):
-        CodeEditor.CodeCtrl.UpdateStyles(self)
-        
-        if not self.GetFont():
-            return
-
-        faces = { 'font' : self.GetFont().GetFaceName(),
-                  'size' : self.GetFont().GetPointSize(),
-                  'size2': self.GetFont().GetPointSize() - 2,
-                  'color' : "%02x%02x%02x" % (self.GetFontColor().Red(), self.GetFontColor().Green(), self.GetFontColor().Blue())
-                  }
-
-        # White space
-        self.StyleSetSpec(wx.stc.STC_H_DEFAULT, "face:%(font)s,fore:#000000,face:%(font)s,size:%(size)d" % faces)
-        # Comment
-        self.StyleSetSpec(wx.stc.STC_H_COMMENT, "face:%(font)s,fore:#007F00,italic,face:%(font)s,size:%(size)d" % faces)
-        # Number
-        self.StyleSetSpec(wx.stc.STC_H_NUMBER, "face:%(font)s,fore:#007F7F,size:%(size)d" % faces)
-        # String
-        self.StyleSetSpec(wx.stc.STC_H_SINGLESTRING, "face:%(font)s,fore:#7F007F,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_H_DOUBLESTRING, "face:%(font)s,fore:#7F007F,face:%(font)s,size:%(size)d" % faces)
-        # Tag
-        self.StyleSetSpec(wx.stc.STC_H_TAG, "face:%(font)s,fore:#00007F,bold,size:%(size)d" % faces)
-        # Attributes
-        self.StyleSetSpec(wx.stc.STC_H_ATTRIBUTE, "face:%(font)s,fore:#007F7F,bold,size:%(size)d" % faces)
-
 
 class XmlOptionsPanel(STCTextEditor.TextOptionsPanel):
 

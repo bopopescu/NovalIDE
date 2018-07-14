@@ -23,7 +23,7 @@ import codecs
 import shutil
 import FileObserver
 import WxThreadSafe
-import noval.parser.config as parserconfig
+import noval.tool.syntax.lang as lang
 import MarkerService
 import TextService
 import CompletionService
@@ -33,6 +33,8 @@ import noval.util.sysutils as sysutilslib
 import noval.util.fileutils as fileutils
 import noval.parser.utils as parserutils
 import BaseCtrl
+from noval.tool.syntax import syntax
+import noval.util.strutils as strutils
 
 _ = wx.GetTranslation
 
@@ -378,8 +380,8 @@ class TextView(wx.lib.docview.View):
     def GetType(self):
         return consts.TEXT_VIEW
     
-    def GetLangLexer(self):
-        return parserconfig.LANG_NONE_LEXER
+    def GetLangId(self):
+        return lang.ID_LANG_TXT
 
     def GetCtrl(self):
         if wx.Platform == "__WXMAC__":
@@ -1270,11 +1272,13 @@ class TextCtrl(BaseCtrl.ScintillaCtrl):
 
     def __init__(self, parent, id=-1,style=wx.NO_FULL_REPAINT_ON_RESIZE):
         BaseCtrl.ScintillaCtrl.__init__(self, parent, id, style=style)
+        self.UpdateBaseStyles()
         self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
         self.Bind(wx.stc.EVT_STC_ZOOM, self.OnUpdateLineNumberMarginWidth)  # auto update line num width on zoom
         self.MarkerDefineDefault()
         self.SetEdgeMode(wx.stc.STC_EDGE_LINE)
         self.SetEdgeColumn(78)
+        
 
     @NavigationService.jumpaction
     def OnLeftUp(self, evt):
@@ -1355,6 +1359,104 @@ class TextCtrl(BaseCtrl.ScintillaCtrl):
 
     def IsListMemberFlag(self,pos):
         return False
+
+    def UpdateBaseStyles(self):
+        """Updates the base styles of editor to the current settings
+        @postcondition: base style info is updated
+
+        """
+        self.StyleDefault()
+        self.SetMargins(4, 0)
+        
+        lex_manager = syntax.LexerManager()
+
+        # Global default styles for all languages
+        self.StyleSetSpec(0, lex_manager.GetStyleByName('default_style'))
+        self.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT, lex_manager.GetStyleByName('default_style'))
+        self.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER, lex_manager.GetStyleByName('line_num'))
+        self.StyleSetSpec(wx.stc.STC_STYLE_CONTROLCHAR, lex_manager.GetStyleByName('ctrl_char'))
+        self.StyleSetSpec(wx.stc.STC_STYLE_BRACELIGHT, lex_manager.GetStyleByName('brace_good'))
+        self.StyleSetSpec(wx.stc.STC_STYLE_BRACEBAD, lex_manager.GetStyleByName('brace_bad'))
+        self.StyleSetSpec(wx.stc.STC_STYLE_INDENTGUIDE, lex_manager.GetStyleByName('guide_style'))
+
+        # wx.stc.STC_STYLE_CALLTIP doesn't seem to do anything
+        calltip = lex_manager.GetItemByName('calltip')
+        self.CallTipSetBackground(calltip.Back)
+        self.CallTipSetForeground(calltip.Fore)
+
+        sback = lex_manager.GetItemByName('select_style')
+        if not sback.IsNull() and len(sback.Back):
+            sback = sback.Back
+            sback = strutils.HexToRGB(sback)
+            sback = wx.Colour(*sback)
+        else:
+            sback = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT)
+
+        # If selection colour is dark make the foreground white
+        # else use the default settings.
+        if sum(sback.Get()) < 384:
+            self.SetSelForeground(True, wx.WHITE)
+        else:
+            self.SetSelForeground(True, wx.BLACK)
+        self.SetSelBackground(True, sback)
+
+        # Causes issues with selecting text when view whitespace is on
+#        wspace = self.GetItemByName('whitespace_style')
+#        self.SetWhitespaceBackground(True, wspace.GetBack())
+#        self.SetWhitespaceForeground(True, wspace.GetFore())
+
+        default_fore = self.GetDefaultForeColour()
+        edge_colour = lex_manager.GetItemByName('edge_style')
+        if sysutilslib.isWindows() and edge_colour.Fore:
+            self.SetEdgeColour(edge_colour.Fore)
+        self.SetCaretForeground(default_fore)
+        self.SetCaretLineBack(lex_manager.GetItemByName('caret_line').Back)
+        self.Colourise(0, -1)
+
+    def SetSyntax(self, synlst):
+        """Sets the Syntax Style Specs from a list of specifications
+        @param synlst: [(STYLE_ID, "STYLE_TYPE"), (STYLE_ID2, "STYLE_TYPE2)]
+
+        """
+        # Parses Syntax Specifications list, ignoring all bad values
+        self.UpdateBaseStyles()
+        valid_settings = list()
+        for syn in synlst:
+            #if len(syn) != 2:
+              #  self.LOG("[ed_style][warn] Bogus Syntax Spec %s" % repr(syn))
+               # continue
+            #else:
+            self.StyleSetSpec(syn.StyleId, syn.GetStyleSpec())
+            valid_settings.append(syn)
+        syntax.LexerManager().syntax_set = valid_settings
+        self.Refresh()
+        return True
+
+    def StyleDefault(self):
+        """Clears the editor styles to default
+        @postcondition: style is reset to default
+
+        """
+        self.StyleClearAll()
+        self.SetCaretForeground(wx.BLACK)
+        self.Colourise(0, -1)
+        
+    def GetDefaultForeColour(self, as_hex=False):
+        """Gets the foreground color of the default style and returns
+        a Colour object. Otherwise returns Black if the default
+        style is not found.
+        @keyword as_hex: return a hex string or colour object
+        @return: wx.Colour of default style foreground or hex value
+
+        """
+        fore = syntax.LexerManager().GetItemByName('default_style').Fore
+        if not fore:
+            fore = u"#000000"
+
+        if not as_hex:
+            rgb = strutils.HexToRGB(fore[1:])
+            fore = wx.Colour(red=rgb[0], green=rgb[1], blue=rgb[2])
+        return fore
          
 class TextPrintout(wx.lib.docview.DocPrintout):
     """ for Print Preview and Print """

@@ -64,8 +64,8 @@ class PerlCtrl(CodeEditor.CodeCtrl):
 
     def __init__(self, parent, id=-1, style=wx.NO_FULL_REPAINT_ON_RESIZE):
         CodeEditor.CodeCtrl.__init__(self, parent, id, style)
-        self.SetLexer(wx.stc.STC_LEX_PERL)
-        self.SetKeyWords(0, string.join(PERLKEYWORDS))
+       # self.SetLexer(wx.stc.STC_LEX_PERL)
+        #self.SetKeyWords(0, string.join(PERLKEYWORDS))
 
 
     def CanWordWrap(self):
@@ -78,54 +78,6 @@ class PerlCtrl(CodeEditor.CodeCtrl):
 
     def GetFontAndColorFromConfig(self):
         return CodeEditor.CodeCtrl.GetFontAndColorFromConfig(self, configPrefix = "Perl")
-
-
-    def UpdateStyles(self):
-        CodeEditor.CodeCtrl.UpdateStyles(self)
-        
-        if not self.GetFont():
-            return
-
-        faces = { 'font' : self.GetFont().GetFaceName(),
-                  'size' : self.GetFont().GetPointSize(),
-                  'size2': self.GetFont().GetPointSize() - 2,
-                  'color' : "%02x%02x%02x" % (self.GetFontColor().Red(), self.GetFontColor().Green(), self.GetFontColor().Blue())
-                  }
-
-        # Perl Styles
-        self.StyleSetSpec(wx.stc.STC_PL_DEFAULT, "face:%(font)s,fore:#000000,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_COMMENTLINE, "face:%(font)s,fore:#007F00,italic,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_NUMBER, "face:%(font)s,fore:#007F7F,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_CHARACTER, "face:%(font)s,fore:#7F007F,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_STRING, "face:%(font)s,fore:#7F007F,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_STRING_Q, "face:%(font)s,fore:#7F007F,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_STRING_QQ, "face:%(font)s,fore:#7F007F,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_STRING_QX, "face:%(font)s,fore:#7F007F,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_STRING_QR, "face:%(font)s,fore:#7F007F,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_STRING_QW, "face:%(font)s,fore:#7F007F,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_BACKTICKS, "face:%(font)s,fore:#7F007F,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_WORD, "face:%(font)s,fore:#00007F,bold,size:%(size)d" % faces) # keyword
-        self.StyleSetSpec(wx.stc.STC_PL_IDENTIFIER, "face:%(font)s,fore:#%(color)s,face:%(font)s,size:%(size)d" % faces)
-
-        # Default
-        self.StyleSetSpec(wx.stc.STC_PL_ARRAY, "face:%(font)s,fore:#000000,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_DATASECTION, "face:%(font)s,fore:#000000,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_ERROR, "face:%(font)s,fore:#000000,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_HASH, "face:%(font)s,fore:#000000,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_HERE_DELIM, "face:%(font)s,fore:#000000,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_HERE_Q, "face:%(font)s,fore:#000000,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_HERE_QQ, "face:%(font)s,fore:#000000,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_HERE_QX, "face:%(font)s,fore:#000000,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_LONGQUOTE, "face:%(font)s,fore:#000000,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_OPERATOR, "face:%(font)s,fore:#000000,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_POD, "face:%(font)s,fore:#000000,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_PREPROCESSOR, "face:%(font)s,fore:#000000,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_PUNCTUATION, "face:%(font)s,fore:#000000,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_REGEX, "face:%(font)s,fore:#000000,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_REGSUBST, "face:%(font)s,fore:#000000,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_SCALAR, "face:%(font)s,fore:#000000,face:%(font)s,size:%(size)d" % faces)
-        self.StyleSetSpec(wx.stc.STC_PL_SYMBOLTABLE, "face:%(font)s,fore:#000000,face:%(font)s,size:%(size)d" % faces)
-
 
 class PerlOptionsPanel(STCTextEditor.TextOptionsPanel):
 

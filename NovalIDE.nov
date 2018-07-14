@@ -60,8 +60,6 @@
   <noval:file filePath="./noval/tool/OutputService.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/OutputThread.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/PerlEditor.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/PHPDebugger.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/PHPEditor.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/process.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/PyShell.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/PythonEditor.py" logicalFolder="noval/tool" isStartup="false"/>
@@ -145,5 +143,38 @@
   <noval:file filePath="./noval/tests/test_interpreter.py" logicalFolder="noval/tests" isStartup="false"/>
   <noval:file filePath="./noval/tests/test_project.py" logicalFolder="noval/tests" isStartup="false"/>
   <noval:file filePath="./noval/tool/OptionService.py" logicalFolder="noval/tool" isStartup="false"/>
+  <noval:file filePath="./noval/tool/syntax/lexer/_cpp.py" logicalFolder="noval/tool/syntax/lexer" isStartup="false"/>
+  <noval:file filePath="./noval/tool/syntax/lexer/_css.py" logicalFolder="noval/tool/syntax/lexer" isStartup="false"/>
+  <noval:file filePath="./noval/tool/syntax/lexer/_html.py" logicalFolder="noval/tool/syntax/lexer" isStartup="false"/>
+  <noval:file filePath="./noval/tool/syntax/lexer/_javascript.py" logicalFolder="noval/tool/syntax/lexer" isStartup="false"/>
+  <noval:file filePath="./noval/tool/syntax/lexer/_props.py" logicalFolder="noval/tool/syntax/lexer" isStartup="false"/>
+  <noval:file filePath="./noval/tool/syntax/lexer/_python.py" logicalFolder="noval/tool/syntax/lexer" isStartup="false"/>
+  <noval:file filePath="./noval/tool/syntax/lexer/_sh.py" logicalFolder="noval/tool/syntax/lexer" isStartup="false"/>
+  <noval:file filePath="./noval/tool/syntax/lexer/_sql.py" logicalFolder="noval/tool/syntax/lexer" isStartup="false"/>
+  <noval:file filePath="./noval/tool/syntax/lexer/_xml.py" logicalFolder="noval/tool/syntax/lexer" isStartup="false"/>
+  <noval:file filePath="./noval/tool/syntax/__init__.py" logicalFolder="noval/tool/syntax" isStartup="false"/>
+  <noval:file filePath="./noval/tool/syntax/lang.py" logicalFolder="noval/tool/syntax" isStartup="false"/>
+  <noval:file filePath="./noval/tool/syntax/style.py" logicalFolder="noval/tool/syntax" isStartup="false"/>
+  <noval:file filePath="./noval/tool/syntax/syndata.py" logicalFolder="noval/tool/syntax" isStartup="false"/>
+  <noval:file filePath="./noval/tool/syntax/synglob.py" logicalFolder="noval/tool/syntax" isStartup="false"/>
+  <noval:file filePath="./noval/tool/syntax/syntax.py" logicalFolder="noval/tool/syntax" isStartup="false"/>
+  <noval:file filePath="./noval/tool/BaseCtrl.py" logicalFolder="noval/tool" isStartup="false"/>
+  <noval:file filePath="./noval/tests/test_lang.py" logicalFolder="noval/tests" isStartup="false"/>
+  <noval:file filePath="./noval/tool/syntax/lexer/_yml.py" logicalFolder="noval/tool/syntax/lexer" isStartup="false"/>
+  <noval:file filePath="./noval/tool/syntax/lexer/_perl.py" logicalFolder="noval/tool/syntax/lexer" isStartup="false"/>
+  <noval:file filePath="./noval/tool/syntax/lexer/_c.py" logicalFolder="noval/tool/syntax/lexer" isStartup="false"/>
+  <noval:file filePath="./noval/tool/syntax/lexer/_txt.py" logicalFolder="noval/tool/syntax/lexer" isStartup="false"/>
+  <noval:file filePath="./noval/tool/images.py" logicalFolder="noval/tool" isStartup="false"/>
+  <noval:file filePath="./noval/tool/data/styles/BlackBoard.ess" logicalFolder="noval/tool/data/styles" isStartup="false"/>
+  <noval:file filePath="./noval/tool/data/styles/Blue.ess" logicalFolder="noval/tool/data/styles" isStartup="false"/>
+  <noval:file filePath="./noval/tool/data/styles/BlueMonday.ess" logicalFolder="noval/tool/data/styles" isStartup="false"/>
+  <noval:file filePath="./noval/tool/data/styles/Cream.ess" logicalFolder="noval/tool/data/styles" isStartup="false"/>
+  <noval:file filePath="./noval/tool/data/styles/Default.ess" logicalFolder="noval/tool/data/styles" isStartup="false"/>
+  <noval:file filePath="./noval/tool/data/styles/Dessert.ess" logicalFolder="noval/tool/data/styles" isStartup="false"/>
+  <noval:file filePath="./noval/tool/data/styles/Guepardo.ess" logicalFolder="noval/tool/data/styles" isStartup="false"/>
+  <noval:file filePath="./noval/tool/data/styles/Midnight.ess" logicalFolder="noval/tool/data/styles" isStartup="false"/>
+  <noval:file filePath="./noval/tool/data/styles/Mocha.ess" logicalFolder="noval/tool/data/styles" isStartup="false"/>
+  <noval:file filePath="./noval/tool/syntax/lexer/_h.py" logicalFolder="noval/tool/syntax/lexer" isStartup="false"/>
+  <noval:file filePath="./noval/tool/ColorFont.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>

@@ -4,7 +4,7 @@ import wx
 import noval.util.sysutils as sysutilslib
 import noval.util.fileutils as fileutils
 import noval.util.strutils as strutils
-import noval.parser.config as parserconfig
+import noval.tool.syntax.lang as lang
 import consts
 import noval.tool.NavigationService
 import noval.util.appdirs as appdirs
@@ -284,7 +284,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
                 self.AppendMenuItem(menu,_("Open Path in Terminator"),OnOpenPathInTerminator)
             self.AppendMenuItem(menu,_("Copy Path"),OnCopyFilePath)
             self.AppendMenuItem(menu,_("Copy Name"),OnCopyFileName)
-            if view.GetType() == consts.TEXT_VIEW and view.GetLangLexer() == parserconfig.LANG_PYTHON_LEXER:
+            if view.GetType() == consts.TEXT_VIEW and view.GetLangId() == lang.ID_LANG_PYTHON:
                 self.AppendMenuItem(menu,_("Copy Module Name"),OnCopyModuleName)
         else:
             y = y - 25  # wxBug: It is offsetting click events in the blank notebook area

@@ -46,6 +46,7 @@ import uuid
 import noval.tool.FileObserver as FileObserver
 import cPickle
 import NewFile
+import noval.tool.images as images
 
 from noval.tool.IDE import ACTIVEGRID_BASE_IDE
 if not ACTIVEGRID_BASE_IDE:
@@ -1503,7 +1504,7 @@ class ProjectTreeCtrl(wx.TreeCtrl):
                 iconIndex = iconList.AddIcon(icon)
                 self._iconIndexLookup.append((template, iconIndex))
 
-        icon = getBlankIcon()
+        icon = images.getBlankIcon()
         if icon.GetHeight() != 16 or icon.GetWidth() != 16:
             icon.SetHeight(16)
             icon.SetWidth(16)
@@ -4985,37 +4986,6 @@ def getProjectBitmap():
 
 def getProjectIcon():
     return wx.IconFromBitmap(getProjectBitmap())
-
-
-#----------------------------------------------------------------------------
-
-def getBlankData():
-    return \
-"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x06\
-\x00\x00\x00\x1f\xf3\xffa\x00\x00\x00\x04sBIT\x08\x08\x08\x08|\x08d\x88\x00\
-\x00\x01\x04IDAT8\x8d\xa5\x93\xbdj\x02A\x10\xc7\x7f{gme\xe5c\xe4\t\x82\x85\
-\x85\x85oa\xe5+\xd8Z\xd8'e\xfa\x80\xd8\xd8X\x19R\xc4\x07\x90\x04\xd1J\x08\
-\x17\x0cr\\V\xe1\xe4\xfc\x80\xb58\xf7\xd8\xbd\x0f\xa280\xec\xec2\xbf\xff\xce\
-\xcc\xb2B8.\xf7X\xc9\xdc|L\x97J\xc7\xbe\x0c\x01\xf0\xd6\x01\x00RFtZu\x91Q\
-\x10\x8e\x9b\xf8\xe4\xf3[-w*\xf1\xafm\xec\xcf\x83\x89\x1a\xad\x94\xea\xbe\
-\x8c\x95\x99/\x1c\x17\xe7\xdaR\xcb%xh\xd4hw_\x95yn\xb5\xe0\xcb\x90\xea%\x0eO\
-\xf1\xba\xd9\xc7\xe5\xbf\x0f\xdfX]\xda)\x140A\r\x03<6klO\xf0w\x84~\xef\xc9\
-\xca/lA\xc3@\x02\xe7\x99U\x81\xb7\x0e\xa8\xec\xed\x04\x13\xde\x1c\xfe\x11\
-\x902\xb2@\xc8\xc2\x8b\xd9\xbcX\xc0\x045\xac\xc1 Jg\xe6\x08\xe8)\xa7o\xd5\
-\xb0\xbf\xcb\nd\x86x\x0b\x9c+p\x0b\x0c\xa9\x16~\xbc_\xeb\x9d\xd3\x03\xcb3q\
-\xefo\xbc\xfa/\x14\xd9\x19\x1f\xfb\x8aa\x87\xf2\xf7\x16\x00\x00\x00\x00IEND\
-\xaeB`\x82" 
-
-
-def getBlankBitmap():
-    return BitmapFromImage(getBlankImage())
-
-def getBlankImage():
-    stream = cStringIO.StringIO(getBlankData())
-    return ImageFromStream(stream)
-
-def getBlankIcon():
-    return wx.IconFromBitmap(getBlankBitmap())
 
 #----------------------------------------------------------------------
 def getFolderClosedBitmap():

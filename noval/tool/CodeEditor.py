@@ -30,6 +30,8 @@ import TextService
 import noval.util.sysutils as sysutilslib
 import EOLFormat
 import CompletionService
+import noval.util.strutils as strutils
+from noval.tool.syntax import syntax
 _ = wx.GetTranslation
 
 ENABLE_FOLD_ID = wx.NewId()
@@ -221,7 +223,7 @@ class CodeView(STCTextEditor.TextView):
 
     def OnChangeFilename(self):
         wx.lib.docview.View.OnChangeFilename(self)
-        if self.GetLangLexer() == parserconfig.LANG_PYTHON_LEXER:
+        if self.GetLangId() == syntax.lang.ID_LANG_PYTHON:
             self.LoadOutline(force=True)
         
 
@@ -853,6 +855,8 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         self.StyleSetSpec(wx.stc.STC_STYLE_CONTROLCHAR, "face:%(font)s" % faces)
         self.StyleSetSpec(wx.stc.STC_STYLE_BRACELIGHT,  "face:%(font)s,fore:#000000,back:#70FFFF,size:%(size)d" % faces)
         self.StyleSetSpec(wx.stc.STC_STYLE_BRACEBAD,    "face:%(font)s,fore:#000000,back:#FF0000,size:%(size)d" % faces)
+            
+        self.SetLangLexer()
 
     def GetTypeWord(self,pos):
         start_pos = self.WordStartPosition(pos,True)
@@ -1027,14 +1031,27 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         self.SetMarginType(CodeView.FOLD_MARKER_NUM, wx.stc.STC_MARGIN_SYMBOL)
         self.SetMarginMask(CodeView.FOLD_MARKER_NUM, wx.stc.STC_MASK_FOLDERS)
         self.SetMarginSensitive(CodeView.FOLD_MARKER_NUM, True)
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEREND,     wx.stc.STC_MARK_BOXPLUSCONNECTED,  "white", "black")
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEROPENMID, wx.stc.STC_MARK_BOXMINUSCONNECTED, "white", "black")
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDERMIDTAIL, wx.stc.STC_MARK_TCORNER,  "white", "black")
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDERTAIL,    wx.stc.STC_MARK_LCORNER,  "white", "black")
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDERSUB,     wx.stc.STC_MARK_VLINE,    "white", "black")
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDER,        wx.stc.STC_MARK_BOXPLUS,  "white", "black")
-        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEROPEN,    wx.stc.STC_MARK_BOXMINUS, "white", "black")
+        
+        style = syntax.LexerManager().GetItemByName('foldmargin_style')
+        back = style.Fore
+        rgb = strutils.HexToRGB(back[1:])
+        back = wx.Colour(red=rgb[0], green=rgb[1], blue=rgb[2])
+
+        fore = style.Back
+        rgb = strutils.HexToRGB(fore[1:])
+        fore = wx.Colour(red=rgb[0], green=rgb[1], blue=rgb[2])
+        
+        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEREND,     wx.stc.STC_MARK_BOXPLUSCONNECTED,  fore, back)
+        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEROPENMID, wx.stc.STC_MARK_BOXMINUSCONNECTED, fore, back)
+        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDERMIDTAIL, wx.stc.STC_MARK_TCORNER,  fore, back)
+        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDERTAIL,    wx.stc.STC_MARK_LCORNER,  fore, back)
+        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDERSUB,     wx.stc.STC_MARK_VLINE,    fore, back)
+        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDER,        wx.stc.STC_MARK_BOXPLUS,  fore, back)
+        self.MarkerDefine(wx.stc.STC_MARKNUM_FOLDEROPEN,    wx.stc.STC_MARK_BOXMINUS, fore, back)
         self.SetFoldFlags(16)  ###  WHAT IS THIS VALUE?  WHAT ARE THE OTHER FLAGS?  DOES IT MATTER?
+        
+        self.SetFoldMarginHiColour(True, fore)
+        self.SetFoldMarginColour(True, fore)
 
     def SetEOLMode(self,eol_id):
         mode = MODE_MAP.get(eol_id, wx.stc.STC_EOL_LF)
@@ -1126,3 +1143,66 @@ class CodeCtrl(STCTextEditor.TextCtrl):
             return u'\r\n'
         else:
             return u'\n'
+
+    def SetLangLexer(self):
+        document = self._dynSash._view.GetDocument()
+        file_path_name = document.GetFilename()
+        if file_path_name:
+            file_ext = strutils.GetFileExt(file_path_name)
+        else:
+            #new document
+            file_ext = document.GetDocumentTemplate().GetDefaultExtension()
+        lexer_manager = syntax.LexerManager()
+        lexer = lexer_manager.GetLexer(lexer_manager.GetLangIdFromExt(file_ext))
+        lexer_id = lexer.Lexer
+        # Check for special cases
+        # TODO: add fetch method to check if container lexer requires extra
+        #       style bytes beyond the default 5.
+        if lexer_id in [ wx.stc.STC_LEX_HTML, wx.stc.STC_LEX_XML]:
+            self.SetStyleBits(7)
+        elif lexer_id == wx.stc.STC_LEX_NULL:
+            self.SetStyleBits(5)
+            self.SetLexer(lexer_id)
+            self.ClearDocumentStyle()
+            self.UpdateBaseStyles()
+            return True
+        else:
+            self.SetStyleBits(5)
+
+        # Set Lexer
+        self.SetLexer(lexer_id)
+        # Set Keywords
+        self.SetKeyWords(lexer.Keywords)
+        # Set Lexer/Syntax Specifications
+        self.SetSyntax(lexer.StyleItems)
+        # Set Extra Properties
+      ###  self.SetProperties(syn_data.Properties)
+        
+
+    def SetKeyWords(self, kw_lst):
+        """Sets the keywords from a list of keyword sets
+        @param kw_lst: [ (KWLVL, "KEWORDS"), (KWLVL2, "KEYWORDS2"), ect...]
+
+        """
+        # Parse Keyword Settings List simply ignoring bad values and badly
+        # formed lists
+        kwlist = ""
+        for keyw in kw_lst:
+            if len(keyw) != 2:
+                continue
+            else:
+                if not isinstance(keyw[0], int) or \
+                   not isinstance(keyw[1], basestring):
+                    continue
+                else:
+                    kwlist += keyw[1]
+                    super(CodeCtrl, self).SetKeyWords(keyw[0], keyw[1])
+
+        # Can't have ? in scintilla autocomp list unless specifying an image
+        # TODO: this should be handled by the autocomp service
+        if '?' in kwlist:
+            kwlist.replace('?', '')
+
+        kwlist = kwlist.split()         # Split into a list of words
+        kwlist = list(set(kwlist))      # Remove duplicates from the list
+        kwlist.sort()                   # Sort into alphabetical order
