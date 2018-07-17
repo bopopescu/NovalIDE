@@ -31,7 +31,7 @@ class OptionsDialog(wx.Dialog):
         line_sizer = wx.BoxSizer(wx.HORIZONTAL)
         tree_sizer = wx.BoxSizer(wx.VERTICAL)
             
-        self.tree = CT.CustomTreeCtrl(self,size=(200,600) ,style = wx.BORDER_THEME,agwStyle = wx.TR_DEFAULT_STYLE|wx.TR_NO_BUTTONS|wx.TR_HIDE_ROOT)
+        self.tree = CT.CustomTreeCtrl(self,size=(200,620) ,style = wx.BORDER_THEME,agwStyle = wx.TR_DEFAULT_STYLE|wx.TR_NO_BUTTONS|wx.TR_HIDE_ROOT)
         tree_sizer.Add(self.tree, 0, wx.ALL, 0)
         wx.EVT_TREE_SEL_CHANGED(self.tree,self.tree.GetId(),self.DoSelection)
 
@@ -130,7 +130,7 @@ class OptionsService(wx.lib.pydocview.DocOptionsService):
         wx.lib.pydocview.DocOptionsService.__init__(self,False,supportedModes=wx.lib.docview.DOC_MDI)
         self._optionsPanels = {}
         self.category_list = []
-        self.AddOptionsPanel(_("General"),_("General"),GeneralOption.GeneralOptionsPanel)
+        self.AddOptionsPanel(_("Environment"),_("General"),GeneralOption.GeneralOptionsPanel)
         
     def OnOptions(self, event):
         """

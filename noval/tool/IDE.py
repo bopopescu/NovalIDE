@@ -160,6 +160,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import NavigationService
         import TabbedFrame
         import interpreter.configruation as configruation
+        import ColorFont
 ##        import UpdateLogIniService
                             
         _EDIT_LAYOUTS = True
@@ -276,14 +277,13 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             windowService       = self.InstallService(wx.lib.pydocview.WindowMenuService())
         
         # order of these added determines display order of Options Panels
-        optionsService.AddOptionsPanel(_("General"),_("Project"),ProjectEditor.ProjectOptionsPanel)
+        optionsService.AddOptionsPanel(_("Environment"),_("Project"),ProjectEditor.ProjectOptionsPanel)
        ## optionsService.AddOptionsPanel(DebuggerService.DebuggerOptionsPanel)
-        optionsService.AddOptionsPanel(_("Editor"),_("Python"),PythonEditor.PythonOptionsPanel)
+        optionsService.AddOptionsPanel(_("Environment"),_("Text"),PythonEditor.PythonOptionsPanel)
   ##      optionsService.AddOptionsPanel(PHPEditor.PHPOptionsPanel)
     ##    optionsService.AddOptionsPanel(PerlEditor.PerlOptionsPanel)
-        optionsService.AddOptionsPanel(_("Editor"),_("Xml"),XmlEditor.XmlOptionsPanel)
-        optionsService.AddOptionsPanel(_("Editor"),_("Html"),HtmlEditor.HtmlOptionsPanel)
-        optionsService.AddOptionsPanel(_("Editor"),_("Text"),STCTextEditor.TextOptionsPanel)
+     ###   optionsService.AddOptionsPanel(_("Editor"),_("Text"),STCTextEditor.TextOptionsPanel)
+        optionsService.AddOptionsPanel(_("Environment"),_("Fonts and Colors"),ColorFont.ColorFontOptionsPanel)
         optionsService.AddOptionsPanel(_("Interpreter"),_("Python Interpreter"),configruation.InterpreterConfigurationPanel)
   ##      optionsService.AddOptionsPanel(SVNService.SVNOptionsPanel)
         optionsService.AddOptionsPanel(_("Other"),_("Extension"),ExtensionService.ExtensionOptionsPanel)

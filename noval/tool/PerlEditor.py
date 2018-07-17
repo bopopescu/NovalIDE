@@ -79,16 +79,6 @@ class PerlCtrl(CodeEditor.CodeCtrl):
     def GetFontAndColorFromConfig(self):
         return CodeEditor.CodeCtrl.GetFontAndColorFromConfig(self, configPrefix = "Perl")
 
-class PerlOptionsPanel(STCTextEditor.TextOptionsPanel):
-
-    def __init__(self, parent, id):
-        STCTextEditor.TextOptionsPanel.__init__(self, parent, id, configPrefix = "Perl", label = "Perl", hasWordWrap = True, hasTabs = True, hasFolding=True)
-
-
-    def GetIcon(self):
-        return getPerlIcon()
-
-
 PERLKEYWORDS = [
         "abs",
         "accept",

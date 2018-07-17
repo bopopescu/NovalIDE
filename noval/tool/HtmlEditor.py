@@ -287,17 +287,6 @@ class WebView(wx.lib.docview.View):
 
     def OnRefreshPageButton(self, evt):
         self.wv.Reload()
-        
-
-
-class HtmlOptionsPanel(STCTextEditor.TextOptionsPanel):
-
-    def __init__(self, parent, id):
-        STCTextEditor.TextOptionsPanel.__init__(self, parent, id, configPrefix = "Html", label = "HTML", hasWordWrap = True, hasTabs = True, hasFolding=True)
-
-
-    def GetIcon(self):
-        return getHTMLIcon()
 
 
 HTMLKEYWORDS = [

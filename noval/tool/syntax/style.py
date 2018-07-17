@@ -214,6 +214,15 @@ class LexerStyleItem(StyleItem):
         return self._key_name
         
     def GetStyleSpec(self):
+        style_item = syntax.LexerManager().GetItemByName(self._global_style_name)
+        if not self.Back:
+            self.SetBack(style_item.Back)
+        if not self.Fore:
+            self.SetFore(style_item.Fore)
+        if not self.Face:
+            self.SetFace(style_item.Face)
+        if not self.Size:
+            self.SetSize(style_item.Size)
         style_spec_str = syntax.LexerManager().GetStyleByName(self._global_style_name)
         return style_spec_str
         

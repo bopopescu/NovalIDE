@@ -1,5 +1,5 @@
 import wx
-from noval.tool.consts import SPACE,HALF_SPACE,_ ,THEME_KEY
+from noval.tool.consts import SPACE,HALF_SPACE,_ ,THEME_KEY,DEFAULT_THEME_NAME
 import wx.stc as stc
 import wx.combo
 from noval.tool.syntax import syntax
@@ -7,13 +7,7 @@ import copy
 import noval.util.strutils as strutils
 import os
 import noval.util.appdirs as appdirs
-
-
-DEFAULT_COLOR = _('Default')
-BLUE_COLOR = _('Blue')
-RED_COLOR = _('Red')
-BLACK_COLOR = _('Black')
-
+import STCTextEditor
 
 class CodeSampleCtrl(stc.StyledTextCtrl):
     
@@ -250,7 +244,26 @@ class ColorComboBox(wx.combo.OwnerDrawnComboBox):
     # -1 for default/undetermined
     def OnMeasureItemWidth(self, item):
         return -1; # default - will be measured from text width
-    
+        
+    def SetColor(self,clr):
+        sel = self.GetSelColor(clr)
+        if sel != wx.NOT_FOUND:
+            self.SetSelection(sel)
+            return
+        if not self.Colors.has_key(_('Custom')):
+            self.Append('Custom')
+        rgb = strutils.HexToRGB(clr)
+        color = wx.Colour(red=rgb[0], green=rgb[1], blue=rgb[2])
+        self.Colors['Custom'] = color
+        self.SetSelection(self.GetCount() - 1)
+        
+    def GetSelColor(self,clr):
+        sel = wx.NOT_FOUND
+        for i in range(self.GetCount()):
+            clr_name = self.GetString(i)
+            if clr.lower() == strutils.RGBToHex(self.Colors[clr_name]):
+                sel = i
+        return sel
 
 class ColorFontOptionsPanel(wx.Panel):
     """description of class"""
@@ -320,12 +333,23 @@ class ColorFontOptionsPanel(wx.Panel):
         left_sizer.Add(wx.StaticText(self, -1, _("Background Color(B):")), 0, wx.TOP,SPACE)
         
         line_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        colors = [DEFAULT_COLOR,BLUE_COLOR,RED_COLOR,BLACK_COLOR]
+        colors = [_('Default'),_('Blue'),_('Red'),_('Black'),_('Green'),_('Yellow'),_('White'),_('Reddish Orange'),\
+                  _('Aubergine'),_('Violet'),_('Indigo'),_('Yellow Green'),_('Silver'),_('Orange')]
         back_colors = dict()
-        back_colors[DEFAULT_COLOR] = wx.Colour(0xFF,  0xFF, 0xFF)
-        back_colors[BLUE_COLOR] = wx.Colour(0x00,  0x00, 0xFF)
-        back_colors[RED_COLOR] = wx.Colour(0xFF,  0x00, 0x00)
-        back_colors[BLACK_COLOR] = wx.Colour(0x00,  0x00, 0x00)
+        back_colors[_('Default')] = wx.Colour(0xFF,  0xFF, 0xFF)
+        back_colors[_('Blue')] = wx.Colour(0x00,  0x00, 0xFF)
+        back_colors[_('Red')] = wx.Colour(0xFF,  0x00, 0x00)
+        back_colors[_('Black')] = wx.Colour(0x00,  0x00, 0x00)
+        back_colors[_('Green')] = wx.Colour(0x00,  0xFF, 0x00)
+        back_colors[_('Yellow')] = wx.Colour(0xFF,  0xFF, 0x00)
+        back_colors[_('White')] = wx.Colour(0xFF,  0xFF, 0xFF)
+        back_colors[_('Reddish Orange')] = wx.Colour(0xFF, 0x45,0x00)
+        back_colors[_('Aubergine')] = wx.Colour(0xFF, 0x00, 0xFF)
+        back_colors[_('Violet')] = wx.Colour(0xEE, 0x82, 0xEE)
+        back_colors[_('Indigo')] = wx.Colour(0x4B, 0x00, 0x82)
+        back_colors[_('Yellow Green')] = wx.Colour(0xAD,0xFF,0x2F)
+        back_colors[_('Silver')] = wx.Colour(0xC0, 0xC0, 0xC0)
+        back_colors[_('Orange')] = wx.Colour( 0xFF, 0xA5,0x00)
         self.back_color_combo = ColorComboBox(self,back_colors,choices = colors,size=(150,defaultButton.GetSize().GetHeight()))
         self.back_color_combo.SetSelection(0)
         line_sizer.Add(self.back_color_combo, 0, wx.ALL,0)
@@ -337,7 +361,7 @@ class ColorFontOptionsPanel(wx.Panel):
         left_sizer.Add(wx.StaticText(self, -1, _("Foreground Color(F):")), 0, wx.TOP,SPACE)
         line_sizer = wx.BoxSizer(wx.HORIZONTAL)
         fore_colors = copy.deepcopy(back_colors)
-        fore_colors[DEFAULT_COLOR] = wx.Colour(0x00,  0x00, 0x00)
+        fore_colors[_('Default')] = wx.Colour(0x00,  0x00, 0x00)
         self.fore_color_combo = ColorComboBox(self,fore_colors,choices = colors,size=(150,defaultButton.GetSize().GetHeight()))
         self.fore_color_combo.SetSelection(0)
         line_sizer.Add(self.fore_color_combo, 0, wx.ALL,0)
@@ -355,24 +379,28 @@ class ColorFontOptionsPanel(wx.Panel):
         sboxSizer.Add(self.italic_chkbox,flag=wx.LEFT|wx.TOP, border=HALF_SPACE)
         self.underline_chkbox = wx.CheckBox(self, label = _("Underline"))
         sboxSizer.Add(self.underline_chkbox,flag=wx.LEFT|wx.TOP, border=HALF_SPACE)
-        left_sizer.Add(sboxSizer, flag=wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.TOP , border=SPACE) 
+        left_sizer.Add(sboxSizer, flag=wx.EXPAND|wx.RIGHT|wx.TOP , border=SPACE) 
         bottom_sizer.Add(left_sizer, 0, wx.TOP|wx.EXPAND,0)
         
         right_sizer = wx.BoxSizer(wx.VERTICAL)
         line_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        line_sizer.Add(wx.StaticText(self, -1, _("Code Sample(P):")), 0, wx.ALL,0)
-        line_sizer.Add(wx.StaticText(self, -1, _("Themes:")), 0, wx.LEFT,border=9*SPACE + HALF_SPACE)
-        self._themCombo = wx.ComboBox(self, -1,choices=syntax.LexerManager.GetThemes(), style = wx.CB_READONLY)
+        line_sizer.Add(wx.StaticText(self, -1, _("Code Sample(P):"),size=(200,-1)), 1, flag=wx.LEFT|wx.EXPAND,border=0)
+        line_sizer.Add(wx.StaticText(self, -1, _("Themes:")), 0, wx.LEFT|wx.RIGHT,border=SPACE)
+        themes,theme_index = syntax.LexerManager.GetThemes()
+        self._themCombo = wx.ComboBox(self, -1,choices = themes, style = wx.CB_READONLY)
         self._themCombo.Bind(wx.EVT_COMBOBOX, self.OnSelectTheme) 
-        self._themCombo.SetSelection(0)
+        if theme_index != -1:
+            self._themCombo.SetSelection(theme_index)
         line_sizer.Add(self._themCombo,0, wx.ALL,0)
         right_sizer.Add(line_sizer,0,wx.ALL,0)
-        self.code_sample_ctrl = CodeSampleCtrl(self,-1,size=(400,400))
+        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.code_sample_ctrl = CodeSampleCtrl(self,-1,size=(200,400))
         self.code_sample_ctrl.HideLineNumber()
-        right_sizer.Add(self.code_sample_ctrl, 0, wx.TOP,HALF_SPACE)
+        lineSizer.Add(self.code_sample_ctrl, 1, flag =wx.EXPAND|wx.RIGHT,border=0)
+        right_sizer.Add(lineSizer, 1, flag=wx.EXPAND|wx.TOP,border=HALF_SPACE)
         bottom_sizer.Add(right_sizer, 0, wx.LEFT|wx.EXPAND,SPACE)
         
-        main_sizer.Add(bottom_sizer, 0, wx.TOP|wx.LEFT|wx.EXPAND,SPACE)
+        main_sizer.Add(bottom_sizer, 0, wx.TOP|wx.LEFT|wx.EXPAND|wx.BOTTOM,SPACE)
         
         self.SetSizer(main_sizer)
         self.Fit()
@@ -405,8 +433,10 @@ class ColorFontOptionsPanel(wx.Panel):
         theme_name = event.GetString()
         style_sheet_path = os.path.join(appdirs.GetAppDataDirLocation(),"styles")
         theme_style_sheet = os.path.join(style_sheet_path,theme_name + ".ess")
+        old_theme = syntax.LexerManager().Theme
         syntax.LexerManager().LoadThemeSheet(theme_style_sheet)
         self.code_sample_ctrl.UpdateStyles()
+        syntax.LexerManager().Theme = old_theme
         
     def GetLexerStyles(self,selection):
         lexer = self._lexerCombo.GetClientData(selection)
@@ -416,13 +446,20 @@ class ColorFontOptionsPanel(wx.Panel):
             self.lb.SetClientData(i, style)
         
         self.lb.SetSelection(0)
-        self.SelectFontSize(0)
         self.code_sample_ctrl.SetText(lexer.GetSampleCode())
         self.code_sample_ctrl.SetLangLexer(lexer)
+        self.SelectFontSize(0)
         
     def OnOK(self, optionsDialog):
         config = wx.ConfigBase_Get()
-        config.Write(THEME_KEY,self._themCombo.GetString(self._themCombo.GetSelection()))
+        theme = self._themCombo.GetString(self._themCombo.GetSelection())
+        config.Write(THEME_KEY,theme)
+        
+        openDocs = wx.GetApp().GetDocumentManager().GetDocuments()
+        for openDoc in openDocs:
+            if isinstance(openDoc,STCTextEditor.TextDocument):
+                docView = openDoc.GetFirstView()
+                syntax.LexerManager().UpdateAllStyles(docView.GetCtrl(),theme)
         
     def SelectStyle(self,event):
         self.SelectFontSize(event.GetSelection())
@@ -430,3 +467,7 @@ class ColorFontOptionsPanel(wx.Panel):
     def SelectFontSize(self,selection):
         style = self.lb.GetClientData(selection)
         print selection,style.Fore,style.Back,style.Face,style.Size,"---------------"
+        self.fore_color_combo.SetColor(style.Fore)
+        self.back_color_combo.SetColor(style.Back)
+        self._fontCombo.SetValue(style.Face)
+        self._sizeCombo.SetValue(style.Size)

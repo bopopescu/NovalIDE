@@ -1098,7 +1098,6 @@ class TextView(wx.lib.docview.View):
 
 class TextOptionsPanel(wx.Panel):
 
-
     def __init__(self, parent, id, configPrefix = "Text", label = "Text", hasWordWrap = True, hasTabs = False, addPage=True, hasFolding=False):
         wx.Panel.__init__(self, parent, id)
         self._configPrefix = configPrefix

@@ -185,3 +185,6 @@ def HexToRGB(hex_str):
     green = int(hexval[2:4], 16)
     blue = int(hexval[4:], 16)
     return [red, green, blue]
+    
+def RGBToHex(clr):
+    return "#%02x%02x%02x" % (clr.Red(),clr.Green(),clr.Blue())

@@ -84,15 +84,6 @@ class XmlCtrl(CodeEditor.CodeCtrl):
     def GetFontAndColorFromConfig(self):
         return CodeEditor.CodeCtrl.GetFontAndColorFromConfig(self, configPrefix = "Xml")
 
-class XmlOptionsPanel(STCTextEditor.TextOptionsPanel):
-
-    def __init__(self, parent, id):
-        STCTextEditor.TextOptionsPanel.__init__(self, parent, id, configPrefix = "Xml", label = "XML", hasWordWrap = True, hasTabs = True, hasFolding=True)
-
-
-    def GetIcon(self):
-        return getXMLIcon()
-
 
 XMLKEYWORDS = [
         "ag:connectionstring", "ag:datasource", "ag:editorBounds", "ag:label", "ag:name", "ag:shortLabel", "ag:type",

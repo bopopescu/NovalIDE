@@ -50,7 +50,7 @@ class LexerManager(object):
         self.syntax_set = []
         self.lexers = []
         self.style_set = ""
-        theme_name = wx.ConfigBase_Get().Read(consts.THEME_KEY, 'Default')
+        theme_name = wx.ConfigBase_Get().Read(consts.THEME_KEY, consts.DEFAULT_THEME_NAME)
         if theme_name:
             style_sheet_path = os.path.join(appdirs.GetAppDataDirLocation(),"styles")
             theme_style_sheet = os.path.join(style_sheet_path,theme_name + ".ess")
@@ -495,12 +495,17 @@ class LexerManager(object):
         
     @classmethod
     def GetThemes(cls):
+        theme_name = wx.ConfigBase_Get().Read(consts.THEME_KEY, consts.DEFAULT_THEME_NAME)
+        theme_index = -1
         theme_names = []
         style_sheet_path = os.path.join(appdirs.GetAppDataDirLocation(),"styles")
-        for file_path in os.listdir(style_sheet_path):
+        for i,file_path in enumerate(os.listdir(style_sheet_path)):
             if file_path.endswith(".ess"):
-                theme_names.append(strutils.GetFilenameWithoutExt(file_path))
-        return theme_names
+                name = strutils.GetFilenameWithoutExt(file_path)
+                if name.lower() == theme_name.lower():
+                    theme_index = i
+                theme_names.append(name)
+        return theme_names,theme_index
         
     def GetStyleSet(self):
         """Returns the current set of styles or the default set if
@@ -621,6 +626,14 @@ class LexerManager(object):
             if lexer.IsVisible():
                 name_list.append(lexer.GetShowName())
         return name_list
+    
+    @property
+    def Theme(self):
+        return self.style_set
+        
+    @Theme.setter
+    def Theme(self,name):
+        self.style_set = name
             
 def NullStyleItem():
     """Create a null style item

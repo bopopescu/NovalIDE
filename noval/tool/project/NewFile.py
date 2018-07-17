@@ -8,6 +8,8 @@ import noval.tool.GeneralOption as GeneralOption
 from bz2 import BZ2File
 import ProjectEditor
 import noval.util.fileutils as fileutils
+import noval.tool.ColorFont as ColorFont
+from noval.tool.syntax import syntax
 
 if not sysutilslib.isWindows():
     import noval.tool.FileObserver as FileObserver
@@ -24,6 +26,7 @@ class FileTemplateDialog(wx.Dialog):
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
         
         self.lc = wx.ListCtrl(self, -1, size=(500,200),style = wx.LC_REPORT|wx.BORDER_THEME)
+        wx.EVT_LIST_ITEM_SELECTED(self.lc, self.lc.GetId(), self.OnSelectTemplate)
         lineSizer.Add(self.lc,1,flag = wx.EXPAND,border=0)
         
         self.lc.InsertColumn(0, _("Name"))
@@ -31,11 +34,12 @@ class FileTemplateDialog(wx.Dialog):
         
         self.lc.SetColumnWidth(0, 300)
         self.lc.SetColumnWidth(1,150)
-        for file_template in self._file_templates:
+        for i,file_template in enumerate(self._file_templates):
             index = self.lc.InsertStringItem(self.lc.GetItemCount(), file_template.get('Name','')); 
             self.lc.SetStringItem(index, 1, file_template.get('Category',''))
+            self.lc.SetItemData(index,i)
         
-        boxsizer.Add(lineSizer,0,flag = wx.EXPAND|wx.ALL,border = SPACE)
+        boxsizer.Add(lineSizer,0,flag = wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT,border = SPACE)
         
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
         
@@ -69,26 +73,96 @@ class FileTemplateDialog(wx.Dialog):
         self.refresh_btn.SetBitmap(refresh_bmp,wx.LEFT)
         lineSizer.Add(self.refresh_btn, 0,flag=wx.LEFT, border=SPACE)
         
-        boxsizer.Add(lineSizer,0,flag = wx.EXPAND|wx.ALL,border = SPACE)
+        boxsizer.Add(lineSizer,0,flag = wx.EXPAND|wx.TOP|wx.LEFT|wx.RIGHT,border = SPACE)
         
         sbox = wx.StaticBox(self, -1, _("Template Property"))
         sboxSizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
         
+        topSizer = wx.BoxSizer(wx.HORIZONTAL)
+        
+        left_sizer = wx.BoxSizer(wx.VERTICAL)
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        lineSizer.Add(wx.StaticText(self, -1, _("Name")), 0,wx.ALIGN_CENTER | wx.LEFT, SPACE)
-        self.name_ctrl = wx.TextCtrl(self, -1, "",size=(-1,-1))
-        lineSizer.Add(self.name_ctrl, 1, wx.LEFT|wx.EXPAND, SPACE)
+        lineSizer.Add(wx.StaticText(self, -1, _("Name:")), 0,wx.ALIGN_CENTER | wx.LEFT, SPACE)
+        self.name_ctrl = wx.TextCtrl(self, -1, "",size=(200,-1))
+        lineSizer.Add(self.name_ctrl, 1, wx.LEFT|wx.EXPAND, 0)
+        left_sizer.Add(lineSizer,0,flag=wx.EXPAND|wx.TOP, border=0)
         
-        lineSizer.Add(wx.StaticText(self, -1, _("Category")), 0,wx.ALIGN_CENTER | wx.LEFT, SPACE)
-        self.category_ctrl = wx.TextCtrl(self, -1, "",size=(-1,-1))
-        lineSizer.Add(self.category_ctrl, 1, wx.LEFT|wx.EXPAND, SPACE)
+        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        lineSizer.Add(wx.StaticText(self, -1, _("Default Extension:")), 0,wx.ALIGN_CENTER | wx.LEFT, SPACE)
+        self.ext_ctrl = wx.TextCtrl(self, -1, "",size=(-1,-1))
+        lineSizer.Add(self.ext_ctrl, 1, wx.LEFT|wx.EXPAND, 0)
+        left_sizer.Add(lineSizer,0,flag=wx.EXPAND|wx.TOP, border=HALF_SPACE)
         
-        sboxSizer.Add(lineSizer,flag=wx.LEFT|wx.TOP, border=SPACE)
+        topSizer.Add(left_sizer,0,flag=wx.ALL,border = 0)
+        
+        right_sizer = wx.BoxSizer(wx.VERTICAL)
+        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        lineSizer.Add(wx.StaticText(self, -1, _("Category:")), 0,wx.ALIGN_CENTER | wx.LEFT, 3*SPACE)
+        self.category_ctrl = wx.TextCtrl(self, -1, "",size=(200,-1))
+        lineSizer.Add(self.category_ctrl, 1, wx.LEFT|wx.EXPAND, 0)
+        right_sizer.Add(lineSizer,0,flag=wx.EXPAND|wx.TOP, border=0)
+        
+        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        lineSizer.Add(wx.StaticText(self, -1, _("Syntax Highlight:")), 0,wx.ALIGN_CENTER | wx.LEFT, SPACE)
+        self._syntaxCombo = wx.ComboBox(self, -1,choices =  syntax.LexerManager().GetShowNameList(), style = wx.CB_DROPDOWN)
+        lineSizer.Add(self._syntaxCombo, 1, wx.LEFT|wx.EXPAND, 0)
+        right_sizer.Add(lineSizer,0,flag=wx.EXPAND|wx.TOP, border=HALF_SPACE)
+        
+        topSizer.Add(right_sizer,1,flag=wx.EXPAND|wx.RIGHT,border = SPACE)
+        
+        sboxSizer.Add(topSizer,0,flag=wx.EXPAND|wx.TOP, border=HALF_SPACE)
+        
+        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        lineSizer.Add(wx.StaticText(self, -1, _("Template Content:")), 1,wx.ALIGN_CENTER | wx.LEFT, SPACE)
+        sboxSizer.Add(lineSizer,0,flag=wx.EXPAND|wx.TOP, border=HALF_SPACE)
+        
+        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.template_code_ctrl = ColorFont.CodeSampleCtrl(self,-1,size=(500,200))
+        self.template_code_ctrl.HideLineNumber()
+        lineSizer.Add(self.template_code_ctrl, 1, flag =wx.EXPAND|wx.LEFT|wx.RIGHT|wx.BOTTOM,border=SPACE)
+        sboxSizer.Add(lineSizer,0,flag=wx.EXPAND|wx.TOP, border=HALF_SPACE)
         
         boxsizer.Add(sboxSizer,0,flag = wx.EXPAND|wx.ALL,border = SPACE)
         
+        bsizer = wx.StdDialogButtonSizer()
+        ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
+        ok_btn.SetDefault()
+        bsizer.AddButton(ok_btn)
+        cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
+        bsizer.AddButton(cancel_btn)
+        bsizer.Realize()
+        boxsizer.Add(bsizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM,HALF_SPACE)
+        
         self.SetSizer(boxsizer)
         self.Fit()
+        
+    def OnSelectTemplate(self,event):
+        select_item = self.lc.GetFirstSelected()
+        if select_item == -1:
+            return
+        index = self.lc.GetItemData(select_item)
+        template = self._file_templates[index]
+        self.name_ctrl.SetValue(template.get('Name',''))
+        self.category_ctrl.SetValue(template.get('Category',''))
+        ext = template.get('Ext','')
+        self.ext_ctrl.SetValue(ext)
+        lexer = syntax.LexerManager().GetLexer(syntax.LexerManager().GetLangIdFromExt(ext))
+        self._syntaxCombo.SetValue(lexer.GetShowName())
+        content = template['Content'].strip()
+        content_zip_path = fileutils.opj(os.path.join(sysutilslib.mainModuleDir,content))
+        self.template_code_ctrl.SetText("")
+        try:
+            with BZ2File(content_zip_path,"r") as f:
+                for i,line in enumerate(f):
+                    if i == 0:
+                        continue
+                    self.template_code_ctrl.AddText(line.strip('\0').strip('\r').strip('\n'))
+                    self.template_code_ctrl.AddText('\n')
+        except Exception as e:
+            wx.MessageBox(_("Load File Template Content Error.%s") % e,style=wx.OK | wx.ICON_ERROR)
+            return
+            
+        self.template_code_ctrl.SetLangLexer(lexer)
 
 
 class NewFileDialog(wx.Dialog):
