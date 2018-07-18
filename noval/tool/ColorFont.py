@@ -8,6 +8,7 @@ import noval.util.strutils as strutils
 import os
 import noval.util.appdirs as appdirs
 import STCTextEditor
+import consts
 
 class CodeSampleCtrl(stc.StyledTextCtrl):
     
@@ -432,7 +433,7 @@ class ColorFontOptionsPanel(wx.Panel):
     def OnSelectTheme(self, event):
         theme_name = event.GetString()
         style_sheet_path = os.path.join(appdirs.GetAppDataDirLocation(),"styles")
-        theme_style_sheet = os.path.join(style_sheet_path,theme_name + ".ess")
+        theme_style_sheet = os.path.join(style_sheet_path,theme_name + consts.THEME_FILE_EXT)
         old_theme = syntax.LexerManager().Theme
         syntax.LexerManager().LoadThemeSheet(theme_style_sheet)
         self.code_sample_ctrl.UpdateStyles()

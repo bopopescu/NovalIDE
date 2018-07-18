@@ -250,6 +250,11 @@ class GeneralOptionsPanel(wx.Panel):
                         (self.encodings_combo,
                          0, wx.ALIGN_CENTER_VERTICAL)])
         optionsSizer.Add(lsizer, 0, wx.ALL, HALF_SPACE)
+        
+
+        self._chkEOLCheckBox = wx.CheckBox(self, -1, _("Warn when mixed eol characters are detected"))
+        self._chkEOLCheckBox.SetValue(config.ReadInt(consts.CHECK_EOL_KEY, True))
+        optionsSizer.Add(self._chkEOLCheckBox, 0, wx.ALL, HALF_SPACE)
 
         optionsBorderSizer.Add(optionsSizer, 0, wx.ALL, SPACE)
         self.SetSizer(optionsBorderSizer)
@@ -275,6 +280,7 @@ class GeneralOptionsPanel(wx.Panel):
         config = wx.ConfigBase_Get()
         config.WriteInt("ShowTipAtStartup", self._showTipsCheckBox.GetValue())
         config.WriteInt(consts.CHECK_UPDATE_ATSTARTUP_KEY, self._chkUpdateCheckBox.GetValue())
+        config.WriteInt(consts.CHECK_EOL_KEY, self._chkEOLCheckBox.GetValue())
         if self.language_combox.GetValue() != config.Read("Language",""):
             wx.MessageBox(_("Language changes will not appear until the application is restarted."),
               _("Language Options"),

@@ -129,6 +129,7 @@ SGML_BLOCK = (7, "")
 #---- Extra Properties ----#
 FOLD = ("fold", "1")
 FLD_HTML = ("fold.html", "1")
+FLD_HTML_PREPROCESSOR = ("fold.html.preprocessor", "1")
 
 #------------------------------------------------------------------------------#
 
@@ -226,7 +227,7 @@ class SyntaxLexer(syndata.BaseLexer):
 
     def GetProperties(self):
         """Returns a list of Extra Properties to set"""
-        return [FOLD, FLD_HTML]
+        return [FOLD, FLD_HTML,FLD_HTML_PREPROCESSOR]
 
     def GetCommentPattern(self):
         """Returns a list of characters used to comment a block of code"""

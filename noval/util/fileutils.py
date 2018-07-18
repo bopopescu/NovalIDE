@@ -27,6 +27,8 @@ from chardet.universaldetector import UniversalDetector
 import chardet
 import fchecker
 from noval.tool.consts import ERROR_OK,UNKNOWN_ERROR
+import noval.tool.syntax.lang as lang
+import noval.tool.syntax.syntax as syntax
 
 
 _Checker = fchecker.FileTypeChecker()
@@ -568,9 +570,9 @@ def detect(byte_str):
     return detector.close()
     
 def is_python_file(file_path):
-    PY_EXT_LIST = ['py','pyw']
+    lexer = syntax.LexerManager().GetLexer(lang.ID_LANG_PYTHON)
     ext = strutils.GetFileExt(file_path)
-    return ext in PY_EXT_LIST
+    return lexer.ContainExt(ext)
 
 def RemoveDir(dir_path):
     files = os.listdir(dir_path)

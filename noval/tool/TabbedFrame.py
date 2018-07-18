@@ -5,6 +5,7 @@ import noval.util.sysutils as sysutilslib
 import noval.util.fileutils as fileutils
 import noval.util.strutils as strutils
 import noval.tool.syntax.lang as lang
+import noval.tool.syntax.syntax as syntax
 import consts
 import noval.tool.NavigationService
 import noval.util.appdirs as appdirs
@@ -251,6 +252,15 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
             sysutilslib.CopyToClipboard(doc.GetFilename())
         def OnCopyFileName(event):
             sysutilslib.CopyToClipboard(os.path.basename(doc.GetFilename()))
+        def OnNewModule(event):
+            flags = wx.lib.docview.DOC_NEW
+            lexer = syntax.LexerManager().GetLexer(lang.ID_LANG_PYTHON)
+            temp = wx.GetApp().GetDocumentManager().FindTemplateForPath("test.%s" % lexer.GetDefaultExt())
+            newDoc = temp.CreateDocument("", flags)
+            if newDoc:
+                newDoc.SetDocumentName(temp.GetDocumentName())
+                newDoc.SetDocumentTemplate(temp)
+                newDoc.OnNewDocument()
         def OnSaveFile(event):
             self.GetDocumentManager().OnFileSave(event)
         def OnSaveFileAs(event):
@@ -270,6 +280,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
             view = self._notebook.GetPage(index).GetView()
             doc = view.GetDocument()
             if view.GetType() == consts.TEXT_VIEW:
+                self.AppendMenuItem(menu,_("New Module"),OnNewModule)
                 self.AppendMenuItem(menu,_("Save"),OnSaveFile)
                 self.AppendMenuItem(menu,_("Save As"),OnSaveFileAs)
             self.AppendMenuItem(menu,_("Close"),OnCloseDoc)

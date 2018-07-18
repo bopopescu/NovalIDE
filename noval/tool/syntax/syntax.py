@@ -53,7 +53,7 @@ class LexerManager(object):
         theme_name = wx.ConfigBase_Get().Read(consts.THEME_KEY, consts.DEFAULT_THEME_NAME)
         if theme_name:
             style_sheet_path = os.path.join(appdirs.GetAppDataDirLocation(),"styles")
-            theme_style_sheet = os.path.join(style_sheet_path,theme_name + ".ess")
+            theme_style_sheet = os.path.join(style_sheet_path,theme_name + consts.THEME_FILE_EXT)
             self.LoadThemeSheet(theme_style_sheet)
 
     def Register(self,lang_lexer):
@@ -467,7 +467,7 @@ class LexerManager(object):
             style_name = sheet_name
         else:
             style_name = wx.ConfigBase_Get().Read('SYNTHEME', 'Default')
-        style = style_name +  u'.ess'
+        style = style_name + consts.THEME_FILE_EXT
         style = style.lower()
         # Get Correct Filename if it exists
         for sheet in cls.GetResourceFiles():
@@ -489,7 +489,7 @@ class LexerManager(object):
         res_files = []
         style_sheet_path = os.path.join(appdirs.GetAppDataDirLocation(),"styles")
         for name in os.listdir(style_sheet_path):
-            if name.endswith(".ess"):
+            if name.endswith(consts.THEME_FILE_EXT):
                 res_files.append(name)
         return res_files
         
@@ -500,7 +500,7 @@ class LexerManager(object):
         theme_names = []
         style_sheet_path = os.path.join(appdirs.GetAppDataDirLocation(),"styles")
         for i,file_path in enumerate(os.listdir(style_sheet_path)):
-            if file_path.endswith(".ess"):
+            if file_path.endswith(consts.THEME_FILE_EXT):
                 name = strutils.GetFilenameWithoutExt(file_path)
                 if name.lower() == theme_name.lower():
                     theme_index = i

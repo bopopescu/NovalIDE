@@ -32,6 +32,7 @@ import EOLFormat
 import CompletionService
 import noval.util.strutils as strutils
 from noval.tool.syntax import syntax
+import consts
 _ = wx.GetTranslation
 
 ENABLE_FOLD_ID = wx.NewId()
@@ -67,7 +68,7 @@ class CodeDocument(STCTextEditor.TextDocument):
         if not STCTextEditor.TextDocument.OnOpenDocument(self,filename):
             return False
         view = self.GetFirstView()
-        check_eol = wx.ConfigBase_Get().ReadInt("CheckEOL", False)
+        check_eol = wx.ConfigBase_Get().ReadInt(consts.CHECK_EOL_KEY, True)
         if check_eol:
             view.GetCtrl().CheckEOL()
         return True
@@ -1027,7 +1028,7 @@ class CodeCtrl(STCTextEditor.TextCtrl):
 
     def SetMarginFoldStyle(self):
         # Setup a margin to hold fold markers
-        self.SetProperty("fold", "1")
+        ###self.SetProperty("fold", "1")
         self.SetMarginType(CodeView.FOLD_MARKER_NUM, wx.stc.STC_MARGIN_SYMBOL)
         self.SetMarginMask(CodeView.FOLD_MARKER_NUM, wx.stc.STC_MASK_FOLDERS)
         self.SetMarginSensitive(CodeView.FOLD_MARKER_NUM, True)
@@ -1176,7 +1177,37 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         # Set Lexer/Syntax Specifications
         self.SetSyntax(lexer.StyleItems)
         # Set Extra Properties
-      ###  self.SetProperties(syn_data.Properties)
+        self.SetProperties(lexer.Properties)
+        
+    def SetProperties(self, prop_lst):
+        """Sets the Lexer Properties from a list of specifications
+        @param prop_lst: [ ("PROPERTY", "VAL"), ("PROPERTY2", "VAL2) ]
+
+        """
+        # Parses Property list, ignoring all bad values
+        for prop in prop_lst:
+            if len(prop) != 2:
+                continue
+            else:
+                if not isinstance(prop[0], basestring) or not \
+                   isinstance(prop[1], basestring):
+                    continue
+                else:
+                    self.SetProperty(prop[0], prop[1])
+        return True
+        
+    def UpdateBaseStyles(self):
+        """Update the controls basic styles"""
+        super(CodeCtrl, self).UpdateBaseStyles()
+
+        # Set control specific styles
+        #sback = self.GetItemByName('select_style')
+        #if not sback.IsNull():
+         #   sback = sback.GetBack()
+        #else:
+         #   sback = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT)
+        #self.VertEdit.SetBlockColor(sback)
+        self.SetMarginFoldStyle()
         
 
     def SetKeyWords(self, kw_lst):

@@ -148,7 +148,6 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import Service
         import ImageEditor
         import PerlEditor
-        import PHPEditor
         import wx.lib.ogl as ogl
         import DebuggerService
         import AboutDialog
@@ -259,7 +258,6 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         markerService           = self.InstallService(MarkerService.MarkerService())
         textService             = self.InstallService(TextService.TextService())
         perlService             = self.InstallService(PerlEditor.PerlService())
-        phpService              = self.InstallService(PHPEditor.PHPService())
         comletionService        = self.InstallService(CompletionService.CompletionService())
         navigationService       = self.InstallService(NavigationService.NavigationService())
         messageService          = self.InstallService(MessageService.MessageService(_("Search Results"), embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
@@ -279,8 +277,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         # order of these added determines display order of Options Panels
         optionsService.AddOptionsPanel(_("Environment"),_("Project"),ProjectEditor.ProjectOptionsPanel)
        ## optionsService.AddOptionsPanel(DebuggerService.DebuggerOptionsPanel)
-        optionsService.AddOptionsPanel(_("Environment"),_("Text"),PythonEditor.PythonOptionsPanel)
-  ##      optionsService.AddOptionsPanel(PHPEditor.PHPOptionsPanel)
+        optionsService.AddOptionsPanel(_("Environment"),_("Text"),STCTextEditor.TextOptionsPanel)
     ##    optionsService.AddOptionsPanel(PerlEditor.PerlOptionsPanel)
      ###   optionsService.AddOptionsPanel(_("Editor"),_("Text"),STCTextEditor.TextOptionsPanel)
         optionsService.AddOptionsPanel(_("Environment"),_("Fonts and Colors"),ColorFont.ColorFontOptionsPanel)
@@ -291,7 +288,6 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         filePropertiesService.AddCustomEventHandler(projectService)
 
         outlineService.AddViewTypeForBackgroundHandler(PythonEditor.PythonView)
-        ###outlineService.AddViewTypeForBackgroundHandler(PHPEditor.PHPView)
         outlineService.AddViewTypeForBackgroundHandler(ProjectEditor.ProjectView) # special case, don't clear outline if in project
         outlineService.AddViewTypeForBackgroundHandler(MessageService.MessageView) # special case, don't clear outline if in message window
         if not ACTIVEGRID_BASE_IDE:
