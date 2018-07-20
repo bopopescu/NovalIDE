@@ -4243,7 +4243,6 @@ class ProjectOptionsPanel(wx.Panel):
         projectBorderSizer.Add(projectSizer, 0, wx.ALL, SPACE)
         self.SetSizer(projectBorderSizer)
         self.Layout()
-        parent.AddPage(self, _("Project"))
 
 
     def OnUseSashSelect(self, event):

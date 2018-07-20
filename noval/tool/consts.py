@@ -58,3 +58,6 @@ DEFAULT_THEME_NAME = 'Default'
 
 THEME_FILE_EXT = ".ess"
 CHECK_EOL_KEY = "CheckEOL"
+
+TEMPLATE_FILE_NAME = "template.xml"
+USER_CACHE_DIR = "cache"

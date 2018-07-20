@@ -66,6 +66,9 @@ class OptionsDialog(wx.Dialog):
                 option_panel.Hide()
                 self._optionsPanels[name] = option_panel
                 child = self.tree.AppendItem(item,name)
+                #select the default item,to avoid select no item
+                if name == _("General"):
+                    self.tree.SelectItem(child)
                 if name == option_name:
                     self.tree.SelectItem(child)
 
@@ -120,10 +123,6 @@ class OptionsDialog(wx.Dialog):
         sel = self.tree.GetSelection()
         text = self.tree.GetItemText(sel)
         wx.ConfigBase_Get().Write("OptionName",text)
-            
-    def AddPage(self,panel,label):
-        pass
-
 
 class OptionsService(wx.lib.pydocview.DocOptionsService):
     def __init__(self,showGeneralOptions=True, supportedModes=wx.lib.docview.DOC_SDI & wx.lib.docview.DOC_MDI):

@@ -1177,8 +1177,6 @@ class TextOptionsPanel(wx.Panel):
 ##        textPanelBorderSizer.Add(styleButton, 0, wx.ALL, SPACE)
         self.SetSizer(textPanelBorderSizer)
         self.UpdateSampleFont()
-        if addPage:
-            parent.AddPage(self, _(label))
 
     def UpdateSampleFont(self):
         nativeFont = wx.NativeFontInfo()

@@ -132,3 +132,6 @@ def GetAppImageDirLocation():
 def GetAppDataDirLocation():
     app_image_path = os.path.join(sysutils.mainModuleDir, "noval", "tool", "data")
     return app_image_path
+    
+def GetAppLocation():
+    return sysutils.mainModuleDir

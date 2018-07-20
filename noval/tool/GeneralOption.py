@@ -261,8 +261,6 @@ class GeneralOptionsPanel(wx.Panel):
         self.Layout()
         self._documentInterfaceMessageShown = False
         self.checkEnableMRU(None)
-        parent.AddPage(self, _("General"))
-
 
     def checkEnableMRU(self,event):
         enableMRU = self._enableMRUCheckBox.GetValue()

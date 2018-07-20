@@ -106,21 +106,21 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             print "    [filenames] is an optional list of files you want to open when application starts."
             return False
         elif isInArgs("dev", args):
-            self.SetAppName(_("NovalBuilderDev"))
+            self.SetAppName("NovalBuilderDev")
             self.SetDebug(False)
         elif isInArgs("debug", args):
-            self.SetAppName(_("NovalBuilderDebug"))
+            self.SetAppName("NovalBuilderDebug")
             self.SetDebug(True)
             ACTIVEGRID_BASE_IDE = True
             log_mode = logger.LOG_MODE_TESTRUN
             self.SetSingleInstance(False)
         elif isInArgs("baseide", args):
-            self.SetAppName(_("NovalIDE"))
+            self.SetAppName("NovalIDE")
             ACTIVEGRID_BASE_IDE = True
         elif isInArgs("tools", args):
             USE_OLD_PROJECTS = True
         else:
-            self.SetAppName(_("NovalBuilder"))
+            self.SetAppName("NovalBuilder")
             self.SetDebug(False)
         if isInArgs("multiple", args) and wx.Platform != "__WXMAC__":
             self.SetSingleInstance(False)

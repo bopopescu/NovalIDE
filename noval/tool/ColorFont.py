@@ -71,9 +71,6 @@ class CodeSampleCtrl(stc.StyledTextCtrl):
         kwlist = list(set(kwlist))      # Remove duplicates from the list
         kwlist.sort()                   # Sort into alphabetical order
         
-    def LoadSampleText(self):
-        pass
-        
     def HideLineNumber(self):
         self.SetMarginWidth(1, 0)
         
@@ -252,10 +249,10 @@ class ColorComboBox(wx.combo.OwnerDrawnComboBox):
             self.SetSelection(sel)
             return
         if not self.Colors.has_key(_('Custom')):
-            self.Append('Custom')
+            self.Append(_('Custom'))
         rgb = strutils.HexToRGB(clr)
         color = wx.Colour(red=rgb[0], green=rgb[1], blue=rgb[2])
-        self.Colors['Custom'] = color
+        self.Colors[_('Custom')] = color
         self.SetSelection(self.GetCount() - 1)
         
     def GetSelColor(self,clr):
@@ -467,7 +464,6 @@ class ColorFontOptionsPanel(wx.Panel):
         
     def SelectFontSize(self,selection):
         style = self.lb.GetClientData(selection)
-        print selection,style.Fore,style.Back,style.Face,style.Size,"---------------"
         self.fore_color_combo.SetColor(style.Fore)
         self.back_color_combo.SetColor(style.Back)
         self._fontCombo.SetValue(style.Face)

@@ -48,9 +48,10 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
         """
         Creates the default ToolBar.
         """
+        app_image_path = appdirs.GetAppImageDirLocation()
         self._toolBar = self.CreateToolBar(wx.TB_HORIZONTAL | wx.NO_BORDER | wx.TB_FLAT)
         
-        toolbar_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "toolbar")
+        toolbar_image_path = os.path.join(app_image_path, "toolbar")
         
         tb_new_image = wx.Image(os.path.join(toolbar_image_path,"new.png"),wx.BITMAP_TYPE_ANY)
         self._toolBar.AddSimpleTool(wx.ID_NEW, wx.BitmapFromImage(tb_new_image), _("New"), _("Creates a new document"))

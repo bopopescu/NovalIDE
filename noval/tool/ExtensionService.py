@@ -492,9 +492,6 @@ class ExtensionOptionsPanel(wx.Panel):
 
         self.Layout()
 
-        parent.AddPage(self, _("External Tools"))
-
-
     def OnOK(self, optionsDialog):
         self.SaveCurrentItem()
         extensionsService = wx.GetApp().GetService(ExtensionService)

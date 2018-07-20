@@ -13,6 +13,7 @@ import noval.parser.utils as parserutils
 import requests
 import json
 from noval.util.logger import app_debugLogger
+import noval.tool.consts as consts
 
 if sysutilslib.isWindows():
     import wmi
@@ -55,7 +56,7 @@ class UserDataDb(BaseDb):
     def __init__(self):
         if sysutilslib.isWindows():
             pythoncom.CoInitialize()
-        db_dir = os.path.join(appdirs.getAppDataFolder(),"cache")
+        db_dir = os.path.join(appdirs.getAppDataFolder(),consts.USER_CACHE_DIR)
         if not os.path.exists(db_dir):
             parserutils.MakeDirs(db_dir)
         self.data_id = None

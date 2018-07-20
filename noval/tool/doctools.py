@@ -20,6 +20,7 @@ import noval.util.appdirs as appdirs
 import noval.parser.utils as dirutils
 import wx
 import codecs
+import consts
 #--------------------------------------------------------------------------#
 
 GOTO_PREV_POS = 0
@@ -51,7 +52,7 @@ class DocPositionMgr(object):
 
         """
         self._init = True
-        cache_path = os.path.join(appdirs.getAppDataFolder(),"cache")
+        cache_path = os.path.join(appdirs.getAppDataFolder(),consts.USER_CACHE_DIR)
         if not os.path.exists(cache_path):
             dirutils.MakeDirs(cache_path)
         self._book = os.path.join(cache_path,'positions')

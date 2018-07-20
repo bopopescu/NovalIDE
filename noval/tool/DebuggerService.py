@@ -2908,7 +2908,6 @@ class DebuggerOptionsPanel(wx.Panel):
         debuggerPanelBorderSizer.Add(debuggerPanelSizer, 0, wx.ALL, SPACE)
         self.SetSizer(debuggerPanelBorderSizer)
         self.Layout()
-        parent.AddPage(self, _("Debugger"))
 
     def FlushPorts(self, event):
         if self._PortNumberTextCtrl.IsInBounds():

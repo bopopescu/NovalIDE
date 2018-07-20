@@ -1,6 +1,6 @@
 import wx
 import wx.lib.buttons
-from noval.tool.consts import SPACE,HALF_SPACE,_
+from noval.tool.consts import SPACE,HALF_SPACE,_,TEMPLATE_FILE_NAME,USER_CACHE_DIR
 import os
 import noval.util.sysutils as sysutilslib
 import xml.etree.ElementTree as ET
@@ -10,6 +10,8 @@ import ProjectEditor
 import noval.util.fileutils as fileutils
 import noval.tool.ColorFont as ColorFont
 from noval.tool.syntax import syntax
+import noval.util.appdirs as appdirs
+import copy
 
 if not sysutilslib.isWindows():
     import noval.tool.FileObserver as FileObserver
@@ -20,13 +22,14 @@ COMMON_MASK_COLOR = wx.Colour(255, 0, 255)
 class FileTemplateDialog(wx.Dialog):
     def __init__(self,parent,dlg_id,title,file_templates):
         wx.Dialog.__init__(self,parent,dlg_id,title,size=(550,400))
-        self._file_templates = file_templates
+        self._file_templates = copy.deepcopy(file_templates)
         
         boxsizer = wx.BoxSizer(wx.VERTICAL)
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
         
         self.lc = wx.ListCtrl(self, -1, size=(500,200),style = wx.LC_REPORT|wx.BORDER_THEME)
         wx.EVT_LIST_ITEM_SELECTED(self.lc, self.lc.GetId(), self.OnSelectTemplate)
+        wx.EVT_LIST_ITEM_DESELECTED(self.lc, self.lc.GetId(), self.OnUnSelectTemplate)
         lineSizer.Add(self.lc,1,flag = wx.EXPAND,border=0)
         
         self.lc.InsertColumn(0, _("Name"))
@@ -35,7 +38,7 @@ class FileTemplateDialog(wx.Dialog):
         self.lc.SetColumnWidth(0, 300)
         self.lc.SetColumnWidth(1,150)
         for i,file_template in enumerate(self._file_templates):
-            index = self.lc.InsertStringItem(self.lc.GetItemCount(), file_template.get('Name','')); 
+            index = self.lc.InsertStringItem(self.lc.GetItemCount(), file_template.get('Name',''));
             self.lc.SetStringItem(index, 1, file_template.get('Category',''))
             self.lc.SetItemData(index,i)
         
@@ -43,33 +46,40 @@ class FileTemplateDialog(wx.Dialog):
         
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
         
-        add_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "template","add.ico")
+        app_image_path = appdirs.GetAppImageDirLocation()
+        
+        add_bmp_path = os.path.join(app_image_path, "template","add.ico")
         add_bmp = wx.BitmapFromImage(wx.Image(add_bmp_path,wx.BITMAP_TYPE_ANY))
         self.new_btn = wx.Button(self,-1, _("New"))
+        wx.EVT_BUTTON(self.new_btn, -1, self.NewItem)
         self.new_btn.SetBitmap(add_bmp,wx.LEFT)
         lineSizer.Add(self.new_btn, 0,flag=wx.LEFT, border=SPACE)
         
-        delete_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "template","delete.ico")
+        delete_bmp_path = os.path.join(app_image_path, "template","delete.ico")
         delete_bmp = wx.BitmapFromImage(wx.Image(delete_bmp_path,wx.BITMAP_TYPE_ANY))
         self.delete_btn = wx.Button(self,-1, _("Delete"))
+        wx.EVT_BUTTON(self.delete_btn, -1, self.DeleteItem)
         self.delete_btn.SetBitmap(delete_bmp,wx.LEFT)
         lineSizer.Add(self.delete_btn, 0,flag=wx.LEFT, border=SPACE)
         
-        up_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "template","up.ico")
+        up_bmp_path = os.path.join(app_image_path, "template","up.ico")
         up_bmp = wx.BitmapFromImage(wx.Image(up_bmp_path,wx.BITMAP_TYPE_ANY))
         self.up_btn = wx.Button(self,-1, _("Up"))
+        wx.EVT_BUTTON(self.up_btn, -1, self.UpItem)
         self.up_btn.SetBitmap(up_bmp,wx.LEFT)
         lineSizer.Add(self.up_btn, 0,flag=wx.LEFT, border=SPACE)
         
-        down_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "template","down.ico")
+        down_bmp_path = os.path.join(app_image_path, "template","down.ico")
         down_bmp = wx.BitmapFromImage(wx.Image(down_bmp_path,wx.BITMAP_TYPE_ANY))
         self.down_btn = wx.Button(self,-1, _("Down"))
+        wx.EVT_BUTTON(self.down_btn, -1, self.DownItem)
         self.down_btn.SetBitmap(down_bmp,wx.LEFT)
         lineSizer.Add(self.down_btn, 0,flag=wx.LEFT, border=SPACE)
         
-        refresh_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "template","refresh.ico")
+        refresh_bmp_path = os.path.join(app_image_path, "template","refresh.ico")
         refresh_bmp = wx.BitmapFromImage(wx.Image(refresh_bmp_path,wx.BITMAP_TYPE_ANY))
         self.refresh_btn = wx.Button(self,-1, _("Refresh"))
+        wx.EVT_BUTTON(self.refresh_btn, -1, self.RefreshItem)
         self.refresh_btn.SetBitmap(refresh_bmp,wx.LEFT)
         lineSizer.Add(self.refresh_btn, 0,flag=wx.LEFT, border=SPACE)
         
@@ -135,11 +145,79 @@ class FileTemplateDialog(wx.Dialog):
         
         self.SetSizer(boxsizer)
         self.Fit()
+        self.UpdateUI()
+        
+    def UpdateUI(self):
+        select_item = self.lc.GetFirstSelected()
+        if select_item == -1:
+            self.delete_btn.Enable(False)
+            self.down_btn.Enable(False)
+            self.up_btn.Enable(False)
+            self.refresh_btn.Enable(False)
+        else:
+            self.delete_btn.Enable(True)
+            if 0 == select_item:
+                self.up_btn.Enable(False)
+            else:
+                self.up_btn.Enable(True)
+            if self.lc.GetItemCount() - 1 == select_item:
+                self.down_btn.Enable(False)
+            else:
+                self.down_btn.Enable(True)
+            self.refresh_btn.Enable(True)
+        
+    def NewItem(self,event):
+        pass
+        
+    def DeleteItem(self,event):
+        select_item = self.lc.GetFirstSelected()
+        self.lc.DeleteItem(select_item)
+        self._file_templates.remove(self._file_templates[select_item])
+        self.UpdateUI()
+        
+    def UpItem(self,event):
+        select_item = self.lc.GetFirstSelected()
+        index = self.lc.GetItemData(select_item)
+        tmp_template = self._file_templates[index]
+        self._file_templates[index] = self._file_templates[index - 1]
+        self._file_templates[index - 1] = tmp_template
+        self.lc.DeleteItem(select_item)
+        
+        i = self.lc.InsertStringItem(index-1, tmp_template.get('Name',''))
+        self.lc.SetStringItem(i, 1, tmp_template.get('Category',''))
+        self.lc.SetItemData(i,index-1)
+        self.lc.SetItemData(i+1,index)
+        self.lc.Select(i)
+        self.lc.SetItemState(i, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
+        self.lc.EnsureVisible(i)
+        self.UpdateUI()
+        
+    def DownItem(self,event):
+        select_item = self.lc.GetFirstSelected()
+        index = self.lc.GetItemData(select_item)
+        tmp_template = self._file_templates[index]
+        self._file_templates[index] = self._file_templates[index + 1]
+        self._file_templates[index + 1] = tmp_template
+        
+        self.lc.DeleteItem(select_item)
+        
+        i = self.lc.InsertStringItem(index + 1, tmp_template.get('Name',''))
+        self.lc.SetStringItem(i, 1, tmp_template.get('Category',''))
+        self.lc.SetItemData(i,index+1)
+        self.lc.SetItemData(i-1,index)
+        self.lc.Select(i)
+        self.lc.SetItemState(i, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
+        self.lc.EnsureVisible(i)
+        self.UpdateUI()
+        
+    def RefreshItem(self,event):
+        self.OnSelectTemplate(event)
+        
+    def OnUnSelectTemplate(self,event):
+        self.UpdateUI()
         
     def OnSelectTemplate(self,event):
         select_item = self.lc.GetFirstSelected()
-        if select_item == -1:
-            return
         index = self.lc.GetItemData(select_item)
         template = self._file_templates[index]
         self.name_ctrl.SetValue(template.get('Name',''))
@@ -151,6 +229,7 @@ class FileTemplateDialog(wx.Dialog):
         content = template['Content'].strip()
         content_zip_path = fileutils.opj(os.path.join(sysutilslib.mainModuleDir,content))
         self.template_code_ctrl.SetText("")
+        self.UpdateUI()
         try:
             with BZ2File(content_zip_path,"r") as f:
                 for i,line in enumerate(f):
@@ -187,7 +266,9 @@ class NewFileDialog(wx.Dialog):
         templateLabelText = wx.StaticText(self, -1, _('Template:'),size=(100,-1))
         lineSizer.Add(templateLabelText,1,flag=wx.LEFT|wx.EXPAND,border = 4*SPACE)
         
-        large_view_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "ViewLarge.ico")
+        app_image_path = appdirs.GetAppImageDirLocation()
+        
+        large_view_image_path = os.path.join(app_image_path, "ViewLarge.ico")
         large_view_image = wx.Image(large_view_image_path,wx.BITMAP_TYPE_ANY)
         
         self._largeviewBtn = wx.lib.buttons.GenBitmapToggleButton(self, -1, wx.BitmapFromImage(large_view_image), size=(16,16))
@@ -196,7 +277,7 @@ class NewFileDialog(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.OnSelectMode, self._largeviewBtn)
         self._largeviewBtn.SetToggle(True)
         
-        small_view_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "ViewSmall.ico")
+        small_view_image_path = os.path.join(app_image_path, "ViewSmall.ico")
         small_view_image = wx.Image(small_view_image_path,wx.BITMAP_TYPE_ANY)
         self._smallviewBtn = wx.lib.buttons.GenBitmapToggleButton(self, -1, wx.BitmapFromImage(small_view_image), size=(16,16))
         lineSizer.Add(self._smallviewBtn,0,flag = wx.LEFT|wx.ALIGN_TOP|wx.RIGHT,border = SPACE)
@@ -366,7 +447,12 @@ class NewFileDialog(wx.Dialog):
         
     def LoadFileTypes(self):
         try:
-            file_template_path = os.path.join(sysutilslib.mainModuleDir, "template.xml")
+            user_template_path = os.path.join(appdirs.getAppDataFolder(),USER_CACHE_DIR,TEMPLATE_FILE_NAME)
+            sys_template_path = os.path.join(appdirs.GetAppLocation(), TEMPLATE_FILE_NAME)
+            if os.path.exists(user_template_path):
+                file_template_path = user_template_path
+            elif os.path.exists(sys_template_path):
+                file_template_path = sys_template_path
             tree = ET.parse(file_template_path)
             doc = tree.getroot()
             root_item = self.treeCtrl.AddRoot(_("FileTypes"))

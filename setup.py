@@ -26,7 +26,7 @@ if sys.platform == "win32":
     if is_debug:
         print 'executable run in console mode'
         setup(console=[{"script":"NovalIDE.py","icon_resources":[(1, u"noval.ico")]}],
-              options = { "py2exe":{"dll_excludes":["MSVCP90.dll"],"packages": ['wx.lib.pubsub']}},
+              options = { "py2exe":{"dll_excludes":["MSVCP90.dll"],"packages": ['wx.lib.pubsub','csv','noval.tool.syntax.syndata']}},
                 data_files=[("noval/tool/bmp_source", glob.glob("noval/tool/bmp_source/*.ico") + glob.glob("noval/tool/bmp_source/*.jpg") \
                              + glob.glob("noval/tool/bmp_source/*.png") + glob.glob("noval/tool/bmp_source/*.gif")),
                     ("noval/tool/data",["noval/tool/data/tips.txt"]),
@@ -36,7 +36,7 @@ if sys.platform == "win32":
     else:
         print 'executable run in windows mode'
         setup(windows=[{"script":"NovalIDE.py","icon_resources":[(1, u"noval.ico")]}],
-              options = { "py2exe":{"dll_excludes":["MSVCP90.dll"],"packages": ['wx.lib.pubsub','csv']}},
+              options = { "py2exe":{"dll_excludes":["MSVCP90.dll"],"packages": ['wx.lib.pubsub','csv','noval.tool.syntax.syndata']}},
                 data_files=[("noval/tool/bmp_source", glob.glob("noval/tool/bmp_source/*.ico") + glob.glob("noval/tool/bmp_source/*.jpg") \
                              + glob.glob("noval/tool/bmp_source/*.png") + glob.glob("noval/tool/bmp_source/*.gif")),
                     ("noval/tool/bmp_source/toolbar",glob.glob("noval/tool/bmp_source/toolbar/*.png")),
@@ -45,9 +45,14 @@ if sys.platform == "win32":
                     ("noval/tool",glob.glob("noval/tool/DebuggerHarness.py")),
                     ("noval/tool/data",["noval/tool/data/tips.txt"]),
                     ("noval/tool/data/template",glob.glob("noval/tool/data/template/*.tar.bz2")),
+                    ("noval/tool/data/sample",glob.glob("noval/tool/data/sample/*.sample")),
+                    ("noval/tool/data/styles",glob.glob("noval/tool/data/styles/*.ess")),
+                    ("noval/tool/syntax/lexer",glob.glob("noval/tool/syntax/lexer/*.py")),
                      ("noval/parser",glob.glob("noval/parser/*.py")),
                       ("noval/locale/en_US/LC_MESSAGES",['noval/locale/en_US/LC_MESSAGES/novalide.mo']),
-                       ("noval/locale/zh_CN/LC_MESSAGES",['noval/locale/zh_CN/LC_MESSAGES/novalide.mo']),
+                       ("noval/locale/zh_CN/LC_MESSAGES",['noval/locale/zh_CN/LC_MESSAGES/novalide.mo',\
+                                    'noval/locale/zh_CN/LC_MESSAGES/wxstd.mo',\
+                                    'noval/locale/zh_CN/LC_MESSAGES/wxstock.mo',]),
                        ('',['version.txt','template.xml'])],)
 
 elif sys.platform.find('linux') != -1:
@@ -74,6 +79,8 @@ elif sys.platform.find('linux') != -1:
                         'tool/data/intellisence/builtins/2/*',
                         'tool/data/intellisence/builtins/3/*',
                         'tool/data/template/*.tar.bz2',
+                        'tool/data/sample/*.sample',
+                        'tool/data/styles/*.ess',
                         'tool/data/*.txt',
                         'tool/bmp_source/template/*', 
                         'tool/bmp_source/toolbar/*', 
