@@ -505,6 +505,7 @@ class ExtensionOptionsPanel(wx.Panel):
                           msgTitle,
                           wx.OK | wx.ICON_INFORMATION,
                           self.GetParent())
+        return True
 
 
     def PopulateItems(self):

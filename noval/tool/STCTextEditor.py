@@ -1260,6 +1260,7 @@ class TextOptionsPanel(wx.Panel):
                         document.UpdateAllViews(hint = "ViewStuff")
                     if doFontUpdate:
                         document.UpdateAllViews(hint = "Font")
+        return True
                
          
     def GetIcon(self):

@@ -9,6 +9,7 @@ import os
 import noval.util.appdirs as appdirs
 import STCTextEditor
 import consts
+from Validator import NumValidator
 
 class CodeSampleCtrl(stc.StyledTextCtrl):
     
@@ -191,8 +192,6 @@ class ColorComboBox(wx.combo.OwnerDrawnComboBox):
         elif item == 11:
             penStyle = wx.VERTICAL_HATCH
             
-        print self.GetString(item),self.Colors[self.GetString(item)]
-            
         pen = wx.Pen(dc.GetTextForeground(), 3, penStyle)
         dc.SetPen(pen)
         
@@ -310,7 +309,8 @@ class ColorFontOptionsPanel(wx.Panel):
         choices = []
         for i in range(6,25):
             choices.append(str(i))
-        self._sizeCombo = wx.ComboBox(self, -1,choices=choices, style = wx.CB_DROPDOWN)
+        self._sizeCombo = wx.ComboBox(self, -1,choices=choices, style = wx.CB_DROPDOWN,\
+                                      validator=NumValidator(_("Font Size"),5,28))
         self._sizeCombo.SetSelection(0)
         size_sizer.Add(self._sizeCombo, 1, wx.LEFT|wx.EXPAND, 0)
         
@@ -458,6 +458,7 @@ class ColorFontOptionsPanel(wx.Panel):
             if isinstance(openDoc,STCTextEditor.TextDocument):
                 docView = openDoc.GetFirstView()
                 syntax.LexerManager().UpdateAllStyles(docView.GetCtrl(),theme)
+        return True
         
     def SelectStyle(self,event):
         self.SelectFontSize(event.GetSelection())

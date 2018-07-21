@@ -9,6 +9,7 @@ import sys
 import codecs
 import consts
 import OptionService
+from Validator import NumValidator
 
 _ = wx.GetTranslation
 
@@ -235,8 +236,10 @@ class GeneralOptionsPanel(wx.Panel):
         optionsSizer.Add(self._enableMRUCheckBox, 0, wx.ALL, HALF_SPACE)
 
         lsizer = wx.BoxSizer(wx.HORIZONTAL)
-        self._mru_ctrl = wx.TextCtrl(self, -1, config.Read("MRULength",str(consts.DEFAULT_MRU_FILE_NUM)), size=(30,-1))
-        lsizer.AddMany([(wx.StaticText(self, label=_("File History length in MRU Files") + u"(1-20): "),
+        self._mru_ctrl = wx.TextCtrl(self, -1, config.Read("MRULength",str(consts.DEFAULT_MRU_FILE_NUM)), size=(30,-1),\
+                                validator=NumValidator(_("MRU Length"),consts.MIN_MRU_FILE_LIMIT,consts.MAX_MRU_FILE_LIMIT))
+        lsizer.AddMany([(wx.StaticText(self, label=_("File History length in MRU Files") + "(%d-%d): " % \
+                                                            (consts.MIN_MRU_FILE_LIMIT,consts.MAX_MRU_FILE_LIMIT)),
                          0, wx.ALIGN_CENTER_VERTICAL), ((5, 5), 0),
                         (self._mru_ctrl,
                          0, wx.ALIGN_CENTER_VERTICAL)])
@@ -291,6 +294,7 @@ class GeneralOptionsPanel(wx.Panel):
         if self._AllowModeChanges():
             config.WriteInt("UseMDI", (self._documentRadioBox.GetStringSelection() == self._mdiChoice))
             config.WriteInt("UseWinMDI", (self._documentRadioBox.GetStringSelection() == self._winMdiChoice))
+        return True
 
 
     def GetIcon(self):

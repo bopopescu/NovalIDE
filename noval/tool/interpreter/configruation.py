@@ -590,6 +590,8 @@ class InterpreterConfigurationPanel(wx.Panel):
             self.Destroy()
         except Exception as e:
             wx.MessageBox(e.msg,_("Save Interpreter Error"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
+            return False
+        return True
             
         
 class AnalyseProgressDialog(wx.ProgressDialog):

@@ -2927,6 +2927,7 @@ class DebuggerOptionsPanel(wx.Panel):
         config.Write("DebuggerHostName", self._LocalHostTextCtrl.GetValue())
         if self._PortNumberTextCtrl.IsInBounds():
             config.WriteInt("DebuggerStartingPort", self._PortNumberTextCtrl.GetValue())
+        return True
 
 
     def GetIcon(self):

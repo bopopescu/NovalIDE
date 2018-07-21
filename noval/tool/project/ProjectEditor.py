@@ -4263,6 +4263,7 @@ class ProjectOptionsPanel(wx.Panel):
         if not ACTIVEGRID_BASE_IDE:
             config.WriteInt("RunWelcomeDialog2", self._projShowWelcomeCheckBox.GetValue())
             config.Write(APP_LAST_LANGUAGE, self._langCtrl.GetStringSelection())
+        return True
 
 
     def GetIcon(self):

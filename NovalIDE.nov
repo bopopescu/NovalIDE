@@ -176,5 +176,6 @@
   <noval:file filePath="./noval/tool/data/styles/Mocha.ess" logicalFolder="noval/tool/data/styles" isStartup="false"/>
   <noval:file filePath="./noval/tool/syntax/lexer/_h.py" logicalFolder="noval/tool/syntax/lexer" isStartup="false"/>
   <noval:file filePath="./noval/tool/ColorFont.py" logicalFolder="noval/tool" isStartup="false"/>
+  <noval:file filePath="./noval/tool/Validator.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>

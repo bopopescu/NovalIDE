@@ -73,27 +73,31 @@ class OptionsDialog(wx.Dialog):
                     self.tree.SelectItem(child)
 
         sizer.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL), 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM|wx.TOP, consts.HALF_SPACE)
+        wx.EVT_BUTTON(self, wx.ID_OK, self.OnOK)
         self.SetSizer(sizer)
         self.Layout()
         self.Fit()
         wx.CallAfter(self.DoRefresh)
 
     def DoSelection(self,event):
-        
         sel = self.tree.GetSelection()
-        self.current_item = sel
+        if self.tree.GetChildrenCount(sel) > 0:
+            (item, cookie) = self.tree.GetFirstChild(sel)
+            sel = item
         text = self.tree.GetItemText(sel)
-        if not self._optionsPanels.has_key(text) or self.tree.GetChildrenCount(sel) > 0:
-            return
         panel = self._optionsPanels[text]
+        if self.current_item is not None and sel != self.current_item:
+            if not self.current_panel.Validate():
+                self.tree.SelectItem(self.current_item)
+                return 
         if self.current_panel is not None and panel != self.current_panel:
             self.current_panel.Hide()
         self.current_panel = panel
+        self.current_item = sel        
         self.current_panel.Show()
         if not self.panel_sizer.GetItem(self.current_panel):
             self.panel_sizer.Insert(0,self.current_panel,0,wx.ALL|wx.EXPAND,0)
             
-        ##self.GetSizer().Fit(self)
         self.Layout()
         self.Fit()
 
@@ -116,13 +120,16 @@ class OptionsDialog(wx.Dialog):
         """
         Calls the OnOK method of all of the OptionDialog's embedded panels
         """
+        if not self.current_panel.Validate():
+            return
         for name in self._optionsPanels:
             optionsPanel = self._optionsPanels[name]
-            optionsPanel.OnOK(event)
-            
+            if not optionsPanel.OnOK(self.Parent):
+                return
         sel = self.tree.GetSelection()
         text = self.tree.GetItemText(sel)
         wx.ConfigBase_Get().Write("OptionName",text)
+        self.EndModal(wx.ID_OK)
 
 class OptionsService(wx.lib.pydocview.DocOptionsService):
     def __init__(self,showGeneralOptions=True, supportedModes=wx.lib.docview.DOC_SDI & wx.lib.docview.DOC_MDI):
@@ -142,9 +149,12 @@ class OptionsService(wx.lib.pydocview.DocOptionsService):
             return
         optionsDialog = OptionsDialog(wx.GetApp().GetTopWindow(), self._optionsPanels,self.category_list, self._docManager,option_name)
         optionsDialog.CenterOnParent()
-        if optionsDialog.ShowModal() == wx.ID_OK:
-            optionsDialog.OnOK(optionsDialog)  # wxBug: wxDialog should be calling this automatically but doesn't
+        optionsDialog.ShowModal()
         optionsDialog.Destroy()
+      #  if optionsDialog.ShowModal() == wx.ID_OK:
+       #     if not optionsDialog.OnOK(optionsDialog):  # wxBug: wxDialog should be calling this automatically but doesn't
+        #        return
+        #optionsDialog.Destroy()
         
     def AddOptionsPanel(self,category,name,optionsPanelClass):
         
