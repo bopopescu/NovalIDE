@@ -416,9 +416,12 @@ class ColorFontOptionsPanel(wx.Panel):
             # If the user selected OK, then the dialog's wx.ColourData will
             # contain valid information. Fetch the data ...
             data = dlg.GetColourData()
+            if event.GetId() == self.back_color_button.GetId():
+                self.fore_color_combo.SetColor(strutils.RGBToHex(data.GetColour()))
+            else:
+                self.back_color_combo.SetColor(strutils.RGBToHex(data.GetColour()))
             # ... then do something with it. The actual colour data will be
             # returned as a three-tuple (r, g, b) in this particular case.
-            self.log.WriteText('You selected: %s\n' % str(data.GetColour().Get()))
         # Once the dialog is destroyed, Mr. wx.ColourData is no longer your
         # friend. Don't use it again!
         dlg.Destroy()

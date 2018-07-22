@@ -258,6 +258,10 @@ class GeneralOptionsPanel(wx.Panel):
         self._chkEOLCheckBox = wx.CheckBox(self, -1, _("Warn when mixed eol characters are detected"))
         self._chkEOLCheckBox.SetValue(config.ReadInt(consts.CHECK_EOL_KEY, True))
         optionsSizer.Add(self._chkEOLCheckBox, 0, wx.ALL, HALF_SPACE)
+        
+        self._remberCheckBox = wx.CheckBox(self, -1, _("Remember File Position"))
+        self._remberCheckBox.SetValue(config.ReadInt(consts.REMBER_FILE_KEY, True))
+        optionsSizer.Add(self._remberCheckBox, 0, wx.ALL, HALF_SPACE)
 
         optionsBorderSizer.Add(optionsSizer, 0, wx.ALL, SPACE)
         self.SetSizer(optionsBorderSizer)

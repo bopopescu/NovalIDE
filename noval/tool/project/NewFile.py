@@ -38,7 +38,7 @@ class FileTemplateDialog(wx.Dialog):
         self.lc.SetColumnWidth(0, 300)
         self.lc.SetColumnWidth(1,150)
         for i,file_template in enumerate(self._file_templates):
-            index = self.lc.InsertStringItem(self.lc.GetItemCount(), file_template.get('Name',''));
+            index = self.lc.InsertStringItem(self.lc.GetItemCount(), file_template.get('Name',''))
             self.lc.SetStringItem(index, 1, file_template.get('Category',''))
             self.lc.SetItemData(index,i)
         
@@ -167,7 +167,34 @@ class FileTemplateDialog(wx.Dialog):
             self.refresh_btn.Enable(True)
         
     def NewItem(self,event):
-        pass
+        name = self.name_ctrl.GetValue()
+        if self.IsTemplateNameExist(name):
+            wx.MessageBox(_("template name '%s' already exist") % name)
+            return
+        category = self.category_ctrl.GetValue()
+        ext = self.ext_ctrl.GetValue()
+        syntax_value = self._syntaxCombo.GetValue()
+        code_sample_text = self.template_code_ctrl.GetText()
+        template = {
+            'Ext': ext,
+            'Name': name,
+            'Category': category,
+            'Content':''
+        }
+        i = self.lc.Append([name,category])
+        self.lc.SetItemData(i,len(self._file_templates))
+        self.lc.Select(i)
+        self.lc.SetItemState(i, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
+        self.lc.EnsureVisible(i)
+        self.UpdateUI()
+        self._file_templates.append(template)
+        
+    def IsTemplateNameExist(self,name):
+        for file_template in self._file_templates:
+            template_name = file_template.get('Name','')
+            if template_name.lower() == name.lower():
+                return True
+        return False
         
     def DeleteItem(self,event):
         select_item = self.lc.GetFirstSelected()
