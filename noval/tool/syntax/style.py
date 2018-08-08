@@ -1,8 +1,15 @@
 import wx
 import syntax
+import noval.tool.consts as consts
+import lang
 
-STY_ATTRIBUTES = (u"face", u"fore", u"back", u"size", u"modifiers")
-STY_EX_ATTRIBUTES  = (u"eol", u"bold", u"italic", u"underline")
+STY_ATTRIBUTES = (consts.FACE_ATTR_NAME, consts.FORE_ATTR_NAME, consts.BACK_ATTR_NAME, consts.SIZE_ATTR_NAME, u"modifiers")
+STY_EX_ATTRIBUTES  = (consts.EOL_ATTR_NAME, consts.BOLD_ATTR_NAME, consts.ITALIC_ATTR_NAME, consts.UNDERLINE_ATTR_NAME)
+
+STYLE_KEY = "/NOV_Styles"
+
+def getStyleKeyName(lang,keyName):
+    return "%s/%s/%s" % (STYLE_KEY, lang.replace("/", '|'), keyName)
 
 class StyleItem(object):
     """description of class"""
@@ -15,6 +22,8 @@ class StyleItem(object):
         self.face = face
         self.bold = False
         self.italic = False
+        self.eol = False
+        self.underline = False
         self.null = False
         if ex is None:
             ex = list()
@@ -50,6 +59,14 @@ class StyleItem(object):
     @property
     def Italic(self):
         return self.italic
+        
+    @property
+    def Underline(self):
+        return self.underline
+        
+    @property
+    def Eol(self):
+        return self.eol
         
     def __str__(self):
         """Convert StyleItem to string"""
@@ -181,13 +198,24 @@ class StyleItem(object):
 
         if add and ex_attr not in self._exattr:
             self._exattr.append(ex_attr)
+            setattr(self,ex_attr,True)
         elif not add and ex_attr in self._exattr:
             self._exattr.remove(ex_attr)
+            setattr(self,ex_attr,False)
         else:
             pass
-        
+            
+    def GetStyleSpecStr(self):
+        stystr = unicode(self)
+        return stystr.replace("modifiers:", "")
 
 class LexerStyleItem(StyleItem):
+    
+    LOAD_FROM_ATTRIBUTE = 1
+    LOAD_FROM_DEFAULT =  2
+    LOAD_FROM_CONFIG = 3
+    
+    LOAD_STYLE_THRESHOLD = LOAD_FROM_CONFIG
     
     def __init__(self,style_id,key_name,style_name,global_style_name,fore=u"", back=u"", face=u"", size=u"", ex=None):
         super(LexerStyleItem,self).__init__(fore,back,face,size)
@@ -195,8 +223,20 @@ class LexerStyleItem(StyleItem):
         self._style_name = style_name
         self._key_name = key_name
         self._global_style_name = global_style_name
+        self._lang_id = lang.ID_LANG_TXT
 
+    @classmethod
+    def SetThresHold(cls,val):
+        cls.LOAD_STYLE_THRESHOLD = val
         
+    @classmethod
+    def GetThresHold(cls):
+        return cls.LOAD_STYLE_THRESHOLD
+        
+    @classmethod
+    def SetDefaultThresHold(cls):
+       cls.LOAD_STYLE_THRESHOLD = cls.LOAD_FROM_CONFIG
+               
     @property
     def StyleId(self):
         return self._style_id
@@ -204,6 +244,14 @@ class LexerStyleItem(StyleItem):
     @property
     def StyleName(self):
         return self._style_name
+        
+    @property
+    def LangId(self):
+        return self._lang_id
+        
+    @LangId.setter
+    def LangId(self,lang_id):
+        self._lang_id = lang_id
         
     @property
     def GlobalStyleName(self):
@@ -214,16 +262,43 @@ class LexerStyleItem(StyleItem):
         return self._key_name
         
     def GetStyleSpec(self):
-        style_item = syntax.LexerManager().GetItemByName(self._global_style_name)
-        if not self.Back:
+        def update_global_style_back():
+            if global_style is not None:
+                if global_style.Back != self.Back:
+                    self.SetBack(global_style.Back)
+        
+        lexer_manager = syntax.LexerManager()
+        global_style = lexer_manager.GetGlobalItemByName(consts.GLOBAL_STYLE_NAME)
+        #load from attr directly
+        if self.LOAD_STYLE_THRESHOLD == self.LOAD_FROM_ATTRIBUTE and self.Back and self.Fore and self.Face and self.Size:
+            #should update back color to global back color if is not equal
+            update_global_style_back()
+            return self.GetStyleSpecStr()
+        
+        #load from config
+        if self.LOAD_STYLE_THRESHOLD == self.LOAD_FROM_CONFIG:
+            lexer_name = lexer_manager.GetLexer(self.LangId).GetShowName()
+            key_name = getStyleKeyName(lexer_name,self._key_name)
+            style_item = lexer_manager.GetItemByKeyName(key_name)
+            #if could not get style from config,then get default style
+            if style_item is None:
+                style_item = lexer_manager.GetItemByName(self._global_style_name)
+        else:
+            #load default
+            style_item = lexer_manager.GetItemByName(self._global_style_name)
+        if not self.Back or self.Back != style_item.Back:
             self.SetBack(style_item.Back)
-        if not self.Fore:
+        if not self.Fore or self.Fore != style_item.Fore:
             self.SetFore(style_item.Fore)
-        if not self.Face:
+        if not self.Face or self.Face != style_item.Face:
             self.SetFace(style_item.Face)
-        if not self.Size:
+        if not self.Size or self.Size != style_item.Size:
             self.SetSize(style_item.Size)
-        style_spec_str = syntax.LexerManager().GetStyleByName(self._global_style_name)
+        for attr in style_item._exattr:
+            self.SetExAttr(attr)
+        #should update back color to global back color if is not equal
+        update_global_style_back()
+        style_spec_str = self.GetStyleSpecStr()
         return style_spec_str
         
     

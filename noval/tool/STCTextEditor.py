@@ -35,6 +35,7 @@ import noval.parser.utils as parserutils
 import BaseCtrl
 from noval.tool.syntax import syntax
 import noval.util.strutils as strutils
+import json
 
 _ = wx.GetTranslation
 
@@ -1107,20 +1108,25 @@ class TextOptionsPanel(wx.Panel):
         SPACE = 10
         HALF_SPACE   = 5
         config = wx.ConfigBase_Get()
-        self._textFont = wx.Font(10, wx.MODERN, wx.NORMAL, wx.NORMAL)
-        fontData = config.Read(self._configPrefix + "EditorFont", "")
+        fontData = config.Read(consts.PRIMARY_FONT_KEY, "")
         if fontData:
-            nativeFont = wx.NativeFontInfo()
-            nativeFont.FromString(fontData)
-            self._textFont.SetNativeFontInfo(nativeFont)
+            font_data = json.loads(fontData)
+            self._textFont =  wx.Font(font_data['size'],wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL,\
+                                      wx.FONTWEIGHT_NORMAL,faceName=font_data['font'])
+        else:
+            self._textFont = wx.Font(consts.DEFAULT_FONT_SIZE, wx.MODERN, wx.NORMAL, wx.NORMAL,\
+                                     faceName = consts.DEFAULT_FONT_NAME)
         self._originalTextFont = self._textFont
-        self._textColor = wx.BLACK
-        colorData = config.Read(self._configPrefix + "EditorColor", "")
-        if colorData:
-            red = int("0x" + colorData[0:2], 16)
-            green = int("0x" + colorData[2:4], 16)
-            blue = int("0x" + colorData[4:6], 16)
-            self._textColor = wx.Colour(red, green, blue)
+        global_style = syntax.LexerManager().GetGlobalItemByName(consts.GLOBAL_STYLE_NAME)
+        global_style.GetStyleSpec()
+        rgb = strutils.HexToRGB(global_style.Fore)
+        self._textColor = wx.Colour(red=rgb[0], green=rgb[1], blue=rgb[2])
+##        colorData = config.Read(self._configPrefix + "EditorColor", "")
+##        if colorData:
+##            red = int("0x" + colorData[0:2], 16)
+##            green = int("0x" + colorData[2:4], 16)
+##            blue = int("0x" + colorData[4:6], 16)
+##            self._textColor = wx.Colour(red, green, blue)
         self._originalTextColor = self._textColor
         fontLabel = wx.StaticText(self, -1, _("Font:"))
         self._sampleTextCtrl = wx.TextCtrl(self, -1, "", size = (125, 21))
@@ -1251,8 +1257,13 @@ class TextOptionsPanel(wx.Panel):
                 doViewStuffUpdate = True
                 config.WriteInt(self._configPrefix + "EditorIndentWidth", newIndentWidth)
         doFontUpdate = self._originalTextFont != self._textFont or self._originalTextColor != self._textColor
-        config.Write(self._configPrefix + "EditorFont", self._textFont.GetNativeFontInfoDesc())
-        config.Write(self._configPrefix + "EditorColor", "%02x%02x%02x" % (self._textColor.Red(), self._textColor.Green(), self._textColor.Blue()))
+        if doFontUpdate:
+            data_str = json.dumps({'font':self._textFont.GetFaceName(),'size':self._textFont.GetPointSize()})
+            config.Write(consts.PRIMARY_FONT_KEY, data_str)
+            config.Write(self._configPrefix + "EditorColor", "%02x%02x%02x" % (self._textColor.Red(), self._textColor.Green(), self._textColor.Blue()))
+            font, color = syntax.LexerManager().GetFontAndColorFromConfig()
+            syntax.LexerManager().SetGlobalFont(font.GetFaceName(),font.GetPointSize())
+            syntax.LexerManager().SetGlobalFontColor("",strutils.RGBToHex(color))
         if doViewStuffUpdate or doFontUpdate:
             for document in optionsDialog.GetDocManager().GetDocuments():
                 if issubclass(document.GetDocumentTemplate().GetDocumentType(), TextDocument):
@@ -1274,7 +1285,7 @@ class TextCtrl(BaseCtrl.ScintillaCtrl):
         self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
         self.Bind(wx.stc.EVT_STC_ZOOM, self.OnUpdateLineNumberMarginWidth)  # auto update line num width on zoom
         self.MarkerDefineDefault()
-        self.SetEdgeMode(wx.stc.STC_EDGE_LINE)
+      #  self.SetEdgeMode(wx.stc.STC_EDGE_LINE)
         self.SetEdgeColumn(78)
         
 
@@ -1305,23 +1316,9 @@ class TextCtrl(BaseCtrl.ScintillaCtrl):
             self.SetMarginWidth(TextView.FOLD_MARKER_NUM, 0)
             
     def GetFontAndColorFromConfig(self, configPrefix = "Text"):
-        font = self.GetDefaultFont()
-        config = wx.ConfigBase_Get()
-        fontData = config.Read(configPrefix + "EditorFont", "")
-        if fontData:
-            nativeFont = wx.NativeFontInfo()
-            nativeFont.FromString(fontData)
-            font.SetNativeFontInfo(nativeFont)
-        color = self.GetDefaultColor()
-        colorData = config.Read(configPrefix + "EditorColor", "")
-        if colorData:
-            red = int("0x" + colorData[0:2], 16)
-            green = int("0x" + colorData[2:4], 16)
-            blue = int("0x" + colorData[4:6], 16)
-            color = wx.Colour(red, green, blue)
-        return font, color
+        return syntax.LexerManager().GetFontAndColorFromConfig()
 
-    def SetViewDefaults(self, configPrefix="Text", hasWordWrap=True, hasTabs=False, hasFolding=False):
+    def SetViewDefaults(self, configPrefix="Text", hasWordWrap=True, hasTabs=True, hasFolding=True):
         config = wx.ConfigBase_Get()
         self.SetViewWhiteSpace(config.ReadInt(configPrefix + "EditorViewWhitespace", False))
         self.SetViewEOL(config.ReadInt(configPrefix + "EditorViewEOL", False))
@@ -1369,8 +1366,8 @@ class TextCtrl(BaseCtrl.ScintillaCtrl):
         lex_manager = syntax.LexerManager()
 
         # Global default styles for all languages
-        self.StyleSetSpec(0, lex_manager.GetStyleByName('default_style'))
-        self.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT, lex_manager.GetStyleByName('default_style'))
+        self.StyleSetSpec(0, lex_manager.GetGlobalStyleByName(consts.GLOBAL_STYLE_NAME))
+        self.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT, lex_manager.GetGlobalStyleByName(consts.GLOBAL_STYLE_NAME))
         self.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER, lex_manager.GetStyleByName('line_num'))
         self.StyleSetSpec(wx.stc.STC_STYLE_CONTROLCHAR, lex_manager.GetStyleByName('ctrl_char'))
         self.StyleSetSpec(wx.stc.STC_STYLE_BRACELIGHT, lex_manager.GetStyleByName('brace_good'))

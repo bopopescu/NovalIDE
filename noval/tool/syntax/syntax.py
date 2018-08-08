@@ -235,7 +235,6 @@ class LexerManager(object):
                 self.SetStyles('default', DEF_STYLE_DICT)
             return False
         else:
-            self.LOG("[ed_style][info] Using cached style data")
             return True
             
 
@@ -530,10 +529,33 @@ class LexerManager(object):
 
         """
         if self.HasNamedStyle(name):
-            stystr = unicode(self.GetItemByName(name))
-            return stystr.replace("modifiers:", "")
+            style = self.GetItemByName(name)
+            stystr = style.GetStyleSpecStr()
+            return stystr
         else:
             return u""
+            
+    def GetGlobalItemByName(self, key_name):
+        lexer = self.GetLexer(lang.ID_LANG_TXT)
+        for global_style in lexer.StyleItems:
+            if global_style.KeyName == key_name:
+                return global_style
+        return None
+        
+    def GetGlobalStyleByName(self, key_name):
+        global_style = self.GetGlobalItemByName(key_name)
+        if global_style is None:
+            return ""
+        return global_style.GetStyleSpec()
+        
+    def GetItemByKeyName(self,key_name):
+        config = wx.ConfigBase_Get()
+        style_data = config.Read(key_name,"")
+        if not style_data:
+            return None
+        item = StyleItem()
+        item.SetAttrFromStr(style_data)
+        return item
             
     def GetItemByName(self, name):
         """Gets and returns a style item using its name for the search
@@ -550,7 +572,6 @@ class LexerManager(object):
                 val = ival % self.fonts
                 item = StyleItem()
                 item.SetAttrFromStr(val)
-
             return item
         else:
             return StyleItem()
@@ -571,12 +592,7 @@ class LexerManager(object):
             font_data = json.loads(font)
             mfont =  wx.Font(font_data['size'],wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL,wx.FONTWEIGHT_NORMAL,faceName=font_data['font'])
         else:
-            if wx.Platform == '__WXMSW__':
-                mfont = wx.Font(consts.DEFAULT_FONT_SIZE, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL,
-                                wx.FONTWEIGHT_NORMAL,faceName = consts.DEFAULT_FONT_NAME)
-            else:
-                mfont = wx.Font(consts.DEFAULT_FONT_SIZE, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL,
-                                wx.FONTWEIGHT_NORMAL)
+            mfont = self.GetDefaultFont()
             data_str = json.dumps({'font':mfont.GetFaceName(),'size':mfont.GetPointSize()})
             wx.ConfigBase_Get().Write(consts.PRIMARY_FONT_KEY, data_str)
         primary = mfont.GetFaceName()
@@ -634,7 +650,70 @@ class LexerManager(object):
     @Theme.setter
     def Theme(self,name):
         self.style_set = name
+        
+    def GetFontAndColorFromConfig(self):
+        config = wx.ConfigBase_Get()
+        fontData = config.Read(consts.PRIMARY_FONT_KEY, "")
+        if fontData:
+            font_data = json.loads(fontData)
+            font =  wx.Font(font_data['size'],wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL,wx.FONTWEIGHT_NORMAL,faceName=font_data['font'])
+        else:
+           font = self.GetDefaultFont() 
+        color = self.GetDefaultColor()
+        colorData = config.Read("TextEditorColor", "")
+        if colorData:
+            red = int("0x" + colorData[0:2], 16)
+            green = int("0x" + colorData[2:4], 16)
+            blue = int("0x" + colorData[4:6], 16)
+            color = wx.Colour(red, green, blue)
+        return font, color
+        
+    def GetDefaultFont(self):
+        if wx.Platform == '__WXMSW__':
+            font = wx.Font(consts.DEFAULT_FONT_SIZE, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL,
+                            wx.FONTWEIGHT_NORMAL,faceName = consts.DEFAULT_FONT_NAME)
+        else:
+            font = wx.Font(consts.DEFAULT_FONT_SIZE, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL,
+                            wx.FONTWEIGHT_NORMAL)
+        return font
+        
+    def GetDefaultColor(self):
+        """ Subclasses should override this """
+        return wx.BLACK
+        
+    def SetGlobalFont(self,fontface="", size=-1):
+        """Sets one of the fonts in the global font set by tag
+        and sets it to the named font. Returns true on success.
+        @param fonttag: font type identifier key
+        @param fontface: face name to set global font to
+
+        """
+        if hasattr(self, 'fonts'):
+            global_style = self.GetGlobalItemByName(consts.GLOBAL_STYLE_NAME)
+            if fontface != "":
+                self.fonts[self.FONT_PRIMARY] = fontface
+                global_style.SetFace(fontface)
+            if size > 0:
+                self.fonts[self.FONT_SIZE] = size
+                global_style.SetSize(str(size))
+            return True
+        else:
+            return False
             
+    def SetGlobalFontColor(self,back="", fore=""):
+        """Sets one of the fonts in the global font set by tag
+        and sets it to the named font. Returns true on success.
+        @param fonttag: font type identifier key
+        @param fontface: face name to set global font to
+
+        """
+
+        global_style = self.GetGlobalItemByName(consts.GLOBAL_STYLE_NAME)
+        if back != "":
+            global_style.SetBack(back)
+        if fore != "":
+            global_style.SetFore(fore)
+        
 def NullStyleItem():
     """Create a null style item
     @return: empty style item that cannot be merged

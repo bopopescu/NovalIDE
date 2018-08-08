@@ -181,6 +181,7 @@ class BaseLexer(object):
     def GetStyleItems(self,syntax_items):
         for style_id,key_name,style_name,global_style_name in syntax_items:
             lexer_style_item = style.LexerStyleItem(style_id,key_name,style_name,global_style_name)
+            lexer_style_item.LangId = self.LangId
             self.style_items.append(lexer_style_item)
             
     def GetSampleCodeFromFile(self,sample_file_path,is_zip_compress = True):

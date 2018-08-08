@@ -73,11 +73,6 @@ class XmlCtrl(CodeEditor.CodeCtrl):
     def CanWordWrap(self):
         return True
 
-
-    def SetViewDefaults(self):
-        CodeEditor.CodeCtrl.SetViewDefaults(self, configPrefix = "Xml", hasWordWrap = True, hasTabs = True, hasFolding=True)
-
-
     def GetFontAndColorFromConfig(self):
         return CodeEditor.CodeCtrl.GetFontAndColorFromConfig(self, configPrefix = "Xml")
 

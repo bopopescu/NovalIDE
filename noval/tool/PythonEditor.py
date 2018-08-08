@@ -602,11 +602,6 @@ class PythonCtrl(CodeEditor.CodeCtrl):
                 searchPattern = definition % pattern
                 wx.GetApp().GetService(FindInDirService.FindInDirService).FindInProject(searchPattern)
 
-
-    def SetViewDefaults(self):
-        CodeEditor.CodeCtrl.SetViewDefaults(self, configPrefix="Python", hasWordWrap=True, hasTabs=True, hasFolding=True)
-
-
     def GetFontAndColorFromConfig(self):
         return CodeEditor.CodeCtrl.GetFontAndColorFromConfig(self, configPrefix = "Python")
 

@@ -3,6 +3,7 @@ from noval.tool.consts import SPACE,HALF_SPACE,_ ,THEME_KEY,DEFAULT_THEME_NAME
 import wx.stc as stc
 import wx.combo
 from noval.tool.syntax import syntax
+from noval.tool.syntax.style import *
 import copy
 import noval.util.strutils as strutils
 import os
@@ -10,6 +11,8 @@ import noval.util.appdirs as appdirs
 import STCTextEditor
 import consts
 from Validator import NumValidator
+import noval.tool.syntax.lang as lang
+import json
 
 class CodeSampleCtrl(stc.StyledTextCtrl):
     
@@ -28,6 +31,7 @@ class CodeSampleCtrl(stc.StyledTextCtrl):
         elif lexer_id == wx.stc.STC_LEX_NULL:
             self.SetStyleBits(5)
             self.SetLexer(lexer_id)
+            self.SetSyntax(lexer.StyleItems)
             self.ClearDocumentStyle()
             self.UpdateBaseStyles()
             return True
@@ -42,7 +46,11 @@ class CodeSampleCtrl(stc.StyledTextCtrl):
         self.SetSyntax(lexer.StyleItems)
         
     def UpdateStyles(self):
-        self.SetSyntax(self._lexer.StyleItems)
+        if self._lexer.Lexer == wx.stc.STC_LEX_NULL:
+            self.UpdateBaseStyles()
+            self.Refresh()
+        else:
+            self.SetSyntax(self._lexer.StyleItems)
         
     def SetKeyWords(self, kw_lst):
         """Sets the keywords from a list of keyword sets
@@ -107,11 +115,11 @@ class CodeSampleCtrl(stc.StyledTextCtrl):
         lex_manager = syntax.LexerManager()
 
         # Global default styles for all languages
-        self.StyleSetSpec(0, lex_manager.GetStyleByName('default_style'))
-        self.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT, lex_manager.GetStyleByName('default_style'))
-        self.StyleSetSpec(wx.stc.STC_STYLE_CONTROLCHAR, lex_manager.GetStyleByName('ctrl_char'))
-        self.StyleSetSpec(wx.stc.STC_STYLE_BRACELIGHT, lex_manager.GetStyleByName('brace_good'))
-        self.StyleSetSpec(wx.stc.STC_STYLE_BRACEBAD, lex_manager.GetStyleByName('brace_bad'))
+        self.StyleSetSpec(0, lex_manager.GetGlobalStyleByName(consts.GLOBAL_STYLE_NAME))
+        self.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT, lex_manager.GetGlobalStyleByName(consts.GLOBAL_STYLE_NAME))
+        self.StyleSetSpec(wx.stc.STC_STYLE_CONTROLCHAR, lex_manager.GetGlobalStyleByName('CtrlChar'))
+        self.StyleSetSpec(wx.stc.STC_STYLE_BRACELIGHT, lex_manager.GetGlobalStyleByName('BraceLight'))
+        self.StyleSetSpec(wx.stc.STC_STYLE_BRACEBAD, lex_manager.GetGlobalStyleByName('BraceBad'))
 
         sback = lex_manager.GetItemByName('select_style')
         if not sback.IsNull() and len(sback.Back):
@@ -261,6 +269,10 @@ class ColorComboBox(wx.combo.OwnerDrawnComboBox):
             if clr.lower() == strutils.RGBToHex(self.Colors[clr_name]):
                 sel = i
         return sel
+        
+    def GetColour(self,sel):
+        clr_name = self.GetString(sel)
+        return strutils.RGBToHex(self.Colors[clr_name])
 
 class ColorFontOptionsPanel(wx.Panel):
     """description of class"""
@@ -278,13 +290,16 @@ class ColorFontOptionsPanel(wx.Panel):
         line_sizer = wx.BoxSizer(wx.HORIZONTAL)
         
         self._lexerCombo = wx.ComboBox(self, -1,choices=[], style = wx.CB_READONLY)
+        select_index = 0
         for lexer in syntax.LexerManager().Lexers:
             if lexer.IsVisible():
-                self._lexerCombo.Append(lexer.GetShowName(),lexer)
+                i = self._lexerCombo.Append(lexer.GetShowName(),lexer)
+                if lexer.GetLangId() == lang.ID_LANG_TXT:
+                    select_index = i
         self._lexerCombo.Bind(wx.EVT_COMBOBOX, self.OnSelectLexer) 
 
         line_sizer.Add(self._lexerCombo, 1, wx.ALL|wx.EXPAND, 0)
-        self._lexerCombo.SetSelection(0)
+        self._lexerCombo.SetSelection(select_index)
         defaultButton = wx.Button(self, -1, _("Restore Default(D)"))
         wx.EVT_BUTTON(self, defaultButton.GetId(), self.SetDefaultValue)
         line_sizer.Add(defaultButton, 0, wx.LEFT, SPACE)
@@ -300,6 +315,7 @@ class ColorFontOptionsPanel(wx.Panel):
         choices = e.GetFacenames()
         choices.sort()
         self._fontCombo = wx.ComboBox(self, -1,choices=choices, style = wx.CB_READONLY)
+        self._fontCombo.Bind(wx.EVT_COMBOBOX, self.OnSelectFont)
         self._fontCombo.SetSelection(0)
         font_sizer.Add(self._fontCombo, 1, wx.ALL|wx.EXPAND, 0)
         
@@ -311,6 +327,7 @@ class ColorFontOptionsPanel(wx.Panel):
             choices.append(str(i))
         self._sizeCombo = wx.ComboBox(self, -1,choices=choices, style = wx.CB_DROPDOWN,\
                                       validator=NumValidator(_("Font Size"),5,28))
+        self._sizeCombo.Bind(wx.EVT_COMBOBOX, self.OnSelectSize)
         self._sizeCombo.SetSelection(0)
         size_sizer.Add(self._sizeCombo, 1, wx.LEFT|wx.EXPAND, 0)
         
@@ -349,11 +366,13 @@ class ColorFontOptionsPanel(wx.Panel):
         back_colors[_('Silver')] = wx.Colour(0xC0, 0xC0, 0xC0)
         back_colors[_('Orange')] = wx.Colour( 0xFF, 0xA5,0x00)
         self.back_color_combo = ColorComboBox(self,back_colors,choices = colors,size=(150,defaultButton.GetSize().GetHeight()))
+        self.back_color_combo.Bind(wx.EVT_COMBOBOX, self.OnSelectBackColor)
         self.back_color_combo.SetSelection(0)
         line_sizer.Add(self.back_color_combo, 0, wx.ALL,0)
-        self.fore_color_button = wx.Button(self, -1, _("Custom(C)..."))
-        line_sizer.Add(self.fore_color_button, 0, wx.LEFT,SPACE)
-        wx.EVT_BUTTON(self, self.fore_color_button.GetId(), self.ShowCustomColorDialog)
+        self.back_color_button = wx.Button(self, -1, _("Custom(C)..."))
+        wx.EVT_BUTTON(self, self.back_color_button.GetId(), self.ShowCustomColorDialog)
+        line_sizer.Add(self.back_color_button, 0, wx.LEFT,SPACE)
+        
         left_sizer.Add(line_sizer, 0, wx.ALL,0)
         
         left_sizer.Add(wx.StaticText(self, -1, _("Foreground Color(F):")), 0, wx.TOP,SPACE)
@@ -361,21 +380,30 @@ class ColorFontOptionsPanel(wx.Panel):
         fore_colors = copy.deepcopy(back_colors)
         fore_colors[_('Default')] = wx.Colour(0x00,  0x00, 0x00)
         self.fore_color_combo = ColorComboBox(self,fore_colors,choices = colors,size=(150,defaultButton.GetSize().GetHeight()))
+        self.fore_color_combo.Bind(wx.EVT_COMBOBOX, self.OnSelectForeColor)
         self.fore_color_combo.SetSelection(0)
         line_sizer.Add(self.fore_color_combo, 0, wx.ALL,0)
-        self.back_color_button = wx.Button(self, -1, _("Custom(C)..."))
-        wx.EVT_BUTTON(self, self.back_color_button.GetId(), self.ShowCustomColorDialog)
-        line_sizer.Add(self.back_color_button, 0, wx.LEFT,SPACE)
+        self.fore_color_button = wx.Button(self, -1, _("Custom(C)..."))
+        line_sizer.Add(self.fore_color_button, 0, wx.LEFT,SPACE)
+        wx.EVT_BUTTON(self, self.fore_color_button.GetId(), self.ShowCustomColorDialog)
         left_sizer.Add(line_sizer, 0, wx.ALL,0)
         
         sbox = wx.StaticBox(self, -1, _("Text Option"))
         sboxSizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
         
+        line_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.bold_chkbox = wx.CheckBox(self, label = _("Bold"))
-        sboxSizer.Add(self.bold_chkbox , flag=wx.LEFT, border=HALF_SPACE)
+        self.eol_chkbox = wx.CheckBox(self, label = _("Eol"))
+        line_sizer.Add(self.bold_chkbox , flag=wx.LEFT, border=0)
+        line_sizer.Add(self.eol_chkbox , flag=wx.LEFT, border=2*SPACE)
+        wx.EVT_CHECKBOX(self, self.bold_chkbox.GetId(), self.CheckBold)
+        wx.EVT_CHECKBOX(self, self.eol_chkbox.GetId(), self.CheckEol)
+        sboxSizer.Add(line_sizer , flag=wx.LEFT, border=HALF_SPACE)
         self.italic_chkbox = wx.CheckBox(self, label = _("Italic"))
+        wx.EVT_CHECKBOX(self, self.italic_chkbox.GetId(), self.CheckItalic)
         sboxSizer.Add(self.italic_chkbox,flag=wx.LEFT|wx.TOP, border=HALF_SPACE)
         self.underline_chkbox = wx.CheckBox(self, label = _("Underline"))
+        wx.EVT_CHECKBOX(self, self.underline_chkbox.GetId(), self.CheckUnderline)
         sboxSizer.Add(self.underline_chkbox,flag=wx.LEFT|wx.TOP, border=HALF_SPACE)
         left_sizer.Add(sboxSizer, flag=wx.EXPAND|wx.RIGHT|wx.TOP , border=SPACE) 
         bottom_sizer.Add(left_sizer, 0, wx.TOP|wx.EXPAND,0)
@@ -404,8 +432,28 @@ class ColorFontOptionsPanel(wx.Panel):
         self.Fit()
         self.GetLexerStyles(self._lexerCombo.GetSelection())
         
+    def CheckBold(self,event):
+        self.SetLexerStyle(consts.BOLD_ATTR_NAME)
+        
+    def CheckEol(self,event):
+        self.SetLexerStyle(consts.EOL_ATTR_NAME)
+        
+    def CheckItalic(self,event):
+        self.SetLexerStyle(consts.ITALIC_ATTR_NAME)
+        
+    def CheckUnderline(self,event):
+        self.SetLexerStyle(consts.UNDERLINE_ATTR_NAME)
+        
     def SetDefaultValue(self, event):
-        pass
+        theme_name = self._themCombo.GetString(self._themCombo.GetSelection())
+        style_sheet_path = os.path.join(appdirs.GetAppDataDirLocation(),"styles")
+        theme_style_sheet = os.path.join(style_sheet_path,theme_name + consts.THEME_FILE_EXT)
+        lexer_manager = syntax.LexerManager()
+        LexerStyleItem.SetThresHold(LexerStyleItem.LOAD_FROM_DEFAULT)
+        lexer_manager.LoadThemeSheet(theme_style_sheet)
+        self.code_sample_ctrl.UpdateStyles()
+        self.GetLexerStyles()
+        LexerStyleItem.SetDefaultThresHold()
 
     def ShowCustomColorDialog(self, event):
         dlg = wx.ColourDialog(self)
@@ -416,10 +464,12 @@ class ColorFontOptionsPanel(wx.Panel):
             # If the user selected OK, then the dialog's wx.ColourData will
             # contain valid information. Fetch the data ...
             data = dlg.GetColourData()
-            if event.GetId() == self.back_color_button.GetId():
+            if event.GetId() == self.fore_color_button.GetId():
                 self.fore_color_combo.SetColor(strutils.RGBToHex(data.GetColour()))
+                self.SetLexerStyle(consts.FORE_ATTR_NAME)
             else:
                 self.back_color_combo.SetColor(strutils.RGBToHex(data.GetColour()))
+                self.SetLexerStyle(consts.BACK_ATTR_NAME)
             # ... then do something with it. The actual colour data will be
             # returned as a three-tuple (r, g, b) in this particular case.
         # Once the dialog is destroyed, Mr. wx.ColourData is no longer your
@@ -430,16 +480,58 @@ class ColorFontOptionsPanel(wx.Panel):
         selection = event.GetSelection()
         self.GetLexerStyles(selection)
         
+    def OnSelectBackColor(self,event):
+        self.SetLexerStyle(consts.BACK_ATTR_NAME)
+        
+    def OnSelectForeColor(self,event):
+        self.SetLexerStyle(consts.FORE_ATTR_NAME)
+        
+    def OnSelectFont(self,event):
+        self.SetLexerStyle(consts.FACE_ATTR_NAME)
+        
+    def OnSelectSize(self,event):
+        self.SetLexerStyle(consts.SIZE_ATTR_NAME)
+        
+    def SetLexerStyle(self,attr_name):
+        selection = self.lb.GetSelection()
+        style = self.lb.GetClientData(selection)
+        LexerStyleItem.SetThresHold(LexerStyleItem.LOAD_FROM_ATTRIBUTE)
+        if attr_name == consts.SIZE_ATTR_NAME:
+            style.SetSize(self._sizeCombo.GetValue())
+        elif attr_name == consts.FACE_ATTR_NAME:
+            style.SetFace(self._fontCombo.GetValue())
+        elif attr_name == consts.BOLD_ATTR_NAME:
+            style.SetExAttr(consts.BOLD_ATTR_NAME,self.bold_chkbox.GetValue())
+        elif attr_name == consts.ITALIC_ATTR_NAME:
+            style.SetExAttr(consts.ITALIC_ATTR_NAME,self.italic_chkbox.GetValue())
+        elif attr_name == consts.UNDERLINE_ATTR_NAME:
+            style.SetExAttr(consts.UNDERLINE_ATTR_NAME,self.underline_chkbox.GetValue())
+        elif attr_name == consts.EOL_ATTR_NAME:
+            style.SetExAttr(consts.EOL_ATTR_NAME,self.eol_chkbox.GetValue())
+        elif attr_name == consts.BACK_ATTR_NAME:
+            style.SetBack(self.back_color_combo.GetColour(self.back_color_combo.GetSelection()))
+        elif attr_name == consts.FORE_ATTR_NAME:
+            style.SetFore(self.fore_color_combo.GetColour(self.fore_color_combo.GetSelection()))
+        self.code_sample_ctrl.UpdateStyles()
+        LexerStyleItem.SetDefaultThresHold()
+        
     def OnSelectTheme(self, event):
         theme_name = event.GetString()
         style_sheet_path = os.path.join(appdirs.GetAppDataDirLocation(),"styles")
         theme_style_sheet = os.path.join(style_sheet_path,theme_name + consts.THEME_FILE_EXT)
-        old_theme = syntax.LexerManager().Theme
-        syntax.LexerManager().LoadThemeSheet(theme_style_sheet)
+        lexer_manager = syntax.LexerManager()
+        old_theme = lexer_manager.Theme
+        LexerStyleItem.SetThresHold(LexerStyleItem.LOAD_FROM_DEFAULT)
+        lexer_manager.LoadThemeSheet(theme_style_sheet)
+        #global_style = lexer_manager.GetGlobalItemByName('GlobalText')
+        #global_style.SetBack(lexer_manager.GetItemByName('default_style').Back)
         self.code_sample_ctrl.UpdateStyles()
         syntax.LexerManager().Theme = old_theme
+        LexerStyleItem.SetDefaultThresHold()
         
-    def GetLexerStyles(self,selection):
+    def GetLexerStyles(self,selection=-1):
+        if selection == -1:
+            selection = self._lexerCombo.GetSelection()
         lexer = self._lexerCombo.GetClientData(selection)
         self.lb.Clear()
         for i,style in enumerate(lexer.StyleItems):
@@ -448,13 +540,34 @@ class ColorFontOptionsPanel(wx.Panel):
         
         self.lb.SetSelection(0)
         self.code_sample_ctrl.SetText(lexer.GetSampleCode())
+        #disable undo action
+        self.code_sample_ctrl.EmptyUndoBuffer()
         self.code_sample_ctrl.SetLangLexer(lexer)
-        self.SelectFontSize(0)
+        self.SetStyle(0)
         
     def OnOK(self, optionsDialog):
         config = wx.ConfigBase_Get()
         theme = self._themCombo.GetString(self._themCombo.GetSelection())
         config.Write(THEME_KEY,theme)
+        
+        selection = self._lexerCombo.GetSelection()
+        lexer = self._lexerCombo.GetClientData(selection)
+        lexer_name = lexer.GetShowName()
+        global_style = syntax.LexerManager().GetGlobalItemByName(consts.GLOBAL_STYLE_NAME)
+        for style in lexer.StyleItems:
+            key_name = getStyleKeyName(lexer_name,style.KeyName)
+            if lexer.GetLangId() != lang.ID_LANG_TXT:
+                if style.Size == global_style.Size:
+                    config.DeleteEntry(key_name)
+                    continue
+            config.Write(key_name,unicode(style))
+        txt_lexer = syntax.LexerManager().GetLexer(lang.ID_LANG_TXT)
+        lexer_name = txt_lexer.GetShowName()
+        key_name = getStyleKeyName(lexer_name,global_style.KeyName)
+        config.Write(key_name,unicode(global_style))
+        data_str = json.dumps({'font':global_style.Face,'size':int(global_style.Size)})
+        config.Write(consts.PRIMARY_FONT_KEY, data_str)
+        syntax.LexerManager().SetGlobalFont(global_style.Face,int(global_style.Size))
         
         openDocs = wx.GetApp().GetDocumentManager().GetDocuments()
         for openDoc in openDocs:
@@ -464,11 +577,15 @@ class ColorFontOptionsPanel(wx.Panel):
         return True
         
     def SelectStyle(self,event):
-        self.SelectFontSize(event.GetSelection())
+        self.SetStyle(event.GetSelection())
         
-    def SelectFontSize(self,selection):
+    def SetStyle(self,selection):
         style = self.lb.GetClientData(selection)
         self.fore_color_combo.SetColor(style.Fore)
         self.back_color_combo.SetColor(style.Back)
         self._fontCombo.SetValue(style.Face)
         self._sizeCombo.SetValue(style.Size)
+        self.bold_chkbox.SetValue(style.Bold)
+        self.eol_chkbox.SetValue(style.Eol)
+        self.underline_chkbox.SetValue(style.Underline)
+        self.italic_chkbox.SetValue(style.Italic)

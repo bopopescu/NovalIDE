@@ -119,11 +119,6 @@ class HtmlCtrl(CodeEditor.CodeCtrl):
     def CanWordWrap(self):
         return True
 
-
-    def SetViewDefaults(self):
-        CodeEditor.CodeCtrl.SetViewDefaults(self, configPrefix = "Html", hasWordWrap = True, hasTabs = True, hasFolding=True)
-
-
     def GetFontAndColorFromConfig(self):
         return CodeEditor.CodeCtrl.GetFontAndColorFromConfig(self, configPrefix = "Html")
 

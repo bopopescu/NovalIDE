@@ -124,7 +124,7 @@ class OptionsDialog(wx.Dialog):
             return
         for name in self._optionsPanels:
             optionsPanel = self._optionsPanels[name]
-            if not optionsPanel.OnOK(self.Parent):
+            if not optionsPanel.OnOK(self):
                 return
         sel = self.tree.GetSelection()
         text = self.tree.GetItemText(sel)

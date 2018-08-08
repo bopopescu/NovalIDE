@@ -736,7 +736,7 @@ class CodeCtrl(STCTextEditor.TextCtrl):
             STCTextEditor.TextCtrl.SetEOLMode(self,wx.stc.STC_EOL_LF)
 
     ##    self.StyleClearAll()
-        self.UpdateStyles()
+        self.SetLangLexer()
         
         self.SetWordChars(self.DEFAULT_WORD_CHARS)
         self.AutoCompSetIgnoreCase(True)
@@ -843,6 +843,7 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         return False
 
     def UpdateStyles(self):
+        STCTextEditor.TextCtrl.UpdateStyles(self)
         if not self.GetFont():
             return
         faces = { 'font' : self.GetFont().GetFaceName(),
@@ -856,8 +857,14 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         self.StyleSetSpec(wx.stc.STC_STYLE_CONTROLCHAR, "face:%(font)s" % faces)
         self.StyleSetSpec(wx.stc.STC_STYLE_BRACELIGHT,  "face:%(font)s,fore:#000000,back:#70FFFF,size:%(size)d" % faces)
         self.StyleSetSpec(wx.stc.STC_STYLE_BRACEBAD,    "face:%(font)s,fore:#000000,back:#FF0000,size:%(size)d" % faces)
-            
-        self.SetLangLexer()
+        lexer = self.GetLangLexer()
+        for syn in lexer.StyleItems:
+            style_str = "fore:#%(color)s,face:%(font)s,size:%(size)d" % faces
+            style_str += ",back:%s" % syn.Back
+            if len(syn._exattr):
+                style_str += u','.join(syn._exattr)
+            print style_str
+            self.StyleSetSpec(syn.StyleId, style_str)
 
     def GetTypeWord(self,pos):
         start_pos = self.WordStartPosition(pos,True)
@@ -1144,8 +1151,8 @@ class CodeCtrl(STCTextEditor.TextCtrl):
             return u'\r\n'
         else:
             return u'\n'
-
-    def SetLangLexer(self):
+            
+    def GetLangLexer(self):
         document = self._dynSash._view.GetDocument()
         file_path_name = document.GetFilename()
         if file_path_name:
@@ -1155,6 +1162,10 @@ class CodeCtrl(STCTextEditor.TextCtrl):
             file_ext = document.GetDocumentTemplate().GetDefaultExtension()
         lexer_manager = syntax.LexerManager()
         lexer = lexer_manager.GetLexer(lexer_manager.GetLangIdFromExt(file_ext))
+        return lexer
+
+    def SetLangLexer(self):
+        lexer = self.GetLangLexer()
         lexer_id = lexer.Lexer
         # Check for special cases
         # TODO: add fetch method to check if container lexer requires extra

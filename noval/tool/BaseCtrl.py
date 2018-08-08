@@ -1,5 +1,6 @@
 import wx
 import wx.stc
+from noval.tool.syntax import syntax
 
 class ScintillaCtrl(wx.stc.StyledTextCtrl):
     
@@ -94,17 +95,13 @@ class ScintillaCtrl(wx.stc.StyledTextCtrl):
 
     def GetDefaultFont(self):
         """ Subclasses should override this """
-        if wx.Platform == '__WXMSW__':
-            font = "Courier New"
-            return wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = font)
-        else:
-            return wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.NORMAL)
+        return syntax.LexerManager().GetDefaultFont()
 
     def GetDefaultColor(self):
         """ Subclasses should override this """
-        return wx.BLACK
+        return syntax.LexerManager().GetDefaultColor()
 
-    def GetFontAndColorFromConfig(self, configPrefix = "Text"):
+    def GetFontAndColorFromConfig(self):
         font = self.GetDefaultFont()
         color = self.GetDefaultColor()
         return font, color

@@ -12,6 +12,10 @@ import noval.tool.ColorFont as ColorFont
 from noval.tool.syntax import syntax
 import noval.util.appdirs as appdirs
 import copy
+import uuid
+import noval.parser.utils as parserutils
+import tarfile
+import tempfile
 
 if not sysutilslib.isWindows():
     import noval.tool.FileObserver as FileObserver
@@ -137,6 +141,7 @@ class FileTemplateDialog(wx.Dialog):
         bsizer = wx.StdDialogButtonSizer()
         ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
         ok_btn.SetDefault()
+        wx.EVT_BUTTON(ok_btn, wx.ID_OK, self.OnOK)
         bsizer.AddButton(ok_btn)
         cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
         bsizer.AddButton(cancel_btn)
@@ -167,27 +172,85 @@ class FileTemplateDialog(wx.Dialog):
             self.refresh_btn.Enable(True)
         
     def NewItem(self,event):
-        name = self.name_ctrl.GetValue()
+        name = self.name_ctrl.GetValue().strip()
+        if name == "":
+            wx.MessageBox(_("template name is empty"))
+            return
         if self.IsTemplateNameExist(name):
             wx.MessageBox(_("template name '%s' already exist") % name)
             return
-        category = self.category_ctrl.GetValue()
+        category = self.category_ctrl.GetValue().strip()
+        if category == "":
+            wx.MessageBox(_("category is empty"))
+            return
         ext = self.ext_ctrl.GetValue()
+        if not ext.startswith("."):
+            ext = "." + ext
         syntax_value = self._syntaxCombo.GetValue()
         code_sample_text = self.template_code_ctrl.GetText()
-        template = {
-            'Ext': ext,
-            'Name': name,
-            'Category': category,
-            'Content':''
-        }
+        try:
+            user_template_path = os.path.join(appdirs.getAppDataFolder(),USER_CACHE_DIR,"template")
+            parserutils.MakeDirs(user_template_path)
+            template_file_path = os.path.join(user_template_path,str(uuid.uuid1()) + ".tar.bz2")
+            archive = tarfile.open(template_file_path,'w:bz2')
+            fd, newfname = tempfile.mkstemp(suffix=ext, text=True)
+            with open(newfname, 'w') as f:
+                f.write(code_sample_text)
+            archive.add(newfname,arcname=os.path.basename(newfname))  # d:\myfiles contains the files to compress
+            archive.close()
+            template = {
+                'Ext': ext,
+                'Name': name,
+                'Category': category,
+                'Content': template_file_path.replace(appdirs.getAppDataFolder(),"").strip().lstrip(os.sep),
+                'DefaultName': 'Untitle' + ext
+            }
+            self._file_templates.append(template)
+        except IOError:
+            print 'please use an administrator account'
+            return
+            
+        pre_selection = self.lc.GetFirstSelected()
+        #deselect the previous selection
+        if pre_selection != -1:
+            self.lc.SetItemState(pre_selection, 0, wx.LIST_STATE_SELECTED)
+
         i = self.lc.Append([name,category])
-        self.lc.SetItemData(i,len(self._file_templates))
+        self.lc.SetItemData(i,len(self._file_templates) -1)
         self.lc.Select(i)
         self.lc.SetItemState(i, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
         self.lc.EnsureVisible(i)
         self.UpdateUI()
-        self._file_templates.append(template)
+            
+    def OnOK(self,event):
+        
+        def CreateDataElement(parent,name,data):
+            data_el = ET.SubElement(parent, name)
+            data_el.text = data.get(name)
+            
+        def CreateIconDataElement(parent,name,data):
+            data_el = ET.SubElement(parent, name)
+            data_el.text = data.get(name)
+            data_el.attrib['Large'] = data.get('LargeIconPath',"noval/tool/bmp_source/template/default.bmp")
+            data_el.attrib['Small'] = data.get('SmallIconPath',"noval/tool/bmp_source/template/default-small.bmp")
+            
+        
+        root = ET.Element('FileType')
+        langId = GeneralOption.GetLangId(wx.ConfigBase_Get().Read("Language",sysutilslib.GetLangConfig()))
+        lang_el = ET.SubElement(root, wx.Locale.GetLanguageInfo(langId).CanonicalName)
+        for template in self._file_templates:
+            template_el = ET.SubElement(lang_el, 'TemplateData')
+            template_el.attrib['value'] = template.get('Category')
+            data_el = ET.SubElement(template_el, 'Template')
+            CreateDataElement(data_el,'Ext',template)
+            CreateDataElement(data_el,'Name',template)
+            CreateDataElement(data_el,'Content',template)
+            CreateDataElement(data_el,'DefaultName',template)
+            CreateIconDataElement(data_el,'Icon',template)
+        tree = ET.ElementTree(root)
+        user_template_path = os.path.join(appdirs.getAppDataFolder(),USER_CACHE_DIR,TEMPLATE_FILE_NAME)
+        tree.write(user_template_path, encoding='utf-8')
+        self.EndModal(wx.ID_OK)
         
     def IsTemplateNameExist(self,name):
         for file_template in self._file_templates:
@@ -255,6 +318,8 @@ class FileTemplateDialog(wx.Dialog):
         self._syntaxCombo.SetValue(lexer.GetShowName())
         content = template['Content'].strip()
         content_zip_path = fileutils.opj(os.path.join(sysutilslib.mainModuleDir,content))
+        if not os.path.exists(content_zip_path):
+            content_zip_path = fileutils.opj(os.path.join(appdirs.getAppDataFolder(),content))
         self.template_code_ctrl.SetText("")
         self.UpdateUI()
         try:
@@ -352,8 +417,7 @@ class NewFileDialog(wx.Dialog):
         self.SetSizer(boxsizer)
         self.Fit()
         self.file_templates = []
-        self.LoadFileTypes()
-        self.LoadFileTemplate()
+        self.LoadFileTemplates()
         
     def OnSelectMode(self,event):
         btn = event.GetEventObject()
@@ -371,7 +435,9 @@ class NewFileDialog(wx.Dialog):
     def OnEditTemplate(self,event):
         dlg = FileTemplateDialog(self,-1,_("File Template"),self.file_templates)
         dlg.CenterOnParent()
-        dlg.ShowModal()
+        if dlg.ShowModal() == wx.ID_OK:
+            self.file_templates = dlg._file_templates
+            self.ReLoadFileTemplates()
         
     def OnOKClick(self,event):
         
@@ -387,9 +453,13 @@ class NewFileDialog(wx.Dialog):
         templates = self.treeCtrl.GetPyData(item)
         index = self.lc.GetItemData(select_item)
         data = templates[index]
-        default_name = data['DefaultName']
+        default_name = data.get('DefaultName')
+        if default_name is None:
+            default_name = "Untitle" + data.get('Ext')
         content = data['Content'].strip()
         content_zip_path = fileutils.opj(os.path.join(sysutilslib.mainModuleDir,content))
+        if not os.path.exists(content_zip_path):
+            content_zip_path = fileutils.opj(os.path.join(appdirs.getAppDataFolder(),content))
         name,ext = os.path.splitext(default_name)
         i = 1
         while True:
@@ -453,23 +523,34 @@ class NewFileDialog(wx.Dialog):
     def GetFileTypeTemplate(self,node):
         file_type = {}
         for item in node.getchildren():
-            try:
-                if item.tag == "Icon":
-                    small_icon_path = os.path.join(sysutilslib.mainModuleDir,item.get('Small',""))
+            if item.tag == "Icon":
+                try:
+                    small_path = item.get('Small',"")
+                    if os.path.isabs(small_path):
+                        small_icon_path = small_path
+                    else:
+                        small_icon_path = os.path.join(sysutilslib.mainModuleDir,small_path)
+                    file_type['SmallIconPath'] = small_icon_path
                     if not os.path.exists(small_icon_path):
-                        continue
+                        small_icon_path = os.path.join(sysutilslib.mainModuleDir,"noval/tool/bmp_source/template/default-small.bmp")
                     small_icon = wx.Image(small_icon_path, wx.BITMAP_TYPE_BMP).ConvertToBitmap()
                     index = self.small_iconList.AddWithColourMask(small_icon,COMMON_MASK_COLOR)
-                    large_icon_path = os.path.join(sysutilslib.mainModuleDir,item.get('Large',""))
+                    large_path = item.get('Large',"")
+                    if os.path.isabs(large_path):
+                        large_icon_path = large_path
+                    else:
+                        large_icon_path = os.path.join(sysutilslib.mainModuleDir,large_path)
+                    file_type['LargeIconPath'] = large_icon_path
                     if not os.path.exists(large_icon_path):
-                        continue
+                        large_icon_path = os.path.join(sysutilslib.mainModuleDir,"noval/tool/bmp_source/template/default.bmp")
                     large_icon = wx.Image(large_icon_path, wx.BITMAP_TYPE_BMP).ConvertToBitmap()
                     index = self.large_iconList.AddWithColourMask(large_icon,COMMON_MASK_COLOR)
                     file_type['ImageIndex'] = index
-                else:
-                    file_type[item.tag] = item.text
-            except Exception as e:
-                continue
+                except Exception as e:
+                    print e
+                    continue
+            else:
+                file_type[item.tag] = item.text
         return file_type
         
     def LoadFileTypes(self):
@@ -490,12 +571,18 @@ class NewFileDialog(wx.Dialog):
         config = wx.ConfigBase_Get()
         langId = GeneralOption.GetLangId(config.Read("Language",sysutilslib.GetLangConfig()))
         lang = wx.Locale.GetLanguageInfo(langId).CanonicalName
+        items = {}
         for element in doc.getchildren():
             if element.tag == lang:
                 for node in element.getchildren():
                     value_type = node.get('value')
-                    item = self.treeCtrl.AppendItem(root_item,value_type)
-                    file_types = []
+                    if not items.has_key(value_type):
+                        item = self.treeCtrl.AppendItem(root_item,value_type)
+                        items[value_type] = item
+                        file_types = []
+                    else:
+                        item = items[value_type]
+                        file_types = self.treeCtrl.GetPyData(item)
                     for child in node.getchildren():
                         file_type = self.GetFileTypeTemplate(child)
                         file_types.append(file_type)
@@ -505,3 +592,15 @@ class NewFileDialog(wx.Dialog):
                         self.file_templates.append(file_type)
                     self.treeCtrl.SetPyData(item,file_types)
                     self.treeCtrl.SelectItem(item)
+                    
+    def LoadFileTemplates(self):
+        self.LoadFileTypes()
+        self.LoadFileTemplate()
+        
+    def ReLoadFileTemplates(self):
+        self.file_templates = []
+        self.treeCtrl.Freeze()
+        self.treeCtrl.DeleteAllItems()
+        self.LoadFileTypes()
+        self.LoadFileTemplate()
+        self.treeCtrl.Thaw()
