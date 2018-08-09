@@ -382,7 +382,7 @@ class SyntaxLexer(syndata.BaseLexer):
 
     def GetProperties(self):
         """ Returns a list of Extra Properties to set """
-        if self.LangId == synglob.ID_LANG_SQL:
+        if self.LangId == lang.ID_LANG_SQL:
             return [FOLD]
         else:
             return [FOLD, FOLD_COMMENT, FOLD_COMPACT, FOLD_SQL_ONLY_BEGIN,

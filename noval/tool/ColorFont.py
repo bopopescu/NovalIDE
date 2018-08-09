@@ -567,6 +567,7 @@ class ColorFontOptionsPanel(wx.Panel):
         config.Write(key_name,unicode(global_style))
         data_str = json.dumps({'font':global_style.Face,'size':int(global_style.Size)})
         config.Write(consts.PRIMARY_FONT_KEY, data_str)
+        config.Write("TextEditorColor", global_style.Fore.replace("#",""))
         syntax.LexerManager().SetGlobalFont(global_style.Face,int(global_style.Size))
         
         openDocs = wx.GetApp().GetDocumentManager().GetDocuments()

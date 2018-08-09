@@ -2518,11 +2518,11 @@ class ProjectView(wx.lib.docview.View):
         folderPath = self._GetItemFolderPath(item)
         frame = ImportFiles.ImportFilesDialog(self.GetFrame(),-1,_("Import Files"),folderPath)
         frame.CenterOnParent()
-        frame.ShowModal()
-        if not self._treeCtrl.IsExpanded(item):
-            self._treeCtrl.Expand(item)
-        #muse unsubscribe the registered msg,otherwise will sendmessage to the deleted dialog
-        Publisher.unsubscribe(frame.UpdateImportProgress,ImportFiles.NOVAL_MSG_UI_IMPORT_FILES_PROGRESS)
+        if frame.ShowModal() == wx.ID_OK:
+            if not self._treeCtrl.IsExpanded(item):
+                self._treeCtrl.Expand(item)
+            #muse unsubscribe the registered msg,otherwise will sendmessage to the deleted dialog
+            Publisher.unsubscribe(frame.UpdateImportProgress,ImportFiles.NOVAL_MSG_UI_IMPORT_FILES_PROGRESS)
         frame.Destroy()
         
     def ProcessUpdateUIEvent(self, event):

@@ -781,7 +781,11 @@ class CodeCtrl(STCTextEditor.TextCtrl):
             else:
                 item = menuBar.FindItemById(itemID)
                 if item:
-                    menu.Append(itemID, item.GetLabel())
+                    menu_item = wx.MenuItem(menu,itemID,item.GetLabel(), kind = wx.ITEM_NORMAL)
+                    bitmap = item.GetBitmap()
+                    if not bitmap.IsNull():
+                        menu_item.SetBitmap(bitmap)
+                    menu.AppendItem(menu_item)
                     wx.EVT_MENU(self, itemID, self.DSProcessEvent)  # wxHack: for customized right mouse menu doesn't work with new DynamicSashWindow
                     wx.EVT_UPDATE_UI(self, itemID, self.DSProcessUpdateUIEvent)  # wxHack: for customized right mouse menu doesn't work with new DynamicSashWindow
         
@@ -853,7 +857,9 @@ class CodeCtrl(STCTextEditor.TextCtrl):
                   }
         # Global default styles for all languages
         ###self.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT,     "face:%(font)s,fore:#FFFFFF,size:%(size)d" % faces)
-      ##  self.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER,  "face:%(font)s,back:#C0C0C0,face:%(font)s,size:%(size2)d" % faces)
+        global_style = syntax.LexerManager().GetItemByName('line_num')
+        style_str = "face:%s,back:%s,face:%s,size:%d" % (global_style.Face,global_style.Back,global_style.Fore,self.GetFont().GetPointSize()-2)
+        self.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER,  style_str)
         self.StyleSetSpec(wx.stc.STC_STYLE_CONTROLCHAR, "face:%(font)s" % faces)
         self.StyleSetSpec(wx.stc.STC_STYLE_BRACELIGHT,  "face:%(font)s,fore:#000000,back:#70FFFF,size:%(size)d" % faces)
         self.StyleSetSpec(wx.stc.STC_STYLE_BRACEBAD,    "face:%(font)s,fore:#000000,back:#FF0000,size:%(size)d" % faces)
@@ -863,7 +869,6 @@ class CodeCtrl(STCTextEditor.TextCtrl):
             style_str += ",back:%s" % syn.Back
             if len(syn._exattr):
                 style_str += u','.join(syn._exattr)
-            print style_str
             self.StyleSetSpec(syn.StyleId, style_str)
 
     def GetTypeWord(self,pos):

@@ -569,11 +569,19 @@ class PythonCtrl(CodeEditor.CodeCtrl):
                             _("Goto Definition\tF12"))
         wx.EVT_UPDATE_UI(self,CompletionService.CompletionService.GO_TO_DEFINITION, self.DSProcessUpdateUIEvent)
         menu.AppendItem(item)
-
-        menu.Append(DebuggerService.DebuggerService.RUN_ID, _("&Run\tF5"))
+        
+        menuBar = wx.GetApp().GetTopWindow().GetMenuBar()
+        menu_item = menuBar.FindItemById(DebuggerService.DebuggerService.RUN_ID)
+        item = wx.MenuItem(menu,DebuggerService.DebuggerService.RUN_ID,_("&Run\tF5"), kind = wx.ITEM_NORMAL)
+        item.SetBitmap(menu_item.GetBitmap())
+        menu.AppendItem(item)
         wx.EVT_MENU(self, DebuggerService.DebuggerService.RUN_ID, self.RunScript)
 
-        menu.Append(DebuggerService.DebuggerService.DEBUG_ID, _("&Debug\tCtrl+F5"))
+
+        menu_item = menuBar.FindItemById(DebuggerService.DebuggerService.DEBUG_ID)
+        item = wx.MenuItem(menu,DebuggerService.DebuggerService.DEBUG_ID,_("&Debug\tCtrl+F5"), kind = wx.ITEM_NORMAL)
+        item.SetBitmap(menu_item.GetBitmap())
+        menu.AppendItem(item)
         wx.EVT_MENU(self, DebuggerService.DebuggerService.DEBUG_ID, self.DebugRunScript)
         
         return menu
