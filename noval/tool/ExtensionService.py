@@ -395,13 +395,9 @@ class ExtensionService(Service.BaseService):
 
 
 class ExtensionOptionsPanel(wx.Panel):
-
-
-    def __init__(self, parent, id):
-        wx.Panel.__init__(self, parent, id)
-
+    def __init__(self, parent, id,size):
+        wx.Panel.__init__(self, parent, id,size=size)
         extOptionsPanelBorderSizer = wx.BoxSizer(wx.VERTICAL)
-
         extOptionsPanelSizer = wx.BoxSizer(wx.HORIZONTAL)
 
         extCtrlSizer = wx.BoxSizer(wx.VERTICAL)

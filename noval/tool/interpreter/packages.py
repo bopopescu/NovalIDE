@@ -201,7 +201,7 @@ class PackagePanel(wx.Panel):
         self.Sizer = wx.BoxSizer()
         self.dvlc = dataview.DataViewListCtrl(self)
         self.dvlc.AppendTextColumn(_('Name'), width=200)
-        self.dvlc.AppendTextColumn(_('Version'),width=250)
+        self.dvlc.AppendTextColumn(_('Version'),width=210)
         self.Sizer.Add(self.dvlc, 1, wx.EXPAND)
         
         right_sizer = wx.BoxSizer(wx.VERTICAL)

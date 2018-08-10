@@ -12,6 +12,8 @@ class OptionsDialog(wx.Dialog):
     A default options dialog used by the OptionsService that hosts a notebook
     tab of options panels.
     """
+    PANEL_WIDITH = 700
+    PANEL_HEIGHT = 580
 
     def __init__(self, parent, category_dct,category_list, docManager,option_name):
         """
@@ -31,7 +33,7 @@ class OptionsDialog(wx.Dialog):
         line_sizer = wx.BoxSizer(wx.HORIZONTAL)
         tree_sizer = wx.BoxSizer(wx.VERTICAL)
             
-        self.tree = CT.CustomTreeCtrl(self,size=(200,620) ,style = wx.BORDER_THEME,agwStyle = wx.TR_DEFAULT_STYLE|wx.TR_NO_BUTTONS|wx.TR_HIDE_ROOT)
+        self.tree = CT.CustomTreeCtrl(self,size=(200,self.PANEL_HEIGHT) ,style = wx.BORDER_THEME,agwStyle = wx.TR_DEFAULT_STYLE|wx.TR_NO_BUTTONS|wx.TR_HIDE_ROOT)
         tree_sizer.Add(self.tree, 0, wx.ALL, 0)
         wx.EVT_TREE_SEL_CHANGED(self.tree,self.tree.GetId(),self.DoSelection)
 
@@ -62,7 +64,7 @@ class OptionsDialog(wx.Dialog):
             item = self.tree.AppendItem(self.root,category)
             optionsPanelClasses = category_dct[category]
             for name,optionsPanelClass in optionsPanelClasses:
-                option_panel = optionsPanelClass(self,-1)
+                option_panel = optionsPanelClass(self,-1,size=(self.PANEL_WIDITH,self.PANEL_HEIGHT))
                 option_panel.Hide()
                 self._optionsPanels[name] = option_panel
                 child = self.tree.AppendItem(item,name)

@@ -162,12 +162,12 @@ class GeneralOptionsPanel(wx.Panel):
     """
 
 
-    def __init__(self, parent, id):
+    def __init__(self, parent, id,size):
         """
         Initializes the panel by adding an "Options" folder tab to the parent notebook and
         populating the panel with the generic properties of a pydocview application.
         """
-        wx.Panel.__init__(self, parent, id)
+        wx.Panel.__init__(self, parent, id,size=size)
         SPACE = 10
         HALF_SPACE = 5
         config = wx.ConfigBase_Get()

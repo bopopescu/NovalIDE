@@ -55,17 +55,17 @@ class EnvironmentPanel(wx.Panel):
         
         box_sizer = wx.BoxSizer(wx.VERTICAL)
         
-        top_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        line_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        line_sizer.Add(wx.StaticText(self, label=_("Set User Defined Environment Variable:")),0, wx.ALL|wx.EXPAND, 0)
+        box_sizer.Add(line_sizer, 0, wx.TOP,HALF_SPACE)
         
-        left_sizer = wx.BoxSizer(wx.VERTICAL)
-        left_sizer.Add(wx.StaticText(self, label=_("Set User Defined Environment Variable:")),0, wx.TOP|wx.EXPAND, SPACE)
-        self.dvlc = dataview.DataViewListCtrl(self,size=(510,230))
+        line_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.dvlc = dataview.DataViewListCtrl(self,size=(-1,230))
         self.dvlc.AppendTextColumn(_('Key'), width=100)
-        self.dvlc.AppendTextColumn(_('Value'),width=410)
+        self.dvlc.AppendTextColumn(_('Value'),width=300)
         dataview.EVT_DATAVIEW_SELECTION_CHANGED(self.dvlc, -1, self.UpdateUI)
-        left_sizer.Add(self.dvlc, 1,  wx.TOP|wx.RIGHT|wx.EXPAND, HALF_SPACE)
+        line_sizer.Add(self.dvlc, 1, wx.ALL|wx.EXPAND,0)
         
-        top_sizer.Add(left_sizer, 0, wx.LEFT, 0)
         
         right_sizer = wx.BoxSizer(wx.VERTICAL)
         self.new_btn = wx.Button(self, -1, _("New.."))
@@ -80,22 +80,22 @@ class EnvironmentPanel(wx.Panel):
         wx.EVT_BUTTON(self.remove_btn, -1, self.RemoveVariable)
         right_sizer.Add(self.remove_btn, 0, wx.LEFT|wx.BOTTOM|wx.EXPAND|wx.RIGHT, HALF_SPACE)
         
-        top_sizer.Add(right_sizer, 0, wx.TOP, SPACE*3.5)
+        line_sizer.Add(right_sizer, 0,flag=wx.ALL|wx.EXPAND)
+        box_sizer.Add(line_sizer, 0, flag=wx.ALL|wx.EXPAND)
 
-        bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        line_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self._includeCheckBox = wx.CheckBox(self, -1, _("Include System Environment Variable"))
         self.Bind(wx.EVT_CHECKBOX,self.checkInclude,self._includeCheckBox)
-        bottom_sizer.Add(self._includeCheckBox, 0, wx.LEFT|wx.ALIGN_BOTTOM)
+        line_sizer.Add(self._includeCheckBox, 0, wx.LEFT|wx.ALIGN_BOTTOM)
             
         self.hyperLinkCtrl = hl.HyperLinkCtrl(self, wx.ID_ANY, _("View"))
         self.hyperLinkCtrl.SetColours("BLUE", "BLUE", "BLUE")
         self.hyperLinkCtrl.AutoBrowse(False)
         self.hyperLinkCtrl.SetBold(True)
         self.Bind(hl.EVT_HYPERLINK_LEFT, self.OnGotoLink,self.hyperLinkCtrl)
-        bottom_sizer.Add(self.hyperLinkCtrl, 0, wx.LEFT|wx.ALIGN_BOTTOM, SPACE)
+        line_sizer.Add(self.hyperLinkCtrl, 0, wx.LEFT|wx.ALIGN_BOTTOM, SPACE)
         
-        box_sizer.Add(top_sizer, 0, wx.TOP, HALF_SPACE)
-        box_sizer.Add(bottom_sizer, 0, wx.TOP,SPACE)
+        box_sizer.Add(line_sizer, 0, wx.TOP, HALF_SPACE)
 
         self.SetSizer(box_sizer)
         self.interpreter = None

@@ -277,8 +277,8 @@ class ColorComboBox(wx.combo.OwnerDrawnComboBox):
 class ColorFontOptionsPanel(wx.Panel):
     """description of class"""
     
-    def __init__(self, parent, id):
-        wx.Panel.__init__(self, parent, id)
+    def __init__(self, parent, id,size):
+        wx.Panel.__init__(self, parent, id,size=size)
         main_sizer = wx.BoxSizer(wx.VERTICAL)
          
         line_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -317,7 +317,7 @@ class ColorFontOptionsPanel(wx.Panel):
         self._fontCombo = wx.ComboBox(self, -1,choices=choices, style = wx.CB_READONLY)
         self._fontCombo.Bind(wx.EVT_COMBOBOX, self.OnSelectFont)
         self._fontCombo.SetSelection(0)
-        font_sizer.Add(self._fontCombo, 1, wx.ALL|wx.EXPAND, 0)
+        font_sizer.Add(self._fontCombo, 0, wx.LEFT|wx.EXPAND, 0)
         
         size_sizer = wx.BoxSizer(wx.VERTICAL)
         size_sizer.Add(wx.StaticText(self, -1, _("Size(S):")),0,wx.ALL|wx.EXPAND, 0)
@@ -329,21 +329,21 @@ class ColorFontOptionsPanel(wx.Panel):
                                       validator=NumValidator(_("Font Size"),5,28))
         self._sizeCombo.Bind(wx.EVT_COMBOBOX, self.OnSelectSize)
         self._sizeCombo.SetSelection(0)
-        size_sizer.Add(self._sizeCombo, 1, wx.LEFT|wx.EXPAND, 0)
+        size_sizer.Add(self._sizeCombo, 0, wx.LEFT|wx.EXPAND, 0)
         
-        line_sizer.Add(font_sizer, 1, wx.EXPAND,0)
+        line_sizer.Add(font_sizer, 1, wx.LEFT|wx.EXPAND,0)
         line_sizer.Add(size_sizer, 1, wx.LEFT|wx.EXPAND,SPACE)
         
-        main_sizer.Add(line_sizer, 1, wx.TOP|wx.LEFT|wx.EXPAND,SPACE)
+        main_sizer.Add(line_sizer, 0, wx.TOP|wx.LEFT|wx.EXPAND,SPACE)
         
         bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
         style_list = []
         
         left_sizer = wx.BoxSizer(wx.VERTICAL)
-        left_sizer.Add(wx.StaticText(self, -1, _("Display Element(E):")), 0, wx.ALL,0)
-        self.lb = wx.ListBox(self, -1, choices = style_list, size=(250,200),style = wx.LB_SINGLE)
+        left_sizer.Add(wx.StaticText(self, -1, _("Display Element(E):")), 0, wx.LEFT|wx.EXPAND,0)
+        self.lb = wx.ListBox(self, -1, choices = style_list, size=(-1,200),style = wx.LB_SINGLE)
         wx.EVT_LISTBOX(self,self.lb.GetId(), self.SelectStyle)
-        left_sizer.Add(self.lb, 0, wx.TOP,SPACE)
+        left_sizer.Add(self.lb, 0, wx.ALL|wx.EXPAND,0)
         
         left_sizer.Add(wx.StaticText(self, -1, _("Background Color(B):")), 0, wx.TOP,SPACE)
         
@@ -365,71 +365,70 @@ class ColorFontOptionsPanel(wx.Panel):
         back_colors[_('Yellow Green')] = wx.Colour(0xAD,0xFF,0x2F)
         back_colors[_('Silver')] = wx.Colour(0xC0, 0xC0, 0xC0)
         back_colors[_('Orange')] = wx.Colour( 0xFF, 0xA5,0x00)
-        self.back_color_combo = ColorComboBox(self,back_colors,choices = colors,size=(150,defaultButton.GetSize().GetHeight()))
+        self.back_color_combo = ColorComboBox(self,back_colors,choices = colors,size=(-1,defaultButton.GetSize().GetHeight()))
         self.back_color_combo.Bind(wx.EVT_COMBOBOX, self.OnSelectBackColor)
         self.back_color_combo.SetSelection(0)
-        line_sizer.Add(self.back_color_combo, 0, wx.ALL,0)
+        line_sizer.Add(self.back_color_combo, 1, wx.LEFT|wx.EXPAND,0)
         self.back_color_button = wx.Button(self, -1, _("Custom(C)..."))
         wx.EVT_BUTTON(self, self.back_color_button.GetId(), self.ShowCustomColorDialog)
-        line_sizer.Add(self.back_color_button, 0, wx.LEFT,SPACE)
+        line_sizer.Add(self.back_color_button, 0, wx.LEFT,HALF_SPACE)
         
-        left_sizer.Add(line_sizer, 0, wx.ALL,0)
+        left_sizer.Add(line_sizer, 0, wx.LEFT|wx.EXPAND,0)
         
         left_sizer.Add(wx.StaticText(self, -1, _("Foreground Color(F):")), 0, wx.TOP,SPACE)
         line_sizer = wx.BoxSizer(wx.HORIZONTAL)
         fore_colors = copy.deepcopy(back_colors)
         fore_colors[_('Default')] = wx.Colour(0x00,  0x00, 0x00)
-        self.fore_color_combo = ColorComboBox(self,fore_colors,choices = colors,size=(150,defaultButton.GetSize().GetHeight()))
+        self.fore_color_combo = ColorComboBox(self,fore_colors,choices = colors,size=(-1,defaultButton.GetSize().GetHeight()))
         self.fore_color_combo.Bind(wx.EVT_COMBOBOX, self.OnSelectForeColor)
         self.fore_color_combo.SetSelection(0)
-        line_sizer.Add(self.fore_color_combo, 0, wx.ALL,0)
+        line_sizer.Add(self.fore_color_combo, 1, wx.LEFT|wx.EXPAND,0)
         self.fore_color_button = wx.Button(self, -1, _("Custom(C)..."))
-        line_sizer.Add(self.fore_color_button, 0, wx.LEFT,SPACE)
+        line_sizer.Add(self.fore_color_button, 0, wx.LEFT,HALF_SPACE)
         wx.EVT_BUTTON(self, self.fore_color_button.GetId(), self.ShowCustomColorDialog)
-        left_sizer.Add(line_sizer, 0, wx.ALL,0)
+        left_sizer.Add(line_sizer, 0, wx.LEFT|wx.EXPAND,0)
         
         sbox = wx.StaticBox(self, -1, _("Text Option"))
         sboxSizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
         
         line_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.bold_chkbox = wx.CheckBox(self, label = _("Bold"))
-        self.eol_chkbox = wx.CheckBox(self, label = _("Eol"))
-        line_sizer.Add(self.bold_chkbox , flag=wx.LEFT, border=0)
-        line_sizer.Add(self.eol_chkbox , flag=wx.LEFT, border=2*SPACE)
-        wx.EVT_CHECKBOX(self, self.bold_chkbox.GetId(), self.CheckBold)
-        wx.EVT_CHECKBOX(self, self.eol_chkbox.GetId(), self.CheckEol)
-        sboxSizer.Add(line_sizer , flag=wx.LEFT, border=HALF_SPACE)
         self.italic_chkbox = wx.CheckBox(self, label = _("Italic"))
-        wx.EVT_CHECKBOX(self, self.italic_chkbox.GetId(), self.CheckItalic)
-        sboxSizer.Add(self.italic_chkbox,flag=wx.LEFT|wx.TOP, border=HALF_SPACE)
         self.underline_chkbox = wx.CheckBox(self, label = _("Underline"))
+        line_sizer.Add(self.bold_chkbox , flag=wx.LEFT, border=0)
+        line_sizer.Add(self.italic_chkbox , flag=wx.LEFT, border=SPACE)
+        line_sizer.Add(self.underline_chkbox , flag=wx.LEFT, border=SPACE)
+        wx.EVT_CHECKBOX(self, self.bold_chkbox.GetId(), self.CheckBold)
+        wx.EVT_CHECKBOX(self, self.italic_chkbox.GetId(), self.CheckItalic)
         wx.EVT_CHECKBOX(self, self.underline_chkbox.GetId(), self.CheckUnderline)
-        sboxSizer.Add(self.underline_chkbox,flag=wx.LEFT|wx.TOP, border=HALF_SPACE)
+        sboxSizer.Add(line_sizer , flag=wx.LEFT, border=HALF_SPACE)
+        self.eol_chkbox = wx.CheckBox(self, label = _("Eol"))
+        wx.EVT_CHECKBOX(self, self.eol_chkbox.GetId(), self.CheckEol)
+        sboxSizer.Add(self.eol_chkbox,flag=wx.LEFT|wx.TOP, border=HALF_SPACE)
         left_sizer.Add(sboxSizer, flag=wx.EXPAND|wx.RIGHT|wx.TOP , border=SPACE) 
         bottom_sizer.Add(left_sizer, 0, wx.TOP|wx.EXPAND,0)
         
         right_sizer = wx.BoxSizer(wx.VERTICAL)
         line_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        line_sizer.Add(wx.StaticText(self, -1, _("Code Sample(P):"),size=(200,-1)), 1, flag=wx.LEFT|wx.EXPAND,border=0)
-        line_sizer.Add(wx.StaticText(self, -1, _("Themes:")), 0, wx.LEFT|wx.RIGHT,border=SPACE)
+        line_sizer.Add(wx.StaticText(self, -1, _("Code Sample(P):"),size=(-1,-1)), 1, flag=wx.LEFT|wx.EXPAND,border=0)
+        line_sizer.Add(wx.StaticText(self, -1, _("Themes:")), 0, wx.LEFT|wx.EXPAND,border=SPACE)
         themes,theme_index = syntax.LexerManager.GetThemes()
         self._themCombo = wx.ComboBox(self, -1,choices = themes, style = wx.CB_READONLY)
         self._themCombo.Bind(wx.EVT_COMBOBOX, self.OnSelectTheme) 
         if theme_index != -1:
             self._themCombo.SetSelection(theme_index)
-        line_sizer.Add(self._themCombo,0, wx.ALL,0)
-        right_sizer.Add(line_sizer,0,wx.ALL,0)
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.code_sample_ctrl = CodeSampleCtrl(self,-1,size=(200,400))
+        line_sizer.Add(self._themCombo,0, wx.TOP,-HALF_SPACE)
+        right_sizer.Add(line_sizer,0,wx.LEFT|wx.EXPAND,0)
+        self.code_sample_ctrl = CodeSampleCtrl(self,-1,size=(-1,400))
         self.code_sample_ctrl.HideLineNumber()
-        lineSizer.Add(self.code_sample_ctrl, 1, flag =wx.EXPAND|wx.RIGHT,border=0)
-        right_sizer.Add(lineSizer, 1, flag=wx.EXPAND|wx.TOP,border=HALF_SPACE)
-        bottom_sizer.Add(right_sizer, 0, wx.LEFT|wx.EXPAND,SPACE)
+        right_sizer.Add(self.code_sample_ctrl, 0, flag =wx.EXPAND|wx.LEFT,border=HALF_SPACE)
+        bottom_sizer.Add(right_sizer, 1, wx.LEFT|wx.EXPAND,0)
         
-        main_sizer.Add(bottom_sizer, 0, wx.TOP|wx.LEFT|wx.EXPAND|wx.BOTTOM,SPACE)
+        main_sizer.Add(bottom_sizer, 0, wx.EXPAND|wx.TOP|wx.LEFT,SPACE)
         
         self.SetSizer(main_sizer)
-        self.Fit()
+        #should use Layout ,could not use Fit method
+        self.Layout()
         self.GetLexerStyles(self._lexerCombo.GetSelection())
         
     def CheckBold(self,event):

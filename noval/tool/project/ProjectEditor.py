@@ -4218,8 +4218,8 @@ class ProjectPropertiesDialog(wx.Dialog):
 class ProjectOptionsPanel(wx.Panel):
 
 
-    def __init__(self, parent, id):
-        wx.Panel.__init__(self, parent, id)
+    def __init__(self, parent, id,size):
+        wx.Panel.__init__(self, parent, id,size=size)
         self._useSashMessageShown = False
         config = wx.ConfigBase_Get()
         self._projSaveDocsCheckBox = wx.CheckBox(self, -1, _("Remember open projects"))
