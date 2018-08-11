@@ -60,6 +60,7 @@ import noval.parser.utils as parserutils
 import noval.util.fileutils as fileutils
 import copy
 import OptionService
+import noval.util.appdirs as appdirs
 
 import sys
 reload(sys)
@@ -852,11 +853,15 @@ class PythonDebuggerUI(BaseDebuggerUI):
         url = 'http://' + self._debuggerHost + ':' + self._debuggerPort + '/'
         self._breakURL = 'http://' + self._debuggerHost + ':' + self._debuggerBreakPort + '/'
         self._callback = PythonDebuggerCallback(self._guiHost, self._guiPort, url, self._breakURL, self, autoContinue)
+        interpreter = interpretermanager.InterpreterManager.GetCurrentInterpreter()
         if DebuggerHarness.__file__.find('library.zip') > 0:
             try:
                 fname = DebuggerHarness.__file__
                 parts = fname.split('library.zip')
-                path = os.path.join(parts[0],'noval', 'tool', 'DebuggerHarness.py')
+                if interpreter.IsV2():
+                    path = os.path.join(parts[0],'noval', 'tool', 'DebuggerHarness.py')
+                elif interpreter.IsV3():
+                    path = os.path.join(parts[0],'noval', 'tool', 'DebuggerHarness3.py')
             except:
                 tp, val, tb = sys.exc_info()
                 traceback.print_exception(tp, val, tb)
@@ -864,6 +869,8 @@ class PythonDebuggerUI(BaseDebuggerUI):
         else:
             print "Starting debugger on these ports: %s, %s, %s" % (str(self._debuggerPort) , str(self._guiPort) , str(self._debuggerBreakPort))
             path = DebuggerService.ExpandPath(DebuggerHarness.__file__)
+            if interpreter.IsV3():
+                path = path.replace("DebuggerHarness","DebuggerHarness3").replace("DebuggerHarness3.pyc","DebuggerHarness3.py")
         self._executor = Executor(path, self, self._debuggerHost, \
                                                 self._debuggerPort, self._debuggerBreakPort, self._guiHost, self._guiPort, self._command, callbackOnExit=self.ExecutorFinished)
 
@@ -3451,7 +3458,9 @@ CF\xe2t\xef\x1b>\x1f\x8c3Q\xf0\x11\xd3p\xa2yf\x1a\xbc\xcb\n\xdee\x85\xdd>\
 \xc6\xd1\'\'\x86\xa2\xd5\x8d \xbe@\x00\x00\x00\x00IEND\xaeB`\x82'
 
 def getRunningManBitmap():
-    return BitmapFromImage(getRunningManImage())
+    run_image_path = os.path.join(appdirs.GetAppImageDirLocation(), "toolbar","run.png")
+    run_image = wx.Image(run_image_path,wx.BITMAP_TYPE_ANY)
+    return BitmapFromImage(run_image)
 
 def getRunningManImage():
     stream = cStringIO.StringIO(getRunningManData())
@@ -3487,7 +3496,9 @@ f?*4\xd1\xf6\xa2\x0f\x80\x93\xf4\x8e\xe1\xb8\xf2\xf1\xb5\x18\x9cH(\x80\xe4bT\
 \xf0\x7fPA\x00\x00\x00\x00IEND\xaeB`\x82'
 
 def getDebuggingManBitmap():
-    return BitmapFromImage(getDebuggingManImage())
+    debug_image_path = os.path.join(appdirs.GetAppImageDirLocation(), "toolbar","debug.png")
+    debug_image = wx.Image(debug_image_path,wx.BITMAP_TYPE_ANY)
+    return BitmapFromImage(debug_image)
 
 def getDebuggingManImage():
     stream = cStringIO.StringIO(getDebuggingManData())

@@ -264,10 +264,10 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
             newDoc.SetDocumentTemplate(temp)
             newDoc.OnNewDocument()
             
-    def OnSaveFile(self,event):
+    def OnSaveFileDocument(self,event):
         self._current_document.Save()
         
-    def OnSaveFileAs(self,event):
+    def OnSaveFileAsDocument(self,event):
         self.GetDocumentManager().SaveAsDocument(self._current_document)
         
     def OnCopyModuleName(self,event):
@@ -306,16 +306,18 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
                 
                 menu_item = menuBar.FindItemById(wx.ID_SAVE)
                 accel = menu_item.GetAccel()
-                item = wx.MenuItem(menu,wx.ID_SAVE,menu_item.GetLabel() + "\t" + accel.ToString(), kind = wx.ITEM_NORMAL)
+                new_id = wx.NewId()
+                item = wx.MenuItem(menu,new_id,menu_item.GetLabel() + "\t" + accel.ToString(), kind = wx.ITEM_NORMAL)
                 ###caller must delete the pointer manually
                 del accel
                 item.SetBitmap(menu_item.GetBitmap())
-                wx.EVT_MENU(self, wx.ID_SAVE, self.OnSaveFile)
+                wx.EVT_MENU(self, new_id, self.OnSaveFileDocument)
                 menu.AppendItem(item)
                 
                 menu_item = menuBar.FindItemById(wx.ID_SAVEAS)
-                item = wx.MenuItem(menu,wx.ID_SAVEAS,menu_item.GetLabel(), kind = wx.ITEM_NORMAL)
-                wx.EVT_MENU(self, wx.ID_SAVEAS, self.OnSaveFileAs)
+                new_id = wx.NewId()
+                item = wx.MenuItem(menu,new_id,menu_item.GetLabel(), kind = wx.ITEM_NORMAL)
+                wx.EVT_MENU(self, new_id, self.OnSaveFileAsDocument)
                 menu.AppendItem(item)
             
             menu_item = menuBar.FindItemById(wx.ID_CLOSE)
@@ -325,8 +327,9 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
                 label += "\t" + accel.ToString()
                 ###caller must delete the pointer manually
                 del accel
-            item = wx.MenuItem(menu,wx.ID_CLOSE, label , kind = wx.ITEM_NORMAL)
-            wx.EVT_MENU(self, wx.ID_CLOSE, self.OnCloseDoc)
+            new_id = wx.NewId()
+            item = wx.MenuItem(menu,new_id, label , kind = wx.ITEM_NORMAL)
+            wx.EVT_MENU(self, new_id, self.OnCloseDoc)
             menu.AppendItem(item)
             
             menu_item = menuBar.FindItemById(wx.ID_CLOSE_ALL)
