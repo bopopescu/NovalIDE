@@ -40,6 +40,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
         wx.lib.pydocview.DocTabbedParentFrame.__init__(self,docManager,frame,id,title,pos,size,style,name,embeddedWindows,minSize)
         wx.EVT_MENU_RANGE(self, consts.ID_MRU_FILE1, consts.ID_MRU_FILE20, self.OnMRUFile)
         self.RegisterMsg()
+        self._current_document = None
     
     def CreateDefaultStatusBar(self):
        pass
@@ -229,6 +230,58 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
        wx.EVT_MENU(self, id, callback)       
        if separator:
            menu.AppendSeparator()
+           
+    def OnCloseDoc(self,event):
+        self._current_document.DeleteAllViews()
+        
+    def OnCloseAllDocs(self,event):
+        self.CloseAllWithoutDoc(closeall=True)
+        self.GetStatusBar().Reset()
+        
+    def OnOpenPathInExplorer(self,event):
+        err_code,msg = fileutils.open_file_directory(self._current_document.GetFilename())
+        if err_code != consts.ERROR_OK:
+            wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
+            
+    def OnOpenPathInTerminator(self,event):
+        err_code,msg = fileutils.open_path_in_terminator(os.path.dirname(self._current_document.GetFilename()))
+        if err_code != consts.ERROR_OK:
+            wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
+            
+    def OnCopyFilePath(self,event):
+        sysutilslib.CopyToClipboard(self._current_document.GetFilename())
+        
+    def OnCopyFileName(self,event):
+        sysutilslib.CopyToClipboard(os.path.basename(self._current_document.GetFilename()))
+        
+    def OnNewModule(self,event):
+        flags = wx.lib.docview.DOC_NEW
+        lexer = syntax.LexerManager().GetLexer(lang.ID_LANG_PYTHON)
+        temp = wx.GetApp().GetDocumentManager().FindTemplateForPath("test.%s" % lexer.GetDefaultExt())
+        newDoc = temp.CreateDocument("", flags)
+        if newDoc:
+            newDoc.SetDocumentName(temp.GetDocumentName())
+            newDoc.SetDocumentTemplate(temp)
+            newDoc.OnNewDocument()
+            
+    def OnSaveFile(self,event):
+        self._current_document.Save()
+        
+    def OnSaveFileAs(self,event):
+        self.GetDocumentManager().SaveAsDocument(self._current_document)
+        
+    def OnCopyModuleName(self,event):
+        sysutilslib.CopyToClipboard(strutils.GetFilenameWithoutExt(self._current_document.GetFilename()))
+        
+    def OnCloseAllWithoutDoc(self,event):
+        self.CloseAllWithoutDoc(False)
+        
+    def CloseAllWithoutDoc(self,closeall=False):
+        for i in range(self._notebook.GetPageCount()-1, -1, -1): # Go from len-1 to 0
+                doc = self._notebook.GetPage(i).GetView().GetDocument()
+                if doc != self._current_document or closeall:
+                    if not self.GetDocumentManager().CloseDocument(doc, False):
+                        break
 
     def OnNotebookRightClick(self, event):
         """
@@ -236,68 +289,63 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
         a tab or select from the available documents if the user clicks on the
         notebook's white space.
         """
-        def OnCloseDoc(event):
-            doc.DeleteAllViews()
-        def OnCloseAllDocs(event):
-            OnCloseAllWithoutDoc(event,closeall=True)
-            self.GetStatusBar().Reset()
-        def OnOpenPathInExplorer(event):
-            err_code,msg = fileutils.open_file_directory(doc.GetFilename())
-            if err_code != consts.ERROR_OK:
-                wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
-        def OnOpenPathInTerminator(event):
-            err_code,msg = fileutils.open_path_in_terminator(os.path.dirname(doc.GetFilename()))
-            if err_code != consts.ERROR_OK:
-                wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
-        def OnCopyFilePath(event):
-            sysutilslib.CopyToClipboard(doc.GetFilename())
-        def OnCopyFileName(event):
-            sysutilslib.CopyToClipboard(os.path.basename(doc.GetFilename()))
-        def OnNewModule(event):
-            flags = wx.lib.docview.DOC_NEW
-            lexer = syntax.LexerManager().GetLexer(lang.ID_LANG_PYTHON)
-            temp = wx.GetApp().GetDocumentManager().FindTemplateForPath("test.%s" % lexer.GetDefaultExt())
-            newDoc = temp.CreateDocument("", flags)
-            if newDoc:
-                newDoc.SetDocumentName(temp.GetDocumentName())
-                newDoc.SetDocumentTemplate(temp)
-                newDoc.OnNewDocument()
-        def OnSaveFile(event):
-            self.GetDocumentManager().OnFileSave(event)
-        def OnSaveFileAs(event):
-            self.GetDocumentManager().SaveAsDocument(doc)
-        def OnCopyModuleName(event):
-            sysutilslib.CopyToClipboard(strutils.GetFilenameWithoutExt(doc.GetFilename()))
-        def OnCloseAllWithoutDoc(event,closeall=False):
-            for i in range(self._notebook.GetPageCount()-1, -1, -1): # Go from len-1 to 0
-                if i != index or closeall:
-                    doc = self._notebook.GetPage(i).GetView().GetDocument()
-                    if not self.GetDocumentManager().CloseDocument(doc, False):
-                        return
         index, type = self._notebook.HitTest(event.GetPosition())
         menu = wx.Menu()
         x, y = event.GetX(), event.GetY()
+        menuBar = self.GetMenuBar()
         if index > -1:
             view = self._notebook.GetPage(index).GetView()
-            doc = view.GetDocument()
+            self._current_document = view.GetDocument()
             if view.GetType() == consts.TEXT_VIEW:
-                self.AppendMenuItem(menu,_("New Module"),OnNewModule)
-                self.AppendMenuItem(menu,_("Save"),OnSaveFile)
-                self.AppendMenuItem(menu,_("Save As"),OnSaveFileAs)
-            self.AppendMenuItem(menu,_("Close"),OnCloseDoc)
-            self.AppendMenuItem(menu,_("Close All"),OnCloseAllDocs)
+                app_image_path = appdirs.GetAppImageDirLocation()
+                new_id = wx.NewId()
+                item = wx.MenuItem(menu,new_id,_("New Module"), _("Creates a new python module"), wx.ITEM_NORMAL)
+                item.SetBitmap(wx.BitmapFromImage(wx.Image(os.path.join(app_image_path,"new.png"),wx.BITMAP_TYPE_ANY)))
+                wx.EVT_MENU(self, new_id, self.OnNewModule)
+                menu.AppendItem(item)
+                
+                menu_item = menuBar.FindItemById(wx.ID_SAVE)
+                accel = menu_item.GetAccel()
+                item = wx.MenuItem(menu,wx.ID_SAVE,menu_item.GetLabel() + "\t" + accel.ToString(), kind = wx.ITEM_NORMAL)
+                ###caller must delete the pointer manually
+                del accel
+                item.SetBitmap(menu_item.GetBitmap())
+                wx.EVT_MENU(self, wx.ID_SAVE, self.OnSaveFile)
+                menu.AppendItem(item)
+                
+                menu_item = menuBar.FindItemById(wx.ID_SAVEAS)
+                item = wx.MenuItem(menu,wx.ID_SAVEAS,menu_item.GetLabel(), kind = wx.ITEM_NORMAL)
+                wx.EVT_MENU(self, wx.ID_SAVEAS, self.OnSaveFileAs)
+                menu.AppendItem(item)
+            
+            menu_item = menuBar.FindItemById(wx.ID_CLOSE)
+            accel = menu_item.GetAccel()
+            label = menu_item.GetLabel()
+            if accel is not None:
+                label += "\t" + accel.ToString()
+                ###caller must delete the pointer manually
+                del accel
+            item = wx.MenuItem(menu,wx.ID_CLOSE, label , kind = wx.ITEM_NORMAL)
+            wx.EVT_MENU(self, wx.ID_CLOSE, self.OnCloseDoc)
+            menu.AppendItem(item)
+            
+            menu_item = menuBar.FindItemById(wx.ID_CLOSE_ALL)
+            item = wx.MenuItem(menu,wx.ID_CLOSE_ALL,menu_item.GetLabel(), kind = wx.ITEM_NORMAL)
+            wx.EVT_MENU(self, wx.ID_CLOSE_ALL, self.OnCloseAllDocs)
+            menu.AppendItem(item)
+
             if self._notebook.GetPageCount() > 1:
-                item_name = _("Close All but \"%s\"") % doc.GetPrintableName()
-                self.AppendMenuItem(menu,item_name,OnCloseAllWithoutDoc,True)
+                item_name = _("Close All but \"%s\"") % self._current_document.GetPrintableName()
+                self.AppendMenuItem(menu,item_name,self.OnCloseAllWithoutDoc,True)
                 tabsMenu = wx.Menu()
                 menu.AppendMenu(wx.NewId(), _("Select Tab"), tabsMenu)
             if view.GetType() == consts.TEXT_VIEW:
-                self.AppendMenuItem(menu,_("Open Path in Explorer"),OnOpenPathInExplorer)
-                self.AppendMenuItem(menu,_("Open Path in Terminator"),OnOpenPathInTerminator)
-            self.AppendMenuItem(menu,_("Copy Path"),OnCopyFilePath)
-            self.AppendMenuItem(menu,_("Copy Name"),OnCopyFileName)
+                self.AppendMenuItem(menu,_("Open Path in Explorer"),self.OnOpenPathInExplorer)
+                self.AppendMenuItem(menu,_("Open Path in Terminator"),self.OnOpenPathInTerminator)
+            self.AppendMenuItem(menu,_("Copy Path"),self.OnCopyFilePath)
+            self.AppendMenuItem(menu,_("Copy Name"),self.OnCopyFileName)
             if view.GetType() == consts.TEXT_VIEW and view.GetLangId() == lang.ID_LANG_PYTHON:
-                self.AppendMenuItem(menu,_("Copy Module Name"),OnCopyModuleName)
+                self.AppendMenuItem(menu,_("Copy Module Name"),self.OnCopyModuleName)
         else:
             y = y - 25  # wxBug: It is offsetting click events in the blank notebook area
             tabsMenu = menu
@@ -307,7 +355,11 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
             for i in range(0, self._notebook.GetPageCount()):
                 id = wx.NewId()
                 selectIDs[id] = i
-                tabsMenu.Append(id, self._notebook.GetPageText(i))
+                filename = self._notebook.GetPageText(i)
+                template = wx.GetApp().GetDocumentManager().FindTemplateForPath(filename)
+                item = wx.MenuItem(tabsMenu,id,filename, kind = wx.ITEM_NORMAL)
+                item.SetBitmap(wx.BitmapFromIcon(template.GetIcon()))
+                tabsMenu.AppendItem(item)
                 def OnRightMenuSelect(event):
                     self._notebook.SetSelection(selectIDs[event.GetId()])
                 wx.EVT_MENU(self, id, OnRightMenuSelect)

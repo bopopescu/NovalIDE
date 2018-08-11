@@ -12,7 +12,7 @@ class OptionsDialog(wx.Dialog):
     A default options dialog used by the OptionsService that hosts a notebook
     tab of options panels.
     """
-    PANEL_WIDITH = 700
+    PANEL_WIDITH = 650
     PANEL_HEIGHT = 580
 
     def __init__(self, parent, category_dct,category_list, docManager,option_name):

@@ -469,13 +469,17 @@ class ExtensionOptionsPanel(wx.Panel):
         self._fileExtTextCtrl = wx.TextCtrl(self._extDetailPanel, -1, size = (-1, -1))
         self._fileExtTextCtrl.SetToolTipString(_("""For example: "txt, text" (comma separated) or "*" for all files"""))
         extDetailSizer.Add(self._fileExtTextCtrl, 0, wx.EXPAND)
-
-        self._selFileCtrl = wx.CheckBox(self._extDetailPanel, -1, _("Operate on Selected File"))
-        extDetailSizer.Add(self._selFileCtrl, 0, wx.ALIGN_CENTER_VERTICAL|wx.TOP, SPACE)
-        self._selFileCtrl.SetToolTipString(_("If focus is in the project, instead of operating on the project file, operate on the selected file."))
-
+        
         self._extDetailPanel.SetSizer(extDetailSizer)
-        staticBoxSizer.Add(self._extDetailPanel, 1, wx.ALL|wx.EXPAND, SPACE)
+
+        line_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._selFileCtrl = wx.CheckBox(self, -1, _("Operate on Selected File"))
+        line_sizer.Add(self._selFileCtrl,0, wx.ALL,0)
+        #extDetailSizer.Add(self._selFileCtrl, 0, wx.ALIGN_CENTER_VERTICAL|wx.TOP, SPACE)
+        self._selFileCtrl.SetToolTipString(_("If focus is in the project, instead of operating on the project file, operate on the selected file."))
+        
+        staticBoxSizer.Add(self._extDetailPanel, 0, wx.ALL|wx.EXPAND, SPACE)
+        staticBoxSizer.Add(line_sizer,0, wx.LEFT,SPACE)
 
         extOptionsPanelSizer.Add(staticBoxSizer, 1, wx.LEFT|wx.EXPAND, SPACE)
 

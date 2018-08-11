@@ -781,7 +781,13 @@ class CodeCtrl(STCTextEditor.TextCtrl):
             else:
                 item = menuBar.FindItemById(itemID)
                 if item:
-                    menu_item = wx.MenuItem(menu,itemID,item.GetLabel(), kind = wx.ITEM_NORMAL)
+                    label = item.GetLabel()
+                    accel = item.GetAccel()
+                    if accel is not None:
+                        label += "\t" + accel.ToString()
+                        ###caller must delete the pointer manually
+                        del accel
+                    menu_item = wx.MenuItem(menu,itemID,label, kind = wx.ITEM_NORMAL)
                     bitmap = item.GetBitmap()
                     if not bitmap.IsNull():
                         menu_item.SetBitmap(bitmap)

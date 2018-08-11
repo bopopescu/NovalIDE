@@ -198,7 +198,7 @@ class InterpreterConfigurationPanel(wx.Panel):
         self.dvlc = dataview.DataViewListCtrl(self,size=(-1,150))
         self.dvlc.AppendTextColumn(_('Name'), width=100)
         self.dvlc.AppendTextColumn(_('Version'), width=70)
-        self.dvlc.AppendTextColumn(_('Path'), width=300)
+        self.dvlc.AppendTextColumn(_('Path'), width=250)
         self.dvlc.AppendTextColumn(_('Default'), width=70)
         dataview.EVT_DATAVIEW_SELECTION_CHANGED(self.dvlc, -1, self.UpdateUI)
         dataview.EVT_DATAVIEW_ITEM_ACTIVATED(self.dvlc, -1, self.ModifyInterpreterNameDlg)

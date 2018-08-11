@@ -410,7 +410,7 @@ class ColorFontOptionsPanel(wx.Panel):
         
         right_sizer = wx.BoxSizer(wx.VERTICAL)
         line_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        line_sizer.Add(wx.StaticText(self, -1, _("Code Sample(P):"),size=(-1,-1)), 1, flag=wx.LEFT|wx.EXPAND,border=0)
+        line_sizer.Add(wx.StaticText(self, -1, _("Code Sample(P):"),size=(-1,-1)), 1, flag=wx.LEFT|wx.EXPAND,border=HALF_SPACE)
         line_sizer.Add(wx.StaticText(self, -1, _("Themes:")), 0, wx.LEFT|wx.EXPAND,border=SPACE)
         themes,theme_index = syntax.LexerManager.GetThemes()
         self._themCombo = wx.ComboBox(self, -1,choices = themes, style = wx.CB_READONLY)
