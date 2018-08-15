@@ -138,10 +138,12 @@ class Adb(bdb.Bdb):
         #global_dict['__name__'] = '__main__'
         try:
             fileToRun = open(fileName, mode='r')
+            code_obj = compile(fileToRun.read(),fileName,mode='exec')
             if _VERBOSE: print ("Running file ", fileName)
             sys.settrace(self.trace_dispatch)
             import __main__
-            exec (fileToRun) in __main__.__dict__,__main__.__dict__
+            exec (code_obj,__main__.__dict__,__main__.__dict__)
+            fileToRun.close()
         except SystemExit:
             pass
         except:
@@ -495,13 +497,13 @@ class DebuggerHarness(object):
         
         if tp in DebuggerHarness.cantIntro or ply < 1:
             self.addNode(top_element,name, item, doc)
-        elif tp is types.TupleType or tp is types.ListType:
+        elif tp is tuple or tp is list:
             self.addTupleOrList(top_element, name, item, doc, ply - 1)           
-        elif tp is types.DictType or tp is types.DictProxyType: 
+        elif tp is dict or tp is types.MappingProxyType: 
             self.addDict(top_element, name, item, doc, ply -1)
         elif inspect.ismodule(item): 
             self.addModule(top_element, name, item, doc, ply -1)
-        elif inspect.isclass(item) or tp is types.InstanceType:
+        elif inspect.isclass(item) or inspect.isclass(item.__class__):
             self.addClass(top_element, name, item, doc, ply -1)
         elif hasattr(item, '__dict__'):
             self.addDictAttr(top_element, name, item, doc, ply -1)
@@ -513,13 +515,13 @@ class DebuggerHarness(object):
         tp = type(item)
         if tp in DebuggerHarness.cantIntro:
             return False
-        elif tp is types.TupleType or tp is types.ListType:
+        elif tp is tuple or tp is list:
             return len(item) > 0          
-        elif tp is types.DictType or tp is types.DictProxyType: 
+        elif tp is dict or tp is types.MappingProxyType: 
             return len(item) > 0
         elif inspect.ismodule(item): 
             return True
-        elif inspect.isclass(item) or tp is types.InstanceType:
+        elif inspect.isclass(item) or inspect.isclass(item.__class__):
             if hasattr(item, '__dict__'):
                 return True
             elif hasattr(item, '__name__'):
@@ -644,7 +646,7 @@ class DebuggerHarness(object):
         self.frame_stack = []
         frame = base_frame
         while frame is not None:
-            if((frame.f_code.co_filename.count('DebuggerHarness.py') == 0) or _DEBUG_DEBUGGER):
+            if((frame.f_code.co_filename.count('DebuggerHarness3.py') == 0) or _DEBUG_DEBUGGER):
                 self.frame_stack.append(frame)
             frame = frame.f_back
         self.frame_stack.reverse()
@@ -712,10 +714,10 @@ class DebuggerHarness(object):
         while not done:
             try:
                 xml = self.getFrameXML(frame)
-                arg = xmlrpclib.Binary(bz2.compress(xml))
+                arg = xmlrpclib.Binary(bz2.compress(xml.encode('utf-8')))
                 if _VERBOSE:
                     print ('============== calling gui side interaction============')
-                self._guiServer.interaction(xmlrpclib.Binary(message), arg, info)
+                self._guiServer.interaction(xmlrpclib.Binary(message.encode('utf-8')), arg, info)
                 if _VERBOSE:
                     print ('after interaction')
                 done = True

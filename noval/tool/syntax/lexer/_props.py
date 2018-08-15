@@ -42,7 +42,7 @@ class SyntaxLexer(syndata.BaseLexer):
     """SyntaxData object for Properties files""" 
     #---- Syntax Style Specs ----#
     SYNTAX_ITEMS = [
-        (stc.STC_PROPS_DEFAULT,     "DefaultText",      _("Default Text"), 'default_style'),
+        (stc.STC_PROPS_DEFAULT,     "DefaultText",      _("Default Text"), ''),
         (stc.STC_PROPS_ASSIGNMENT,  "Assignment",       _("Assignment"),   'operator_style'),
         (stc.STC_PROPS_COMMENT,     "Comment",          _("Comment"),      'comment_style'),
         (stc.STC_PROPS_DEFVAL,      "Defval",           _("Defval"),        'string_style'),

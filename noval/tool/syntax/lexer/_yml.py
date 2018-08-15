@@ -49,7 +49,7 @@ class SyntaxLexer(syndata.BaseLexer):
     
     #---- Syntax Style Specs ----#
     SYNTAX_ITEMS = [
-        (stc.STC_YAML_DEFAULT,      "DefaultText",     _("Default Text") ,  'default_style'),
+        (stc.STC_YAML_DEFAULT,      "DefaultText",     _("Default Text") ,  ''),
         (stc.STC_YAML_COMMENT,      "Comment",         _("Comment"),        'comment_style'),
         (stc.STC_YAML_DOCUMENT,     "Document",        _("Document"),       'scalar_style'),
         (stc.STC_YAML_ERROR,        "Error",           _("Error"),          'error_style'),
@@ -57,7 +57,7 @@ class SyntaxLexer(syndata.BaseLexer):
         (stc.STC_YAML_KEYWORD,      "KeyWord",         _("KeyWord"),        'keyword_style'),
         (stc.STC_YAML_NUMBER,       "Number",          _("Number"),         'number_style'),
         (stc.STC_YAML_REFERENCE,    "Reference",       _("Reference"),      'global_style'),
-        (stc.STC_YAML_TEXT,         "Text",            _("Text"),           'default_style')
+        (stc.STC_YAML_TEXT,         "Text",            _("Text"),           '')
     ] # Different style maybe
     
     if wx.VERSION >= (2, 9, 0, 0, ''):

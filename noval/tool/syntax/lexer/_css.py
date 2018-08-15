@@ -140,7 +140,7 @@ class SyntaxLexer(syndata.BaseLexer):
     """SyntaxData object for CSS""" 
 #---- Syntax Style Specs ----#
     SYNTAX_ITEMS = [ 
-         (stc.STC_CSS_DEFAULT,              "DefaultText",              _("Default Text"),          'default_style'),
+         (stc.STC_CSS_DEFAULT,              "DefaultText",              _("Default Text"),          ''),
          (stc.STC_CSS_ATTRIBUTE,            "Attribute",                _("Attribute"),             'funct_style'),
          (stc.STC_CSS_CLASS,                "Class",                    _("Class"),                 'global_style'),
          (stc.STC_CSS_COMMENT,              "Comment",                  _("Comment"),               'comment_style'),
@@ -162,13 +162,13 @@ class SyntaxLexer(syndata.BaseLexer):
     # TODO: add styling and keywords for new style regions in 2.9
     if wx.VERSION >= (2, 9, 0, 0, ''):
         # Browser specific identifiers
-        SYNTAX_ITEMS.append((stc.STC_CSS_EXTENDED_IDENTIFIER,       "ExtendedIdentifier",      _("Extended Identifier"),    'default_style'))
-        SYNTAX_ITEMS.append((stc.STC_CSS_EXTENDED_PSEUDOCLASS,      "Pseudoclass",             _("Pseudoclass"),            'default_style'))
-        SYNTAX_ITEMS.append((stc.STC_CSS_EXTENDED_PSEUDOELEMENT,    "ExtendedPseudoElement",   _("Extended Pseudo Element"), 'default_style'))
+        SYNTAX_ITEMS.append((stc.STC_CSS_EXTENDED_IDENTIFIER,       "ExtendedIdentifier",      _("Extended Identifier"),    ''))
+        SYNTAX_ITEMS.append((stc.STC_CSS_EXTENDED_PSEUDOCLASS,      "Pseudoclass",             _("Pseudoclass"),            ''))
+        SYNTAX_ITEMS.append((stc.STC_CSS_EXTENDED_PSEUDOELEMENT,    "ExtendedPseudoElement",   _("Extended Pseudo Element"), ''))
         # CSS3 Properties
         SYNTAX_ITEMS.append((stc.STC_CSS_IDENTIFIER3,               "Identifier3",             _("Identifier3"),            'keyword2_style'))
         # Pseudo elements
-        SYNTAX_ITEMS.append((stc.STC_CSS_PSEUDOELEMENT,             "PseudoElement",           _("Pseudo Element"),          'default_style'))
+        SYNTAX_ITEMS.append((stc.STC_CSS_PSEUDOELEMENT,             "PseudoElement",           _("Pseudo Element"),          ''))
                  
     def __init__(self):
         super(SyntaxLexer, self).__init__(lang.ID_LANG_CSS)

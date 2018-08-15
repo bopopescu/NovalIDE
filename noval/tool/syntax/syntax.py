@@ -409,9 +409,11 @@ class LexerManager(object):
                     if tag in ('select_style',):
                         style_dict[tag] = NullStyleItem()
                     else:
-                        style_dict[tag] = style_dict['default_style'].Clone()
+                        ###style_dict[tag] = style_dict['default_style'].Clone()
+                        style_dict[tag] = NullStyleItem()
 
-            LexerManager.THEMES[name] = self.PackStyleSet(style_dict)
+            ###LexerManager.THEMES[name] = self.PackStyleSet(style_dict)
+            LexerManager.THEMES[name] = style_dict
             return True
         else:
             self.LOG("[ed_style][err] SetStyles expects a " \

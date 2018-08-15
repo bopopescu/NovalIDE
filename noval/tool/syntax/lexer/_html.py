@@ -137,30 +137,30 @@ class SyntaxLexer(syndata.BaseLexer):
     """SyntaxData object for Html and related languages""" 
 #---- Syntax Style Specs ----#
     SYNTAX_ITEMS = [ 
-         (stc.STC_H_DEFAULT,                "DefaultText",                 _("Default Text") ,              'default_style'),
+         (stc.STC_H_DEFAULT,                "DefaultText",                 _("Default Text") ,              ''),
          (stc.STC_H_ASP,                    "ASP",                         _("ASP"),                        'array_style'),
          (stc.STC_H_ASPAT,                  "ASPAT",                       _("ASPAT"),                      'array_style'),
          (stc.STC_H_ATTRIBUTE,              "Attribute",                   _("Attribute"),                  'keyword2_style'),
          (stc.STC_H_ATTRIBUTEUNKNOWN,       "AttributeUnknown",            _("Attribute Unknown"),          'error_style'),
-         (stc.STC_H_CDATA,                  "CDATA",                       _("CDATA"),                      'default_style'), # Style ME
+         (stc.STC_H_CDATA,                  "CDATA",                       _("CDATA"),                      ''), # Style ME
          (stc.STC_H_COMMENT,                "Comment",                     _("Comment"),                    'comment_style'),
          (stc.STC_H_DOUBLESTRING,           "DoubleString",                _("DoubleString"),               'string_style'),
-         (stc.STC_H_ENTITY,                 "Entity",                      _("Entity"),                     'default_style'), # Style ME
+         (stc.STC_H_ENTITY,                 "Entity",                      _("Entity"),                     ''), # Style ME
          (stc.STC_H_NUMBER,                 "Number",                      _("Number"),                     'number_style'),
-         (stc.STC_H_OTHER,                  "Other",                       _("Other"),                      'default_style'),  # Style ME
+         (stc.STC_H_OTHER,                  "Other",                       _("Other"),                      ''),  # Style ME
          (stc.STC_H_QUESTION,               "Question",                    _("Question"),                   'scalar_style'),
          (stc.STC_H_SCRIPT,                 "Script",                      _("Script"),                     'funct_style'), # STYLE ME
          (stc.STC_H_SGML_1ST_PARAM,         "SGML1StParam",                _("SGML 1st Param"),             'keyword2_style'), # STYLE ME
          (stc.STC_H_SGML_1ST_PARAM_COMMENT, "SGML1StParamComment",         _("SGML 1st Param Comment"),     'comment_style'),
-         (stc.STC_H_SGML_BLOCK_DEFAULT,     "SGMLBlockDefault",            _("SGML Block Default"),         'default_style'), # STYLE ME
+         (stc.STC_H_SGML_BLOCK_DEFAULT,     "SGMLBlockDefault",            _("SGML Block Default"),         ''), # STYLE ME
          (stc.STC_H_SGML_COMMAND,           "SGMLCommand",                 _("SGML Command"),               'keyword_style'), # STYLE ME
          (stc.STC_H_SGML_COMMENT,           "SGMLComment",                 _("SGML Comment"),               'comment_style'),
          (stc.STC_H_SGML_DEFAULT,           "SGMLDefault",                 _("SGML Default"),               'array_style'), # STYLE ME
          (stc.STC_H_SGML_DOUBLESTRING,      "SGMLDoubleString",            _("SGML Double String"),         'string_style'),
-         (stc.STC_H_SGML_ENTITY,            "SGMLEntity",                  _("SGML Entity"),                'default_style'), # STYLE ME
+         (stc.STC_H_SGML_ENTITY,            "SGMLEntity",                  _("SGML Entity"),                ''), # STYLE ME
          (stc.STC_H_SGML_ERROR,             "SGMLError",                   _("SGML Error"),                 'error_style'),
          (stc.STC_H_SGML_SIMPLESTRING,      "SGMLSimpleString",            _("SGML Simple String"),         'string_style'),
-         (stc.STC_H_SGML_SPECIAL,           "SGMLSpecial",                 _("SGML Special"),               'default_style'), # STYLE ME
+         (stc.STC_H_SGML_SPECIAL,           "SGMLSpecial",                 _("SGML Special"),               ''), # STYLE ME
          (stc.STC_H_SINGLESTRING,           "SingleString",                _("Single String"),              'string_style'),
          (stc.STC_H_TAG,                    "Tag",                         _("Tag"),                        'keyword_style'),
          (stc.STC_H_TAGEND,                 "TagEnd",                      _("Tag End"),                    'keyword_style'),
@@ -174,36 +174,36 @@ class SyntaxLexer(syndata.BaseLexer):
          (stc.STC_HJ_COMMENT,               "JavaScriptComment",           _("JavaScript Comment"),         'comment_style'),
          (stc.STC_HJ_COMMENTDOC,            "JavaScriptCommentDoc",        _("JavaScript Comment Doc"),     'comment_style'),
          (stc.STC_HJ_COMMENTLINE,           "JavaScriptCommentLine",       _("JavaScript Comment Line"),    'comment_style'),
-         (stc.STC_HJ_DEFAULT,               "JavaScriptDefaultText",       _("JavaScript Default Text"),    'default_style'),
-         (stc.STC_HJ_DOUBLESTRING,          "JavaScriptDoubleString",      _("JavaScript Double String"),   'default_style'), # STYLE ME
-         (stc.STC_HJ_KEYWORD,               "JavaScriptKeyWord",           _("JavaScript KeyWord"),         'default_style'), # STYLE ME
-         (stc.STC_HJ_NUMBER,                "JavaScriptNumber",            _("JavaScript Number"),          'default_style'), # STYLE ME
-         (stc.STC_HJ_REGEX,                 "JavaScriptRegex",             _("JavaScript Regex"),           'default_style'), # STYLE ME
-         (stc.STC_HJ_SINGLESTRING,          "JavaScriptSingleString",      _("JavaScript Single String"),   'default_style'), # STYLE ME
-         (stc.STC_HJ_START,                 "JavaScriptStart",             _("JavaScript Start"),           'default_style'), # STYLE ME
-         (stc.STC_HJ_STRINGEOL,             "JavaScriptStringEOL",         _("JavaScript String EOL"),      'default_style'), # STYLE ME
-         (stc.STC_HJ_SYMBOLS,               "JavaScriptSymbols",           _("JavaScript Symbols"),         'default_style'), # STYLE ME
-         (stc.STC_HJ_WORD,                  "JavaScriptWord",              _("JavaScript Word"),            'default_style'), # STYLE ME
+         (stc.STC_HJ_DEFAULT,               "JavaScriptDefaultText",       _("JavaScript Default Text"),    ''),
+         (stc.STC_HJ_DOUBLESTRING,          "JavaScriptDoubleString",      _("JavaScript Double String"),   ''), # STYLE ME
+         (stc.STC_HJ_KEYWORD,               "JavaScriptKeyWord",           _("JavaScript KeyWord"),         ''), # STYLE ME
+         (stc.STC_HJ_NUMBER,                "JavaScriptNumber",            _("JavaScript Number"),          ''), # STYLE ME
+         (stc.STC_HJ_REGEX,                 "JavaScriptRegex",             _("JavaScript Regex"),           ''), # STYLE ME
+         (stc.STC_HJ_SINGLESTRING,          "JavaScriptSingleString",      _("JavaScript Single String"),   ''), # STYLE ME
+         (stc.STC_HJ_START,                 "JavaScriptStart",             _("JavaScript Start"),           ''), # STYLE ME
+         (stc.STC_HJ_STRINGEOL,             "JavaScriptStringEOL",         _("JavaScript String EOL"),      ''), # STYLE ME
+         (stc.STC_HJ_SYMBOLS,               "JavaScriptSymbols",           _("JavaScript Symbols"),         ''), # STYLE ME
+         (stc.STC_HJ_WORD,                  "JavaScriptWord",              _("JavaScript Word"),            ''), # STYLE ME
 
          (stc.STC_HJA_COMMENT,              "ASPJavaScriptComment",        _("ASP JavaScript Comment"),     'comment_style'),
          (stc.STC_HJA_COMMENTDOC,           "ASPJavaScriptCommentDoc",     _("ASP JavaScript Comment Doc"), 'comment_style'),
          (stc.STC_HJA_COMMENTLINE,          "ASPJavaScriptCommentLine",    _("ASP JavaScript Comment Line"),'comment_style'),
-         (stc.STC_HJA_DEFAULT,              "ASPJavaScriptDefaultText",    _("ASP JavaScript Default Text"),'default_style'),
-         (stc.STC_HJA_DOUBLESTRING,         "ASPJavaScriptDoubleString",   _("ASP JavaScript Double String"),'default_style'), # STYLE ME
-         (stc.STC_HJA_KEYWORD,              "ASPJavaScriptKeyWord",        _("ASP JavaScript KeyWord"),     'default_style'), # STYLE ME
-         (stc.STC_HJA_NUMBER,               "ASPJavaScriptNumber",         _("ASP JavaScript Number"),      'default_style'), # STYLE ME
-         (stc.STC_HJA_REGEX,                "ASPJavaScriptRegex",          _("ASP JavaScript Regex"),       'default_style'), # STYLE ME # STYLE ME
-         (stc.STC_HJA_SINGLESTRING,         "ASPJavaScriptSingleString",   _("ASP JavaScript Single String"),'default_style'), # STYLE ME
-         (stc.STC_HJA_START,                "ASPJavaScriptStart",          _("ASP JavaScript Start"),       'default_style'), # STYLE ME
-         (stc.STC_HJA_STRINGEOL,            "ASPJavaScriptStringEOL",      _("ASP JavaScript String EOL"),  'default_style'), # STYLE ME
-         (stc.STC_HJA_SYMBOLS,              "ASPJavaScriptSymbols",        _("ASP JavaScript Symbols"),     'default_style'), # STYLE ME
-         (stc.STC_HJA_WORD,                 "ASPJavaScriptWord",           _("ASP JavaScript Word"),        'default_style'),
+         (stc.STC_HJA_DEFAULT,              "ASPJavaScriptDefaultText",    _("ASP JavaScript Default Text"),''),
+         (stc.STC_HJA_DOUBLESTRING,         "ASPJavaScriptDoubleString",   _("ASP JavaScript Double String"),''), # STYLE ME
+         (stc.STC_HJA_KEYWORD,              "ASPJavaScriptKeyWord",        _("ASP JavaScript KeyWord"),     ''), # STYLE ME
+         (stc.STC_HJA_NUMBER,               "ASPJavaScriptNumber",         _("ASP JavaScript Number"),      ''), # STYLE ME
+         (stc.STC_HJA_REGEX,                "ASPJavaScriptRegex",          _("ASP JavaScript Regex"),       ''), # STYLE ME # STYLE ME
+         (stc.STC_HJA_SINGLESTRING,         "ASPJavaScriptSingleString",   _("ASP JavaScript Single String"),''), # STYLE ME
+         (stc.STC_HJA_START,                "ASPJavaScriptStart",          _("ASP JavaScript Start"),       ''), # STYLE ME
+         (stc.STC_HJA_STRINGEOL,            "ASPJavaScriptStringEOL",      _("ASP JavaScript String EOL"),  ''), # STYLE ME
+         (stc.STC_HJA_SYMBOLS,              "ASPJavaScriptSymbols",        _("ASP JavaScript Symbols"),     ''), # STYLE ME
+         (stc.STC_HJA_WORD,                 "ASPJavaScriptWord",           _("ASP JavaScript Word"),        ''),
          
          (stc.STC_HBA_DEFAULT,              "ASPVBScriptDefaultText",      _("ASP VBScript Default Text"),  'operator_style'), # Styles ( ) ?
          (stc.STC_HBA_COMMENTLINE,          "ASPVBScriptCommentLine",      _("ASP VBScript Comment Line"),  'comment_style'),
-         (stc.STC_HBA_IDENTIFIER,           "ASPVBScriptIdentifier",        _("ASP VBScript Identifier"),   'default_style'), # TODO
+         (stc.STC_HBA_IDENTIFIER,           "ASPVBScriptIdentifier",        _("ASP VBScript Identifier"),   ''), # TODO
          (stc.STC_HBA_NUMBER,               "ASPVBScriptNumber",           _("ASP VBScript Number"),        'number_style'),
-         (stc.STC_HBA_START,                "ASPVBScriptStart",            _("ASP VBScript Start"),         'default_style'), # TODO
+         (stc.STC_HBA_START,                "ASPVBScriptStart",            _("ASP VBScript Start"),         ''), # TODO
          (stc.STC_HBA_STRING,               "ASPVBScriptString",           _("ASP VBScript String"),        'string_style'),
          (stc.STC_HBA_STRINGEOL,            "ASPVBScriptStringEOL",        _("ASP VBScript String EOL"),    'stringeol_style'),
          (stc.STC_HBA_WORD,                 "ASPVBScriptWord",           _("ASP VBScript Word"),        'keyword_style')  

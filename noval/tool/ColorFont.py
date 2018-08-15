@@ -109,7 +109,7 @@ class CodeSampleCtrl(stc.StyledTextCtrl):
         @postcondition: base style info is updated
 
         """
-        self.StyleDefault()
+        ####self.StyleDefault()
         self.SetMargins(4, 0)
         
         lex_manager = syntax.LexerManager()
@@ -117,6 +117,14 @@ class CodeSampleCtrl(stc.StyledTextCtrl):
         # Global default styles for all languages
         self.StyleSetSpec(0, lex_manager.GetGlobalStyleByName(consts.GLOBAL_STYLE_NAME))
         self.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT, lex_manager.GetGlobalStyleByName(consts.GLOBAL_STYLE_NAME))
+        global_style = lex_manager.GetGlobalItemByName(consts.GLOBAL_STYLE_NAME)
+        self.StyleSetExAttr(wx.stc.STC_STYLE_DEFAULT,global_style)
+        self.StyleSetBold(wx.stc.STC_STYLE_DEFAULT,global_style.Bold)
+        self.StyleSetItalic(wx.stc.STC_STYLE_DEFAULT,global_style.Italic)
+        self.StyleSetUnderline(wx.stc.STC_STYLE_DEFAULT,global_style.Underline)
+        self.StyleSetEOLFilled(wx.stc.STC_STYLE_DEFAULT,global_style.Eol)
+        self.StyleDefault()
+        self.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER, lex_manager.GetGlobalStyleByName('LineNumber'))
         self.StyleSetSpec(wx.stc.STC_STYLE_CONTROLCHAR, lex_manager.GetGlobalStyleByName('CtrlChar'))
         self.StyleSetSpec(wx.stc.STC_STYLE_BRACELIGHT, lex_manager.GetGlobalStyleByName('BraceLight'))
         self.StyleSetSpec(wx.stc.STC_STYLE_BRACEBAD, lex_manager.GetGlobalStyleByName('BraceBad'))
@@ -159,6 +167,12 @@ class CodeSampleCtrl(stc.StyledTextCtrl):
             rgb = strutils.HexToRGB(fore[1:])
             fore = wx.Colour(red=rgb[0], green=rgb[1], blue=rgb[2])
         return fore
+        
+    def StyleSetExAttr(self,style_id,style_item):
+        self.StyleSetBold(style_id,style_item.Bold)
+        self.StyleSetItalic(style_id,style_item.Italic)
+        self.StyleSetUnderline(style_id,style_item.Underline)
+        self.StyleSetEOLFilled(style_id,style_item.Eol)
 
 class ColorComboBox(wx.combo.OwnerDrawnComboBox):
     
@@ -544,36 +558,55 @@ class ColorFontOptionsPanel(wx.Panel):
         self.code_sample_ctrl.SetLangLexer(lexer)
         self.SetStyle(0)
         
+    def GetStyleSpecStr(self,style_item,global_style_item):
+        style_str = list()
+        if style_item.Fore != global_style_item.Fore and style_item.Fore:
+            style_str.append(u"fore:%s" % style_item.Fore)
+        if style_item.Back != global_style_item.Back and style_item.Back:
+            style_str.append(u"back:%s" % style_item.Back)
+        if style_item.Face != global_style_item.Face and style_item.Face:
+            style_str.append(u"face:%s" % style_item.Face)
+        if style_item.Size != global_style_item.Size and style_item.Size:
+            style_str.append(u"size:%s" % unicode(style_item.Size))
+        if len(style_item._exattr):
+            style_str.append(u"modifiers:" +  u','.join(style_item._exattr))
+        style_str = u",".join(style_str)
+        return style_str.rstrip(u",")
+        
     def OnOK(self, optionsDialog):
         config = wx.ConfigBase_Get()
         theme = self._themCombo.GetString(self._themCombo.GetSelection())
         config.Write(THEME_KEY,theme)
+        lex_manager = syntax.LexerManager()
         
         selection = self._lexerCombo.GetSelection()
         lexer = self._lexerCombo.GetClientData(selection)
         lexer_name = lexer.GetShowName()
-        global_style = syntax.LexerManager().GetGlobalItemByName(consts.GLOBAL_STYLE_NAME)
+        global_style = lex_manager.GetGlobalItemByName(consts.GLOBAL_STYLE_NAME)
         for style in lexer.StyleItems:
             key_name = getStyleKeyName(lexer_name,style.KeyName)
-            if lexer.GetLangId() != lang.ID_LANG_TXT:
-                if style.Size == global_style.Size:
+            if style.KeyName != consts.GLOBAL_STYLE_NAME:
+                style_str = self.GetStyleSpecStr(style,global_style)
+                if style_str == "":
                     config.DeleteEntry(key_name)
                     continue
-            config.Write(key_name,unicode(style))
-        txt_lexer = syntax.LexerManager().GetLexer(lang.ID_LANG_TXT)
+            else:
+                style_str = unicode(style)
+            config.Write(key_name,style_str)
+        txt_lexer = lex_manager.GetLexer(lang.ID_LANG_TXT)
         lexer_name = txt_lexer.GetShowName()
         key_name = getStyleKeyName(lexer_name,global_style.KeyName)
         config.Write(key_name,unicode(global_style))
         data_str = json.dumps({'font':global_style.Face,'size':int(global_style.Size)})
         config.Write(consts.PRIMARY_FONT_KEY, data_str)
         config.Write("TextEditorColor", global_style.Fore.replace("#",""))
-        syntax.LexerManager().SetGlobalFont(global_style.Face,int(global_style.Size))
+        lex_manager.SetGlobalFont(global_style.Face,int(global_style.Size))
         
         openDocs = wx.GetApp().GetDocumentManager().GetDocuments()
         for openDoc in openDocs:
             if isinstance(openDoc,STCTextEditor.TextDocument):
                 docView = openDoc.GetFirstView()
-                syntax.LexerManager().UpdateAllStyles(docView.GetCtrl(),theme)
+                lex_manager.UpdateAllStyles(docView.GetCtrl(),theme)
         return True
         
     def SelectStyle(self,event):
@@ -581,10 +614,10 @@ class ColorFontOptionsPanel(wx.Panel):
         
     def SetStyle(self,selection):
         style = self.lb.GetClientData(selection)
-        self.fore_color_combo.SetColor(style.Fore)
-        self.back_color_combo.SetColor(style.Back)
-        self._fontCombo.SetValue(style.Face)
-        self._sizeCombo.SetValue(style.Size)
+        self.fore_color_combo.SetColor(style.GetFore())
+        self.back_color_combo.SetColor(style.GetBack())
+        self._fontCombo.SetValue(style.GetFace())
+        self._sizeCombo.SetValue(style.GetSize())
         self.bold_chkbox.SetValue(style.Bold)
         self.eol_chkbox.SetValue(style.Eol)
         self.underline_chkbox.SetValue(style.Underline)

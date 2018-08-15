@@ -338,7 +338,7 @@ class SyntaxLexer(syndata.BaseLexer):
     #---- Syntax Style Specs ----#
     # Scintilla 1.75 SQL Lexer
     SYNTAX_ITEMS = [ 
-         (stc.STC_SQL_DEFAULT,                  "DefaultText",             _("Default Text") ,              'default_style'),       #  0
+         (stc.STC_SQL_DEFAULT,                  "DefaultText",             _("Default Text") ,              ''),       #  0
          (stc.STC_SQL_CHARACTER,                "Character",               _("Character"),                  'char_style'),          #  7
          (stc.STC_SQL_COMMENT,                  "Comment",                 _("Comment"),                    'comment_style'),       #  1
          (stc.STC_SQL_COMMENTDOC,               "CommentDoc",              _("Comment Doc"),                'comment_style'),       #  3
@@ -346,13 +346,13 @@ class SyntaxLexer(syndata.BaseLexer):
          (stc.STC_SQL_COMMENTDOCKEYWORDERROR,   "CommentDocKeyWordError",  _("Comment Doc KeyWord Error"),  'error_style'),         # 18
          (stc.STC_SQL_COMMENTLINE,              "CommentLine",             _("Comment Line"),               'comment_style'),       #  2
          (stc.STC_SQL_COMMENTLINEDOC,           "CommentLineDoc",          _("Comment Line Doc"),           'comment_style'),       # 15
-         (stc.STC_SQL_IDENTIFIER,               "Identifier",              _("Identifier"),                 'default_style'),       # 11
+         (stc.STC_SQL_IDENTIFIER,               "Identifier",              _("Identifier"),                 ''),       # 11
          (stc.STC_SQL_NUMBER,                   "Number",                  _("Number"),                     'number_style'),        #  4
          (stc.STC_SQL_OPERATOR,                 "Operator",                _("Operator"),                   'operator_style'),      # 10
-         (stc.STC_SQL_QUOTEDIDENTIFIER,         "QuotedIdentifier",        _("Quoted Identifier"),          'default_style'),       # 23
+         (stc.STC_SQL_QUOTEDIDENTIFIER,         "QuotedIdentifier",        _("Quoted Identifier"),          ''),       # 23
          (stc.STC_SQL_SQLPLUS,                  "Sqlplus",                 _("Sqlplus"),                    'scalar_style'),        #  8
          (stc.STC_SQL_SQLPLUS_COMMENT,          "SqlplusComment",          _("Sqlplus Comment"),            'comment_style'),       # 13
-         (stc.STC_SQL_SQLPLUS_PROMPT,           "SqlplusPrompt",           _("Sqlplus Prompt"),             'default_style'),       #  9
+         (stc.STC_SQL_SQLPLUS_PROMPT,           "SqlplusPrompt",           _("Sqlplus Prompt"),             ''),       #  9
          (stc.STC_SQL_STRING,                   "String",                  _("String"),                     'string_style'),        #  6
          (stc.STC_SQL_USER1,                    "User1",                   _("User1"),                      'funct_style'),         # 19
          (stc.STC_SQL_USER2,                    "User2",                   _("User2"),                      'directive_style'),     # 20

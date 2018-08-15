@@ -79,14 +79,14 @@ class SyntaxLexer(syndata.BaseLexer):
     """SyntaxData object for various shell scripting languages""" 
     #---- Syntax Style Specs ----#
     SYNTAX_ITEMS = [ 
-         (stc.STC_SH_DEFAULT,       "DefaultText",     _("Default Text"),   'default_style'),
+         (stc.STC_SH_DEFAULT,       "DefaultText",     _("Default Text"),   ''),
          (stc.STC_SH_BACKTICKS,     "Backticks",       _("Backticks"),      'scalar_style'),
          (stc.STC_SH_CHARACTER,     "Character",       _("Character"),      'char_style'),
          (stc.STC_SH_COMMENTLINE,   "CommentLine",     _("Comment Line"),   'comment_style'),
          (stc.STC_SH_ERROR,         "Error",           _("Error"),          'error_style'),
          (stc.STC_SH_HERE_DELIM,    "HereDelim",       _("Here Delim"),     'here_style'),
          (stc.STC_SH_HERE_Q,        "HereQ",           _("Here Q"),         'here_style'),
-         (stc.STC_SH_IDENTIFIER,    "Identifier",      _("Identifier"),     'default_style'),
+         (stc.STC_SH_IDENTIFIER,    "Identifier",      _("Identifier"),     ''),
          (stc.STC_SH_NUMBER,        "Number",          _("Number"),         'number_style'),
          (stc.STC_SH_OPERATOR,      "Operator",        _("Operator"),       'operator_style'),
          (stc.STC_SH_PARAM,         "Param",           _("Param"),          'scalar_style'),

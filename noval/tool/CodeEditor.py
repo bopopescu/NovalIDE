@@ -864,7 +864,7 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         # Global default styles for all languages
         ###self.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT,     "face:%(font)s,fore:#FFFFFF,size:%(size)d" % faces)
         global_style = syntax.LexerManager().GetItemByName('line_num')
-        style_str = "face:%s,back:%s,face:%s,size:%d" % (global_style.Face,global_style.Back,global_style.Fore,self.GetFont().GetPointSize()-2)
+        style_str = "face:%s,back:%s,face:%s,size:%d" % (global_style.GetFace(),global_style.GetBack(),global_style.GetFore(),self.GetFont().GetPointSize()-2)
         self.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER,  style_str)
         self.StyleSetSpec(wx.stc.STC_STYLE_CONTROLCHAR, "face:%(font)s" % faces)
         self.StyleSetSpec(wx.stc.STC_STYLE_BRACELIGHT,  "face:%(font)s,fore:#000000,back:#70FFFF,size:%(size)d" % faces)
@@ -872,7 +872,7 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         lexer = self.GetLangLexer()
         for syn in lexer.StyleItems:
             style_str = "fore:#%(color)s,face:%(font)s,size:%(size)d" % faces
-            style_str += ",back:%s" % syn.Back
+            style_str += ",back:%s" % syn.GetBack()
             if len(syn._exattr):
                 style_str += u','.join(syn._exattr)
             self.StyleSetSpec(syn.StyleId, style_str)
@@ -1050,13 +1050,13 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         self.SetMarginType(CodeView.FOLD_MARKER_NUM, wx.stc.STC_MARGIN_SYMBOL)
         self.SetMarginMask(CodeView.FOLD_MARKER_NUM, wx.stc.STC_MASK_FOLDERS)
         self.SetMarginSensitive(CodeView.FOLD_MARKER_NUM, True)
-        
-        style = syntax.LexerManager().GetItemByName('foldmargin_style')
-        back = style.Fore
+        lex_manager = syntax.LexerManager()
+        style = lex_manager.GetItemByName('foldmargin_style')
+        back = style.GetFore()
         rgb = strutils.HexToRGB(back[1:])
         back = wx.Colour(red=rgb[0], green=rgb[1], blue=rgb[2])
 
-        fore = style.Back
+        fore = style.GetBack()
         rgb = strutils.HexToRGB(fore[1:])
         fore = wx.Colour(red=rgb[0], green=rgb[1], blue=rgb[2])
         

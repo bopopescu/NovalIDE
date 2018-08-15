@@ -206,8 +206,49 @@ class StyleItem(object):
             pass
             
     def GetStyleSpecStr(self):
-        stystr = unicode(self)
+        style_str = list()
+        lexer_manager = syntax.LexerManager()
+        global_style = lexer_manager.GetGlobalItemByName(consts.GLOBAL_STYLE_NAME)
+        if self.Fore:
+            style_str.append(u"fore:%s" % self.Fore)
+        else:
+            style_str.append(u"fore:%s" % global_style.Fore)
+        if self.Back:
+            style_str.append(u"back:%s" % self.Back)
+        else:
+            style_str.append(u"back:%s" % global_style.Back)
+        if self.Face:
+            style_str.append(u"face:%s" % self.Face)
+        else:
+            style_str.append(u"face:%s" % global_style.Face)
+        if self.Size:
+            style_str.append(u"size:%s" % unicode(self.Size))
+        else:
+            style_str.append(u"size:%s" % unicode(global_style.Size))
+        if len(self._exattr):
+            style_str.append(u"modifiers:" +  u','.join(self._exattr))
+        stystr = u",".join(style_str)
         return stystr.replace("modifiers:", "")
+        
+    def GetBack(self):
+        if self.Back:
+            return self.Back
+        return syntax.LexerManager().GetGlobalItemByName(consts.GLOBAL_STYLE_NAME).Back
+        
+    def GetFore(self):
+        if self.Fore:
+            return self.Fore
+        return syntax.LexerManager().GetGlobalItemByName(consts.GLOBAL_STYLE_NAME).Fore
+        
+    def GetSize(self):
+        if self.Size:
+            return self.Size
+        return syntax.LexerManager().GetGlobalItemByName(consts.GLOBAL_STYLE_NAME).Size
+        
+    def GetFace(self):
+        if self.Face:
+            return self.Face
+        return syntax.LexerManager().GetGlobalItemByName(consts.GLOBAL_STYLE_NAME).Face
 
 class LexerStyleItem(StyleItem):
     
@@ -262,17 +303,11 @@ class LexerStyleItem(StyleItem):
         return self._key_name
         
     def GetStyleSpec(self):
-        def update_global_style_back():
-            if global_style is not None:
-                if global_style.Back != self.Back:
-                    self.SetBack(global_style.Back)
-        
         lexer_manager = syntax.LexerManager()
         global_style = lexer_manager.GetGlobalItemByName(consts.GLOBAL_STYLE_NAME)
         #load from attr directly
-        if self.LOAD_STYLE_THRESHOLD == self.LOAD_FROM_ATTRIBUTE and self.Back and self.Fore and self.Face and self.Size:
+        if self.LOAD_STYLE_THRESHOLD == self.LOAD_FROM_ATTRIBUTE:
             #should update back color to global back color if is not equal
-            update_global_style_back()
             return self.GetStyleSpecStr()
         
         #load from config
@@ -286,18 +321,17 @@ class LexerStyleItem(StyleItem):
         else:
             #load default
             style_item = lexer_manager.GetItemByName(self._global_style_name)
-        if not self.Back or self.Back != style_item.Back:
+        if self.Back != style_item.Back:
             self.SetBack(style_item.Back)
-        if not self.Fore or self.Fore != style_item.Fore:
+        if self.Fore != style_item.Fore:
             self.SetFore(style_item.Fore)
-        if not self.Face or self.Face != style_item.Face:
+        if self.Face != style_item.Face:
             self.SetFace(style_item.Face)
-        if not self.Size or self.Size != style_item.Size:
+        if self.Size != style_item.Size:
             self.SetSize(style_item.Size)
         for attr in style_item._exattr:
             self.SetExAttr(attr)
         #should update back color to global back color if is not equal
-        update_global_style_back()
         style_spec_str = self.GetStyleSpecStr()
         return style_spec_str
         

@@ -121,7 +121,7 @@ class SyntaxLexer(syndata.BaseLexer):
     """SyntaxData object for many C like languages""" 
     #---- Syntax Style Specs ----#
     SYNTAX_ITEMS = [ 
-         (stc.STC_C_DEFAULT,                "DefaultText",             _("Default Text") ,              'default_style'),
+         (stc.STC_C_DEFAULT,                "DefaultText",             _("Default Text") ,              ''),
          (stc.STC_C_COMMENT,                "Comment",                 _("Comment"),                    'comment_style'),
          (stc.STC_C_COMMENTLINE,            "CommentLine",             _("Comment Line"),               'comment_style'),
          (stc.STC_C_COMMENTDOC,             "CommentDoc",              _("Comment Doc"),                'comment_style'),
@@ -130,7 +130,7 @@ class SyntaxLexer(syndata.BaseLexer):
          (stc.STC_C_COMMENTLINEDOC,         "CommentLineDoc",          _("Comment Line Doc"),           'comment_style'),
          (stc.STC_C_CHARACTER,              "Character",               _("Character"),                  'char_style'),
          (stc.STC_C_GLOBALCLASS,            "GlobalClass",             _("Global Class"),                'global_style'),
-         (stc.STC_C_IDENTIFIER,             "Identifier",              _("Identifier"),                 'default_style'),
+         (stc.STC_C_IDENTIFIER,             "Identifier",              _("Identifier"),                 ''),
          (stc.STC_C_NUMBER,                 "Number",                  _("Number"),                     'number_style'),
          (stc.STC_C_OPERATOR,               "Operator",                _("Operator"),                   'operator_style'),
          (stc.STC_C_PREPROCESSOR,           "Preprocessor",            _("Preprocessor"),               'pre_style'),

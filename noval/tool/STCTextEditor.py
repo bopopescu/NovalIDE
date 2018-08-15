@@ -1360,7 +1360,7 @@ class TextCtrl(BaseCtrl.ScintillaCtrl):
         @postcondition: base style info is updated
 
         """
-        self.StyleDefault()
+        ####self.StyleDefault()
         self.SetMargins(4, 0)
         
         lex_manager = syntax.LexerManager()
@@ -1368,20 +1368,23 @@ class TextCtrl(BaseCtrl.ScintillaCtrl):
         # Global default styles for all languages
         self.StyleSetSpec(0, lex_manager.GetGlobalStyleByName(consts.GLOBAL_STYLE_NAME))
         self.StyleSetSpec(wx.stc.STC_STYLE_DEFAULT, lex_manager.GetGlobalStyleByName(consts.GLOBAL_STYLE_NAME))
-        self.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER, lex_manager.GetStyleByName('line_num'))
-        self.StyleSetSpec(wx.stc.STC_STYLE_CONTROLCHAR, lex_manager.GetStyleByName('ctrl_char'))
-        self.StyleSetSpec(wx.stc.STC_STYLE_BRACELIGHT, lex_manager.GetStyleByName('brace_good'))
-        self.StyleSetSpec(wx.stc.STC_STYLE_BRACEBAD, lex_manager.GetStyleByName('brace_bad'))
-        self.StyleSetSpec(wx.stc.STC_STYLE_INDENTGUIDE, lex_manager.GetStyleByName('guide_style'))
+        global_style = lex_manager.GetGlobalItemByName(consts.GLOBAL_STYLE_NAME)
+        self.StyleSetExAttr(wx.stc.STC_STYLE_DEFAULT,global_style)
+        self.StyleDefault()
+        self.StyleSetSpec(wx.stc.STC_STYLE_LINENUMBER, lex_manager.GetGlobalStyleByName('LineNumber'))
+        self.StyleSetSpec(wx.stc.STC_STYLE_CONTROLCHAR, lex_manager.GetGlobalStyleByName('CtrlChar'))
+        self.StyleSetSpec(wx.stc.STC_STYLE_BRACELIGHT, lex_manager.GetGlobalStyleByName('BraceLight'))
+        self.StyleSetSpec(wx.stc.STC_STYLE_BRACEBAD, lex_manager.GetGlobalStyleByName('BraceBad'))
+        self.StyleSetSpec(wx.stc.STC_STYLE_INDENTGUIDE, lex_manager.GetGlobalStyleByName('IndentGuideLine'))
 
         # wx.stc.STC_STYLE_CALLTIP doesn't seem to do anything
         calltip = lex_manager.GetItemByName('calltip')
-        self.CallTipSetBackground(calltip.Back)
-        self.CallTipSetForeground(calltip.Fore)
+        self.CallTipSetBackground(calltip.GetBack())
+        self.CallTipSetForeground(calltip.GetFore())
 
         sback = lex_manager.GetItemByName('select_style')
-        if not sback.IsNull() and len(sback.Back):
-            sback = sback.Back
+        if not sback.IsNull() and len(sback.GetBack()):
+            sback = sback.GetBack()
             sback = strutils.HexToRGB(sback)
             sback = wx.Colour(*sback)
         else:
@@ -1402,10 +1405,10 @@ class TextCtrl(BaseCtrl.ScintillaCtrl):
 
         default_fore = self.GetDefaultForeColour()
         edge_colour = lex_manager.GetItemByName('edge_style')
-        if sysutilslib.isWindows() and edge_colour.Fore:
-            self.SetEdgeColour(edge_colour.Fore)
+        if sysutilslib.isWindows() and edge_colour.GetFore():
+            self.SetEdgeColour(edge_colour.GetFore())
         self.SetCaretForeground(default_fore)
-        self.SetCaretLineBack(lex_manager.GetItemByName('caret_line').Back)
+        self.SetCaretLineBack(lex_manager.GetItemByName('caret_line').GetBack())
         self.Colourise(0, -1)
 
     def SetSyntax(self, synlst):

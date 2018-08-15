@@ -43,6 +43,7 @@ if sys.platform == "win32":
                     ("noval/tool/bmp_source/web",glob.glob("noval/tool/bmp_source/web/*.png")),
                     ("noval/tool/bmp_source/template",glob.glob("noval/tool/bmp_source/template/*.*")),
                     ("noval/tool",glob.glob("noval/tool/DebuggerHarness.py")),
+                    ("noval/tool",glob.glob("noval/tool/DebuggerHarness3.py")),
                     ("noval/tool/data",["noval/tool/data/tips.txt"]),
                     ("noval/tool/data/template",glob.glob("noval/tool/data/template/*.tar.bz2")),
                     ("noval/tool/data/sample",glob.glob("noval/tool/data/sample/*.sample")),

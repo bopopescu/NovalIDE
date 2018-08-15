@@ -76,25 +76,25 @@ class SyntaxLexer(syndata.BaseLexer):
     
     #---- Syntax Style Specs ----#
     SYNTAX_ITEMS = [ 
-         (stc.STC_PL_DEFAULT,       "DefaultText",     _("Default Text"),   'default_style'),
+         (stc.STC_PL_DEFAULT,       "DefaultText",     _("Default Text"),   ''),
          (stc.STC_PL_ARRAY,         "Array",           _("Array"),          'array_style'),
          (stc.STC_PL_BACKTICKS,     "Backticks",       _("Backticks"),      'btick_style'),
          (stc.STC_PL_CHARACTER,     "Character",       _("Character"),      'char_style'),
          (stc.STC_PL_COMMENTLINE,   "CommentLine",     _("Comment Line"),   'comment_style'),
-         (stc.STC_PL_DATASECTION,   "DataSection",     _("DataSection"),    'default_style'), # STYLE ME
+         (stc.STC_PL_DATASECTION,   "DataSection",     _("DataSection"),    ''), # STYLE ME
          (stc.STC_PL_ERROR,         "Error",           _("Error"),          'error_style'),
          (stc.STC_PL_HASH,          "Hash",            _("Hash"),           'global_style'),
          (stc.STC_PL_HERE_DELIM,    "HereDelim",       _("Here Delim"),     'here_style'),
          (stc.STC_PL_HERE_Q,        "HereQ",           _("Here Q"),         'here_style'),
          (stc.STC_PL_HERE_QQ,       "HereQQ",          _("Here QQ"),        'here_style'),
          (stc.STC_PL_HERE_QX,       "HereQX",          _("Here QX"),        'here_style'),
-         (stc.STC_PL_IDENTIFIER,    "Identifier",      _("Identifier"),     'default_style'),
-         (stc.STC_PL_LONGQUOTE,     "LongQuote",       _("LongQuote"),      'default_style'), # STYLE ME
+         (stc.STC_PL_IDENTIFIER,    "Identifier",      _("Identifier"),     ''),
+         (stc.STC_PL_LONGQUOTE,     "LongQuote",       _("LongQuote"),      ''), # STYLE ME
          (stc.STC_PL_NUMBER,        "Number",          _("Number"),         'number_style'),
          (stc.STC_PL_OPERATOR,      "Operator",        _("Operator"),       'operator_style'),
          (stc.STC_PL_POD,           "POD",             _("POD"),            'comment_style'),
          (stc.STC_PL_PREPROCESSOR,  "Preprocessor",    _("Preprocessor"),   'pre_style' ),
-         (stc.STC_PL_PUNCTUATION,   "Punctuation",      _("Punctuation"),   'default_style'), # STYLE ME
+         (stc.STC_PL_PUNCTUATION,   "Punctuation",      _("Punctuation"),   ''), # STYLE ME
          (stc.STC_PL_REGEX,         "Regex",           _("Regex"),          'regex_style'),
          (stc.STC_PL_REGSUBST,      "RegSubst",        _("RegSubst"),       'regex_style'),
          (stc.STC_PL_SCALAR,        "Scalar",          _("Scalar"),         'scalar_style'),
@@ -104,14 +104,14 @@ class SyntaxLexer(syndata.BaseLexer):
          (stc.STC_PL_STRING_QR,     "StringQR",        _("String QR"),      'string_style'),
          (stc.STC_PL_STRING_QW,     "StringQW",        _("String QW"),      'string_style'),
          (stc.STC_PL_STRING_QX,     "StringQX",        _("String QX"),      'string_style'),
-         (stc.STC_PL_SYMBOLTABLE,   "SymbolTable",     _("SymbolTable"),    'default_style'), # STYLE ME
+         (stc.STC_PL_SYMBOLTABLE,   "SymbolTable",     _("SymbolTable"),    ''), # STYLE ME
          (stc.STC_PL_WORD,          "KeyWord",          _("KeyWord"),       'keyword_style') 
     ]
     
     if wx.VERSION >= (2, 9, 0, 0, ''):
-        SYNTAX_ITEMS.append((stc.STC_PL_FORMAT,         "Format",           _("Format"),        'default_style')) #TODO
-        SYNTAX_ITEMS.append((stc.STC_PL_FORMAT_IDENT,   "FormatIdent",      _("Format Ident"),  'default_style')) #TODO
-        SYNTAX_ITEMS.append((stc.STC_PL_SUB_PROTOTYPE,  "SubPrototype",     _("SubPrototype"),  'default_style')) #TODO
+        SYNTAX_ITEMS.append((stc.STC_PL_FORMAT,         "Format",           _("Format"),        '')) #TODO
+        SYNTAX_ITEMS.append((stc.STC_PL_FORMAT_IDENT,   "FormatIdent",      _("Format Ident"),  '')) #TODO
+        SYNTAX_ITEMS.append((stc.STC_PL_SUB_PROTOTYPE,  "SubPrototype",     _("SubPrototype"),  '')) #TODO
                  
     def __init__(self):
         super(SyntaxLexer, self).__init__(lang.ID_LANG_PERL)

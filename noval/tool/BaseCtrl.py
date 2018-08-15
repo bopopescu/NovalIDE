@@ -299,5 +299,11 @@ class ScintillaCtrl(wx.stc.StyledTextCtrl):
         
     def HideLineNumber(self):
         self.SetMarginWidth(self.DEFAULT_LINE_MARKER_NUM, 0)
+        
+    def StyleSetExAttr(self,style_id,style_item):
+        self.StyleSetBold(style_id,style_item.Bold)
+        self.StyleSetItalic(style_id,style_item.Italic)
+        self.StyleSetUnderline(style_id,style_item.Underline)
+        self.StyleSetEOLFilled(style_id,style_item.Eol)
 
    

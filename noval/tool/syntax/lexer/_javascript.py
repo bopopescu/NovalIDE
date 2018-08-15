@@ -48,7 +48,7 @@ class SyntaxLexer(syndata.BaseLexer):
     """SyntaxData object for JavaScript""" 
     #---- Syntax Style Spec ----#
     SYNTAX_ITEMS = [ 
-         (stc.STC_HJ_DEFAULT,       "DefaultText",                 _("Default Text") ,                'default_style'),
+         (stc.STC_HJ_DEFAULT,       "DefaultText",                 _("Default Text") ,                ''),
          (stc.STC_HJ_COMMENT,       "Comment",                     _("Comment"),                      'comment_style'),
          (stc.STC_HJ_COMMENTDOC,    "CommentDoc",                  _("Comment Doc"),                  'dockey_style'),
          (stc.STC_HJ_COMMENTLINE,   "CommentLine",                 _("Comment Line"),                 'comment_style'),
@@ -64,7 +64,7 @@ class SyntaxLexer(syndata.BaseLexer):
          (stc.STC_HJA_COMMENT,      "ASPComment",                  _("ASP  Comment"),                 'comment_style'),
          (stc.STC_HJA_COMMENTDOC,   "ASPCommentDoc",               _("ASP  Comment Doc"),             'dockey_style'),
          (stc.STC_HJA_COMMENTLINE,  "ASPCommentLine",              _("ASP  Comment Line"),            'comment_style'),
-         (stc.STC_HJA_DEFAULT,      "ASPDefaultText",              _("ASP  Default Text"),            'default_style'),
+         (stc.STC_HJA_DEFAULT,      "ASPDefaultText",              _("ASP  Default Text"),            ''),
          (stc.STC_HJA_DOUBLESTRING, "ASPDoubleString",             _("ASP  Double String"),           'string_style'),
          (stc.STC_HJA_KEYWORD,      "ASPKeyWord",                  _("ASP  KeyWord"),                 'keyword_style'),
          (stc.STC_HJA_NUMBER,       "ASPNumber",                   _("ASP  Number"),                  'number_style'),

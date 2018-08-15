@@ -67,14 +67,14 @@ class SyntaxLexer(syndata.BaseLexer):
     """SyntaxData object for Python""" 
     #---- Syntax Style Specs ----#
     SYNTAX_ITEMS = [ 
-         (stc.STC_P_DEFAULT,      "DefaultText",  _("Default Text"),   'default_style'),
+         (stc.STC_P_DEFAULT,      "DefaultText",  _("Default Text"),   ''),
          (stc.STC_P_CHARACTER,    "Character",    _("Character"),      'char_style'),
          (stc.STC_P_CLASSNAME,    "ClassName",    _("Class Name"),     'class_style'),
          (stc.STC_P_COMMENTBLOCK, "CommentBlock", _("Comment Block"),  'comment_style'),
          (stc.STC_P_COMMENTLINE,  "CommentLine",  _("Comment Line"),   'comment_style'),
          (stc.STC_P_DECORATOR,    "Decorator",    _("Decorator"),      'decor_style'),
          (stc.STC_P_DEFNAME,      "FunctionName", _("Function Name"),  'keyword3_style'),
-         (stc.STC_P_IDENTIFIER,   "Identifier",   _("Identifier"),     'default_style'),
+         (stc.STC_P_IDENTIFIER,   "Identifier",   _("Identifier"),     ''),
          (stc.STC_P_NUMBER,       "Number",       _("Number"),         'number_style'),
          (stc.STC_P_OPERATOR,     "Operator",     _("Operator"),       'operator_style'),
          (stc.STC_P_STRING,       "String",       _("String"),         'string_style'),
