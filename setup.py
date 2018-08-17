@@ -84,6 +84,7 @@ elif sys.platform.find('linux') != -1:
                         'tool/data/styles/*.ess',
                         'tool/data/*.txt',
                         'tool/bmp_source/template/*', 
+                        'tool/syntax/lexer/*.py',
                         'tool/bmp_source/toolbar/*', 
                         'tool/bmp_source/*.*', 
                         'locale/en_US/LC_MESSAGES/*.mo',
