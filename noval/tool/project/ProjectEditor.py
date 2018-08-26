@@ -34,14 +34,15 @@ import noval.tool.ExtensionService as ExtensionService
 import noval.tool.ResourceView as ResourceView
 import noval.util.sysutils as sysutilslib
 import ImportFiles
-from noval.tool.consts import SPACE,HALF_SPACE,_,PROJECT_SHORT_EXTENSION,PROJECT_EXTENSION,ERROR_OK
+from noval.tool.consts import SPACE,HALF_SPACE,_,PROJECT_SHORT_EXTENSION,\
+                    PROJECT_EXTENSION,ERROR_OK,NOT_IN_ANY_PROJECT,PYTHON_PATH_NAME
 import threading
 import shutil
 import noval.tool.WxThreadSafe as WxThreadSafe
 import noval.parser.utils as parserutils
 from wx.lib.pubsub import pub as Publisher
 import ProjectUI
-from noval.model import configuration as projectconfiguration
+from noval.model import configuration
 import uuid
 import noval.tool.FileObserver as FileObserver
 import cPickle
@@ -315,6 +316,36 @@ if not ACTIVEGRID_BASE_IDE:
 
 
 class ProjectDocument(wx.lib.docview.Document):
+    
+    UNPROJECT_MODEL_ID = "8F470CCF-A44F-11E8-88DC-005056C00008"
+    
+    @staticmethod
+    def GetUnProjectDocument():
+        unproj_model = projectlib.PythonProject()
+        unproj_model.Id = ProjectDocument.UNPROJECT_MODEL_ID
+        unprojProj = ProjectDocument(model=unproj_model)
+        unprojProj.SetFilename(NOT_IN_ANY_PROJECT)
+        return unprojProj
+        
+    @staticmethod
+    def GetUnProjectFileKey(file_path,lastPart):
+        return "%s/{%s}/%s/%s" % (PROJECT_KEY, ProjectDocument.UNPROJECT_MODEL_ID, file_path.replace(os.sep, '|'),lastPart)
+
+    def GetRunParameter(self,start_up_file):
+        config = wx.ConfigBase_Get()
+        initialArgs = config.Read(self.GetFileKey(start_up_file,"RunArguments"),"")
+        python_path = config.Read(self.GetFileKey(start_up_file,"PythonPath"),"")
+        startIn = config.Read(self.GetFileKey(start_up_file,"RunStartIn"),"")
+        if startIn == '':
+            startIn = os.path.dirname(self.GetFilename())
+        env = {}
+        paths = set()
+        paths.add(str(os.path.dirname(self.GetFilename())))
+        #should avoid environment contain unicode string,such as u'xxx'
+        if len(python_path) > 0:
+            paths.add(str(python_path))
+        env[PYTHON_PATH_NAME] = os.pathsep.join(list(paths))
+        return configuration.RunParameter(wx.GetApp().GetCurrentInterpreter(),start_up_file.filePath,initialArgs,env,startIn,project=self)
 
     def __init__(self, model=None):
         wx.lib.docview.Document.__init__(self)
@@ -329,14 +360,6 @@ class ProjectDocument(wx.lib.docview.Document):
         self.default_ban_exts = ['pyc','pyo']
         self._run_parameter = None
         self.document_watcher = FileObserver.FileAlarmWatcher()
-
-    @property
-    def RunParameter(self):
-        return self._run_parameter
-        
-    @RunParameter.setter
-    def RunParameter(self,run_parameter):
-        self._run_parameter = run_parameter
 
     def __copy__(self):
         model = copy.copy(self.GetModel())        
@@ -365,6 +388,13 @@ class ProjectDocument(wx.lib.docview.Document):
         
     def GetKey(self,lastPart):
         return "%s/{%s}/%s" % (PROJECT_KEY, self.GetModel().Id, lastPart)
+        
+    def GetFileKey(self,pj_file,lastPart):
+        if pj_file.logicalFolder is None:
+            key_path = os.path.basename(pj_file.filePath)
+        else:
+            key_path = os.path.join(pj_file.logicalFolder,os.path.basename(pj_file.filePath))
+        return "%s/{%s}/%s/%s" % (PROJECT_KEY, self.GetModel().Id, key_path.replace(os.sep, '|'),lastPart)
 
     def OnCreate(self, path, flags):
         projectService = wx.GetApp().GetService(ProjectService)
@@ -1206,9 +1236,9 @@ class NewProjectWizard(Wizard.BaseWizard):
                         view.SelectView()
                     view.AddProjectToView(doc)
                     if self._project_configuration.PythonPathPattern == \
-                                    projectconfiguration.ProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH:
+                                    configuration.ProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH:
                             doc.GetCommandProcessor().Submit(ProjectAddFolderCommand(view, doc, \
-                                    projectconfiguration.ProjectConfiguration.DEFAULT_PROJECT_SRC_PATH))
+                                    configuration.ProjectConfiguration.DEFAULT_PROJECT_SRC_PATH))
                     break
 
         self.Destroy()

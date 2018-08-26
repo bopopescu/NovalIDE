@@ -32,7 +32,6 @@ import Service
 import noval.parser.fileparser as parser
 import noval.parser.scope as scope
 import interpreter.Interpreter as Interpreter
-import interpreter.configruation as configruation
 import noval.parser.intellisence as intellisence
 import noval.parser.nodeast as nodeast
 import noval.util.strutils as strutils
@@ -49,6 +48,7 @@ import noval.parser.utils as parserutils
 import TextService
 import consts
 import noval.tool.project as project
+from noval.model import configuration
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
@@ -59,15 +59,6 @@ _ = wx.GetTranslation
 
 VIEW_PYTHON_INTERPRETER_ID = wx.NewId()
 
-class RunParameter():
-    def __init__(self,interpreter,file_path,arg=None,env=None,start_up=None,is_debug_breakpoint=False):
-        self.Interpreter = interpreter
-        self.FilePath = file_path
-        self.Arg = arg
-        self.Environment = env
-        self.StartUp = start_up
-        self.DebugBreakPoint = is_debug_breakpoint
-
 class PythonDocument(CodeEditor.CodeDocument): 
 
     UTF_8_ENCODING = 0
@@ -77,15 +68,21 @@ class PythonDocument(CodeEditor.CodeDocument):
     
     def __init__(self):
         CodeEditor.CodeDocument.__init__(self)
-        self._run_parameter = None
         
-    @property
-    def RunParameter(self):
-        return self._run_parameter
-        
-    @RunParameter.setter
-    def RunParameter(self,run_parameter):
-        self._run_parameter = run_parameter
+    def GetRunParameter(self):
+        config = wx.ConfigBase_Get()
+        fileToRun = self.GetFilename()
+        unprojProj = project.ProjectEditor.ProjectDocument.GetUnProjectDocument()
+        initialArgs = config.Read(unprojProj.GetUnProjectFileKey(fileToRun,"RunArguments"),"")
+        python_path = config.Read(unprojProj.GetUnProjectFileKey(fileToRun,"PythonPath"),"")
+        startIn = config.Read(unprojProj.GetUnProjectFileKey(fileToRun,"RunStartIn"),"")
+        if startIn == '':
+            startIn = os.path.dirname(fileToRun)
+        env = {}
+        #should avoid environment contain unicode string,such as u'xxx'
+        if python_path != '':
+            env[consts.PYTHON_PATH_NAME] = str(python_path)
+        return configuration.RunParameter(wx.GetApp().GetCurrentInterpreter(),fileToRun,initialArgs,env,startIn)
 
     def get_coding_spec(self,lines):
         """Return the encoding declaration according to PEP 263.
@@ -571,26 +568,37 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         menu.AppendItem(item)
         
         menuBar = wx.GetApp().GetTopWindow().GetMenuBar()
-        menu_item = menuBar.FindItemById(DebuggerService.DebuggerService.RUN_ID)
-        item = wx.MenuItem(menu,DebuggerService.DebuggerService.RUN_ID,_("&Run\tF5"), kind = wx.ITEM_NORMAL)
+        menu_item = menuBar.FindItemById(DebuggerService.DebuggerService.START_RUN_ID)
+        item = wx.MenuItem(menu,DebuggerService.DebuggerService.START_RUN_ID,_("&Run\tF5"), kind = wx.ITEM_NORMAL)
         item.SetBitmap(menu_item.GetBitmap())
         menu.AppendItem(item)
-        wx.EVT_MENU(self, DebuggerService.DebuggerService.RUN_ID, self.RunScript)
-
-
-        menu_item = menuBar.FindItemById(DebuggerService.DebuggerService.DEBUG_ID)
-        item = wx.MenuItem(menu,DebuggerService.DebuggerService.DEBUG_ID,_("&Debug\tCtrl+F5"), kind = wx.ITEM_NORMAL)
-        item.SetBitmap(menu_item.GetBitmap())
-        menu.AppendItem(item)
-        wx.EVT_MENU(self, DebuggerService.DebuggerService.DEBUG_ID, self.DebugRunScript)
+        wx.EVT_MENU(self, DebuggerService.DebuggerService.START_RUN_ID, self.RunScript)
         
+        debug_menu = wx.Menu()
+        menu.AppendMenu(wx.NewId(), _("Debug"), debug_menu)
+
+        menu_item = menuBar.FindItemById(DebuggerService.DebuggerService.START_DEBUG_ID)
+        item = wx.MenuItem(menu,DebuggerService.DebuggerService.START_DEBUG_ID,_("&Debug\tCtrl+F5"), kind = wx.ITEM_NORMAL)
+        item.SetBitmap(menu_item.GetBitmap())
+        debug_menu.AppendItem(item)
+        wx.EVT_MENU(self, DebuggerService.DebuggerService.START_DEBUG_ID, self.DebugRunScript)
+        
+        item = wx.MenuItem(menu,DebuggerService.DebuggerService.BREAK_INTO_DEBUGGER_ID,_("&Break into Debugger"), kind = wx.ITEM_NORMAL)
+        debug_menu.AppendItem(item)
+        wx.EVT_MENU(self, DebuggerService.DebuggerService.BREAK_INTO_DEBUGGER_ID, self.BreakintoDebugger)
         return menu
 
     def DebugRunScript(self,event):
-        wx.GetApp().GetService(DebuggerService.DebuggerService).DebugRun(event,not_in_project = True)
+        view = wx.GetApp().GetDocumentManager().GetCurrentView()
+        wx.GetApp().GetService(DebuggerService.DebuggerService).RunWithoutDebug(view.GetDocument().GetFilename())
+        
+    def BreakintoDebugger(self,event):
+        view = wx.GetApp().GetDocumentManager().GetCurrentView()
+        wx.GetApp().GetService(DebuggerService.DebuggerService).BreakIntoDebugger(view.GetDocument().GetFilename())
     
     def RunScript(self,event):
-        wx.GetApp().GetService(DebuggerService.DebuggerService).Run(event,not_in_project = True)
+        view = wx.GetApp().GetDocumentManager().GetCurrentView()
+        wx.GetApp().GetService(DebuggerService.DebuggerService).Run(view.GetDocument().GetFilename())
 
     def OnPopFindDefinition(self, event):
         view = wx.GetApp().GetDocumentManager().GetCurrentView()

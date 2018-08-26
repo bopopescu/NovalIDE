@@ -16,6 +16,7 @@ import wx.lib.pydocview
 import STCTextEditor
 import noval.util.sysutils as sysutilslib
 import os
+import images
 _ = wx.GetTranslation
 
 
@@ -29,6 +30,7 @@ class ServiceView(wx.EvtHandler):
     InterpreterIconIndex = -1
     SearchIconIndex = -1
     DebugRunIconIndex = -1
+    BreakDebugIconIndex = -1
     #the page count which could not be removed
     UNREMOVABLE_PAGE_COUNT = 2
     
@@ -115,15 +117,15 @@ class ServiceView(wx.EvtHandler):
                 if ServiceView.bottomTab == None:
 
                     iconList = wx.ImageList(16, 16, 3)
-                    interpreter_icon_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "interpreter.ico")
-                    interpreter_icon = wx.Icon(interpreter_icon_path, wx.BITMAP_TYPE_ICO)
+                    interpreter_icon = images.load_icon("interpreter.ico")
                     ServiceView.InterpreterIconIndex = iconList.AddIcon(interpreter_icon)
-                    search_icon_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "search.ico")
-                    search_icon = wx.Icon(search_icon_path, wx.BITMAP_TYPE_ICO)
+                    search_icon = images.load_icon("search.ico")
                     ServiceView.SearchIconIndex = iconList.AddIcon(search_icon)
-                    debug_icon_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "debug.ico")
-                    debug_icon = wx.Icon(debug_icon_path, wx.BITMAP_TYPE_ICO)
+                    debug_icon = images.load_icon("debug.ico")
                     ServiceView.DebugRunIconIndex = iconList.AddIcon(debug_icon)
+                    
+                    break_debug_icon = images.load_icon("debugger.png")
+                    ServiceView.BreakDebugIconIndex = iconList.AddIcon(break_debug_icon)
 
                     ServiceView.bottomTab = wx.Notebook(frame, wx.NewId(), (0,0), (100,100), wx.LB_DEFAULT, "Bottom Tab")
                     ServiceView.bottomTab.AssignImageList(iconList)

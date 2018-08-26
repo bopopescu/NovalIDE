@@ -567,6 +567,7 @@ class InterpreterConfigurationPanel(wx.Panel):
             self.smart_analyse_btn.Enable(False)
             self.remove_btn.Enable(False)
             self.set_default_btn.Enable(False)
+            self.package_panel.LoadPackages(None)
         else:
             self.remove_btn.Enable(True)
             self.set_default_btn.Enable(True)

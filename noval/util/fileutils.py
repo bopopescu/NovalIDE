@@ -23,7 +23,6 @@ import noval.util.utillang as utillang
 from noval.util.lang import *
 import subprocess
 import strutils
-from chardet.universaldetector import UniversalDetector
 import chardet
 import fchecker
 from noval.tool.consts import ERROR_OK,UNKNOWN_ERROR

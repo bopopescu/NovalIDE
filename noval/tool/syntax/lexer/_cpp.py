@@ -204,7 +204,7 @@ class SyntaxLexer(syndata.BaseLexer):
         return CodeEditor.CodeView
         
     def GetDocIcon(self):
-        return images.getCFileIcon()
+        return images.getCppFileIcon()
         
     def GetSampleCode(self):
         sample_file_path = os.path.join(appdirs.GetAppDataDirLocation(),"sample","cpp.sample")

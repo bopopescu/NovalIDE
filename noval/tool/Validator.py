@@ -50,5 +50,9 @@ class NumValidator(wx.PyValidator):
             key = chr(keycode)
             if key in string.digits or keycode == 8:
                 event.Skip()
+                return
+        #if is not digit,bell it
+        if not wx.Validator_IsSilent():
+            wx.Bell()
         
 

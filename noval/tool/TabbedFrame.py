@@ -342,7 +342,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
                 self.AppendMenuItem(menu,item_name,self.OnCloseAllWithoutDoc,True)
                 tabsMenu = wx.Menu()
                 menu.AppendMenu(wx.NewId(), _("Select Tab"), tabsMenu)
-            if view.GetType() == consts.TEXT_VIEW:
+            if view.GetType() == consts.TEXT_VIEW or view.GetType() == consts.IMAGE_VIEW:
                 self.AppendMenuItem(menu,_("Open Path in Explorer"),self.OnOpenPathInExplorer)
                 self.AppendMenuItem(menu,_("Open Path in Terminator"),self.OnOpenPathInTerminator)
             self.AppendMenuItem(menu,_("Copy Path"),self.OnCopyFilePath)

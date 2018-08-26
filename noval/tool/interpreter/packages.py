@@ -244,11 +244,12 @@ class PackagePanel(wx.Panel):
             self.install_btn.Enable(True)
             self.uninstall_btn.Enable(True)
         self.dvlc.DeleteAllItems()
-        interpreter.LoadPackages(self,force)
-        if interpreter.IsLoadingPackage:
-            self.dvlc.AppendItem([_("Loading Package List....."),""])
-            return
-        self.LoadPackageList(interpreter)
+        if self.interpreter is not None:
+            self.interpreter.LoadPackages(self,force)
+            if self.interpreter.IsLoadingPackage:
+                self.dvlc.AppendItem([_("Loading Package List....."),""])
+                return
+            self.LoadPackageList(self.interpreter)
             
     def LoadPackageList(self,interpreter):
         for name in interpreter.Packages:

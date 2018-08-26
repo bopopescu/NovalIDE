@@ -26,7 +26,7 @@ import cStringIO
 import bz2
 
 if sys.platform.startswith("win"):
-    import win32api
+    ####import win32api
     _WINDOWS = True
 else:
     _WINDOWS = False
@@ -244,7 +244,9 @@ class BreakListenerThread(threading.Thread):
         self._queue.put(bn)
         return ""
         
-    def update_breakpoints(self, pickled_Binary_bpts):
+    def update_breakpoints(self, pickled_Binary_bpts,break_first):
+        if break_first:
+            self.break_requested()
         dict = pickle.loads(pickled_Binary_bpts.data)
         bn = BreakNotify(bps=dict)
         self._queue.put(bn)

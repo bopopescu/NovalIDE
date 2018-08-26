@@ -33,6 +33,8 @@ import CompletionService
 import noval.util.strutils as strutils
 from noval.tool.syntax import syntax
 import consts
+import noval.util.appdirs as appdirs
+import DebuggerService
 _ = wx.GetTranslation
 
 ENABLE_FOLD_ID = wx.NewId()
@@ -717,7 +719,10 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         # Define the current line marker
         self.MarkerDefine(CodeCtrl.CURRENT_LINE_MARKER_NUM, wx.stc.STC_MARK_SHORTARROW, wx.BLACK, (255,255,128))
         # Define the breakpoint marker
-        self.MarkerDefine(CodeCtrl.BREAKPOINT_MARKER_NUM, wx.stc.STC_MARK_CIRCLE, wx.BLACK, (255,0,0))
+        bp_image_path = os.path.join(appdirs.GetAppImageDirLocation(), "breakmark.png")
+        bmp = wx.BitmapFromImage(wx.Image(bp_image_path,wx.BITMAP_TYPE_ANY))
+        self.MarkerDefineBitmap(CodeCtrl.BREAKPOINT_MARKER_NUM,bmp)
+        ###self.MarkerDefine(CodeCtrl.BREAKPOINT_MARKER_NUM, wx.stc.STC_MARK_CIRCLE, wx.BLACK, (255,0,0))
         
         if sysutilslib.isWindows() and clearTab:  # should test to see if menu item exists, if it does, add this workaround
             self.CmdKeyClear(wx.stc.STC_KEY_TAB, 0)  # menu item "Indent Lines" from CodeService.InstallControls() generates another INDENT_LINES_ID event, so we'll explicitly disable the tab processing in the editor
@@ -765,12 +770,8 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         self._rightClickLine = -1
         self._rightClickPosition = -1
         menu.Destroy()
-        
 
     def CreatePopupMenu(self):
-        TOGGLEBREAKPOINT_ID = wx.NewId()
-        TOGGLEMARKER_ID = wx.NewId()
-        
         menu = wx.Menu()
         itemIDs = [wx.ID_UNDO, wx.ID_REDO, None,
                    wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, wx.ID_CLEAR, None, wx.ID_SELECTALL]
@@ -795,11 +796,14 @@ class CodeCtrl(STCTextEditor.TextCtrl):
                     wx.EVT_MENU(self, itemID, self.DSProcessEvent)  # wxHack: for customized right mouse menu doesn't work with new DynamicSashWindow
                     wx.EVT_UPDATE_UI(self, itemID, self.DSProcessUpdateUIEvent)  # wxHack: for customized right mouse menu doesn't work with new DynamicSashWindow
         
-        self.Bind(wx.EVT_MENU, self.OnPopToggleBP, id=TOGGLEBREAKPOINT_ID)
-        item = wx.MenuItem(menu, TOGGLEBREAKPOINT_ID, _("Toggle Breakpoint"))
+        self.Bind(wx.EVT_MENU, self.OnPopToggleBP, id=DebuggerService.DebuggerService.TOGGLE_BREAKPOINT_ID)
+        item = wx.MenuItem(menu, DebuggerService.DebuggerService.TOGGLE_BREAKPOINT_ID, _("Toggle Breakpoint"))
+        item.SetBitmap(DebuggerService.getBreakPointBitmap())
         menu.AppendItem(item)
-        self.Bind(wx.EVT_MENU, self.OnPopToggleMarker, id=TOGGLEMARKER_ID)
-        item = wx.MenuItem(menu, TOGGLEMARKER_ID, _("Toggle Bookmark"))
+        self.Bind(wx.EVT_MENU, self.OnPopToggleMarker, id=MarkerService.MarkerService.MARKERTOGGLE_ID)
+        menu_item = menuBar.FindItemById(MarkerService.MarkerService.MARKERTOGGLE_ID)
+        item = wx.MenuItem(menu, MarkerService.MarkerService.MARKERTOGGLE_ID, _("Toggle Bookmark"))
+        item.SetBitmap(menu_item.GetBitmap())
         menu.AppendItem(item)
         return menu
                 
