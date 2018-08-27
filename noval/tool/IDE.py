@@ -29,6 +29,7 @@ import noval.parser.utils as parserutils
 from noval.dummy.userdb import UserDataDb
 from noval.tool.syntax import synglob
 import images
+from noval.util import utils
 
 # Required for Unicode support with python
 # site.py sets this, but Windows builds don't have site.py because of py2exe problems
@@ -371,13 +372,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 
     def GotoView(self,file_path,lineNum,pos=-1):
         file_path = os.path.abspath(file_path)
-        foundView = None
-        openDocs = self.GetDocumentManager().GetDocuments()
-        for openDoc in openDocs:
-            if openDoc.GetFilename() == file_path:
-                foundView = openDoc.GetFirstView()
-                break
-
+        foundView = utils.GetOpenView(file_path)
         if not foundView:
             doc = self.GetDocumentManager().CreateDocument(file_path, wx.lib.docview.DOC_SILENT)
             if doc is None:
@@ -404,13 +399,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
 
     def GotoViewPos(self,file_path,lineNum,col=0):
         file_path = os.path.abspath(file_path)
-        foundView = None
-        openDocs = self.GetDocumentManager().GetDocuments()
-        for openDoc in openDocs:
-            if openDoc.GetFilename() == file_path:
-                foundView = openDoc.GetFirstView()
-                break
-
+        foundView = utils.GetOpenView(file_path)
         if not foundView:
             doc = self.GetDocumentManager().CreateDocument(file_path, wx.lib.docview.DOC_SILENT)
             if doc is None:

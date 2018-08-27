@@ -4253,10 +4253,13 @@ class ProjectOptionsPanel(wx.Panel):
         self._useSashMessageShown = False
         config = wx.ConfigBase_Get()
         self._projSaveDocsCheckBox = wx.CheckBox(self, -1, _("Remember open projects"))
+        self._promptSaveCheckBox = wx.CheckBox(self, -1, _("Warn when run and save modify project files"))
         self._projSaveDocsCheckBox.SetValue(config.ReadInt("ProjectSaveDocs", True))
+        self._promptSaveCheckBox.SetValue(config.ReadInt("PromptSaveProjectFile", True))
         projectBorderSizer = wx.BoxSizer(wx.VERTICAL)
         projectSizer = wx.BoxSizer(wx.VERTICAL)
         projectSizer.Add(self._projSaveDocsCheckBox, 0, wx.ALL, HALF_SPACE)
+        projectSizer.Add(self._promptSaveCheckBox, 0, wx.ALL, HALF_SPACE)
         if not ACTIVEGRID_BASE_IDE:
             self._projShowWelcomeCheckBox = wx.CheckBox(self, -1, _("Show Welcome Dialog"))
             self._projShowWelcomeCheckBox.SetValue(config.ReadInt("RunWelcomeDialog2", True))
@@ -4290,6 +4293,7 @@ class ProjectOptionsPanel(wx.Panel):
     def OnOK(self, optionsDialog):
         config = wx.ConfigBase_Get()
         config.WriteInt("ProjectSaveDocs", self._projSaveDocsCheckBox.GetValue())
+        config.WriteInt("PromptSaveProjectFile", self._promptSaveCheckBox.GetValue())
         if not ACTIVEGRID_BASE_IDE:
             config.WriteInt("RunWelcomeDialog2", self._projShowWelcomeCheckBox.GetValue())
             config.Write(APP_LAST_LANGUAGE, self._langCtrl.GetStringSelection())

@@ -31,9 +31,10 @@ class ScintillaCtrl(wx.stc.StyledTextCtrl):
         wx.EVT_SET_FOCUS(self, self.OnFocus)
         self.SetMargins(0,0)
 
-        self.SetUseTabs(0)
-        self.SetTabWidth(4)
-        self.SetIndent(4)
+        config = wx.ConfigBase_Get()
+        self.SetUseTabs(config.ReadInt("TextEditorUseTabs", False))
+        self.SetTabWidth(config.ReadInt("TextEditorIndentWidth", 4))
+        self.SetIndent(config.ReadInt("TextEditorIndentWidth", 4))
 
         self.SetViewWhiteSpace(False)
         self.SetEOLMode(wx.stc.STC_EOL_LF)

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2018-08-25 16:11+ÖÐ¹ú±ê×¼Ê±¼ä\n"
-"PO-Revision-Date: 2018-08-25 16:31+0800\n"
+"PO-Revision-Date: 2018-08-27 00:11+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -1021,6 +1021,8 @@ msgid ""
 "Files have been modified.\n"
 "Would you like to save all files before running?"
 msgstr ""
+"文件已经被修改.\n"
+"运行之前需要保存所有修改文件吗?"
 
 #: D:\env\Noval\noval\tool\DebuggerService.py:2762
 msgid "Run Project"
@@ -1619,7 +1621,7 @@ msgstr "当检测到混合行结尾符时警告"
 
 #: D:\env\Noval\noval\tool\GeneralOption.py:262
 msgid "Remember File Position"
-msgstr ""
+msgstr "记住文件位置"
 
 #: D:\env\Noval\noval\tool\GeneralOption.py:290
 msgid "Language changes will not appear until the application is restarted."
@@ -2042,7 +2044,7 @@ msgstr "选择字体..."
 
 #: D:\env\Noval\noval\tool\STCTextEditor.py:1137
 msgid "Wrap words inside text area"
-msgstr ""
+msgstr "行内容超出范围时自动换行"
 
 #: D:\env\Noval\noval\tool\STCTextEditor.py:1139
 msgid "Show whitespace"
@@ -2070,7 +2072,7 @@ msgstr "使用代码折叠"
 
 #: D:\env\Noval\noval\tool\STCTextEditor.py:1153
 msgid "Use spaces instead of tabs"
-msgstr ""
+msgstr "使用空白字符代替制表符"
 
 #: D:\env\Noval\noval\tool\STCTextEditor.py:1155
 msgid "Indent Width:"

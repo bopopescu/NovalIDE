@@ -283,8 +283,10 @@ class TextDocument(wx.lib.docview.Document):
         self.file_watcher.AddFileDoc(self)
         self._is_watched = True
         self._is_new_doc = False
-        pos = NavigationService.NavigationService.DocMgr.GetPos(filename)
-        self.GetFirstView().GetCtrl().GotoPos(pos)
+        rember_file_pos = wx.ConfigBase_Get().ReadInt(consts.REMBER_FILE_KEY, True)
+        if rember_file_pos:
+            pos = NavigationService.NavigationService.DocMgr.GetPos(filename)
+            self.GetFirstView().GetCtrl().GotoPos(pos)
         self.GetFirstView().GetCtrl().ScrollToColumn(0)
         self.GetFirstView().OnUpdateStatusBar(None)
         return True
@@ -1121,12 +1123,6 @@ class TextOptionsPanel(wx.Panel):
         global_style.GetStyleSpec()
         rgb = strutils.HexToRGB(global_style.Fore)
         self._textColor = wx.Colour(red=rgb[0], green=rgb[1], blue=rgb[2])
-##        colorData = config.Read(self._configPrefix + "EditorColor", "")
-##        if colorData:
-##            red = int("0x" + colorData[0:2], 16)
-##            green = int("0x" + colorData[2:4], 16)
-##            blue = int("0x" + colorData[4:6], 16)
-##            self._textColor = wx.Colour(red, green, blue)
         self._originalTextColor = self._textColor
         fontLabel = wx.StaticText(self, -1, _("Font:"))
         self._sampleTextCtrl = wx.TextCtrl(self, -1, "", size = (125, 21))
@@ -1545,34 +1541,10 @@ class TextPrintout(wx.lib.docview.DocPrintout):
 from wx import ImageFromStream, BitmapFromImage
 import cStringIO
 
-
-def getTextData():
-    return \
-"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x06\
-\x00\x00\x00\x1f\xf3\xffa\x00\x00\x00\x04sBIT\x08\x08\x08\x08|\x08d\x88\x00\
-\x00\x015IDAT8\x8d\xad\x90\xb1N\xc2P\x14\x86\xbf\x02/\xe0\xec#\x18g\xc3\xe6T\
-\x13':1\x18H\x98\x14\x12\x17G\x177\x17\x9c4a\xc5\xc0d0\xc2\xccdLx\x02^@+\t\
-\xc1\x90\xf6r\xdb\xc6\x94\xe5:\\\xdbP)\xc5DOr\x92\x9b{\xff\xfb\xfd\xff9\xc6h\
-l+\xbek.\x02\x00\xec\x99\x03\x80\xeb\xf8\\\x9d\x1d\x1bd\xd5hl\xab\xd7O\x15\
-\xf7x\xa1\xfb\xeeq\xa4^>\x94\xba\xb8yRF.\xcf\xa6.D\xa0Nw\x18C\xad\xb2\x19\
-\x9f\x0f\xca\x165\xd1V\xed\xebZj\x92\xc2\\\x04\xec\x02\xd5\x8a\x89\xb7\xd4\
-\x97n\xa8\xe3?\x0f\x86\x08\x19dNP\x00\xf0\x96\xd0\x7f\xd0\t\x84\x0c(U-\x0eK&\
-\xd3P\x8bz\xcdV6 \x8a\xed\x86\x99f\xe9\x00{\xe6\xb0\x13\xc2\xa0\xd3\xd7\t\
-\x84\x9f\x10\xec\x9dTp\x1d\xb1=A\xa9j\x01\xc4\xb1\x01&\xfe\x9a~\x1d\xe0:Zu\
-\x7f\xdb\x05@J/!(\xd6\x1bL\xde\xec\xcd\x00!\x03\xa6!\x1c\x9dVR\x9d\xdf\xe5\
-\x96\x04\xd1au\xd3\xab3\xef\x9f_f\x03\xa2\xa5\x15\xeb\x8d\xc4\xc36\xe7\x18 \
-\xa5G\xaf\xd9J\xb8f\xcd\xfc\xb3\x0c#\x97\xff\xb58\xadr\x7f\xfa\xfd\x1f\x80/\
-\x04\x1f\x8fW\x0e^\xc3\x12\x00\x00\x00\x00IEND\xaeB`\x82" 
-
-
 def getTextBitmap():
     blank_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "file.gif")
     blank_image = wx.Image(blank_image_path,wx.BITMAP_TYPE_ANY)
     return BitmapFromImage(blank_image)
-
-def getTextImage():
-    stream = cStringIO.StringIO(getTextData())
-    return ImageFromStream(stream)
 
 def getTextIcon():
     return wx.IconFromBitmap(getTextBitmap())

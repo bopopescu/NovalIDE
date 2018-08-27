@@ -63,6 +63,7 @@ import OptionService
 import noval.util.appdirs as appdirs
 import noval.util.utils as utils
 from noval.model import configuration
+import images
 
 import sys
 reload(sys)
@@ -2145,7 +2146,9 @@ class DebuggerService(Service.Service):
             wx.EVT_MENU(frame, DebuggerService.CHECK_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, DebuggerService.CHECK_ID, frame.ProcessUpdateUIEvent)
 
-            debuggerMenu.Append(DebuggerService.SET_PARAMETER_ENVIRONMENT_ID, _("&Set Parameter And Environment"), _("Set Parameter and Environment of Python Script"))
+            item = wx.MenuItem(debuggerMenu,DebuggerService.SET_PARAMETER_ENVIRONMENT_ID, _("&Set Parameter And Environment"), _("Set Parameter and Environment of Python Script"))
+            item.SetBitmap(images.load("runconfig.png"))
+            debuggerMenu.AppendItem(item)
             wx.EVT_MENU(frame, DebuggerService.SET_PARAMETER_ENVIRONMENT_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, DebuggerService.SET_PARAMETER_ENVIRONMENT_ID, frame.ProcessUpdateUIEvent)
 

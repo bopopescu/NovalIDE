@@ -10,6 +10,7 @@ import consts
 import noval.tool.NavigationService
 import noval.util.appdirs as appdirs
 from wx.lib.pubsub import pub as Publisher
+import images
 
 _ = wx.GetTranslation
 
@@ -49,50 +50,23 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
         """
         Creates the default ToolBar.
         """
-        app_image_path = appdirs.GetAppImageDirLocation()
         self._toolBar = self.CreateToolBar(wx.TB_HORIZONTAL | wx.NO_BORDER | wx.TB_FLAT)
-        
-        toolbar_image_path = os.path.join(app_image_path, "toolbar")
-        
-        tb_new_image = wx.Image(os.path.join(toolbar_image_path,"new.png"),wx.BITMAP_TYPE_ANY)
-        self._toolBar.AddSimpleTool(wx.ID_NEW, wx.BitmapFromImage(tb_new_image), _("New"), _("Creates a new document"))
-        
-        tb_open_image = wx.Image(os.path.join(toolbar_image_path,"open.png"),wx.BITMAP_TYPE_ANY)
-        self._toolBar.AddSimpleTool(wx.ID_OPEN, wx.BitmapFromImage(tb_open_image), _("Open"), _("Opens an existing document"))
-        
-        tb_save_image = wx.Image(os.path.join(toolbar_image_path,"save.png"),wx.BITMAP_TYPE_ANY)
-        self._toolBar.AddSimpleTool(wx.ID_SAVE, wx.BitmapFromImage(tb_save_image), _("Save"), _("Saves the active document"))
-        
-        tb_saveall_image = wx.Image(os.path.join(toolbar_image_path,"saveall.png"),wx.BITMAP_TYPE_ANY)
-        self._toolBar.AddSimpleTool(wx.lib.pydocview.SAVEALL_ID, wx.BitmapFromImage(tb_saveall_image), _("Save All"), _("Saves all the active documents"))
+        self._toolBar.AddSimpleTool(wx.ID_NEW, images.load("toolbar/new.png"), _("New"), _("Creates a new document"))
+        self._toolBar.AddSimpleTool(wx.ID_OPEN, images.load("toolbar/open.png"), _("Open"), _("Opens an existing document"))
+        self._toolBar.AddSimpleTool(wx.ID_SAVE, images.load("toolbar/save.png"), _("Save"), _("Saves the active document"))
+        self._toolBar.AddSimpleTool(wx.lib.pydocview.SAVEALL_ID, images.load("toolbar/saveall.png"), _("Save All"), _("Saves all the active documents"))
         self._toolBar.AddSeparator()
-        
-        tb_print_image = wx.Image(os.path.join(toolbar_image_path,"print.png"),wx.BITMAP_TYPE_ANY)
-        self._toolBar.AddSimpleTool(wx.ID_PRINT, wx.BitmapFromImage(tb_print_image), _("Print"), _("Displays full pages"))
-        
-        tb_preview_image = wx.Image(os.path.join(toolbar_image_path,"preview.png"),wx.BITMAP_TYPE_ANY)
-        self._toolBar.AddSimpleTool(wx.ID_PREVIEW, wx.BitmapFromImage(tb_preview_image), _("Print Preview"), _("Prints the active document"))
+        self._toolBar.AddSimpleTool(wx.ID_PRINT, images.load("toolbar/print.png"), _("Print"), _("Displays full pages"))
+        self._toolBar.AddSimpleTool(wx.ID_PREVIEW, images.load("toolbar/preview.png"), _("Print Preview"), _("Prints the active document"))
         self._toolBar.AddSeparator()
-        
-        tb_cut_image = wx.Image(os.path.join(toolbar_image_path,"cut.png"),wx.BITMAP_TYPE_ANY)
-        self._toolBar.AddSimpleTool(wx.ID_CUT, wx.BitmapFromImage(tb_cut_image), _("Cut"), _("Cuts the selection and puts it on the Clipboard"))
-            
-        tb_copy_image = wx.Image(os.path.join(toolbar_image_path,"copy.png"),wx.BITMAP_TYPE_ANY)
-        self._toolBar.AddSimpleTool(wx.ID_COPY, wx.BitmapFromImage(tb_copy_image), _("Copy"), _("Copies the selection and puts it on the Clipboard"))
-            
-        tb_paste_image = wx.Image(os.path.join(toolbar_image_path,"paste.png"),wx.BITMAP_TYPE_ANY)
-        self._toolBar.AddSimpleTool(wx.ID_PASTE, wx.BitmapFromImage(tb_paste_image), _("Paste"), _("Inserts Clipboard contents"))
-        
-        tb_undo_image = wx.Image(os.path.join(toolbar_image_path,"undo.png"),wx.BITMAP_TYPE_ANY)
-        self._toolBar.AddSimpleTool(wx.ID_UNDO, wx.BitmapFromImage(tb_undo_image), _("Undo"), _("Reverses the last action"))
-        
-        tb_redo_image = wx.Image(os.path.join(toolbar_image_path,"redo.png"),wx.BITMAP_TYPE_ANY)
-        self._toolBar.AddSimpleTool(wx.ID_REDO, wx.BitmapFromImage(tb_redo_image), _("Redo"), _("Reverses the last undo"))
+        self._toolBar.AddSimpleTool(wx.ID_CUT, images.load("toolbar/cut.png"), _("Cut"), _("Cuts the selection and puts it on the Clipboard"))
+        self._toolBar.AddSimpleTool(wx.ID_COPY, images.load("toolbar/copy.png"), _("Copy"), _("Copies the selection and puts it on the Clipboard"))
+        self._toolBar.AddSimpleTool(wx.ID_PASTE, images.load("toolbar/paste.png"), _("Paste"), _("Inserts Clipboard contents"))
+        self._toolBar.AddSimpleTool(wx.ID_UNDO, images.load("toolbar/undo.png"), _("Undo"), _("Reverses the last action"))
+        self._toolBar.AddSimpleTool(wx.ID_REDO, images.load("toolbar/redo.png"), _("Redo"), _("Reverses the last undo"))
         self._toolBar.Realize()
         self._toolBar.Show(wx.ConfigBase_Get().ReadInt("ViewToolBar", True))
-
         return self._toolBar
-        
 
     def CreateDefaultMenuBar(self, sdi=False):
         """
@@ -100,8 +74,6 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
         """
         if sysutilslib.isWindows():
             menuBar = wx.MenuBar()
-            
-            app_image_path = appdirs.GetAppImageDirLocation()
 
             fileMenu = wx.Menu()
             item = wx.MenuItem(fileMenu,wx.ID_NEW,_("&New...\tCtrl+N"), _("Creates a new document"), wx.ITEM_NORMAL)
@@ -140,8 +112,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
             fileMenu.AppendItem(item)
             
             item = wx.MenuItem(fileMenu,wx.ID_PRINT_SETUP, _("Page Set&up"), _("Changes page layout settings"))
-            page_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "page.png")
-            item.SetBitmap(wx.BitmapFromImage(wx.Image(page_image_path,wx.BITMAP_TYPE_ANY)))
+            item.SetBitmap(images.load("page.png"))
             fileMenu.AppendItem(item)
             
             fileMenu.AppendSeparator()
@@ -149,8 +120,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
                 item = wx.MenuItem(fileMenu,wx.ID_EXIT, _("&Quit"), _("Closes this program"))
             else:
                 item = wx.MenuItem(fileMenu,wx.ID_EXIT, _("E&xit"), _("Closes this program"))
-            exit_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "exit.png")
-            item.SetBitmap(wx.BitmapFromImage(wx.Image(exit_image_path,wx.BITMAP_TYPE_ANY)))
+            item.SetBitmap(images.load("exit.png"))
             fileMenu.AppendItem(item)
             
             self._docManager.FileHistoryUseMenu(fileMenu)
@@ -187,7 +157,9 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
             
             wx.EVT_MENU(self, wx.ID_PASTE, self.ProcessEvent)
             wx.EVT_UPDATE_UI(self, wx.ID_PASTE, self.ProcessUpdateUIEvent)
-            editMenu.Append(wx.ID_CLEAR, _("&Delete"), _("Erases the selection"))
+            item = wx.MenuItem(editMenu,wx.ID_CLEAR, _("&Delete"), _("Erases the selection"))
+            item.SetBitmap(images.load("delete.png"))
+            editMenu.AppendItem(item)
             wx.EVT_MENU(self, wx.ID_CLEAR, self.ProcessEvent)
             wx.EVT_UPDATE_UI(self, wx.ID_CLEAR, self.ProcessUpdateUIEvent)
             editMenu.AppendSeparator()
@@ -210,7 +182,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
 
             helpMenu = wx.Menu()
             item = wx.MenuItem(helpMenu,wx.ID_ABOUT, _(_("About %s") % wx.GetApp().GetAppName()), _("Displays program information, version number, and copyright"))
-            item.SetBitmap(wx.BitmapFromImage(wx.Image(os.path.join(app_image_path,"about.png"),wx.BITMAP_TYPE_ANY)))
+            item.SetBitmap(images.load("about.png"))
             helpMenu.AppendItem(item)
             menuBar.Append(helpMenu, _("&Help"))
 
@@ -297,10 +269,9 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
             view = self._notebook.GetPage(index).GetView()
             self._current_document = view.GetDocument()
             if view.GetType() == consts.TEXT_VIEW:
-                app_image_path = appdirs.GetAppImageDirLocation()
                 new_id = wx.NewId()
                 item = wx.MenuItem(menu,new_id,_("New Module"), _("Creates a new python module"), wx.ITEM_NORMAL)
-                item.SetBitmap(wx.BitmapFromImage(wx.Image(os.path.join(app_image_path,"new.png"),wx.BITMAP_TYPE_ANY)))
+                item.SetBitmap(images.load("new.png"))
                 wx.EVT_MENU(self, new_id, self.OnNewModule)
                 menu.AppendItem(item)
                 

@@ -295,6 +295,7 @@ class GeneralOptionsPanel(wx.Panel):
         config.Write("MRULength",self._mru_ctrl.GetValue())
         config.WriteInt("EnableMRU",self._enableMRUCheckBox.GetValue())
         config.Write(consts.DEFAULT_FILE_ENCODING_KEY,self.encodings_combo.GetValue())
+        config.WriteInt(consts.REMBER_FILE_KEY, self._remberCheckBox.GetValue())
         if self._AllowModeChanges():
             config.WriteInt("UseMDI", (self._documentRadioBox.GetStringSelection() == self._mdiChoice))
             config.WriteInt("UseWinMDI", (self._documentRadioBox.GetStringSelection() == self._winMdiChoice))
