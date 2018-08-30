@@ -1,6 +1,7 @@
 import wx
 from noval.tool.consts import SPACE,HALF_SPACE,_ 
 import ProjectEditor
+import noval.tool.HtmlEditor as HtmlEditor
 
 class PromptMessageDialog(wx.Dialog):
     
@@ -109,4 +110,55 @@ class FileFilterDialog(wx.Dialog):
                 filters = temp.GetFileFilter().split(";")
                 for filter in filters:
                     self.listbox.Append(filter)
+
+class EditorSelectionDialog(wx.Dialog):
+    def __init__(self,parent,dlg_id,title):
+        wx.Dialog.__init__(self,parent,dlg_id,title)
+        boxsizer = wx.BoxSizer(wx.VERTICAL)
+        boxsizer.Add(wx.StaticText(self, -1, _("Choose an editor you want to open this file"), \
+                        style=wx.ALIGN_CENTRE),0,flag=wx.ALL,border=SPACE)
+        self.lc = wx.ListCtrl(self, -1, size=(-1,400),style = wx.LC_LIST)
+        wx.EVT_LIST_ITEM_ACTIVATED(self.lc, self.lc.GetId(), self.OnOKClick)
+        il = wx.ImageList(16, 16)
+        self.templates = self.GetTemplates()
+        for temp in self.templates:
+            icon = temp.GetIcon()
+            iconIndex = il.AddIcon(icon)
+        self.lc.AssignImageList(il, wx.IMAGE_LIST_SMALL)
+        for i,temp in enumerate(self.templates):
+            self.lc.InsertImageStringItem( i,temp.GetViewName(),i)
+        boxsizer.Add(self.lc,1,flag = wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT,border = SPACE)
+        
+        bsizer = wx.StdDialogButtonSizer()
+        ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
+        wx.EVT_BUTTON(ok_btn, -1, self.OnOKClick)
+        #set ok button default focused
+        ok_btn.SetDefault()
+        bsizer.AddButton(ok_btn)
+        
+        cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
+        bsizer.AddButton(cancel_btn)
+        bsizer.Realize()
+        boxsizer.Add(bsizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM,HALF_SPACE)
+        self.SetSizer(boxsizer)
+        self.Fit()
+        
+    def GetTemplates(self):
+        templates = []
+        for temp in wx.GetApp().GetDocumentManager().GetTemplates():
+            want = False
+            if temp.IsVisible() and temp.GetViewName():
+                want = True
+            elif not temp.IsVisible() and temp.GetViewType() == HtmlEditor.WebView:
+                want = True
+            if want:
+                templates.append(temp)
+        return templates
+        
+    def OnOKClick(self,event):
+        if self.lc.GetFirstSelected() == -1:
+            wx.MessageBox(_("Please choose one editor"))
+            return
+        self.selected_template = self.templates[self.lc.GetFirstSelected()]
+        self.EndModal(wx.ID_OK)
  

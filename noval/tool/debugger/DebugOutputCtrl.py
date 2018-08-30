@@ -1,7 +1,5 @@
-import STCTextEditor
 import wx
-import TextService
-import BaseCtrl
+from noval.tool import TextService,BaseCtrl
 _ = wx.GetTranslation
 
 class DebugOutputCtrl(BaseCtrl.ScintillaCtrl):

@@ -355,14 +355,18 @@ class OutlineTreeCtrl(wx.TreeCtrl):
         self.SetItemImage(rootItem,self.ModuleIdx,wx.TreeItemIcon_Normal)
         self.SetDoSelectCallback(rootItem, view, module_scope.Module)
         self.TranverseItem(view,module_scope.Module,rootItem)
-        self.Expand(rootItem)
-        #use thaw to update freezw control
-        self.Thaw()
-        if lineNum >= 0:
-            outlineService.SyncToPosition(view,lineNum)
+        if not view._is_parse_stoped:
+            self.Expand(rootItem)
+            #use thaw to update freezw control
+            self.Thaw()
+            if lineNum >= 0:
+                outlineService.SyncToPosition(view,lineNum)
+        view._is_parsing = False
         
     def TranverseItem(self,view,node,parent):
         for child in node.Childs:
+            if view._is_parse_stoped:
+                break
             if child.Type == parserconfig.NODE_FUNCDEF_TYPE:
                 item = self.AppendItem(parent, child.Name)
                 self.SetItemImage(item,self.FuncIdx,wx.TreeItemIcon_Normal)

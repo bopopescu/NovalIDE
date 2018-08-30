@@ -25,7 +25,7 @@ import noval.parser.nodeast as nodeast
 import noval.parser.intellisence as intellisence
 import noval.parser.config as parserconfig
 import FindService
-import DebugOutputCtrl
+import noval.tool.debugger as debugger
 import TextService
 import noval.util.sysutils as sysutilslib
 import EOLFormat
@@ -34,7 +34,7 @@ import noval.util.strutils as strutils
 from noval.tool.syntax import syntax
 import consts
 import noval.util.appdirs as appdirs
-import DebuggerService
+import images
 _ = wx.GetTranslation
 
 ENABLE_FOLD_ID = wx.NewId()
@@ -95,7 +95,7 @@ class CodeView(STCTextEditor.TextView):
             return STCTextEditor.TextView.ProcessEvent(self, event)            
         focus_ctrl = wx.Window_FindFocus()
         if not isinstance(focus_ctrl,CodeCtrl):
-            if isinstance(focus_ctrl,DebugOutputCtrl.DebugOutputCtrl) and id in DebugOutputCtrl.DebugOutputCtrl.ItemIDs:
+            if isinstance(focus_ctrl,debugger.DebugOutputCtrl.DebugOutputCtrl) and id in debugger.DebugOutputCtrl.DebugOutputCtrl.ItemIDs:
                 return focus_ctrl.DSProcessEvent(event)
             return wx.lib.docview.View.ProcessEvent(self,event)
         if id == EXPAND_TEXT_ID:
@@ -160,7 +160,7 @@ class CodeView(STCTextEditor.TextView):
             return STCTextEditor.TextView.ProcessUpdateUIEvent(self, event)
         focus_ctrl = wx.Window_FindFocus()
         if not isinstance(focus_ctrl,CodeCtrl):
-            if isinstance(focus_ctrl,DebugOutputCtrl.DebugOutputCtrl) and id in DebugOutputCtrl.DebugOutputCtrl.ItemIDs:
+            if isinstance(focus_ctrl,debugger.DebugOutputCtrl.DebugOutputCtrl) and id in debugger.DebugOutputCtrl.DebugOutputCtrl.ItemIDs:
                 return focus_ctrl.DSProcessUpdateUIEvent(event)
             return False
         if not self.GetCtrl():
@@ -507,8 +507,7 @@ class CodeView(STCTextEditor.TextView):
             self.GetCtrl().SetFont(font)
             self.GetCtrl().SetFontColor(color)
         else:
-            import DebuggerService
-            dbg_service = wx.GetApp().GetService(DebuggerService.DebuggerService)
+            dbg_service = wx.GetApp().GetService(debugger.DebuggerService.DebuggerService)
             if dbg_service:
                 dbg_service.SetCurrentBreakpointMarkers(self)
 
@@ -719,8 +718,7 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         # Define the current line marker
         self.MarkerDefine(CodeCtrl.CURRENT_LINE_MARKER_NUM, wx.stc.STC_MARK_SHORTARROW, wx.BLACK, (255,255,128))
         # Define the breakpoint marker
-        bp_image_path = os.path.join(appdirs.GetAppImageDirLocation(), "breakmark.png")
-        bmp = wx.BitmapFromImage(wx.Image(bp_image_path,wx.BITMAP_TYPE_ANY))
+        bmp = images.load("debugger/breakmark.png")
         self.MarkerDefineBitmap(CodeCtrl.BREAKPOINT_MARKER_NUM,bmp)
         ###self.MarkerDefine(CodeCtrl.BREAKPOINT_MARKER_NUM, wx.stc.STC_MARK_CIRCLE, wx.BLACK, (255,0,0))
         
@@ -796,9 +794,9 @@ class CodeCtrl(STCTextEditor.TextCtrl):
                     wx.EVT_MENU(self, itemID, self.DSProcessEvent)  # wxHack: for customized right mouse menu doesn't work with new DynamicSashWindow
                     wx.EVT_UPDATE_UI(self, itemID, self.DSProcessUpdateUIEvent)  # wxHack: for customized right mouse menu doesn't work with new DynamicSashWindow
         
-        self.Bind(wx.EVT_MENU, self.OnPopToggleBP, id=DebuggerService.DebuggerService.TOGGLE_BREAKPOINT_ID)
-        item = wx.MenuItem(menu, DebuggerService.DebuggerService.TOGGLE_BREAKPOINT_ID, _("Toggle Breakpoint"))
-        item.SetBitmap(DebuggerService.getBreakPointBitmap())
+        self.Bind(wx.EVT_MENU, self.OnPopToggleBP, id=debugger.DebuggerService.DebuggerService.TOGGLE_BREAKPOINT_ID)
+        item = wx.MenuItem(menu, debugger.DebuggerService.DebuggerService.TOGGLE_BREAKPOINT_ID, _("Toggle Breakpoint"))
+        item.SetBitmap(debugger.DebuggerService.getBreakPointBitmap())
         menu.AppendItem(item)
         self.Bind(wx.EVT_MENU, self.OnPopToggleMarker, id=MarkerService.MarkerService.MARKERTOGGLE_ID)
         menu_item = menuBar.FindItemById(MarkerService.MarkerService.MARKERTOGGLE_ID)
@@ -817,8 +815,7 @@ class CodeCtrl(STCTextEditor.TextCtrl):
                 
     def OnPopToggleBP(self, event):
         """ Toggle break point on right click line, not current line """
-        import DebuggerService
-        wx.GetApp().GetService(DebuggerService.DebuggerService).OnToggleBreakpoint(event, line=self._rightClickLine)
+        wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).OnToggleBreakpoint(event, line=self._rightClickLine)
       
   
     def OnPopToggleMarker(self, event):
@@ -954,14 +951,12 @@ class CodeCtrl(STCTextEditor.TextCtrl):
                             self.Expand(lineClicked, True, True, 100)
                     else:
                         self.ToggleFold(lineClicked)
-
+        #click the most left margin to add breakpoint
         elif evt.GetMargin() == 0:
             #This is used to toggle breakpoints via the debugger service.
-            import DebuggerService
-            db_service = wx.GetApp().GetService(DebuggerService.DebuggerService)
+            db_service = wx.GetApp().GetService(debugger.DebuggerService.DebuggerService)
             if db_service:
                 db_service.OnToggleBreakpoint(evt, line=self.LineFromPosition(evt.GetPosition()))
-            
 
     def OnUpdateUI(self, evt):
         braces = self.GetMatchingBraces()
@@ -1170,11 +1165,7 @@ class CodeCtrl(STCTextEditor.TextCtrl):
     def GetLangLexer(self):
         document = self._dynSash._view.GetDocument()
         file_path_name = document.GetFilename()
-        if file_path_name:
-            file_ext = strutils.GetFileExt(file_path_name)
-        else:
-            #new document
-            file_ext = document.GetDocumentTemplate().GetDefaultExtension()
+        file_ext = document.GetDocumentTemplate().GetDefaultExtension()
         lexer_manager = syntax.LexerManager()
         lexer = lexer_manager.GetLexer(lexer_manager.GetLangIdFromExt(file_ext))
         return lexer

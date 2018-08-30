@@ -97,7 +97,7 @@ def ComparePath(path1,path2):
         path1 = path1.replace("/",os.sep).rstrip(os.sep)
         path2 = path2.replace("/",os.sep).rstrip(os.sep)
         return path1.lower() == path2.lower()
-    return path1 == path2
+    return path1.rstrip(os.sep) == path2.rstrip(os.sep)
     
 def PathsContainPath(path_list,path):
     if os.name == 'nt':

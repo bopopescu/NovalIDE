@@ -16,12 +16,9 @@ import wx.lib.dialogs
 import wx.gizmos
 import wx._core
 import wx.lib.pydocview
-import Service
-import BaseCtrl
-import CodeEditor
-import PythonEditor
+from noval.tool import Service,BaseCtrl,CodeEditor,PythonEditor
 import noval.model.projectmodel as projectmodel
-from IDE import ACTIVEGRID_BASE_IDE
+from noval.tool.IDE import ACTIVEGRID_BASE_IDE
 if not ACTIVEGRID_BASE_IDE:
     import ProcessModelEditor
 import wx.lib.scrolledpanel as scrolled
@@ -41,29 +38,28 @@ import pickle
 import DebuggerHarness
 import traceback
 import StringIO
-import UICommon
+import noval.tool.UICommon as UICommon
 import noval.util.sysutils as sysutilslib
 import subprocess
 import shutil
-import interpreter.Interpreter as Interpreter
-import OutputService
+import noval.tool.interpreter.Interpreter as Interpreter
 import locale
-import OutputThread
 import noval.tool.syntax.lang as lang
-import WxThreadSafe
+import noval.tool.WxThreadSafe as WxThreadSafe
 import DebugOutputCtrl
 import noval.parser.intellisence as intellisence
-import interpreter.manager as interpretermanager
-from consts import PYTHON_PATH_NAME,NOT_IN_ANY_PROJECT
+import noval.tool.interpreter.manager as interpretermanager
+from noval.tool.consts import PYTHON_PATH_NAME,NOT_IN_ANY_PROJECT
 import noval.util.strutils as strutils
 import noval.parser.utils as parserutils
 import noval.util.fileutils as fileutils
 import copy
-import OptionService
+import noval.tool.OptionService as OptionService
 import noval.util.appdirs as appdirs
 import noval.util.utils as utils
 from noval.model import configuration
-import images
+import noval.tool.images as images
+import BreakPoints
 
 import sys
 reload(sys)
@@ -1932,6 +1928,9 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
     def PushBreakpoints(self,break_first=False):
         rbt = RequestBreakThread(self._breakServer, pushBreakpoints=True, breakDict=self._service.GetMasterBreakpointDict(),break_first=break_first)
         rbt.start()
+        
+    def PushExceptionBreakpoints(self):
+        self._debuggerServer.set_all_exceptions(self._service.GetExceptions())
 
     def WaitForRPC(self):
         self._waiting = True
@@ -1954,6 +1953,8 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
             self._debuggerServer = xmlrpclib.ServerProxy(self._debugger_url,  allow_none=1)
             self._breakServer = xmlrpclib.ServerProxy(self._break_url, allow_none=1)
             self.PushBreakpoints(break_first=self._break_first)
+            if self._service.GetExceptions():
+                self.PushExceptionBreakpoints()
         self._waiting = False
         if _VERBOSE: print "+"*40
         if(quit):
@@ -2015,6 +2016,7 @@ class DebuggerService(Service.Service):
     START_RUN_ID = wx.NewId()
     START_DEBUG_ID = wx.NewId()
     START_WITHOUT_DEBUG = wx.NewId()
+    SET_EXCEPTION_BREAKPOINT = wx.NewId()
     STEP_INTO_ID = wx.NewId()
     STEP_CONTINUE_ID = wx.NewId()
     STEP_OUT_ID = wx.NewId()
@@ -2078,6 +2080,7 @@ class DebuggerService(Service.Service):
                 self._masterBPDict = {}
         else:
             self._masterBPDict = {}
+        self._exceptions = []
         self._frame = None
         self.projectPath = None
         self.fileToDebug = None
@@ -2113,22 +2116,28 @@ class DebuggerService(Service.Service):
         debuggerMenu = wx.Menu()
         if not menuBar.FindItemById(DebuggerService.CLEAR_ALL_BREAKPOINTS):
 
-            item = wx.MenuItem(debuggerMenu,DebuggerService.START_RUN_ID, _("&Start Running...\tF5"), _("Start Running a file"))
+            item = wx.MenuItem(debuggerMenu,DebuggerService.START_RUN_ID, _("&Start Running\tF5"), _("Start Running a file"))
             item.SetBitmap(getRunningManBitmap())
             debuggerMenu.AppendItem(item)
             wx.EVT_MENU(frame, DebuggerService.START_RUN_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, DebuggerService.START_RUN_ID, frame.ProcessUpdateUIEvent)
 
-            item = wx.MenuItem(debuggerMenu,DebuggerService.START_DEBUG_ID, _("&Start Debugging...\tCtrl+F5"), _("Start Debugging a file"))
+            item = wx.MenuItem(debuggerMenu,DebuggerService.START_DEBUG_ID, _("&Start Debugging\tCtrl+F5"), _("Start Debugging a file"))
             item.SetBitmap(getDebuggingManBitmap())
             debuggerMenu.AppendItem(item)
             wx.EVT_MENU(frame, DebuggerService.START_DEBUG_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, DebuggerService.START_DEBUG_ID, frame.ProcessUpdateUIEvent)
             
-            item = wx.MenuItem(debuggerMenu,DebuggerService.START_WITHOUT_DEBUG, _("&Start Without Debugging..."), _("Start execute a file Without Debugging"))
+            item = wx.MenuItem(debuggerMenu,DebuggerService.START_WITHOUT_DEBUG, _("&Start Without Debugging"), _("Start execute a file Without Debugging"))
             debuggerMenu.AppendItem(item)
             wx.EVT_MENU(frame, DebuggerService.START_WITHOUT_DEBUG, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, DebuggerService.START_WITHOUT_DEBUG, frame.ProcessUpdateUIEvent)
+            
+            item = wx.MenuItem(debuggerMenu,DebuggerService.SET_EXCEPTION_BREAKPOINT, _("&Exceptions..."), _("Set the exception breakpoint"))
+            debuggerMenu.AppendItem(item)
+            wx.EVT_MENU(frame, DebuggerService.SET_EXCEPTION_BREAKPOINT, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, DebuggerService.SET_EXCEPTION_BREAKPOINT, frame.ProcessUpdateUIEvent)
+            debuggerMenu.AppendSeparator()
             
             item = wx.MenuItem(debuggerMenu,DebuggerService.STEP_INTO_ID, _("&Step Into\tF11"), _("step into function"))
             item.SetBitmap(getStepInBitmap())
@@ -2141,13 +2150,14 @@ class DebuggerService(Service.Service):
             debuggerMenu.AppendItem(item)
             wx.EVT_MENU(frame, DebuggerService.STEP_NEXT_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, DebuggerService.STEP_NEXT_ID, frame.ProcessUpdateUIEvent)
+            debuggerMenu.AppendSeparator()
             
             debuggerMenu.Append(DebuggerService.CHECK_ID, _("&Check Syntax...\tCtrl+F3"), _("Check syntax of file"))
             wx.EVT_MENU(frame, DebuggerService.CHECK_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, DebuggerService.CHECK_ID, frame.ProcessUpdateUIEvent)
 
             item = wx.MenuItem(debuggerMenu,DebuggerService.SET_PARAMETER_ENVIRONMENT_ID, _("&Set Parameter And Environment"), _("Set Parameter and Environment of Python Script"))
-            item.SetBitmap(images.load("runconfig.png"))
+            item.SetBitmap(images.load("debugger/runconfig.png"))
             debuggerMenu.AppendItem(item)
             wx.EVT_MENU(frame, DebuggerService.SET_PARAMETER_ENVIRONMENT_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, DebuggerService.SET_PARAMETER_ENVIRONMENT_ID, frame.ProcessUpdateUIEvent)
@@ -2204,7 +2214,7 @@ class DebuggerService(Service.Service):
             if not menuBar.FindItemById(DebuggerService.STEP_OUT_ID):
                 item = wx.MenuItem(runMenu,DebuggerService.STEP_OUT_ID, _("&Step Out\tShift+F11"), _("Step out the function"))
                 item.SetBitmap(getStepReturnBitmap())
-                runMenu.InsertItem(5,item)
+                runMenu.InsertItem(7,item)
                 wx.EVT_MENU(self._frame, DebuggerService.STEP_OUT_ID, self.ProcessEvent)
 
             if not menuBar.FindItemById(DebuggerService.TERMINATE_DEBUGGER_ID):
@@ -2241,13 +2251,23 @@ class DebuggerService(Service.Service):
     def OnCombo(self, event):
         cb = wx.GetApp().ToolbarCombox
         selection = event.GetSelection()
+        prompt = False
         if selection == cb.GetCount() - 1:
-            option_service = wx.GetApp().GetService(OptionService.OptionsService)
-            option_service.OnOption(option_name =_("Python Interpreter"))
-            wx.GetApp().AddInterpreters()
+            if BaseDebuggerUI.DebuggerRunning():
+                prompt = True
+            else:
+                option_service = wx.GetApp().GetService(OptionService.OptionsService)
+                option_service.OnOption(option_name =_("Python Interpreter"))
+                wx.GetApp().AddInterpreters()
         else:
-           interpreter = cb.GetClientData(selection)
-           self.SelectInterpreter(interpreter)
+            interpreter = cb.GetClientData(selection)
+            if interpreter != wx.GetApp().GetCurrentInterpreter() and BaseDebuggerUI.DebuggerRunning():
+                prompt = True
+            else:
+                self.SelectInterpreter(interpreter)
+        if prompt:
+            wx.MessageBox(_("Please stop the debugger first!"),style=wx.OK|wx.ICON_WARNING)
+            wx.GetApp().SetCurrentInterpreter()
            
     def SelectInterpreter(self,interpreter):
         if interpreter != interpretermanager.InterpreterManager.GetCurrentInterpreter():
@@ -2281,6 +2301,9 @@ class DebuggerService(Service.Service):
             return True
         elif an_id == DebuggerService.START_WITHOUT_DEBUG:
             self.OnRunWithoutDebug(event)
+            return True
+        elif an_id == DebuggerService.SET_EXCEPTION_BREAKPOINT:
+            self.SetExceptionBreakPoint()
             return True
         elif an_id == DebuggerService.CHECK_ID:
             self.CheckScript(event)
@@ -2366,7 +2389,8 @@ class DebuggerService(Service.Service):
             else:
                 event.Enable(True)
             return True
-        elif an_id == DebuggerService.START_RUN_ID:
+        elif (an_id == DebuggerService.START_RUN_ID
+        or an_id == DebuggerService.SET_EXCEPTION_BREAKPOINT):
             event.Enable(self.IsRunFileEnable())
             return True
         elif (an_id == DebuggerService.START_DEBUG_ID
@@ -2571,6 +2595,13 @@ class DebuggerService(Service.Service):
         Service.ServiceView.bottomTab.SetSelection(count)
         page.Execute(onWebServer = False)
         
+    def SetExceptionBreakPoint(self):
+        exception_dlg = BreakPoints.BreakpointExceptionDialog(wx.GetApp().GetTopWindow(),-1,_("Add Python Exception Breakpoint"))
+        exception_dlg.CenterOnParent()
+        if exception_dlg.ShowModal() == wx.ID_OK:
+            wx.GetApp().GetService(DebuggerService).SetExceptions(exception_dlg.exceptions)
+        exception_dlg.Destroy()
+        
     def OnRunWithoutDebug(self,event):
         self.RunWithoutDebug()
         
@@ -2584,7 +2615,8 @@ class DebuggerService(Service.Service):
         
     def BreakIntoDebugger(self,filetoRun=None):
         run_parameter = self.GetRunParameter(filetoRun,is_break_debug=True)
-        if run_parameter.Project is None:
+        #debugger must run in project
+        if run_parameter is None or run_parameter.Project is None:
             return
         run_parameter.IsBreakPointDebug = True
         self.DebugRunScriptBreakPoint(run_parameter,break_first=True)
@@ -2824,6 +2856,12 @@ class DebuggerService(Service.Service):
             self._masterBPDict[expandedName] += [line]
         # If we're already debugging, pass this bp off to the PythonDebuggerCallback
         self.NotifyDebuggersOfBreakpointChange()
+        
+    def GetExceptions(self):
+        return self._exceptions
+        
+    def SetExceptions(self,exceptions):
+        self._exceptions = exceptions
 
     def NotifyDebuggersOfBreakpointChange(self):
         BaseDebuggerUI.NotifyDebuggersOfBreakpointChange()
@@ -3454,14 +3492,10 @@ def getStopIcon():
     return wx.IconFromBitmap(getStopBitmap())
 
 def getTerminateAllBitmap():
-    image_path = os.path.join(appdirs.GetAppImageDirLocation(), "terminate_all.png")
-    image = wx.Image(image_path,wx.BITMAP_TYPE_ANY)
-    return BitmapFromImage(image)
+    return images.load("debugger/terminate_all.png")
     
 def getRestartBitmap():
-    restart_image_path = os.path.join(appdirs.GetAppImageDirLocation(), "restart.png")
-    restart_image = wx.Image(restart_image_path,wx.BITMAP_TYPE_ANY)
-    return BitmapFromImage(restart_image)
+    return images.load("debugger/restart.png")
 #----------------------------------------------------------------------
 def getStepReturnData():
     return \
@@ -3582,9 +3616,7 @@ def getDebuggingManIcon():
     return icon
     
 def getBreakPointBitmap():
-    bp_image_path = os.path.join(appdirs.GetAppImageDirLocation(),"breakpoint.png")
-    bp_image = wx.Image(bp_image_path,wx.BITMAP_TYPE_ANY)
-    return BitmapFromImage(bp_image)
+    return images.load("debugger/breakpoint.png")
 
 #----------------------------------------------------------------------
 

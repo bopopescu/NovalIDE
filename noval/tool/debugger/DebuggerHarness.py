@@ -43,6 +43,7 @@ class Adb(bdb.Bdb):
         self._queue = queue
         self._knownCantExpandFiles = {} 
         self._knownExpandedFiles = {} 
+        self._exceptions = []
     
     def getLongName(self, filename):
         if not _WINDOWS:
@@ -163,6 +164,8 @@ class Adb(bdb.Bdb):
         if event == 'return':
             return self.dispatch_return(frame, arg)
         if event == 'exception':
+            if arg[0].__name__ in self._exceptions:
+                self._userBreak = True
             return self.dispatch_exception(frame, arg)
         print 'Adb.dispatch: unknown debugging event:', `event`
         return self.trace_dispatch
@@ -204,6 +207,14 @@ class Adb(bdb.Bdb):
                 return True
             frame = frame.f_back
         return False
+        
+    def clear_exception(self):
+        self._exceptions = []
+        
+    def set_exception(self,exception):
+        if exception in self._exceptions:
+            return
+        self._exceptions.append(exception)
 
 class BreakNotify(object):
     def __init__(self, bps=None, break_here=False, kill=False):
@@ -313,6 +324,7 @@ class DebuggerHarness(object):
         self._server.register_function(self.set_next)
         self._server.register_function(self.set_return)
         self._server.register_function(self.set_breakpoint)
+        self._server.register_function(self.set_all_exceptions)
         self._server.register_function(self.clear_breakpoint)
         self._server.register_function(self.set_all_breakpoints)
         self._server.register_function(self.attempt_introspection)
@@ -346,6 +358,12 @@ class DebuggerHarness(object):
         
     def set_breakpoint(self, fileName, lineNo):
         self._adb.set_break(fileName, lineNo)
+        return ""
+        
+    def set_all_exceptions(self,exceptions):
+        self._adb.clear_exception()
+        for exception in exceptions:
+            self._adb.set_exception(exception)
         return ""
         
     def set_all_breakpoints(self, dict):

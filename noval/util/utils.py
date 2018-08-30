@@ -1,8 +1,8 @@
 import wx
-
+from noval.util.logger import app_debugLogger
 
 def GetLogger():
-    pass
+    return app_debugLogger
 
 def GetOpenView(file_path):
     foundView = None

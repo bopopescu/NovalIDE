@@ -28,6 +28,7 @@ import fchecker
 from noval.tool.consts import ERROR_OK,UNKNOWN_ERROR
 import noval.tool.syntax.lang as lang
 import noval.tool.syntax.syntax as syntax
+from noval.tool.consts import _
 
 
 _Checker = fchecker.FileTypeChecker()
@@ -310,20 +311,18 @@ ifDefPy()
 def zip(zipfilepath, basedir=None, files=None):
     """Zip all files in files and save zip as zipfilepath. If files is None, zip all files in basedir. For all files to be zipped, if they are relative to basedir, include the relative path in the archive."""
     
-    if not files and not basedir:
+    if files is None and basedir is None:
         raise AssertionError("Either 'basedir' or 'files' must be set")
-            
-    if not files:
+    if files is None:
         logger.debug(fileutilsLogger,\
                         "Looking for files to zip in %s" % basedir)
         files = getAllExistingFiles(basedir)
     else:
         # removes files that don't exist and gets abs for each
         files = getAllExistingFiles(files) 
-
     if len(files) == 0:
         logger.debug(fileutilsLogger, "No files to zip, nothing to do")
-        return
+        raise ValueError(_("No files to zip, nothing to do!"))
     
     z = zipfile.ZipFile(zipfilepath, mode="w", compression=zipfile.ZIP_DEFLATED)
 

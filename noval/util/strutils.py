@@ -126,7 +126,7 @@ def GetFileExt(filename,to_lower=True):
     
 def GetFilenameWithoutExt(file_path_name):
     filename = os.path.basename(file_path_name)
-    return filename.split(".")[0]
+    return os.path.splitext(filename)[0]
 
 def get_python_coding_declare(lines):
     # Only consider the first two lines

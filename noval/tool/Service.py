@@ -121,10 +121,10 @@ class ServiceView(wx.EvtHandler):
                     ServiceView.InterpreterIconIndex = iconList.AddIcon(interpreter_icon)
                     search_icon = images.load_icon("search.ico")
                     ServiceView.SearchIconIndex = iconList.AddIcon(search_icon)
-                    debug_icon = images.load_icon("debug.ico")
+                    debug_icon = images.load_icon("debugger/debug.ico")
                     ServiceView.DebugRunIconIndex = iconList.AddIcon(debug_icon)
                     
-                    break_debug_icon = images.load_icon("debugger.png")
+                    break_debug_icon = images.load_icon("debugger/debugger.png")
                     ServiceView.BreakDebugIconIndex = iconList.AddIcon(break_debug_icon)
 
                     ServiceView.bottomTab = wx.Notebook(frame, wx.NewId(), (0,0), (100,100), wx.LB_DEFAULT, "Bottom Tab")

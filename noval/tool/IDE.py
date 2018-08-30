@@ -150,7 +150,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import ImageEditor
         import PerlEditor
         import wx.lib.ogl as ogl
-        import DebuggerService
+        import debugger.DebuggerService as DebuggerService
         import AboutDialog
         import SVNService
         import ExtensionService

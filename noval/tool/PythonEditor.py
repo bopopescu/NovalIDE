@@ -36,7 +36,7 @@ import noval.parser.intellisence as intellisence
 import noval.parser.nodeast as nodeast
 import noval.util.strutils as strutils
 import CompletionService
-import DebuggerService
+import noval.tool.debugger as debugger
 from noval.parser.utils import CmpMember
 from noval.util.logger import app_debugLogger
 import noval.util.sysutils as sysutilslib
@@ -49,6 +49,7 @@ import TextService
 import consts
 import noval.tool.project as project
 from noval.model import configuration
+from noval.util import utils
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
@@ -159,6 +160,10 @@ class PythonView(CodeEditor.CodeView):
         #document checksum to check document is updated
         self._checkSum = -1
         self._lock = threading.Lock()
+        #is parsing syntax tree?
+        self._is_parsing = False
+        #when close window,the flag is set to true
+        self._is_parse_stoped = False
         
     @property
     def ModuleScope(self):
@@ -174,8 +179,10 @@ class PythonView(CodeEditor.CodeView):
             self._parse_error = error
             return
         module_scope = scope.ModuleScope(module,self.GetCtrl().GetLineCount())
-        module_scope.MakeModuleScopes()
-        module_scope.RouteChildScopes()
+        if not self._is_parse_stoped:
+            module_scope.MakeModuleScopes()
+        if not self._is_parse_stoped:
+            module_scope.RouteChildScopes()
         self.ModuleScope = module_scope
         self._parse_error = None
         
@@ -210,9 +217,18 @@ class PythonView(CodeEditor.CodeView):
                 self.LoadOutline()
             else:
                 wx.CallAfter(self.LoadOutline)  # need CallAfter because document isn't loaded yet
-        
 
     def OnClose(self, deleteWindow = True):
+        logger = utils.GetLogger()
+        if self._is_parsing:
+            self._is_parse_stoped = True
+            logger.info("document %s is still parsing tree ,wait a moment to finish parsing before close",self.GetDocument().GetFilename())
+            while True:
+                if not self._is_parsing:
+                    break
+                wx.MilliSleep(250)
+                wx.Yield()
+            logger.info("document %s has been finish parsing,now will close",self.GetDocument().GetFilename())
         status = STCTextEditor.TextView.OnClose(self, deleteWindow)
         wx.CallAfter(self.ClearOutline)  # need CallAfter because when closing the document, it is Activated and then Close, so need to match OnActivateView's CallAfter
         return status
@@ -366,6 +382,10 @@ class PythonView(CodeEditor.CodeView):
         
     def LoadMouduleSynchronizeTree(self,view,force,treeCtrl,outlineService,lineNum):
         with self._lock:
+            if self._is_parsing:
+                print 'document %s is already parseing,will not parse again' % self.GetDocument().GetFilename()
+                return True
+            self._is_parsing = True
             document = self.GetDocument()
             filename = document.GetFilename()
             if force:
@@ -373,9 +393,13 @@ class PythonView(CodeEditor.CodeView):
             if self.ModuleScope == None:
                 if view is None or filename != view.GetDocument().GetFilename():
                     wx.CallAfter(treeCtrl.DeleteAllItems)
+                self._is_parsing = False
                 return True
             #should freeze control to prevent update and treectrl flick
-            treeCtrl.LoadModuleAst(self.ModuleScope,self,outlineService,lineNum)
+            if not self._is_parse_stoped:
+                treeCtrl.LoadModuleAst(self.ModuleScope,self,outlineService,lineNum)
+            else:
+                self._is_parsing = False
         
     def IsUnitTestEnable(self):
         return True
@@ -568,37 +592,37 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         menu.AppendItem(item)
         
         menuBar = wx.GetApp().GetTopWindow().GetMenuBar()
-        menu_item = menuBar.FindItemById(DebuggerService.DebuggerService.START_RUN_ID)
-        item = wx.MenuItem(menu,DebuggerService.DebuggerService.START_RUN_ID,_("&Run\tF5"), kind = wx.ITEM_NORMAL)
+        menu_item = menuBar.FindItemById(debugger.DebuggerService.DebuggerService.START_RUN_ID)
+        item = wx.MenuItem(menu,debugger.DebuggerService.DebuggerService.START_RUN_ID,_("&Run"), kind = wx.ITEM_NORMAL)
         item.SetBitmap(menu_item.GetBitmap())
         menu.AppendItem(item)
-        wx.EVT_MENU(self, DebuggerService.DebuggerService.START_RUN_ID, self.RunScript)
+        wx.EVT_MENU(self, debugger.DebuggerService.DebuggerService.START_RUN_ID, self.RunScript)
         
         debug_menu = wx.Menu()
         menu.AppendMenu(wx.NewId(), _("Debug"), debug_menu)
 
-        menu_item = menuBar.FindItemById(DebuggerService.DebuggerService.START_DEBUG_ID)
-        item = wx.MenuItem(menu,DebuggerService.DebuggerService.START_DEBUG_ID,_("&Debug\tCtrl+F5"), kind = wx.ITEM_NORMAL)
+        menu_item = menuBar.FindItemById(debugger.DebuggerService.DebuggerService.START_DEBUG_ID)
+        item = wx.MenuItem(menu,debugger.DebuggerService.DebuggerService.START_DEBUG_ID,_("&Debug"), kind = wx.ITEM_NORMAL)
         item.SetBitmap(menu_item.GetBitmap())
         debug_menu.AppendItem(item)
-        wx.EVT_MENU(self, DebuggerService.DebuggerService.START_DEBUG_ID, self.DebugRunScript)
+        wx.EVT_MENU(self, debugger.DebuggerService.DebuggerService.START_DEBUG_ID, self.DebugRunScript)
         
-        item = wx.MenuItem(menu,DebuggerService.DebuggerService.BREAK_INTO_DEBUGGER_ID,_("&Break into Debugger"), kind = wx.ITEM_NORMAL)
+        item = wx.MenuItem(menu,debugger.DebuggerService.DebuggerService.BREAK_INTO_DEBUGGER_ID,_("&Break into Debugger"), kind = wx.ITEM_NORMAL)
         debug_menu.AppendItem(item)
-        wx.EVT_MENU(self, DebuggerService.DebuggerService.BREAK_INTO_DEBUGGER_ID, self.BreakintoDebugger)
+        wx.EVT_MENU(self, debugger.DebuggerService.DebuggerService.BREAK_INTO_DEBUGGER_ID, self.BreakintoDebugger)
         return menu
 
     def DebugRunScript(self,event):
         view = wx.GetApp().GetDocumentManager().GetCurrentView()
-        wx.GetApp().GetService(DebuggerService.DebuggerService).RunWithoutDebug(view.GetDocument().GetFilename())
+        wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).RunWithoutDebug(view.GetDocument().GetFilename())
         
     def BreakintoDebugger(self,event):
         view = wx.GetApp().GetDocumentManager().GetCurrentView()
-        wx.GetApp().GetService(DebuggerService.DebuggerService).BreakIntoDebugger(view.GetDocument().GetFilename())
+        wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).BreakIntoDebugger(view.GetDocument().GetFilename())
     
     def RunScript(self,event):
         view = wx.GetApp().GetDocumentManager().GetCurrentView()
-        wx.GetApp().GetService(DebuggerService.DebuggerService).Run(view.GetDocument().GetFilename())
+        wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).Run(view.GetDocument().GetFilename())
 
     def OnPopFindDefinition(self, event):
         view = wx.GetApp().GetDocumentManager().GetCurrentView()
@@ -864,7 +888,10 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         cur_project = wx.GetApp().GetService(project.ProjectEditor.ProjectService).GetView().GetDocument()
         if cur_project is None:
             return []
-        file_path_name = wx.GetApp().GetDocumentManager().GetCurrentView().GetDocument().GetFilename()
+        document = wx.GetApp().GetDocumentManager().GetCurrentView().GetDocument()
+        if document.IsNewDocument:
+            return []
+        file_path_name = document.GetFilename()
         cur_file_name = os.path.basename(file_path_name)
         dir_path = os.path.dirname(file_path_name)
         imports = []

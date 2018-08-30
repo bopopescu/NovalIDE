@@ -322,7 +322,7 @@ def _whichFirstArg(cmd, env=None):
             first, rest = cmd, ""
 
     # Ensure the first arg is a valid path to the appropriate file.
-    import which
+    import noval.tool.which as which
     if os.sep in first:
         altpath = [os.path.dirname(first)]
         firstbase = os.path.basename(first)
