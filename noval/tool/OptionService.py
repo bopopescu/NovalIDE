@@ -34,6 +34,7 @@ class OptionsDialog(wx.Dialog):
         tree_sizer = wx.BoxSizer(wx.VERTICAL)
             
         self.tree = CT.CustomTreeCtrl(self,size=(200,self.PANEL_HEIGHT) ,style = wx.BORDER_THEME,agwStyle = wx.TR_DEFAULT_STYLE|wx.TR_NO_BUTTONS|wx.TR_HIDE_ROOT)
+        self.tree.SetBackgroundColour(wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOX))
         tree_sizer.Add(self.tree, 0, wx.ALL, 0)
         wx.EVT_TREE_SEL_CHANGED(self.tree,self.tree.GetId(),self.DoSelection)
 
@@ -45,17 +46,17 @@ class OptionsDialog(wx.Dialog):
         
         sizer.Add(wx.StaticLine(self, -1), 0, wx.EXPAND |wx.LEFT,consts.SPACE + 200)
 
-        bitmap_plus = os.path.normpath(os.path.join(sysutilslib.mainModuleDir,"noval" ,"tool","bmp_source","plus.ico"))
-        bitmap_minus = os.path.normpath(os.path.join(sysutilslib.mainModuleDir, "noval" ,"tool","bmp_source","minus.ico"))
-        bitmap = wx.Bitmap(bitmap_plus, wx.BITMAP_TYPE_ICO)
+        bitmap_plus = os.path.normpath(os.path.join(sysutilslib.mainModuleDir,"noval" ,"tool","bmp_source","plus.png"))
+        bitmap_minus = os.path.normpath(os.path.join(sysutilslib.mainModuleDir, "noval" ,"tool","bmp_source","minus.png"))
+        bitmap = wx.Bitmap(bitmap_plus, wx.BITMAP_TYPE_PNG)
         width = bitmap.GetWidth()
         
         il = wx.ImageList(width, width)
         #must add bitmap to imagelist twice
-        il.Add(wx.Bitmap(bitmap_plus, wx.BITMAP_TYPE_ICO))
-        il.Add(wx.Bitmap(bitmap_plus, wx.BITMAP_TYPE_ICO))
-        il.Add(wx.Bitmap(bitmap_minus, wx.BITMAP_TYPE_ICO))
-        il.Add(wx.Bitmap(bitmap_minus, wx.BITMAP_TYPE_ICO))
+        il.Add(wx.Bitmap(bitmap_plus, wx.BITMAP_TYPE_PNG))
+        il.Add(wx.Bitmap(bitmap_plus, wx.BITMAP_TYPE_PNG))
+        il.Add(wx.Bitmap(bitmap_minus, wx.BITMAP_TYPE_PNG))
+        il.Add(wx.Bitmap(bitmap_minus, wx.BITMAP_TYPE_PNG))
 
         self.tree.il = il                
         self.tree.SetButtonsImageList(il)

@@ -51,6 +51,7 @@ import noval.tool.images as images
 import noval.tool.debugger.DebuggerService as DebuggerService
 import datetime
 from noval.util import utils
+import Property
 
 from noval.tool.IDE import ACTIVEGRID_BASE_IDE
 if not ACTIVEGRID_BASE_IDE:
@@ -338,9 +339,15 @@ class ProjectDocument(wx.lib.docview.Document):
 
     def GetRunParameter(self,start_up_file):
         config = wx.ConfigBase_Get()
-        initialArgs = config.Read(self.GetFileKey(start_up_file,"RunArguments"),"")
+        use_argument = config.ReadInt(self.GetFileKey(start_up_file,"UseArgument"),True)
+        if use_argument:
+            initialArgs = config.Read(self.GetFileKey(start_up_file,"RunArguments"),"")
+        else:
+            initialArgs = ''
         python_path = config.Read(self.GetFileKey(start_up_file,"PythonPath"),"")
         startIn = config.Read(self.GetFileKey(start_up_file,"RunStartIn"),"")
+        
+        
         if startIn == '':
             startIn = os.path.dirname(self.GetFilename())
         env = {}
@@ -2388,7 +2395,7 @@ class ProjectView(wx.lib.docview.View):
         elif id == ProjectService.OPEN_SELECTION_ID:
             self.OnOpenSelection(event)
             return True
-        elif id == wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID:
+        elif id == Property.FilePropertiesService.PROPERTIES_ID:
             self.OnProperties(event)
             return True
         elif id == ProjectService.PROJECT_PROPERTIES_ID:
@@ -2658,20 +2665,6 @@ class ProjectView(wx.lib.docview.View):
             or id == ProjectService.ADD_PACKAGE_FOLDER_ID
             or id == ProjectService.ADD_NEW_FILE_ID):
             event.Enable((self.GetDocument() != None) and (self.GetMode() == ProjectView.PROJECT_VIEW))
-            return True            
-        elif id == wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID:
-            status = False
-            if self.ProjectHasFocus():
-                if self.GetDocument():
-                    status = True
-            elif self.FilesHasFocus():
-                items = self._treeCtrl.GetSelections()
-                if items:
-                    item = items[0]
-                    if self._IsItemFile(item):
-                        status = True
-
-            event.Enable(status)
             return True
         elif (id == wx.ID_CUT
         or id == wx.ID_COPY
@@ -2979,42 +2972,13 @@ class ProjectView(wx.lib.docview.View):
             if not items:
                 return
             item = items[0]
-            filePath = self._GetItemFilePath(item)
-            if filePath:
-                filePropertiesService = wx.GetApp().GetService(wx.lib.pydocview.FilePropertiesService)
-                filePropertiesService.ShowPropertiesDialog(filePath)
-
+            filePropertiesService = wx.GetApp().GetService(Property.FilePropertiesService)
+            filePropertiesService.ShowPropertiesDialog(self.GetDocument(),item)
 
     def OnProjectProperties(self, event):
         if self.GetDocument():
-            dlg = ProjectPropertiesDialog(wx.GetApp().GetTopWindow(), self.GetDocument())
-            dlg.CenterOnParent()
-            finished = False
-            while not finished:
-                if dlg.ShowModal() == wx.ID_OK:
-                    if hasattr(dlg, "_appInfoCtrl") and dlg._appInfoCtrl._grid.IsCellEditControlShown():  # for Linux
-                        dlg._appInfoCtrl._grid.DisableCellEditControl()  # If editor is still active, force it to finish the edit before setting the new model.
-
-                    homeDir = dlg._homeDirCtrl.GetValue()
-                    if homeDir:
-                        if homeDir == ProjectPropertiesDialog.RELATIVE_TO_PROJECT_FILE:
-                            homeDir = None
-                        if homeDir and not os.path.isdir(homeDir):
-                            wx.MessageBox(_("Home Dir '%s' does not exist.  Please specify a valid directory.") % homeDir,
-                                        _("Project Properties"),
-                                        wx.OK | wx.ICON_EXCLAMATION)
-                        else:
-                            if self.GetDocument().GetModel()._homeDir != homeDir:  # don't set it if it hasn't changed
-                                self.GetDocument().GetModel().homeDir = homeDir
-                                self.GetDocument().Modify(True)
-                            finished = True
-                    else:
-                        wx.MessageBox(_("Blank Home Dir.  Please specify a valid directory."),
-                                    _("Project Properties"),
-                                    wx.OK | wx.ICON_EXCLAMATION)
-                else:  # ID_CANCEL
-                    finished = True
-            dlg.Destroy()
+            filePropertiesService = wx.GetApp().GetService(Property.FilePropertiesService)
+            filePropertiesService.ShowPropertiesDialog(self.GetDocument(),self._treeCtrl.GetRootItem())
             
     def OnAddNewFile(self,event):
         items = self._treeCtrl.GetSelections()
@@ -3396,7 +3360,7 @@ class ProjectView(wx.lib.docview.View):
                 wx.EVT_MENU(self._treeCtrl, ProjectService.SET_PROJECT_STARTUP_FILE_ID, self.ProcessEvent)
                 wx.EVT_UPDATE_UI(self._treeCtrl, ProjectService.SET_PROJECT_STARTUP_FILE_ID, self.ProcessUpdateUIEvent)
             itemIDs.append(None)
-        itemIDs.append(wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID)
+        itemIDs.append(Property.FilePropertiesService.PROPERTIES_ID)
         self.GetCommonItemsMenu(menu,itemIDs)
         menu.Append(ProjectService.OPEN_FOLDER_PATH_ID, _("Open Path in Explorer"))
         wx.EVT_MENU(self._treeCtrl, ProjectService.OPEN_FOLDER_PATH_ID, self.ProcessEvent)
@@ -3414,7 +3378,7 @@ class ProjectView(wx.lib.docview.View):
         itemIDs = [ProjectService.IMPORT_FILES_ID,ProjectService.ADD_FILES_TO_PROJECT_ID, \
                            ProjectService.ADD_DIR_FILES_TO_PROJECT_ID,ProjectService.ADD_NEW_FILE_ID,ProjectService.ADD_FOLDER_ID, ProjectService.ADD_PACKAGE_FOLDER_ID]
         itemIDs.extend([None,wx.ID_UNDO, wx.ID_REDO, None, wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, wx.ID_CLEAR,None, \
-                            wx.ID_SELECTALL,ProjectService.RENAME_ID , ProjectService.REMOVE_FROM_PROJECT, None, wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID])
+                            wx.ID_SELECTALL,ProjectService.RENAME_ID , ProjectService.REMOVE_FROM_PROJECT, None, Property.FilePropertiesService.PROPERTIES_ID])
         self.GetCommonItemsMenu(menu,itemIDs)
         
         menu.Append(ProjectService.OPEN_FOLDER_PATH_ID, _("Open Path in Explorer"))
@@ -4822,7 +4786,7 @@ class ProjectService(Service.Service):
             self.OnAddCurrentFileToProject(event)
             return True
         elif (id == ProjectService.PROJECT_PROPERTIES_ID
-        or id == wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID
+        or id == Property.FilePropertiesService.PROPERTIES_ID
         or id == ProjectService.ADD_NEW_FILE_ID
         or id == ProjectService.ADD_FOLDER_ID
         or id == ProjectService.ADD_PACKAGE_FOLDER_ID
@@ -4869,7 +4833,7 @@ class ProjectService(Service.Service):
         elif id == ProjectService.PROJECT_PROPERTIES_ID:
             event.Enable(self._HasOpenedProjects())
             return True
-        elif id in [wx.lib.pydocview.FilePropertiesService.PROPERTIES_ID,
+        elif id in [Property.FilePropertiesService.PROPERTIES_ID,
             ProjectService.ADD_FOLDER_ID,
             ProjectService.ADD_PACKAGE_FOLDER_ID,
             ProjectService.ADD_NEW_FILE_ID,

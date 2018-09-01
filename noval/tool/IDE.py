@@ -161,6 +161,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import TabbedFrame
         import interpreter.configruation as configruation
         import ColorFont
+        import project.Property as Property
 ##        import UpdateLogIniService
                             
         _EDIT_LAYOUTS = True
@@ -255,7 +256,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             webBrowserService   = self.InstallService(WebBrowserService.WebBrowserService())  # this must be before webServerService since it sets the proxy environment variable that is needed by the webServerService.
             webServerService    = self.InstallService(WebServerService.WebServerService())  # this must be after webBrowserService since that service sets the proxy environment variables.
         outlineService          = self.InstallService(OutlineService.OutlineService(_("Outline"), embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOMLEFT))
-        filePropertiesService   = self.InstallService(wx.lib.pydocview.FilePropertiesService())
+        filePropertiesService   = self.InstallService(Property.FilePropertiesService())
         markerService           = self.InstallService(MarkerService.MarkerService())
         textService             = self.InstallService(TextService.TextService())
         perlService             = self.InstallService(PerlEditor.PerlService())

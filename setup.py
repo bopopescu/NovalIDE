@@ -29,8 +29,15 @@ if sys.platform == "win32":
               options = { "py2exe":{"dll_excludes":["MSVCP90.dll"],"packages": ['wx.lib.pubsub','csv','noval.tool.syntax.syndata']}},
                 data_files=[("noval/tool/bmp_source", glob.glob("noval/tool/bmp_source/*.ico") + glob.glob("noval/tool/bmp_source/*.jpg") \
                              + glob.glob("noval/tool/bmp_source/*.png") + glob.glob("noval/tool/bmp_source/*.gif")),
+                    ("noval/tool/bmp_source/toolbar",glob.glob("noval/tool/bmp_source/toolbar/*.png")),
+                    ("noval/tool/bmp_source/web",glob.glob("noval/tool/bmp_source/web/*.png")),
+                    ("noval/tool/bmp_source/project",glob.glob("noval/tool/bmp_source/project/*.png")),
+                    ("noval/tool/bmp_source/debugger",glob.glob("noval/tool/bmp_source/debugger/*.png") \
+                                                        + glob.glob("noval/tool/bmp_source/debugger/*.ico")),
+                    ("noval/tool/bmp_source/template",glob.glob("noval/tool/bmp_source/template/*.*")),
                     ("noval/tool/data",["noval/tool/data/tips.txt"]),
                      ("noval/parser",glob.glob("noval/parser/*.py")),
+                     ("noval/tool/syntax/lexer",glob.glob("noval/tool/syntax/lexer/*.py")),
                       ("noval/locale/en_US/LC_MESSAGES",['noval/locale/en_US/LC_MESSAGES/novalide.mo']),
                        ("noval/locale/zh_CN/LC_MESSAGES",['noval/locale/zh_CN/LC_MESSAGES/novalide.mo']),],)
     else:

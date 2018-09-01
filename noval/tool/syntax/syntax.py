@@ -8,6 +8,7 @@ import noval.util.appdirs as appdirs
 import json
 import noval.tool.consts as consts
 import noval.util.strutils as strutils
+import noval.util.utils as utils
 
 RE_ESS_COMMENT = re.compile("\/\*[^*]*\*+([^/][^*]*\*+)*\/")
 RE_HEX_STR = re.compile("#[0-9a-fA-F]{3,6}")
@@ -228,10 +229,11 @@ class LexerManager(object):
              #   self.LOG("[ed_style][err] Failed to parse style data for %s:" % style_sheet)
               #  return False
         elif theme_style_sheet not in LexerManager.THEMES:
-            self.LOG("[ed_style][warn] Style sheet %s does not exists" % style_sheet)
+            utils.GetLogger().warn("Style sheet %s does not exists" % theme_style_sheet)
             # Reset to default style
-            if Profile_Get('SYNTHEME') != 'default':
-                Profile_Set('SYNTHEME', 'default')
+            theme_name = wx.ConfigBase_Get().Read(consts.THEME_KEY, consts.DEFAULT_THEME_NAME)
+            if utils.ProfileGet(consts.THEME_KEY) != 'default':
+                utils.ProfileSet(consts.THEME_KEY, 'default')
                 self.SetStyles('default', DEF_STYLE_DICT)
             return False
         else:

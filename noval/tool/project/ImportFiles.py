@@ -135,19 +135,33 @@ class ImportFilesDialog(wx.Dialog):
         self.filters = file_filter_dlg.filters
         file_filter_dlg.Destroy()
         
+    def CheckAllItems(self,parent_item,check=True):
+        (item, cookie) = self._treeCtrl.GetFirstChild(parent_item)
+        while item:
+            if self._treeCtrl.IsItemChecked(item):
+                if not check:
+                    self._treeCtrl.CheckItem2(item, False,True)
+            else:
+                if check:
+                    self._treeCtrl.CheckItem2(item, True,True)
+            self.CheckAllItems(item,check)
+            (item, cookie) = self._treeCtrl.GetNextChild(parent_item, cookie)
+        
     def SelectAll(self,event):
         root_item = self._treeCtrl.GetRootItem()
         if root_item is None:
             return
-        self._treeCtrl.CheckItem(root_item, True)
-        self.ListDirFiles(self._treeCtrl.GetSelection(),True,True)
+        self._treeCtrl.CheckItem2(root_item, True,True)
+        self.CheckAllItems(root_item)
+        self.ListDirFiles(self._treeCtrl.GetSelection(),True,False)
         
     def UnSelectAll(self,event):
         root_item = self._treeCtrl.GetRootItem()
         if root_item is None:
             return
-        self._treeCtrl.CheckItem(root_item, False)
-        self.ListDirFiles(self._treeCtrl.GetSelection(),False,True)
+        self._treeCtrl.CheckItem2(root_item, False,True)
+        self.CheckAllItems(root_item,False)
+        self.ListDirFiles(self._treeCtrl.GetSelection(),False,False)
         
     def ChangeDir(self,event):
         path = self.dirControl.GetValue().strip()
@@ -322,7 +336,13 @@ class ImportFilesDialog(wx.Dialog):
             return
         if self._treeCtrl.GetSelection() == item and not force:
             for i in range(self.listbox.GetCount()):
-                self.listbox.Check(i,checked)
+                if checked:
+                    if not self.listbox.IsChecked(i):
+                        self.listbox.Check(i,True)
+                else:
+                    if self.listbox.IsChecked(i):
+                        self.listbox.Check(i,False)
+                    
             return
         self.listbox.Clear()
         files = os.listdir(path)

@@ -20,6 +20,7 @@ from ConfigParser import ConfigParser
 
 # this will be set to true in IDE.py when we are running release builds.
 isRelease = False
+_ = wx.GetTranslation
 
 # Commented out for now.....
 # Required for Unicode support with python
@@ -166,7 +167,7 @@ def GetAppVersion():
         versionfile.close()
         version = "".join(versionLines)
     else:
-        version = _("Version Unknown - %s not found" % versionFilepath)
+        version = _("Version Unknown - %s not found") % versionFilepath
     return version
     
 def GetLangConfig():

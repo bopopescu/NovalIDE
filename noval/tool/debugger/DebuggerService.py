@@ -49,7 +49,7 @@ import noval.tool.WxThreadSafe as WxThreadSafe
 import DebugOutputCtrl
 import noval.parser.intellisence as intellisence
 import noval.tool.interpreter.manager as interpretermanager
-from noval.tool.consts import PYTHON_PATH_NAME,NOT_IN_ANY_PROJECT
+from noval.tool.consts import PYTHON_PATH_NAME,NOT_IN_ANY_PROJECT,SPACE,HALF_SPACE
 import noval.util.strutils as strutils
 import noval.parser.utils as parserutils
 import noval.util.fileutils as fileutils
@@ -60,6 +60,7 @@ import noval.util.utils as utils
 from noval.model import configuration
 import noval.tool.images as images
 import BreakPoints
+import pickle
 
 import sys
 reload(sys)
@@ -764,6 +765,9 @@ class BaseDebuggerUI(wx.Panel):
         self._statusBar.SetStatusText(text,0)
 
     def BreakExecution(self, event):
+        if not BaseDebuggerUI.DebuggerRunning():
+            wx.MessageBox(_("Debugger has been stoped."),style=wx.OK|wx.ICON_ERROR)
+            return
         self._callback.BreakExecution()
 
     def StopExecution(self, event):
@@ -1240,7 +1244,7 @@ class BaseFramesUI(wx.SplitterWindow):
             startPos = foundView.PositionFromLine(lineNum)
             lineText = foundView.GetCtrl().GetLine(lineNum - 1)
             foundView.SetSelection(startPos, startPos + len(lineText.rstrip("\n")))
-            import OutlineService
+            import noval.tool.OutlineService as OutlineService
             wx.GetApp().GetService(OutlineService.OutlineService).LoadOutline(foundView, lineNum=lineNum)
 
     def MakeConsoleTab(self, parent, id):
@@ -1280,8 +1284,11 @@ class BaseFramesUI(wx.SplitterWindow):
             return
 
         def OnCmdButtonPressed(event):
+            if not BaseDebuggerUI.DebuggerRunning():
+                wx.MessageBox(_("Debugger has been stoped."),style=wx.OK|wx.ICON_ERROR)
+                return
             handleCommand()
-            return
+            
 
         def OnKeyPressed(event):
             key = event.GetKeyCode()
@@ -1311,7 +1318,9 @@ class BaseFramesUI(wx.SplitterWindow):
         panel           = wx.Panel(parent, id)
 
         cmdLabel        = wx.StaticText(panel, -1, _("Cmd: "))
-        self._cmdInput  = wx.TextCtrl(panel)
+        #style wx.TE_PROCESS_ENTER will response enter key
+        self._cmdInput  = wx.TextCtrl(panel,style = wx.TE_PROCESS_ENTER)
+        ###self._cmdInput.Bind(wx.EVT_TEXT_ENTER,OnCmdButtonPressed)
         cmdButton       = wx.Button(panel, label=_("Execute"))
         clrButton       = wx.Button(panel, label=_("Clear"))
         self._cmdOutput = wx.TextCtrl(panel, style=wx.TE_MULTILINE | wx.HSCROLL | wx.TE_READONLY | wx.TE_RICH2)
@@ -3024,50 +3033,60 @@ class CommandPropertiesDialog(wx.Dialog):
 
         wx.Dialog.__init__(self, parent, -1, title)
 
-        projStaticText = wx.StaticText(self, -1, _("Project:"))
-        fileStaticText = wx.StaticText(self, -1, _("File:"))
-        argsStaticText = wx.StaticText(self, -1, _("Arguments:"))
-        startInStaticText = wx.StaticText(self, -1, _("Start in:"))
         pythonPathStaticText = wx.StaticText(self, -1, _("PYTHONPATH:"))
+        max_width = pythonPathStaticText.GetSize().GetWidth()
+        projStaticText = wx.StaticText(self, -1, _("Project:"),size=(max_width,-1))
+        fileStaticText = wx.StaticText(self, -1, _("File:"),size=(max_width,-1))
+        argsStaticText = wx.StaticText(self, -1, _("Arguments:"),size=(max_width,-1))
+        startInStaticText = wx.StaticText(self, -1, _("Start in:"),size=(max_width,-1))
+        
         postpendStaticText = _("Postpend win32api path")
         cpPanelBorderSizer = wx.BoxSizer(wx.VERTICAL)
         self._projList = wx.Choice(self, -1, choices=self._projectNameList)
         self.Bind(wx.EVT_CHOICE, self.EvtListBox, self._projList)
-        HALF_SPACE = 5
-        GAP = HALF_SPACE
-        if wx.Platform == "__WXMAC__":
-            GAP = 10
-        flexGridSizer = wx.GridBagSizer(GAP, GAP)
+        
+        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        lineSizer.Add(projStaticText, 0,flag=wx.LEFT|wx.ALIGN_CENTER,border=SPACE)
+        lineSizer.Add(self._projList,  1,flag=wx.LEFT|wx.EXPAND,border=HALF_SPACE)
+        cpPanelBorderSizer.Add(lineSizer,0,flag = wx.EXPAND|wx.RIGHT|wx.TOP,border = SPACE) 
 
-        flexGridSizer.Add(projStaticText, (0,0), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT)
-        flexGridSizer.Add(self._projList, (0,1), (1,2), flag=wx.EXPAND)
-
-        flexGridSizer.Add(fileStaticText, (1,0), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT)
+        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        lineSizer.Add(fileStaticText, 0,flag=wx.LEFT|wx.ALIGN_CENTER,border=SPACE)
         self._fileList = wx.Choice(self, -1)
         self.Bind(wx.EVT_CHOICE, self.OnFileSelected, self._fileList)
-        flexGridSizer.Add(self._fileList, (1,1), (1,2), flag=wx.EXPAND)
+        lineSizer.Add(self._fileList, 1,flag=wx.LEFT|wx.EXPAND,border=HALF_SPACE)
+        cpPanelBorderSizer.Add(lineSizer,0,flag = wx.EXPAND|wx.RIGHT|wx.TOP,border = SPACE) 
 
         config = wx.ConfigBase_Get()
+        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
         self._lastArguments = config.Read(self.GetKey("LastRunArguments"))
-        self._argsEntry = wx.TextCtrl(self, -1, str(self._lastArguments))
+        self._argsEntry = wx.ComboBox(self, -1,choices=[], style = wx.CB_DROPDOWN,value=str(self._lastArguments))
+                                      
         self._argsEntry.SetToolTipString(str(self._lastArguments))
+        self._useArgCheckBox = wx.CheckBox(self, -1, _("Use"))
+        self.Bind(wx.EVT_CHECKBOX,self.CheckUseArgument,self._useArgCheckBox)
 
-        flexGridSizer.Add(argsStaticText, (2,0), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT)
-        flexGridSizer.Add(self._argsEntry, (2,1), (1,2), flag=wx.EXPAND)
+        lineSizer.Add(argsStaticText, 0,flag=wx.LEFT|wx.ALIGN_CENTER,border=SPACE)
+        lineSizer.Add(self._argsEntry, 1,flag=wx.LEFT|wx.EXPAND,border=HALF_SPACE)
+        lineSizer.Add(self._useArgCheckBox, 0,flag=wx.LEFT|wx.EXPAND,border=HALF_SPACE)
+        cpPanelBorderSizer.Add(lineSizer,0,flag = wx.EXPAND|wx.RIGHT|wx.TOP,border = SPACE) 
 
-        flexGridSizer.Add(startInStaticText, (3,0), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT)
+        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        lineSizer.Add(startInStaticText, 0,flag=wx.LEFT|wx.ALIGN_CENTER,border=SPACE)
         self._lastStartIn = config.Read(self.GetKey("LastRunStartIn"))
         if not self._lastStartIn:
             self._lastStartIn = str(os.getcwd())
-        self._startEntry = wx.TextCtrl(self, -1, self._lastStartIn)
+        self._startEntry = wx.TextCtrl(self, -1, self._lastStartIn,size=(200,-1))
         self._startEntry.SetToolTipString(self._lastStartIn)
 
-        flexGridSizer.Add(self._startEntry, (3,1), flag=wx.EXPAND)
+        lineSizer.Add(self._startEntry, 1,flag=wx.LEFT|wx.EXPAND,border=HALF_SPACE)
         self._findDir = wx.Button(self, -1, _("Browse..."))
         self.Bind(wx.EVT_BUTTON, self.OnFindDirClick, self._findDir)
-        flexGridSizer.Add(self._findDir, (3,2))
+        lineSizer.Add(self._findDir, 0,flag=wx.LEFT|wx.EXPAND,border=HALF_SPACE)
+        cpPanelBorderSizer.Add(lineSizer,0,flag = wx.EXPAND|wx.RIGHT|wx.TOP,border = SPACE) 
 
-        flexGridSizer.Add(pythonPathStaticText, (4,0), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT)
+        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        lineSizer.Add(pythonPathStaticText, 0,flag=wx.LEFT|wx.ALIGN_CENTER,border=SPACE)
         if os.environ.has_key('PYTHONPATH'):
             startval = os.environ['PYTHONPATH']
         else:
@@ -3075,14 +3094,14 @@ class CommandPropertiesDialog(wx.Dialog):
         self._lastPythonPath = config.Read(self.GetKey("LastPythonPath"), startval)
         self._pythonPathEntry = wx.TextCtrl(self, -1, self._lastPythonPath)
         self._pythonPathEntry.SetToolTipString(_('multiple path is seperated by %s') % os.pathsep)
-        flexGridSizer.Add(self._pythonPathEntry, (4,1), (1,2), flag=wx.EXPAND)
+        lineSizer.Add(self._pythonPathEntry, 1,flag=wx.LEFT|wx.EXPAND,border=HALF_SPACE)
+        cpPanelBorderSizer.Add(lineSizer,0,flag = wx.EXPAND|wx.RIGHT|wx.TOP,border = SPACE) 
 
         if debugging and _WINDOWS:
             self._postpendCheckBox = wx.CheckBox(self, -1, postpendStaticText)
             checked = bool(config.ReadInt(self.GetKey("PythonPathPostpend"), 1))
             self._postpendCheckBox.SetValue(checked)
             flexGridSizer.Add(self._postpendCheckBox, (5,1), flag=wx.EXPAND)
-        cpPanelBorderSizer.Add(flexGridSizer, 0, flag=wx.ALL, border=10)
 
         box = wx.StdDialogButtonSizer()
         self._okButton = wx.Button(self, wx.ID_OK, okButtonName)
@@ -3094,7 +3113,7 @@ class CommandPropertiesDialog(wx.Dialog):
         btn.SetHelpText(_("The Cancel button cancels the dialog."))
         box.AddButton(btn)
         box.Realize()
-        cpPanelBorderSizer.Add(box, 0, flag=wx.ALIGN_RIGHT|wx.ALL, border=5)
+        cpPanelBorderSizer.Add(box, 0, flag=wx.ALIGN_RIGHT|wx.ALL, border=SPACE)
 
         self.SetSizer(cpPanelBorderSizer)
 
@@ -3139,6 +3158,7 @@ class CommandPropertiesDialog(wx.Dialog):
             return self._currentProj.GetFileKey(pj_file,lastPart)
             
     def SetEntryParams(self):
+        self._argsEntry.Clear()
         config = wx.ConfigBase_Get()
         if self._selectedFileIndex >= 0 and len(self._fileNameList) > self._selectedFileIndex:
             selected_filename = self._fileNameList[self._selectedFileIndex]
@@ -3154,6 +3174,12 @@ class CommandPropertiesDialog(wx.Dialog):
         startin = config.Read(self.GetProjectFileKey(selected_filename,"RunStartIn"),"")
         self._startEntry.SetValue(startin)
         self._startEntry.SetToolTipString(startin)
+        saved_arguments = config.Read(self.GetProjectFileKey(selected_filename,"FileSavedArguments"),'')
+        if saved_arguments:
+            arguments = pickle.loads(saved_arguments)
+            self._argsEntry.AppendItems(arguments)
+        self._useArgCheckBox.SetValue(config.ReadInt(self.GetProjectFileKey(selected_filename,"UseArgument"),True))
+        self.CheckUseArgument(None)
         
     def OnOKClick(self, event):
         startIn = self._startEntry.GetValue().strip()
@@ -3171,9 +3197,17 @@ class CommandPropertiesDialog(wx.Dialog):
         config = wx.ConfigBase_Get()
         # Don't update the arguments or starting directory unless we're runing python.
         if isPython:
-            config.Write(self.GetProjectFileKey(fileToRun,"RunArguments"), self._argsEntry.GetValue())
             config.Write(self.GetProjectFileKey(fileToRun,"RunStartIn"), startIn)
             config.Write(self.GetProjectFileKey(fileToRun,"PythonPath"),self._pythonPathEntry.GetValue().strip())
+            config.WriteInt(self.GetProjectFileKey(fileToRun,"UseArgument"), self._useArgCheckBox.GetValue())
+            #when use argument is checked,save argument
+            if self._useArgCheckBox.GetValue():
+                config.Write(self.GetProjectFileKey(fileToRun,"RunArguments"), self._argsEntry.GetValue())
+                arguments = set()
+                for i in range(self._argsEntry.GetCount()):
+                    arguments.add(self._argsEntry.GetString(i))
+                arguments.add(self._argsEntry.GetValue())
+                config.Write(self.GetProjectFileKey(fileToRun,"FileSavedArguments"),pickle.dumps(list(arguments))) 
             if hasattr(self, "_postpendCheckBox"):
                 config.WriteInt(self.GetKey("PythonPathPostpend"), int(self._postpendCheckBox.GetValue()))
                 
@@ -3233,7 +3267,10 @@ class CommandPropertiesDialog(wx.Dialog):
             self._startEntry.SetValue(dlg.GetPath())
 
         dlg.Destroy()
-
+        
+    def CheckUseArgument(self,event):
+        use_arg = self._useArgCheckBox.GetValue()
+        self._argsEntry.Enable(use_arg)
 
     def EvtListBox(self, event):
         if event.GetString():

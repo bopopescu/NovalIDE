@@ -36,6 +36,7 @@ import BaseCtrl
 from noval.tool.syntax import syntax
 import noval.util.strutils as strutils
 import json
+import noval.util.utils as utils
 
 _ = wx.GetTranslation
 
@@ -263,8 +264,8 @@ class TextDocument(wx.lib.docview.Document):
             fileObject = None
         except:
             # for debugging purposes
-            import traceback
-            traceback.print_exc()
+            #import traceback
+            #traceback.print_exc()
 
             if fileObject:
                 fileObject.close()  # file is still open, close it 
@@ -370,6 +371,8 @@ class TextView(wx.lib.docview.View):
         self._markerCount = 0
         self._commandProcessor = None
         self._dynSash = None
+        self._is_alarming = False
+        self._alarm_type = -1
         # Initialize the classes position manager for the first control
         # that is created only.
         if not NavigationService.NavigationService.DocMgr.IsInitialized():
@@ -1079,6 +1082,12 @@ class TextView(wx.lib.docview.View):
 
     @WxThreadSafe.call_after
     def Alarm(self,alarm_type):
+        #to avoid alarm many times
+        if self._is_alarming and alarm_type == self._alarm_type:
+            utils.GetLogger().warn("document %s is alarming,will not alarm again" % self.GetDocument().GetFilename())
+            return
+        self._is_alarming = True
+        self._alarm_type = alarm_type
         if alarm_type == FileObserver.FileEventHandler.FILE_MODIFY_EVENT:
             ret = wx.MessageBox(_("File \"%s\" has already been modified outside,Do You Want to reload it?") % self.GetDocument().GetFilename(), _("Reload.."),
                            wx.YES_NO  | wx.ICON_QUESTION,self.GetFrame())
@@ -1095,6 +1104,7 @@ class TextView(wx.lib.docview.View):
                 document.Modify(True)
             else:
                 document.DeleteAllViews()
+        self._is_alarming = False
 
     def IsUnitTestEnable(self):
         return False
