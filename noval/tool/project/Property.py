@@ -7,6 +7,16 @@ import noval.util.sysutils as sysutilslib
 import noval.util.fileutils as fileutils
 import time
 import noval.tool.images as images
+import ProjectEditor
+import noval.util.utils as utils
+
+RESOURCE_ITEM_NAME = "Resource"
+DEBUG_RUN_ITEM_NAME = "Debug/Run Settings"
+INTERPRETER_ITEM_NAME = "Interpreter"
+PYTHONPATH_ITEM_NAME = "PythonPath"
+PROJECT_REFERENCE_ITEM_NAME = "Project References"
+#set the max width of location label,to avoid too long
+MAX_LOCATION_LABEL_WIDTH  = 500
 
 class FileProertyPage(wx.Panel):
     """description of class"""
@@ -53,12 +63,29 @@ class FileProertyPage(wx.Panel):
         
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
         lineSizer.Add(wx.StaticText(self, -1, _("Location:"),size=(max_width,-1)),0,flag=wx.LEFT|wx.ALIGN_CENTER,border=SPACE)
-        self.location_label_ctrl = wx.StaticText(self, -1, fileutils.opj(path))
+        self.dest_path = fileutils.opj(path)
+        self.location_label_ctrl = wx.StaticText(self, -1, self.dest_path)
+        location_text_size = self.location_label_ctrl.GetTextExtent(self.dest_path)
+        location_text_width = location_text_size[0]
+        #the location label width is too long,ellipisis the text
+        if location_text_width > MAX_LOCATION_LABEL_WIDTH:
+            postend_ellipsis_text = "..."
+            show_path = self.dest_path[:len(self.dest_path)*2/3] + postend_ellipsis_text
+            limit_text_width = self.location_label_ctrl.GetTextExtent(show_path)[0] + HALF_SPACE
+            self.location_label_ctrl.SetInitialSize((limit_text_width,location_text_size[1]),)
+            self.location_label_ctrl.SetLabel(show_path)
+
         lineSizer.Add(self.location_label_ctrl,  0,flag=wx.LEFT|wx.ALIGN_CENTER,border=HALF_SPACE)
         into_btn = wx.BitmapButton(self,-1,images.load("into.png"))
-        into_btn.SetToolTipString(_("into file explorer"))
+        into_btn.SetToolTipString(_("Into file explorer"))
         into_btn.Bind(wx.EVT_BUTTON, self.IntoExplorer)
         lineSizer.Add(into_btn,  0,flag=wx.LEFT,border=SPACE)
+        
+        copy_btn = wx.BitmapButton(self,-1,images.load("copy.png"))
+        copy_btn.SetToolTipString(_("Copy path"))
+        copy_btn.Bind(wx.EVT_BUTTON, self.CopyPath)
+        lineSizer.Add(copy_btn,  0,flag=wx.LEFT,border=HALF_SPACE)
+        
         box_sizer.Add(lineSizer,0,flag = wx.EXPAND|wx.RIGHT|wx.TOP,border = HALF_SPACE)
         
         is_path_exist = os.path.exists(path)
@@ -111,38 +138,93 @@ class FileProertyPage(wx.Panel):
         self.Layout()
         
     def IntoExplorer(self,event):
-        location = self.location_label_ctrl.GetLabel()
+        location = self.dest_path
         err_code,msg = fileutils.open_file_directory(location)
         if err_code != ERROR_OK:
             wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
+            
+    def CopyPath(self,event):
+        path = self.dest_path
+        sysutilslib.CopyToClipboard(path)
+        wx.MessageBox(_("Copied to clipboard"))
+        
+    def OnOK(self,optionsDialog):
+        return True
 
 class PyDebugRunProertyPage(wx.Panel):
     """description of class"""
     def __init__(self,parent,dlg_id,size,selected_item):
         wx.Panel.__init__(self, parent, dlg_id,size=size)
         box_sizer = wx.BoxSizer(wx.VERTICAL)
-        pass
-
+        
+    def OnOK(self,optionsDialog):
+        return True
 
 class PythonInterpreterPage(wx.Panel):
     def __init__(self,parent,dlg_id,size,selected_item):
         wx.Panel.__init__(self, parent, dlg_id,size=size)
         box_sizer = wx.BoxSizer(wx.VERTICAL)
-        pass
-    
+        
+    def OnOK(self,optionsDialog):
+        return True
 
 class PythonPathPage(wx.Panel):
     def __init__(self,parent,dlg_id,size,selected_item):
         wx.Panel.__init__(self, parent, dlg_id,size=size)
         box_sizer = wx.BoxSizer(wx.VERTICAL)
-        pass
-
+        
+    def OnOK(self,optionsDialog):
+        return True
 
 class ProjectReferrencePage(wx.Panel):
     def __init__(self,parent,dlg_id,size,selected_item):
         wx.Panel.__init__(self, parent, dlg_id,size=size)
-        box_sizer = wx.BoxSizer(wx.VERTICAL)
-        pass
+        boxsizer = wx.BoxSizer(wx.VERTICAL)
+        
+        boxsizer.Add(wx.StaticText(self, -1, _("The Reference Projects:"), \
+                        style=wx.ALIGN_CENTRE),0,flag=wx.LEFT|wx.TOP,border=SPACE)
+        
+        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.listbox = wx.CheckListBox(self,-1,size=(-1,300),choices=[])
+        lineSizer.Add(self.listbox,1,flag = wx.EXPAND|wx.LEFT,border = SPACE)
+        
+        rightSizer = wx.BoxSizer(wx.VERTICAL)
+        self.select_all_btn = wx.Button(self, -1, _("Select All"))
+        wx.EVT_BUTTON(self.select_all_btn, -1, self.SelectAll)
+        rightSizer.Add(self.select_all_btn, 0,flag=wx.TOP, border=SPACE)
+        
+        self.unselect_all_btn = wx.Button(self, -1, _("UnSelect All"))
+        wx.EVT_BUTTON(self.unselect_all_btn, -1, self.UnSelectAll)
+        rightSizer.Add(self.unselect_all_btn, 0,flag=wx.TOP, border=SPACE)
+        
+        lineSizer.Add(rightSizer,0,flag = wx.EXPAND|wx.LEFT,border = HALF_SPACE)
+        
+        boxsizer.Add(lineSizer,0,flag = wx.TOP|wx.EXPAND,border = SPACE)
+        self.SetSizer(boxsizer)
+        #should use Layout ,could not use Fit method
+        self.Layout()
+        self.LoadProjects()
+        
+    def OnOK(self,optionsDialog):
+        return True
+        
+    def SelectAll(self,event):
+        for i in range(self.listbox.GetCount()):
+            if not self.listbox.IsChecked(i):
+                self.listbox.Check(i,True)
+        
+    def UnSelectAll(self,event):
+        for i in range(self.listbox.GetCount()):
+            if self.listbox.IsChecked(i):
+                self.listbox.Check(i,False)
+        
+    def LoadProjects(self):
+        projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
+        current_project_document = projectService.GetCurrentProject()
+        for document in projectService.GetView().Documents:
+            if document == current_project_document:
+                continue
+            self.listbox.Append(document.GetModel().Name)
 
 class FilePropertiesService(wx.lib.pydocview.DocOptionsService):
     """
@@ -161,8 +243,8 @@ class FilePropertiesService(wx.lib.pydocview.DocOptionsService):
         self._optionsPanels = {}
         self.names = []
         self.category_list = []
-        self.AddOptionsPanel(_("Resource"),FileProertyPage)
-        self.AddOptionsPanel(_("Debug/Run Settings"),PyDebugRunProertyPage)
+        self.AddOptionsPanel(RESOURCE_ITEM_NAME,FileProertyPage)
+        self.AddOptionsPanel(DEBUG_RUN_ITEM_NAME,PyDebugRunProertyPage)
         self._customEventHandlers = []
         self._current_project_document = None
 
@@ -212,12 +294,12 @@ class FilePropertiesService(wx.lib.pydocview.DocOptionsService):
             
     def GetNames(self,is_project):
         names = []
-        names.append(_("Resource"))
-        names.append(_("Debug/Run Settings"))
+        names.append(RESOURCE_ITEM_NAME)
+        names.append(DEBUG_RUN_ITEM_NAME)
         if is_project:
-            names.append(_("Interpreter"))
-            names.append(_("PythonPath"))
-            names.append(_("Project References"))
+            names.append(INTERPRETER_ITEM_NAME)
+            names.append(PYTHONPATH_ITEM_NAME)
+            names.append(PROJECT_REFERENCE_ITEM_NAME)
         return names
 
     def ShowPropertiesDialog(self, project_document,selected_item):
@@ -232,9 +314,9 @@ class FilePropertiesService(wx.lib.pydocview.DocOptionsService):
         if selected_item == project_view._treeCtrl.GetRootItem():
             title = _("Project Property")
             file_path = project_document.GetFilename()
-            self.AddOptionsPanel(_("Interpreter"),PythonInterpreterPage)
-            self.AddOptionsPanel(_("PythonPath"),PythonPathPage)
-            self.AddOptionsPanel(_("Project References"),ProjectReferrencePage)
+            self.AddOptionsPanel(INTERPRETER_ITEM_NAME,PythonInterpreterPage)
+            self.AddOptionsPanel(PYTHONPATH_ITEM_NAME,PythonPathPage)
+            self.AddOptionsPanel(PROJECT_REFERENCE_ITEM_NAME,ProjectReferrencePage)
             is_project = True
         elif project_view._IsItemFile(selected_item):
             title = _("File Property")
@@ -356,18 +438,21 @@ class PropertyDialog(wx.Dialog):
         self.tree.il = il                
         self.tree.SetButtonsImageList(il)
         self.root = self.tree.AddRoot("TheRoot")
+        
+        current_project_document = wx.GetApp().GetService(ProjectEditor.ProjectService).GetCurrentProject()
+        selection = utils.ProfileGet(current_project_document.GetKey("Selection"),"")
         for name in names:
-            item = self.tree.AppendItem(self.root,name)
+            item = self.tree.AppendItem(self.root,_(name))
+            self.tree.SetPyData(item,name)
             optionsPanelClass = category_dct[name]
             option_panel = optionsPanelClass(self,-1,size=(self.PANEL_WIDITH,self.PANEL_HEIGHT),selected_item = self._selected_project_item)
             option_panel.Hide()
             self._optionsPanels[name] = option_panel
-            #child = self.tree.AppendItem(item,name)
             #select the default item,to avoid select no item
-            if name == _("Resource"):
+            if name == RESOURCE_ITEM_NAME:
                 self.tree.SelectItem(item)
-            #if name == option_name:
-             #   self.tree.SelectItem(child)
+            if name == selection:
+                self.tree.SelectItem(item)
 
         sizer.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL), 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM|wx.TOP, HALF_SPACE)
         wx.EVT_BUTTON(self, wx.ID_OK, self.OnOK)
@@ -381,7 +466,7 @@ class PropertyDialog(wx.Dialog):
         if self.tree.GetChildrenCount(sel) > 0:
             (item, cookie) = self.tree.GetFirstChild(sel)
             sel = item
-        text = self.tree.GetItemText(sel)
+        text = self.tree.GetPyData(sel)
         panel = self._optionsPanels[text]
         if self.current_item is not None and sel != self.current_item:
             if not self.current_panel.Validate():
@@ -424,6 +509,10 @@ class PropertyDialog(wx.Dialog):
             if not optionsPanel.OnOK(self):
                 return
         sel = self.tree.GetSelection()
-        text = self.tree.GetItemText(sel)
-       ##### wx.ConfigBase_Get().Write("OptionName",text)
+        text = self.tree.GetPyData(sel)
+        
+        filePropertiesService = wx.GetApp().GetService(FilePropertiesService)
+        current_project_document = filePropertiesService._current_project_document
+        if current_project_document is not None:
+            utils.ProfileSet(current_project_document.GetKey("Selection"),text)
         self.EndModal(wx.ID_OK)

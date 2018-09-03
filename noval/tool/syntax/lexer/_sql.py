@@ -402,7 +402,7 @@ class SyntaxLexer(syndata.BaseLexer):
         return "SQL Document"
         
     def GetViewTypeName(self):
-        return "SQL View"
+        return _("SQL Editor")
         
     def GetDocTypeClass(self):
         return CodeEditor.CodeDocument

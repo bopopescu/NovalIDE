@@ -2,6 +2,7 @@ import wx
 from noval.tool.consts import SPACE,HALF_SPACE,_ 
 import ProjectEditor
 import noval.tool.HtmlEditor as HtmlEditor
+import os
 
 class PromptMessageDialog(wx.Dialog):
     
@@ -112,10 +113,12 @@ class FileFilterDialog(wx.Dialog):
                     self.listbox.Append(filter)
 
 class EditorSelectionDialog(wx.Dialog):
-    def __init__(self,parent,dlg_id,title):
+    def __init__(self,parent,dlg_id,title,selected_file_path):
         wx.Dialog.__init__(self,parent,dlg_id,title)
+        self._file_path = selected_file_path
         boxsizer = wx.BoxSizer(wx.VERTICAL)
-        boxsizer.Add(wx.StaticText(self, -1, _("Choose an editor you want to open this file"), \
+        boxsizer.Add(wx.StaticText(self, -1, _("Choose an editor you want to open") \
+                                   + " '%s':" % os.path.basename(self._file_path), \
                         style=wx.ALIGN_CENTRE),0,flag=wx.ALL,border=SPACE)
         self.lc = wx.ListCtrl(self, -1, size=(-1,400),style = wx.LC_LIST)
         wx.EVT_LIST_ITEM_ACTIVATED(self.lc, self.lc.GetId(), self.OnOKClick)
@@ -126,7 +129,10 @@ class EditorSelectionDialog(wx.Dialog):
             iconIndex = il.AddIcon(icon)
         self.lc.AssignImageList(il, wx.IMAGE_LIST_SMALL)
         for i,temp in enumerate(self.templates):
-            self.lc.InsertImageStringItem( i,temp.GetViewName(),i)
+            show_name = temp.GetViewName()
+            if 0 == i:
+                show_name += (" (" + _("Default") + ")")
+            self.lc.InsertImageStringItem( i,show_name ,i)
         boxsizer.Add(self.lc,1,flag = wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT,border = SPACE)
         
         bsizer = wx.StdDialogButtonSizer()
@@ -145,14 +151,16 @@ class EditorSelectionDialog(wx.Dialog):
         
     def GetTemplates(self):
         templates = []
+        default_template = wx.GetApp().GetDocumentManager().FindTemplateForPath(self._file_path)
         for temp in wx.GetApp().GetDocumentManager().GetTemplates():
             want = False
-            if temp.IsVisible() and temp.GetViewName():
+            if temp.IsVisible() and temp.GetViewName() and temp != default_template:
                 want = True
             elif not temp.IsVisible() and temp.GetViewType() == HtmlEditor.WebView:
                 want = True
             if want:
                 templates.append(temp)
+        templates.insert(0,default_template)
         return templates
         
     def OnOKClick(self,event):

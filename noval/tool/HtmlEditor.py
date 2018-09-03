@@ -17,6 +17,7 @@ import string
 import STCTextEditor
 import CodeEditor
 import noval.util.sysutils as sysutilslib
+import images
 if sysutilslib.isWindows():
     import wx.html2 as webview
 import consts
@@ -145,39 +146,34 @@ class WebView(wx.lib.docview.View):
         sizer = wx.BoxSizer(wx.VERTICAL)
         btnSizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        go_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "web","go.png")
-        go_bmp = wx.BitmapFromImage(wx.Image(go_bmp_path,wx.BITMAP_TYPE_ANY))
-        btn = wx.BitmapButton(self.panel,-1,go_bmp)
+        btn = wx.BitmapButton(self.panel,-1,images.load("web/go.png"))
+        btn.SetToolTipString(_("Open URL"))
         btn.Bind(wx.EVT_BUTTON, self.OnOpenButton)
         btnSizer.Add(btn, 0, wx.EXPAND|wx.ALL, 2)
 
-        back_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "web","go_back.png")
-        back_bmp = wx.BitmapFromImage(wx.Image(back_bmp_path,wx.BITMAP_TYPE_ANY))
-        btn = wx.BitmapButton(self.panel,-1,back_bmp)
+        btn = wx.BitmapButton(self.panel,-1,images.load("web/go_back.png"))
+        btn.SetToolTipString(_("Back"))
         btn.Bind(wx.EVT_BUTTON, self.OnPrevPageButton)
         btnSizer.Add(btn, 0, wx.EXPAND|wx.ALL, 2)
         btn.Bind(wx.EVT_UPDATE_UI, self.OnCheckCanGoBack)
 
-        forward_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "web","go_forward.png")
-        forward_bmp = wx.BitmapFromImage(wx.Image(forward_bmp_path,wx.BITMAP_TYPE_ANY))
-        btn = wx.BitmapButton(self.panel,-1,forward_bmp)
+        btn = wx.BitmapButton(self.panel,-1,images.load("web/go_forward.png"))
+        btn.SetToolTipString(_("Forward"))
         btn.Bind(wx.EVT_BUTTON, self.OnNextPageButton)
         btnSizer.Add(btn, 0, wx.EXPAND|wx.ALL, 2)
         btn.Bind(wx.EVT_UPDATE_UI, self.OnCheckCanGoForward)
 
-        stop_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "web","stop.png")
-        stop_bmp = wx.BitmapFromImage(wx.Image(stop_bmp_path,wx.BITMAP_TYPE_ANY))
-        btn = wx.BitmapButton(self.panel,-1,stop_bmp)
+        btn = wx.BitmapButton(self.panel,-1,images.load("web/stop.png"))
+        btn.SetToolTipString(_("Stop"))
         btn.Bind(wx.EVT_BUTTON, self.OnStopButton)
         btnSizer.Add(btn, 0, wx.EXPAND|wx.ALL, 2)
 
-        fresh_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "web","fresh.png")
-        fresh_bmp = wx.BitmapFromImage(wx.Image(fresh_bmp_path,wx.BITMAP_TYPE_ANY))
-        btn = wx.BitmapButton(self.panel,-1,fresh_bmp)
+        btn = wx.BitmapButton(self.panel,-1,images.load("web/fresh.png"))
+        btn.SetToolTipString(_("Refresh"))
         btn.Bind(wx.EVT_BUTTON, self.OnRefreshPageButton)
         btnSizer.Add(btn, 0, wx.EXPAND|wx.ALL, 2)
 
-        txt = wx.StaticText(self.panel, -1, "URL:")
+        txt = wx.StaticText(self.panel, -1, _("URL:"))
         btnSizer.Add(txt, 0, wx.CENTER|wx.ALL, 2)
 
         self.location = wx.ComboBox(
@@ -250,7 +246,7 @@ class WebView(wx.lib.docview.View):
         self.wv.LoadURL(url)
 
     def OnOpenButton(self, event):
-        dlg = wx.TextEntryDialog(self.GetFrame(), _("Open URL"),
+        dlg = wx.TextEntryDialog(self.GetFrame(), _("Open URL:"),
                                 _("Enter a full URL or local path"),
                                 self.current, wx.OK|wx.CANCEL)
         dlg.CentreOnParent()

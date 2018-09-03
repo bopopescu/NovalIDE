@@ -209,10 +209,10 @@ class SyntaxLexer(syndata.BaseLexer):
         return "css"
         
     def GetDocTypeName(self):
-        return "CSS Document"
+        return "StyleSheet Document"
         
     def GetViewTypeName(self):
-        return "CSS View"
+        return _("StyleSheet Editor")
         
     def GetDocTypeClass(self):
         return CodeEditor.CodeDocument

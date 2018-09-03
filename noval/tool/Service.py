@@ -138,7 +138,7 @@ class ServiceView(wx.EvtHandler):
                 # Factor this out.
                 self._control = self._CreateControl(ServiceView.bottomTab, wx.NewId())
                 if self._control != None:
-                    ServiceView.bottomTab.AddPage(self._control, self._service.GetServiceName())
+                    ServiceView.bottomTab.AddPage(self._control, self._service.GetMenuString())
                     if self._service.GetIconIndex() != -1:
                         index = ServiceView.bottomTab.GetPageCount() - 1
                         ServiceView.bottomTab.SetPageImage(index,self._service.GetIconIndex())

@@ -766,7 +766,7 @@ class BaseDebuggerUI(wx.Panel):
 
     def BreakExecution(self, event):
         if not BaseDebuggerUI.DebuggerRunning():
-            wx.MessageBox(_("Debugger has been stoped."),style=wx.OK|wx.ICON_ERROR)
+            wx.MessageBox(_("Debugger has been stopped."),style=wx.OK|wx.ICON_ERROR)
             return
         self._callback.BreakExecution()
 
@@ -1285,7 +1285,7 @@ class BaseFramesUI(wx.SplitterWindow):
 
         def OnCmdButtonPressed(event):
             if not BaseDebuggerUI.DebuggerRunning():
-                wx.MessageBox(_("Debugger has been stoped."),style=wx.OK|wx.ICON_ERROR)
+                wx.MessageBox(_("Debugger has been stopped."),style=wx.OK|wx.ICON_ERROR)
                 return
             handleCommand()
             
@@ -2266,7 +2266,7 @@ class DebuggerService(Service.Service):
                 prompt = True
             else:
                 option_service = wx.GetApp().GetService(OptionService.OptionsService)
-                option_service.OnOption(option_name =_("Python Interpreter"))
+                option_service.OnOption(option_name = OptionService.INTERPRETER_ITEM_NAME)
                 wx.GetApp().AddInterpreters()
         else:
             interpreter = cb.GetClientData(selection)
@@ -2791,6 +2791,10 @@ class DebuggerService(Service.Service):
         return len(docs) > 0 and self.GetActiveView() != None
 
     def PromptToSaveFiles(self, cur_project_document):
+        def save_docs():
+            for modify_doc in modify_docs:
+                modify_doc.Save()
+            
         projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
         filesModified = False
         modify_docs = []
@@ -2801,16 +2805,18 @@ class DebuggerService(Service.Service):
                 modify_docs.append(doc)
         if filesModified:
             frame = self.GetView().GetFrame()
-            yesNoMsg = wx.MessageDialog(frame,
-                      _("Files have been modified.\nWould you like to save all files before running?"),
-                      _("Run Project"),
-                      wx.YES_NO|wx.ICON_QUESTION
-                      )
-            yesNoMsg.CenterOnParent()
-            if yesNoMsg.ShowModal() == wx.ID_YES:
-                for modify_doc in modify_docs:
-                    modify_doc.Save()
-            yesNoMsg.Destroy()
+            if utils.ProfileGetInt("PromptSaveProjectFile", True):
+                yesNoMsg = wx.MessageDialog(frame,
+                          _("Files have been modified.\nWould you like to save all files before running?"),
+                          _("Run Project"),
+                          wx.YES_NO|wx.ICON_QUESTION
+                          )
+                yesNoMsg.CenterOnParent()
+                if yesNoMsg.ShowModal() == wx.ID_YES:
+                    save_docs()
+                yesNoMsg.Destroy()
+            else:
+                save_docs()
 
     def OnExit(self):
         BaseDebuggerUI.ShutdownAllDebuggers()
@@ -3040,7 +3046,7 @@ class CommandPropertiesDialog(wx.Dialog):
         argsStaticText = wx.StaticText(self, -1, _("Arguments:"),size=(max_width,-1))
         startInStaticText = wx.StaticText(self, -1, _("Start in:"),size=(max_width,-1))
         
-        postpendStaticText = _("Postpend win32api path")
+        postpendStaticText = _("Postpend content root path")
         cpPanelBorderSizer = wx.BoxSizer(wx.VERTICAL)
         self._projList = wx.Choice(self, -1, choices=self._projectNameList)
         self.Bind(wx.EVT_CHOICE, self.EvtListBox, self._projList)
@@ -3097,11 +3103,11 @@ class CommandPropertiesDialog(wx.Dialog):
         lineSizer.Add(self._pythonPathEntry, 1,flag=wx.LEFT|wx.EXPAND,border=HALF_SPACE)
         cpPanelBorderSizer.Add(lineSizer,0,flag = wx.EXPAND|wx.RIGHT|wx.TOP,border = SPACE) 
 
-        if debugging and _WINDOWS:
+        if projectService.GetCurrentProject() is not None:
+            lineSizer = wx.BoxSizer(wx.HORIZONTAL)
             self._postpendCheckBox = wx.CheckBox(self, -1, postpendStaticText)
-            checked = bool(config.ReadInt(self.GetKey("PythonPathPostpend"), 1))
-            self._postpendCheckBox.SetValue(checked)
-            flexGridSizer.Add(self._postpendCheckBox, (5,1), flag=wx.EXPAND)
+            lineSizer.Add(self._postpendCheckBox, 0,flag=wx.LEFT|wx.EXPAND,border=max_width+SPACE+HALF_SPACE)
+            cpPanelBorderSizer.Add(lineSizer,0,flag = wx.EXPAND|wx.RIGHT|wx.TOP,border = SPACE) 
 
         box = wx.StdDialogButtonSizer()
         self._okButton = wx.Button(self, wx.ID_OK, okButtonName)
@@ -3180,6 +3186,14 @@ class CommandPropertiesDialog(wx.Dialog):
             self._argsEntry.AppendItems(arguments)
         self._useArgCheckBox.SetValue(config.ReadInt(self.GetProjectFileKey(selected_filename,"UseArgument"),True))
         self.CheckUseArgument(None)
+        
+        if hasattr(self, "_postpendCheckBox"):
+            if self._projList.GetString(self._projList.GetSelection()) == NOT_IN_ANY_PROJECT:
+                self._postpendCheckBox.Enable(False)
+            else:
+                self._postpendCheckBox.Enable(True)
+                checked = bool(config.ReadInt(self.GetKey("PythonPathPostpend"), True))
+                self._postpendCheckBox.SetValue(checked)
         
     def OnOKClick(self, event):
         startIn = self._startEntry.GetValue().strip()

@@ -346,13 +346,13 @@ class ProjectDocument(wx.lib.docview.Document):
             initialArgs = ''
         python_path = config.Read(self.GetFileKey(start_up_file,"PythonPath"),"")
         startIn = config.Read(self.GetFileKey(start_up_file,"RunStartIn"),"")
-        
-        
         if startIn == '':
             startIn = os.path.dirname(self.GetFilename())
         env = {}
         paths = set()
-        paths.add(str(os.path.dirname(self.GetFilename())))
+        path_post_end = config.ReadInt(self.GetKey("PythonPathPostpend"), True)
+        if path_post_end:
+            paths.add(str(os.path.dirname(self.GetFilename())))
         #should avoid environment contain unicode string,such as u'xxx'
         if len(python_path) > 0:
             paths.add(str(python_path))
@@ -1811,10 +1811,11 @@ class ProjectView(wx.lib.docview.View):
     def OnCreate(self, doc, flags):
         config = wx.ConfigBase_Get()
         if wx.GetApp().IsMDI():
-            self._embeddedWindow = wx.GetApp().GetTopWindow().GetEmbeddedWindow(wx.lib.pydocview.EMBEDDED_WINDOW_TOPLEFT)
+            self._embeddedWindow = wx.GetApp().GetTopWindow().GetEmbeddedWindow(wx.lib.pydocview.EMBEDDED_WINDOW_LEFT)
             self.SetFrame(self._embeddedWindow)
             frame = self._embeddedWindow
-            wx.EVT_SIZE(frame, self.OnSize)
+            #TODO: should disable resize event,it will prevent project view to change size
+           ### wx.EVT_SIZE(frame, self.OnSize)
         else:
             self._embeddedWindow = None
             pos = config.ReadInt("ProjectFrameXLoc", -1), config.ReadInt("ProjectFrameYLoc", -1)
@@ -2522,13 +2523,16 @@ class ProjectView(wx.lib.docview.View):
         doc = self.GetDocument()
         path = os.path.dirname(doc.GetFilename())
         try:
+            wx.GetApp().GetTopWindow().PushStatusText(_("Archiving..."))
             datetime_str = datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d%H%M%S')
             zip_name = doc.GetModel().Name + "_" + datetime_str + ".zip"
             zip_path = doc.ArchiveProject(os.path.join(path,zip_name))
             wx.MessageBox(_("Success archived to %s") % zip_path,_("Archive Success"),style = wx.OK)
+            wx.GetApp().GetTopWindow().PushStatusText(_("Success archived to %s") % zip_path)
         except Exception as e:
             msg = unicode(e)
             wx.MessageBox(msg,_("Archive Error"),style = wx.OK|wx.ICON_ERROR)
+            wx.GetApp().GetTopWindow().PushStatusText(_("Archive Error"))
                 
     def BuildFileMaps(self,file_list):
         d = {}
@@ -3160,9 +3164,9 @@ class ProjectView(wx.lib.docview.View):
         for template in visibleTemplates:
             if len(descr) > 0:
                 descr = descr + _('|')
-            descr = template.GetDescription() + _(" (") + template.GetFileFilter() + _(")")
+            descr = _(template.GetDescription()) + " (" + template.GetFileFilter() + ")"
             choices.append(descr)
-        choices.insert(0, _("All"))  # first item
+        choices.insert(0, _("All Files") + "(*.*)")  # first item
         filterChoice = wx.Choice(frame, -1, size=(250, -1), choices=choices)
         filterChoice.SetSelection(0)
         filterChoice.SetToolTipString(_("Select file type filter."))
@@ -3969,10 +3973,10 @@ class ProjectView(wx.lib.docview.View):
         wx.CallAfter(self.OnOpenSelection, None)
 
     def OnOpenSelectionWith(self, event):
-        dlg = ProjectUI.EditorSelectionDialog(wx.GetApp().GetTopWindow(),-1,_("Editor Selection"))
+        selected_file_path = self.GetSelectedFile()
+        dlg = ProjectUI.EditorSelectionDialog(wx.GetApp().GetTopWindow(),-1,_("Editor Selection"),selected_file_path)
         dlg.CenterOnParent()
         if dlg.ShowModal() == wx.ID_OK:
-            selected_file_path = self.GetSelectedFile()
             found_view = utils.GetOpenView(selected_file_path)
             if found_view:
                 ret = wx.MessageBox(_("The document \"%s\" is already open,Do you want to close it?") %selected_file_path,style=wx.YES_NO|wx.ICON_QUESTION)
@@ -4580,6 +4584,7 @@ class ProjectService(Service.Service):
                 
             if not menuBar.FindItemById(ProjectService.ARCHIVE_PROJECT_ID):
                 item = wx.MenuItem(projectMenu,ProjectService.ARCHIVE_PROJECT_ID, _("Archive Project"), _("Archive project to zip file"))
+                item.SetBitmap(images.load("project/archive.png"))
                 projectMenu.AppendItem(item)
                 wx.EVT_MENU(frame, ProjectService.ARCHIVE_PROJECT_ID, frame.ProcessEvent)
                 wx.EVT_UPDATE_UI(frame, ProjectService.ARCHIVE_PROJECT_ID, frame.ProcessUpdateUIEvent)

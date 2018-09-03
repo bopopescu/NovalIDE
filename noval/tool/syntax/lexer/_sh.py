@@ -138,7 +138,7 @@ class SyntaxLexer(syndata.BaseLexer):
         return "Shell Document"
         
     def GetViewTypeName(self):
-        return "Shell View"
+        return _("Shell Editor")
         
     def GetDocTypeClass(self):
         return CodeEditor.CodeDocument

@@ -95,7 +95,7 @@ class SyntaxLexer(syndata.BaseLexer):
         return "Yaml Document"
         
     def GetViewTypeName(self):
-        return "Yaml View"
+        return _("Yaml Editor")
         
     def GetDocTypeClass(self):
         return CodeEditor.CodeDocument

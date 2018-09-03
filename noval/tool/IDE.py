@@ -175,8 +175,9 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         config = wx.Config(self.GetAppName(), style = wx.CONFIG_USE_LOCAL_FILE)
         if not config.Exists("MDIFrameMaximized"):  # Make the initial MDI frame maximize as default
             config.WriteInt("MDIFrameMaximized", True)
-        if not config.Exists("MDIEmbedRightVisible"):  # Make the properties embedded window hidden as default
-            config.WriteInt("MDIEmbedRightVisible", False)
+        # Make the outline embedded window show as default
+        if not config.ReadInt("MDIEmbedRightVisible",True) and config.ReadInt("OutlineShown",True):
+            config.WriteInt("MDIEmbedRightVisible", True)
 
         ##my_locale must be set as app member property,otherwise it will only workable when app start up
         ##it will not workable after app start up,the translation also will not work
@@ -199,7 +200,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 os.getcwd(),
                 ".txt",
                 "Text Document",
-                "Text View",
+                _("Text Editor"),
                 STCTextEditor.TextDocument,
                 STCTextEditor.TextView,
                 wx.lib.docview.TEMPLATE_INVISIBLE,
@@ -212,7 +213,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 os.getcwd(),
                 ".com",
                 "WebView Document",
-                "WebView",
+                _("Internal Web Browser"),
                 HtmlEditor.WebDocument,
                 HtmlEditor.WebView,
                 wx.lib.docview.TEMPLATE_INVISIBLE,
@@ -225,7 +226,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 os.getcwd(),
                 ".png",
                 "Image Document",
-                "Image View",
+                _("Image Viewer"),
                 ImageEditor.ImageDocument,
                 ImageEditor.ImageView,
                 wx.lib.docview.TEMPLATE_NO_CREATE,
@@ -238,7 +239,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 os.getcwd(),
                 PROJECT_EXTENSION,
                 "Project Document",
-                "Project View",
+                _("Project Resolver"),
                 ProjectEditor.ProjectDocument,
                 ProjectEditor.ProjectView,
              ###   wx.lib.docview.TEMPLATE_NO_CREATE,
@@ -247,22 +248,22 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         
         synglob.LexerFactory().CreateLexerTemplates(docManager)
         
-        pythonService           = self.InstallService(PythonEditor.PythonService(_("Python Interpreter"),embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
+        pythonService           = self.InstallService(PythonEditor.PythonService("Python Interpreter",embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         if not ACTIVEGRID_BASE_IDE:
             propertyService     = self.InstallService(PropertyService.PropertyService("Properties", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_RIGHT))
-        projectService          = self.InstallService(ProjectEditor.ProjectService(_("Projects/Resources View"), embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_TOPLEFT))
+        projectService          = self.InstallService(ProjectEditor.ProjectService("Projects/Resources View", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_LEFT))
         findService             = self.InstallService(FindInDirService.FindInDirService())
         if not ACTIVEGRID_BASE_IDE:
             webBrowserService   = self.InstallService(WebBrowserService.WebBrowserService())  # this must be before webServerService since it sets the proxy environment variable that is needed by the webServerService.
             webServerService    = self.InstallService(WebServerService.WebServerService())  # this must be after webBrowserService since that service sets the proxy environment variables.
-        outlineService          = self.InstallService(OutlineService.OutlineService(_("Outline"), embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOMLEFT))
+        outlineService          = self.InstallService(OutlineService.OutlineService("Outline", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_RIGHT))
         filePropertiesService   = self.InstallService(Property.FilePropertiesService())
         markerService           = self.InstallService(MarkerService.MarkerService())
         textService             = self.InstallService(TextService.TextService())
         perlService             = self.InstallService(PerlEditor.PerlService())
         comletionService        = self.InstallService(CompletionService.CompletionService())
         navigationService       = self.InstallService(NavigationService.NavigationService())
-        messageService          = self.InstallService(MessageService.MessageService(_("Search Results"), embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
+        messageService          = self.InstallService(MessageService.MessageService("Search Results", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
     ##    outputService          = self.InstallService(OutputService.OutputService("Output", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         debuggerService         = self.InstallService(DebuggerService.DebuggerService("Debugger", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         extensionService        = self.InstallService(ExtensionService.ExtensionService())
@@ -277,15 +278,15 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             windowService       = self.InstallService(wx.lib.pydocview.WindowMenuService())
         
         # order of these added determines display order of Options Panels
-        optionsService.AddOptionsPanel(_("Environment"),_("Project"),ProjectEditor.ProjectOptionsPanel)
+        optionsService.AddOptionsPanel(_("Environment"),OptionService.PROJECT_ITEM_NAME,ProjectEditor.ProjectOptionsPanel)
        ## optionsService.AddOptionsPanel(DebuggerService.DebuggerOptionsPanel)
-        optionsService.AddOptionsPanel(_("Environment"),_("Text"),STCTextEditor.TextOptionsPanel)
+        optionsService.AddOptionsPanel(_("Environment"),OptionService.TEXT_ITEM_NAME,STCTextEditor.TextOptionsPanel)
     ##    optionsService.AddOptionsPanel(PerlEditor.PerlOptionsPanel)
      ###   optionsService.AddOptionsPanel(_("Editor"),_("Text"),STCTextEditor.TextOptionsPanel)
-        optionsService.AddOptionsPanel(_("Environment"),_("Fonts and Colors"),ColorFont.ColorFontOptionsPanel)
-        optionsService.AddOptionsPanel(_("Interpreter"),_("Python Interpreter"),configruation.InterpreterConfigurationPanel)
+        optionsService.AddOptionsPanel(_("Environment"),OptionService.FONTS_CORLORS_ITEM_NAME,ColorFont.ColorFontOptionsPanel)
+        optionsService.AddOptionsPanel(_("Interpreter"),OptionService.INTERPRETER_ITEM_NAME,configruation.InterpreterConfigurationPanel)
   ##      optionsService.AddOptionsPanel(SVNService.SVNOptionsPanel)
-        optionsService.AddOptionsPanel(_("Other"),_("Extension"),ExtensionService.ExtensionOptionsPanel)
+        optionsService.AddOptionsPanel(_("Other"),OptionService.EXTENSION_ITEM_NAME,ExtensionService.ExtensionOptionsPanel)
 
         filePropertiesService.AddCustomEventHandler(projectService)
 
@@ -303,7 +304,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         if not ACTIVEGRID_BASE_IDE:
             embeddedWindows = wx.lib.pydocview.EMBEDDED_WINDOW_TOPLEFT | wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOMLEFT |wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM | wx.lib.pydocview.EMBEDDED_WINDOW_RIGHT
         else:
-            embeddedWindows = wx.lib.pydocview.EMBEDDED_WINDOW_TOPLEFT | wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOMLEFT |wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM
+            embeddedWindows = wx.lib.pydocview.EMBEDDED_WINDOW_LEFT | wx.lib.pydocview.EMBEDDED_WINDOW_RIGHT |wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM
         if self.GetUseTabbedMDI():
             self.frame = TabbedFrame.IDEDocTabbedParentFrame(docManager, None, -1, wx.GetApp().GetAppName(), embeddedWindows=embeddedWindows, minSize=150)
         else:
@@ -509,11 +510,11 @@ class IDEDocManager(wx.lib.docview.DocManager):
             if temp.IsVisible():
                 if len(descr) > 0:
                     descr = descr + _('|')
-                descr = descr + temp.GetDescription() + _(" (") + temp.GetFileFilter() + _(") |") + temp.GetFileFilter()  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
+                descr = descr + _(temp.GetDescription()) + _(" (") + temp.GetFileFilter() + _(") |") + temp.GetFileFilter()  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
         if sysutilslib.isWindows():
-            descr = _("All Files(*.*)|*.*|%s") % descr  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
+            descr = _("All Files") + "(*.*)|*.*|%s" % descr  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
         else:
-            descr = _("All Files (*)|*|%s") % descr 
+            descr = _("All Files") +  "(*)|*|%s" % descr 
             
         dlg = wx.FileDialog(self.FindSuitableParent(),
                                _("Select a File"),

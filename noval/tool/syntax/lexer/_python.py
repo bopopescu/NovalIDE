@@ -118,7 +118,7 @@ class SyntaxLexer(syndata.BaseLexer):
         return "Python Document"
         
     def GetViewTypeName(self):
-        return "Python View"
+        return _("Python Editor")
         
     def GetDocTypeClass(self):
         return PythonEditor.PythonDocument

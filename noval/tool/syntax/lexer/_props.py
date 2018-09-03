@@ -77,7 +77,7 @@ class SyntaxLexer(syndata.BaseLexer):
         return "Property Document"
         
     def GetViewTypeName(self):
-        return "Property View"
+        return _("Property Editor")
         
     def GetDocTypeClass(self):
         return CodeEditor.CodeDocument

@@ -161,8 +161,8 @@ def GenFileFilters(exclude_template_type = None):
             if temp.IsVisible() :
                 if len(descr) > 0:
                     descr = descr + _('|')
-                descr = descr + temp.GetDescription() + _(" (") + temp.GetFileFilter() + _(") |") + temp.GetFileFilter()  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
-        descr = _("All (*.*) |*.*|%s") % descr # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
+                descr = descr + _(temp.GetDescription()) + _(" (") + temp.GetFileFilter() + _(") |") + temp.GetFileFilter()  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
+        descr = _("All Files") + "(*.*) |*.*|%s" % descr # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
     else:
         descr = _("*.*")
         

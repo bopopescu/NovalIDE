@@ -91,10 +91,10 @@ class TextDocument(wx.lib.docview.Document):
         if not docTemplate:
             return False
 
-        descr = docTemplate.GetDescription() + _(" (") + docTemplate.GetFileFilter() + _(") |") + docTemplate.GetFileFilter()  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
+        descr = _(docTemplate.GetDescription()) + " (" + docTemplate.GetFileFilter() + ") |" + docTemplate.GetFileFilter()  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
         if docTemplate.GetDocumentType() == TextDocument and docTemplate.GetFileFilter() != "*.*":
             default_ext = ""
-            descr = _("All (*.*) |*.*|%s") % descr
+            descr = _("Any File") +  "(*.*) |*.*|%s" % descr
         else:
             default_ext = docTemplate.GetDefaultExtension()
         filename = wx.FileSelector(_("Save As"),

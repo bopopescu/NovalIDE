@@ -13,7 +13,7 @@ from noval.tool.syntax import lang
 import _cpp
 import noval.tool.CodeEditor as CodeEditor
 import noval.tool.images as images
-
+from noval.tool.consts import _
 #------------------------------------------------------------------------------#
 
 class SyntaxLexer(_cpp.SyntaxLexer):
@@ -31,7 +31,7 @@ class SyntaxLexer(_cpp.SyntaxLexer):
         return "C/C++ Header Document"
         
     def GetViewTypeName(self):
-        return "C/C++ Header View"
+        return _("C/C++ Header Editor")
         
     def GetDocTypeClass(self):
         return CodeEditor.CodeDocument

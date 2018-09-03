@@ -243,7 +243,7 @@ class SyntaxLexer(syndata.BaseLexer):
         return "HTML Document"
         
     def GetViewTypeName(self):
-        return "HTML View"
+        return _("HTML Editor")
         
     def GetDocTypeClass(self):
         return HtmlEditor.HtmlDocument

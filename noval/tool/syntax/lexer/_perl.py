@@ -145,7 +145,7 @@ class SyntaxLexer(syndata.BaseLexer):
         return "Perl Document"
         
     def GetViewTypeName(self):
-        return "Perl View"
+        return _("Perl Editor")
         
     def GetDocTypeClass(self):
         return PerlEditor.PerlDocument

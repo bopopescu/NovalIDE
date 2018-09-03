@@ -7,6 +7,13 @@ import noval.util.sysutils as sysutilslib
 import noval.util.appdirs as appdirs
 _ = wx.GetTranslation
 
+GENERAL_ITEM_NAME = "General"
+TEXT_ITEM_NAME = "Text"
+PROJECT_ITEM_NAME = "Project"
+FONTS_CORLORS_ITEM_NAME = "Fonts and Colors"
+INTERPRETER_ITEM_NAME = "Python Interpreter"
+EXTENSION_ITEM_NAME = "Extension"
+
 class OptionsDialog(wx.Dialog):
     """
     A default options dialog used by the OptionsService that hosts a notebook
@@ -68,9 +75,10 @@ class OptionsDialog(wx.Dialog):
                 option_panel = optionsPanelClass(self,-1,size=(self.PANEL_WIDITH,self.PANEL_HEIGHT))
                 option_panel.Hide()
                 self._optionsPanels[name] = option_panel
-                child = self.tree.AppendItem(item,name)
+                child = self.tree.AppendItem(item,_(name))
+                self.tree.SetPyData(child,name)
                 #select the default item,to avoid select no item
-                if name == _("General"):
+                if name == GENERAL_ITEM_NAME:
                     self.tree.SelectItem(child)
                 if name == option_name:
                     self.tree.SelectItem(child)
@@ -87,7 +95,7 @@ class OptionsDialog(wx.Dialog):
         if self.tree.GetChildrenCount(sel) > 0:
             (item, cookie) = self.tree.GetFirstChild(sel)
             sel = item
-        text = self.tree.GetItemText(sel)
+        text = self.tree.GetPyData(sel)
         panel = self._optionsPanels[text]
         if self.current_item is not None and sel != self.current_item:
             if not self.current_panel.Validate():
@@ -130,7 +138,10 @@ class OptionsDialog(wx.Dialog):
             if not optionsPanel.OnOK(self):
                 return
         sel = self.tree.GetSelection()
-        text = self.tree.GetItemText(sel)
+        if self.tree.GetChildrenCount(sel) > 0:
+            (item, cookie) = self.tree.GetFirstChild(sel)
+            sel = item
+        text = self.tree.GetPyData(sel)
         wx.ConfigBase_Get().Write("OptionName",text)
         self.EndModal(wx.ID_OK)
 
@@ -139,13 +150,13 @@ class OptionsService(wx.lib.pydocview.DocOptionsService):
         wx.lib.pydocview.DocOptionsService.__init__(self,False,supportedModes=wx.lib.docview.DOC_MDI)
         self._optionsPanels = {}
         self.category_list = []
-        self.AddOptionsPanel(_("Environment"),_("General"),GeneralOption.GeneralOptionsPanel)
+        self.AddOptionsPanel(_("Environment"),GENERAL_ITEM_NAME,GeneralOption.GeneralOptionsPanel)
         
     def OnOptions(self, event):
         """
         Shows the options dialog, called when the "Options" menu item is selected.
         """
-        self.OnOption(option_name = wx.ConfigBase_Get().Read("OptionName",_("General")))
+        self.OnOption(option_name = wx.ConfigBase_Get().Read("OptionName",GENERAL_ITEM_NAME))
         
     def OnOption(self,option_name):
         if len(self._optionsPanels) == 0:
@@ -154,10 +165,6 @@ class OptionsService(wx.lib.pydocview.DocOptionsService):
         optionsDialog.CenterOnParent()
         optionsDialog.ShowModal()
         optionsDialog.Destroy()
-      #  if optionsDialog.ShowModal() == wx.ID_OK:
-       #     if not optionsDialog.OnOK(optionsDialog):  # wxBug: wxDialog should be calling this automatically but doesn't
-        #        return
-        #optionsDialog.Destroy()
         
     def AddOptionsPanel(self,category,name,optionsPanelClass):
         

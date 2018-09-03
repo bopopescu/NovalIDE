@@ -42,7 +42,7 @@ class SyntaxLexer(syndata.BaseLexer):
         return "Text Document"
         
     def GetViewTypeName(self):
-        return "Text View"
+        return _("Text Editor")
         
     def GetDocTypeClass(self):
         return STCTextEditor.TextDocument

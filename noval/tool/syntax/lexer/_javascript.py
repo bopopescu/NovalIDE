@@ -111,7 +111,7 @@ class SyntaxLexer(syndata.BaseLexer):
         return "JavaScript Document"
         
     def GetViewTypeName(self):
-        return "JavaScript View"
+        return _("JavaScript Editor")
         
     def GetDocTypeClass(self):
         return CodeEditor.CodeDocument

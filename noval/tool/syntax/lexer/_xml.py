@@ -77,7 +77,7 @@ class SyntaxLexer(syndata.BaseLexer):
         return "XML Document"
         
     def GetViewTypeName(self):
-        return "XML View"
+        return _("XML Editor")
         
     def GetDocTypeClass(self):
         return XmlEditor.XmlDocument

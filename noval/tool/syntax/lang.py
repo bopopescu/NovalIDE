@@ -32,7 +32,7 @@ LANG_H = _('C/C++ Header File')
 
 # Use LEX_CSS
 ID_LANG_CSS = _NewId()
-LANG_CSS = _('StyleSheet File')
+LANG_CSS = _('StyleSheet')
 
 ID_LANG_HTML = _NewId()
 LANG_HTML = _('HTML File')
