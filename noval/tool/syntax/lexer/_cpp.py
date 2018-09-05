@@ -192,7 +192,7 @@ class SyntaxLexer(syndata.BaseLexer):
         return "cpp"
         
     def GetDocTypeName(self):
-        return "CPP Document"
+        return "C++ Document"
         
     def GetViewTypeName(self):
         return _("C++ Editor")

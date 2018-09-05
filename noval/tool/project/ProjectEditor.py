@@ -2502,7 +2502,11 @@ class ProjectView(wx.lib.docview.View):
     def SaveProject(self,event):
         doc = self.GetDocument()
         if doc.IsModified():
-            doc.OnSaveDocument(doc.GetFilename())
+            wx.GetApp().GetTopWindow().PushStatusText(_("Project is saving..."))
+            if doc.OnSaveDocument(doc.GetFilename()):
+                wx.GetApp().GetTopWindow().PushStatusText(_("Project save success."))
+            else:
+                wx.GetApp().GetTopWindow().PushStatusText(_("Project save failed."))
             
     def CleanProject(self):
         doc = self.GetDocument()

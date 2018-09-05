@@ -1240,6 +1240,8 @@ class BaseFramesUI(wx.SplitterWindow):
         if foundView:
             foundView.GetFrame().SetFocus()
             foundView.Activate()
+            if not hasattr(foundView,"GotoLine"):
+                return
             foundView.GotoLine(lineNum)
             startPos = foundView.PositionFromLine(lineNum)
             lineText = foundView.GetCtrl().GetLine(lineNum - 1)

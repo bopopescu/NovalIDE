@@ -10,6 +10,7 @@ import codecs
 import consts
 import OptionService
 from Validator import NumValidator
+import noval.util.utils as utils
 
 _ = wx.GetTranslation
 
@@ -262,12 +263,35 @@ class GeneralOptionsPanel(wx.Panel):
         self._remberCheckBox = wx.CheckBox(self, -1, _("Remember File Position"))
         self._remberCheckBox.SetValue(config.ReadInt(consts.REMBER_FILE_KEY, True))
         optionsSizer.Add(self._remberCheckBox, 0, wx.ALL, HALF_SPACE)
+        
+        lsizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.document_types_combox = wx.ComboBox(self, -1,choices=[],style= wx.CB_READONLY)
+        lsizer.AddMany([(wx.StaticText(self, label=_("Default New Document Type") + u": "),
+                         0, wx.ALIGN_CENTER_VERTICAL), ((5, 5), 0),
+                        (self.document_types_combox,
+                         0, wx.ALIGN_CENTER_VERTICAL)])
+        self.InitDocumentTypes()
+
+        optionsSizer.Add(lsizer, 0, wx.ALL, HALF_SPACE)
 
         optionsBorderSizer.Add(optionsSizer, 0, wx.ALL, SPACE)
         self.SetSizer(optionsBorderSizer)
         self.Layout()
         self._documentInterfaceMessageShown = False
         self.checkEnableMRU(None)
+        
+    def InitDocumentTypes(self):
+        document_type_name = utils.ProfileGet("DefaultDocumentType",consts.DEFAULT_DOCUMENT_TYPE_NAME)
+        templates = []
+        for temp in wx.GetApp().GetDocumentManager().GetTemplates():
+            #filter image document and any file document
+            if temp.IsVisible() and temp.IsNewable():
+                templates.append(temp)
+        for temp in templates:
+            i = self.document_types_combox.Append(_(temp.GetDescription()))
+            if document_type_name == temp.GetDocumentName():
+                self.document_types_combox.SetSelection(i)
+            self.document_types_combox.SetClientData(i,temp)
 
     def checkEnableMRU(self,event):
         enableMRU = self._enableMRUCheckBox.GetValue()
@@ -296,6 +320,10 @@ class GeneralOptionsPanel(wx.Panel):
         config.WriteInt("EnableMRU",self._enableMRUCheckBox.GetValue())
         config.Write(consts.DEFAULT_FILE_ENCODING_KEY,self.encodings_combo.GetValue())
         config.WriteInt(consts.REMBER_FILE_KEY, self._remberCheckBox.GetValue())
+        sel = self.document_types_combox.GetSelection()
+        if sel != -1:
+            template = self.document_types_combox.GetClientData(sel)
+            config.Write("DefaultDocumentType",template.GetDocumentName())
         if self._AllowModeChanges():
             config.WriteInt("UseMDI", (self._documentRadioBox.GetStringSelection() == self._mdiChoice))
             config.WriteInt("UseWinMDI", (self._documentRadioBox.GetStringSelection() == self._winMdiChoice))

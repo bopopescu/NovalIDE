@@ -241,5 +241,7 @@
   <noval:file filePath="./noval/tool/bmp_source/debugger/terminate_all.png" logicalFolder="noval/tool/bmp_source/debugger" isStartup="false"/>
   <noval:file filePath="./noval/tool/project/Property.py" logicalFolder="noval/tool/project" isStartup="false"/>
   <noval:file filePath="./noval/model/constants.py" logicalFolder="noval/model" isStartup="false"/>
+  <noval:file filePath="./noval/tool/FindTextCtrl.py" logicalFolder="noval/tool" isStartup="false"/>
+  <noval:file filePath="./noval/tool/NewDocument.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>

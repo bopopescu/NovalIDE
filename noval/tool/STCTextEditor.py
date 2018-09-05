@@ -32,7 +32,7 @@ import consts
 import noval.util.sysutils as sysutilslib
 import noval.util.fileutils as fileutils
 import noval.parser.utils as parserutils
-import BaseCtrl
+import FindTextCtrl
 from noval.tool.syntax import syntax
 import noval.util.strutils as strutils
 import json
@@ -799,73 +799,6 @@ class TextView(wx.lib.docview.View):
                 dlg_rect.Offset(wx.Point(0,new_point.y+40-dlg_rect.GetTopLeft().y))
             to_point = wx.Point(dlg_rect.GetX(),dlg_rect.GetY())
             current_dlg.Move(to_point)
-    
-    def TextNotFound(self,findString,flags,forceFindNext = False, forceFindPrevious = False):
-        wx.MessageBox(_("Have been reached the end of document,Can't find \"%s\".") % findString, _("Find Text"),
-                          wx.OK | wx.ICON_INFORMATION)     
-        down = flags & wx.FR_DOWN > 0
-        wrap = flags & FindService.FindService.FR_WRAP > 0
-        if forceFindPrevious: 
-            down = False
-            wrap = False 
-        elif forceFindNext:
-            down = True
-            wrap = False
-        if wrap & down:
-            self.GetCtrl().SetSelectionStart(0)
-            self.GetCtrl().SetSelectionEnd(0)
-        elif wrap & (not down):
-            doc_length = self.GetCtrl().GetLength()
-            self.GetCtrl().SetSelectionStart(doc_length)
-            self.GetCtrl().SetSelectionEnd(doc_length)
-        
-    def FindText(self,findString,flags,forceFindNext = False, forceFindPrevious = False):
-        startLoc, endLoc = self.GetCtrl().GetSelection()
-        wholeWord = flags & wx.FR_WHOLEWORD > 0
-        matchCase = flags & wx.FR_MATCHCASE > 0
-        regExp = flags & FindService.FindService.FR_REGEXP > 0
-        down = flags & wx.FR_DOWN > 0
-        wrap = flags & FindService.FindService.FR_WRAP > 0
-        
-        if forceFindPrevious:   # this is from function keys, not dialog box
-            down = False
-            wrap = False        # user would want to know they're at the end of file
-        elif forceFindNext:
-            down = True
-            wrap = False        # user would want to know they're at the end of file
-            
-        minpos = self.GetCtrl().GetSelectionStart()
-        maxpos = self.GetCtrl().GetSelectionEnd()
-        if minpos != maxpos:
-            if down:
-                minpos += 1
-            else:
-                maxpos = minpos - 1
-        if down:
-            maxpos = self.GetCtrl().GetLength()
-        else:
-            minpos = 0
-        flags =  wx.stc.STC_FIND_MATCHCASE if matchCase else 0
-        flags |= wx.stc.STC_FIND_WHOLEWORD if wholeWord else 0
-        flags |= wx.stc.STC_FIND_REGEXP if regExp else 0
-         #Swap the start and end positions which Scintilla uses to flag backward searches
-        if not down:
-            tmp_min = minpos
-            minpos = maxpos
-            maxpos= tmp_min
-
-        return True if self.FindAndSelect(findString,minpos,maxpos,flags) != -1 else False
- 
-    def FindAndSelect(self,findString,minpos,maxpos,flags):
-        index = self.GetCtrl().FindText(minpos,maxpos,findString,flags)
-        if -1 != index:
-            start = index
-            end = index + len(findString.encode('utf-8'))
-            self.GetCtrl().SetSelection(start,end)
-            self.GetCtrl().EnsureVisibleEnforcePolicy(self.GetCtrl().LineFromPosition(end))  # show bottom then scroll up to top
-            self.GetCtrl().EnsureVisibleEnforcePolicy(self.GetCtrl().LineFromPosition(start)) # do this after ensuring bottom is visible
-            wx.GetApp().GetTopWindow().PushStatusText(_("Found \"%s\".") % findString)
-        return index
         
     def DoFindText(self,forceFindNext = False, forceFindPrevious = False):
         findService = wx.GetApp().GetService(FindService.FindService)
@@ -875,8 +808,8 @@ class TextView(wx.lib.docview.View):
         if len(findString) == 0:
             return -1
         flags = findService.GetFlags()
-        if not self.FindText(findString,flags,forceFindNext,forceFindPrevious):
-            self.TextNotFound(findString,flags,forceFindNext,forceFindPrevious)
+        if not self.GetCtrl().DoFindText(findString,flags,forceFindNext,forceFindPrevious):
+            self.GetCtrl().TextNotFound(findString,flags,forceFindNext,forceFindPrevious)
         else:
             if not forceFindNext and not forceFindPrevious:
                 self.AdjustFindDialogPosition(findService)
@@ -891,14 +824,14 @@ class TextView(wx.lib.docview.View):
         replaceString = findService.GetReplaceString()
         flags = findService.GetFlags()
         if not self.SameAsSelected(findString,flags):
-            if not self.FindText(findString,flags):
-                self.TextNotFound(findString,flags)
+            if not self.GetCtrl().DoFindText(findString,flags):
+                self.GetCtrl().TextNotFound(findString,flags)
             else:
                 self.AdjustFindDialogPosition(findService)
             return
         self.GetCtrl().ReplaceSelection(replaceString)
-        if not self.FindText(findString,flags):
-            self.TextNotFound(findString,flags)
+        if not self.GetCtrl().DoFindText(findString,flags):
+            self.GetCtrl().TextNotFound(findString,flags)
         else:
             self.AdjustFindDialogPosition(findService)
       
@@ -914,13 +847,13 @@ class TextView(wx.lib.docview.View):
         hit_found = False
         self.GetCtrl().SetSelection(0,0)
         ###self.GetCtrl().HideSelection(True)
-        while self.FindText(findString,flags):
+        while self.GetCtrl().DoFindText(findString,flags):
             hit_found = True
             self.GetCtrl().ReplaceSelection(replaceString)
 
         ###self.GetCtrl().HideSelection(False)
         if not hit_found:
-            self.TextNotFound(findString,flags)
+            self.GetCtrl().TextNotFound(findString,flags)
         
     def SameAsSelected(self,findString,flags):
         start_pos = self.GetCtrl().GetSelectionStart()
@@ -1149,6 +1082,7 @@ class TextOptionsPanel(wx.Panel):
         self._viewIndentationGuideCheckBox = wx.CheckBox(self, -1, _("Show indentation guides"))
         self._viewIndentationGuideCheckBox.SetValue(config.ReadInt(self._configPrefix + "EditorViewIndentationGuides", False))
         self._viewRightEdgeCheckBox = wx.CheckBox(self, -1, _("Show right edge"))
+        self.Bind(wx.EVT_CHECKBOX,self.CheckRightEdge,self._viewRightEdgeCheckBox)
         self._viewRightEdgeCheckBox.SetValue(config.ReadInt(self._configPrefix + "EditorViewRightEdge", False))
         self._viewLineNumbersCheckBox = wx.CheckBox(self, -1, _("Show line numbers"))
         self._viewLineNumbersCheckBox.SetValue(config.ReadInt(self._configPrefix + "EditorViewLineNumbers", True))
@@ -1161,6 +1095,9 @@ class TextOptionsPanel(wx.Panel):
             indentWidthLabel = wx.StaticText(self, -1, _("Indent Width:"))
             self._indentWidthChoice = wx.Choice(self, -1, choices = ["2", "4", "6", "8", "10"])
             self._indentWidthChoice.SetStringSelection(str(config.ReadInt(self._configPrefix + "EditorIndentWidth", 4)))
+            
+        edgeWidthLabel = wx.StaticText(self, -1, _("Edge Guide Width:"))
+        self.edge_spin_ctrl = wx.SpinCtrl(self, -1,str(utils.ProfileGetInt('EdgeGuideWidth',consts.DEFAULT_EDGE_GUIDE_WIDTH)), min=0, max=160)
         textPanelBorderSizer = wx.BoxSizer(wx.VERTICAL)
         textPanelSizer = wx.BoxSizer(wx.VERTICAL)
         textFontSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1183,12 +1120,22 @@ class TextOptionsPanel(wx.Panel):
             textIndentWidthSizer.Add(indentWidthLabel, 0, wx.ALIGN_LEFT | wx.RIGHT | wx.TOP, HALF_SPACE)
             textIndentWidthSizer.Add(self._indentWidthChoice, 0, wx.ALIGN_LEFT | wx.EXPAND, HALF_SPACE)
             textPanelSizer.Add(textIndentWidthSizer, 0, wx.ALL, HALF_SPACE)
+            
+        line_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        line_sizer.Add(edgeWidthLabel, 0, wx.ALIGN_LEFT | wx.RIGHT | wx.TOP, HALF_SPACE)
+        line_sizer.Add(self.edge_spin_ctrl, 0, wx.ALIGN_LEFT | wx.EXPAND, HALF_SPACE)
+        textPanelSizer.Add(line_sizer, 0, wx.ALL, HALF_SPACE)
+        self.CheckRightEdge(None)
+        
         textPanelBorderSizer.Add(textPanelSizer, 0, wx.ALL|wx.EXPAND, SPACE)
 ##        styleButton = wx.Button(self, -1, _("Choose Style..."))
 ##        wx.EVT_BUTTON(self, styleButton.GetId(), self.OnChooseStyle)
 ##        textPanelBorderSizer.Add(styleButton, 0, wx.ALL, SPACE)
         self.SetSizer(textPanelBorderSizer)
         self.UpdateSampleFont()
+        
+    def CheckRightEdge(self,event):
+        self.edge_spin_ctrl.Enable(self._viewRightEdgeCheckBox.GetValue())
 
     def UpdateSampleFont(self):
         nativeFont = wx.NativeFontInfo()
@@ -1248,6 +1195,9 @@ class TextOptionsPanel(wx.Panel):
         config.WriteInt(self._configPrefix + "EditorViewRightEdge", self._viewRightEdgeCheckBox.GetValue())
         doViewStuffUpdate = doViewStuffUpdate or config.ReadInt(self._configPrefix + "EditorViewLineNumbers", True) != self._viewLineNumbersCheckBox.GetValue()
         config.WriteInt(self._configPrefix + "EditorViewLineNumbers", self._viewLineNumbersCheckBox.GetValue())
+        if self._viewRightEdgeCheckBox.GetValue():
+            doViewStuffUpdate = doViewStuffUpdate or config.ReadInt("EdgeGuideWidth", consts.DEFAULT_EDGE_GUIDE_WIDTH) != int(self.edge_spin_ctrl.GetValue())
+            config.WriteInt("EdgeGuideWidth", int(self.edge_spin_ctrl.GetValue()))
         if self._hasFolding:
             doViewStuffUpdate = doViewStuffUpdate or config.ReadInt(self._configPrefix + "EditorViewFolding", True) != self._viewFoldingCheckBox.GetValue()
             config.WriteInt(self._configPrefix + "EditorViewFolding", self._viewFoldingCheckBox.GetValue())
@@ -1283,16 +1233,16 @@ class TextOptionsPanel(wx.Panel):
     def GetIcon(self):
         return getTextIcon()
 
-class TextCtrl(BaseCtrl.ScintillaCtrl):
+class TextCtrl(FindTextCtrl.FindTextCtrl):
 
     def __init__(self, parent, id=-1,style=wx.NO_FULL_REPAINT_ON_RESIZE):
-        BaseCtrl.ScintillaCtrl.__init__(self, parent, id, style=style)
+        FindTextCtrl.FindTextCtrl.__init__(self, parent, id, style=style)
         self.UpdateBaseStyles()
         self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
         self.Bind(wx.stc.EVT_STC_ZOOM, self.OnUpdateLineNumberMarginWidth)  # auto update line num width on zoom
         self.MarkerDefineDefault()
       #  self.SetEdgeMode(wx.stc.STC_EDGE_LINE)
-        self.SetEdgeColumn(78)
+        self.SetEdgeColumn(utils.ProfileGetInt("EdgeGuideWidth",consts.DEFAULT_EDGE_GUIDE_WIDTH))
         
 
     @NavigationService.jumpaction
@@ -1343,6 +1293,7 @@ class TextCtrl(BaseCtrl.ScintillaCtrl):
             self.SetUseTabs(True)
             self.SetIndent(4)
             self.SetTabWidth(4)
+        self.SetEdgeColumn(config.ReadInt("EdgeGuideWidth",consts.DEFAULT_EDGE_GUIDE_WIDTH))
             
     def OnUpdateLineNumberMarginWidth(self, event):
         self.UpdateLineNumberMarginWidth()
