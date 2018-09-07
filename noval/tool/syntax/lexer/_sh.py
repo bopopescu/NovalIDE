@@ -27,6 +27,7 @@ import wx.stc as stc
 from noval.tool.syntax import syndata,lang
 import noval.tool.CodeEditor as CodeEditor
 from noval.tool.consts import _
+import noval.tool.images as images
 
 #-----------------------------------------------------------------------------#
 
@@ -147,4 +148,4 @@ class SyntaxLexer(syndata.BaseLexer):
         return CodeEditor.CodeView
         
     def GetDocIcon(self):
-        return None
+        return images.getShellFileIcon()

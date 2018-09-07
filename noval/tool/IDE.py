@@ -219,7 +219,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 HtmlEditor.WebDocument,
                 HtmlEditor.WebView,
                 wx.lib.docview.TEMPLATE_INVISIBLE,
-                icon = HtmlEditor.getHTMLIcon())
+                icon = images.getWebIcon())
         docManager.AssociateTemplate(webViewTemplate)
 
         imageTemplate = wx.lib.docview.DocTemplate(docManager,
@@ -483,7 +483,7 @@ class IDEDocManager(wx.lib.docview.DocManager):
         for temp in templates:
             if temp.IsVisible():
                 if len(descr) > 0:
-                    descr = descr + _('|')
+                    descr = descr + '|'
                 descr = descr + _(temp.GetDescription()) + " (" + temp.GetFileFilter() + ") |" + temp.GetFileFilter()  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
         if sysutilslib.isWindows():
             descr = _("All Files") + "(*.*)|*.*|%s" % descr  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
@@ -609,6 +609,30 @@ class IDEDocManager(wx.lib.docview.DocManager):
             if temp.GetDocumentName() == document_type:
                 return temp
         return default
+        
+    def CreateTemplateDocument(self, template,path, flags=0):
+        #the document has been opened,switch to the document view
+        if path and flags & wx.lib.docview.DOC_OPEN_ONCE:
+            found_view = utils.GetOpenView(path)
+            if found_view:
+                if found_view and found_view.GetFrame() and not (flags & wx.lib.docview.DOC_NO_VIEW):
+                    found_view.GetFrame().SetFocus()  # Not in wxWindows code but useful nonetheless
+                    if hasattr(found_view.GetFrame(), "IsIconized") and found_view.GetFrame().IsIconized():  # Not in wxWindows code but useful nonetheless
+                        found_view.GetFrame().Iconize(False)
+                return None
+                
+        doc = template.CreateDocument(path, flags)
+        if doc:
+            doc.SetDocumentName(template.GetDocumentName())
+            doc.SetDocumentTemplate(template)
+            if not doc.OnOpenDocument(path):
+                frame = doc.GetFirstView().GetFrame()
+                doc.DeleteAllViews()  # Implicitly deleted by DeleteAllViews
+                if frame:
+                    frame.Destroy() # DeleteAllViews doesn't get rid of the frame, so we'll explicitly destroy it.
+                return None
+            self.AddFileToHistory(path)
+        return doc
 
 #----------------------------------------------------------------------
 

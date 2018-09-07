@@ -404,6 +404,7 @@ class ProjectDocument(wx.lib.docview.Document):
             key_path = os.path.basename(pj_file.filePath)
         else:
             key_path = os.path.join(pj_file.logicalFolder,os.path.basename(pj_file.filePath))
+        key_path = fileutils.opj(key_path)
         return "%s/{%s}/%s/%s" % (PROJECT_KEY, self.GetModel().Id, key_path.replace(os.sep, '|'),lastPart)
 
     def OnCreate(self, path, flags):
@@ -1611,33 +1612,34 @@ class ProjectTreeCtrl(wx.TreeCtrl):
         
     def GetIconIndexFromName(self,filename):
         template = wx.GetApp().GetDocumentManager().FindTemplateForPath(filename)
-        if template:
-            for t, iconIndex in self._iconIndexLookup:
-                if t is template:
-                    return iconIndex
+        return self.GetTemplateIconIndex(template)
+        
+    def GetTemplateIconIndex(self,template):
+        for t, iconIndex in self._iconIndexLookup:
+            if t is template:
+                return iconIndex
         return -1
 
     def AppendItem(self, parent, filename, file):
         item = wx.TreeCtrl.AppendItem(self, parent, filename)
+        template = wx.GetApp().GetService(ProjectService).GetView().GetOpenDocumentTemplate(file)
+        
 
         found = False
-        template = wx.GetApp().GetDocumentManager().FindTemplateForPath(filename)
+        if template is None:
+            template = wx.GetApp().GetDocumentManager().FindTemplateForPath(filename)
         if template:
-            for t, iconIndex in self._iconIndexLookup:
-                if t is template:
-                    self.SetItemImage(item, iconIndex, wx.TreeItemIcon_Normal)
-                    self.SetItemImage(item, iconIndex, wx.TreeItemIcon_Expanded)
-##                    self.SetItemImage(item, iconIndex, wx.TreeItemIcon_Selected)
-                    found = True
-                    break
+            iconIndex = self.GetTemplateIconIndex(template)
+            if iconIndex != -1:
+                self.SetItemImage(item, iconIndex, wx.TreeItemIcon_Normal)
+                self.SetItemImage(item, iconIndex, wx.TreeItemIcon_Expanded)
+                found = True
 
         if not found:
             self.SetItemImage(item, self._blankIconIndex, wx.TreeItemIcon_Normal)
             self.SetItemImage(item, self._blankIconIndex, wx.TreeItemIcon_Expanded)
-##            self.SetItemImage(item, self._blankIconIndex, wx.TreeItemIcon_Selected)
 
         self.SetPyData(item, file)
-        
         return item
 
 
@@ -2483,7 +2485,7 @@ class ProjectView(wx.lib.docview.View):
                 break
                 
     def OpenProject(self,event):
-        descr = _("Project File (*%s)|*%s") % (PROJECT_EXTENSION,PROJECT_EXTENSION)
+        descr = _("Project File") + "(*%s)|*%s" % (PROJECT_EXTENSION,PROJECT_EXTENSION)
         dlg = wx.FileDialog(self.GetFrame(),_("Open Project") ,
                        wildcard = descr,
                        style=wx.OPEN|wx.FILE_MUST_EXIST|wx.CHANGE_DIR)
@@ -3976,9 +3978,22 @@ class ProjectView(wx.lib.docview.View):
         # Do a call after so that the second mouseclick on a doubleclick doesn't reselect the project window
         wx.CallAfter(self.OnOpenSelection, None)
 
+    def GetOpenDocumentTemplate(self,project_file):
+        template = None
+        document_template_name = utils.ProfileGet(self.GetDocument().GetFileKey(project_file,"Open"),"")
+        filename = os.path.basename(project_file.filePath)
+        if not document_template_name:
+            document_template_name = utils.ProfileGet("Open/filenames/%s" % filename,"")
+            if not document_template_name:
+                document_template_name = utils.ProfileGet("Open/extensions/%s" % strutils.GetFileExt(filename),"")
+        if document_template_name:
+            template = wx.GetApp().GetDocumentManager().FindTemplateForDocumentType(document_template_name)
+        return template
+        
     def OnOpenSelectionWith(self, event):
-        selected_file_path = self.GetSelectedFile()
-        dlg = ProjectUI.EditorSelectionDialog(wx.GetApp().GetTopWindow(),-1,_("Editor Selection"),selected_file_path)
+        item_file = self._GetItemFile(self._treeCtrl.GetSingleSelectItem())
+        selected_file_path = item_file.filePath
+        dlg = ProjectUI.EditorSelectionDialog(wx.GetApp().GetTopWindow(),-1,_("Editor Selection"),item_file,self.GetDocument())
         dlg.CenterOnParent()
         if dlg.ShowModal() == wx.ID_OK:
             found_view = utils.GetOpenView(selected_file_path)
@@ -3994,18 +4009,59 @@ class ProjectView(wx.lib.docview.View):
                         frame.Destroy()
                 else:
                     return
-            newDoc = dlg.selected_template.CreateDocument(selected_file_path, wx.lib.docview.DOC_SILENT)
-            if newDoc:
-                newDoc.SetDocumentName(dlg.selected_template.GetDocumentName())
-                newDoc.SetDocumentTemplate(dlg.selected_template)
-                if not newDoc.OnOpenDocument(selected_file_path):
-                    frame = newDoc.GetFirstView().GetFrame()
-                    newDoc.DeleteAllViews()  # Implicitly deleted by DeleteAllViews
-                    if frame:
-                        frame.Destroy() # DeleteAllViews doesn't get rid of the frame, so we'll explicitly destroy it.
-                    return
-                self.GetDocumentManager().AddFileToHistory(selected_file_path)
+            doc = self.GetDocumentManager().CreateTemplateDocument(dlg.selected_template,selected_file_path, wx.lib.docview.DOC_SILENT)
+            if doc is not None and dlg._is_changed and utils.GetOpenView(selected_file_path):
+                iconIndex = self._treeCtrl.GetTemplateIconIndex(dlg.selected_template)
+                if dlg.OpenwithMode == dlg.OPEN_WITH_FILE_PATH:
+                    utils.ProfileSet(self.GetDocument().GetFileKey(item_file,"Open"),\
+                                     dlg.selected_template.GetDocumentName())
+                    file_template = wx.GetApp().GetDocumentManager().FindTemplateForPath(selected_file_path)
+                    if file_template != dlg.selected_template:
+                        item = self._treeCtrl.GetSelections()[0]
+                        if iconIndex != -1:
+                            self._treeCtrl.SetItemImage(item, iconIndex, wx.TreeItemIcon_Normal)
+                            self._treeCtrl.SetItemImage(item, iconIndex, wx.TreeItemIcon_Expanded)
+                        
+                elif dlg.OpenwithMode == dlg.OPEN_WITH_FILE_NAME:
+                    filename = os.path.basename(selected_file_path)
+                    utils.ProfileSet("Open/filenames/%s" % filename,dlg.selected_template.GetDocumentName())
+                    if iconIndex != -1:
+                        self.ChangeItemsImageWithFilename(self._treeCtrl.GetRootItem(),filename,iconIndex)
+                elif dlg.OpenwithMode == dlg.OPEN_WITH_FILE_EXTENSION:
+                    extension = strutils.GetFileExt(os.path.basename(selected_file_path))
+                    utils.ProfileSet("Open/extensions/%s" % extension,dlg.selected_template.GetDocumentName())
+                    if iconIndex != -1:
+                        self.ChangeItemsImageWithExtension(self._treeCtrl.GetRootItem(),extension,iconIndex)
+                else:
+                    assert(False)
         dlg.Destroy()
+        
+
+    def ChangeItemsImageWithFilename(self,parent_item,filename,icon_index):
+        if parent_item is None:
+            return
+        (item, cookie) = self._treeCtrl.GetFirstChild(parent_item)
+        while item:
+            if self._IsItemFile(item):
+                file_name = self._treeCtrl.GetItemText(item)
+                if file_name == filename:
+                    self._treeCtrl.SetItemImage(item, icon_index, wx.TreeItemIcon_Normal)
+                    self._treeCtrl.SetItemImage(item, icon_index, wx.TreeItemIcon_Expanded)
+            self.ChangeItemsImageWithFilename(item,filename,icon_index)
+            (item, cookie) = self._treeCtrl.GetNextChild(parent_item, cookie)
+        
+    def ChangeItemsImageWithExtension(self,parent_item,extension,icon_index):
+        if parent_item is None:
+            return
+        (item, cookie) = self._treeCtrl.GetFirstChild(parent_item)
+        while item:
+            if self._IsItemFile(item):
+                file_name = self._treeCtrl.GetItemText(item)
+                if strutils.GetFileExt(file_name) == extension:
+                    self._treeCtrl.SetItemImage(item, icon_index, wx.TreeItemIcon_Normal)
+                    self._treeCtrl.SetItemImage(item, icon_index, wx.TreeItemIcon_Expanded)
+            self.ChangeItemsImageWithExtension(item,extension,icon_index)
+            (item, cookie) = self._treeCtrl.GetNextChild(parent_item, cookie)
         
     def OnOpenSelection(self, event):
         if self.GetMode() == ProjectView.RESOURCE_VIEW:
@@ -4050,8 +4106,13 @@ class ProjectView(wx.lib.docview.View):
                             filepath = newpath
                         else:
                             continue
-
-                    doc = self.GetDocumentManager().CreateDocument(filepath, wx.lib.docview.DOC_SILENT|wx.lib.docview.DOC_OPEN_ONCE)
+                            
+                    project_file = self._treeCtrl.GetPyData(item)
+                    file_template = self.GetOpenDocumentTemplate(project_file)
+                    if file_template:
+                        doc = self.GetDocumentManager().CreateTemplateDocument(file_template,filepath, wx.lib.docview.DOC_SILENT|wx.lib.docview.DOC_OPEN_ONCE)
+                    else:
+                        doc = self.GetDocumentManager().CreateDocument(filepath, wx.lib.docview.DOC_SILENT|wx.lib.docview.DOC_OPEN_ONCE)
                     if not doc and filepath.endswith(PROJECT_EXTENSION):  # project already open
                         self.SetProject(filepath)
                     elif doc:

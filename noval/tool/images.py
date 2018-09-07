@@ -83,3 +83,9 @@ def load_icon(icon_path):
         return wx.Icon(icon_path, wx.BITMAP_TYPE_ICO)
     return wx.IconFromBitmap(load(icon_path))
     
+
+def getShellFileIcon():
+    return load_icon("shell.png")
+    
+def getWebIcon():
+    return load_icon("web.png")

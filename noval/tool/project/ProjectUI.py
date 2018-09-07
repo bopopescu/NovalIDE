@@ -3,6 +3,9 @@ from noval.tool.consts import SPACE,HALF_SPACE,_
 import ProjectEditor
 import noval.tool.HtmlEditor as HtmlEditor
 import os
+import noval.util.strutils as strutils
+import noval.util.utils as utils
+import noval.util.sysutils as sysutilslib
 
 class PromptMessageDialog(wx.Dialog):
     
@@ -113,9 +116,16 @@ class FileFilterDialog(wx.Dialog):
                     self.listbox.Append(filter)
 
 class EditorSelectionDialog(wx.Dialog):
-    def __init__(self,parent,dlg_id,title,selected_file_path):
+    
+    OPEN_WITH_FILE_PATH = 1
+    OPEN_WITH_FILE_NAME = 2
+    OPEN_WITH_FILE_EXTENSION = 3
+    def __init__(self,parent,dlg_id,title,selected_item_file,project_document):
         wx.Dialog.__init__(self,parent,dlg_id,title)
-        self._file_path = selected_file_path
+        self._project_file = selected_item_file
+        self._file_path = selected_item_file.filePath
+        self._open_with_mode = self.OPEN_WITH_FILE_PATH
+        self._is_changed = False
         boxsizer = wx.BoxSizer(wx.VERTICAL)
         boxsizer.Add(wx.StaticText(self, -1, _("Choose an editor you want to open") \
                                    + " '%s':" % os.path.basename(self._file_path), \
@@ -128,13 +138,53 @@ class EditorSelectionDialog(wx.Dialog):
             icon = temp.GetIcon()
             iconIndex = il.AddIcon(icon)
         self.lc.AssignImageList(il, wx.IMAGE_LIST_SMALL)
+        document_template_name = utils.ProfileGet(project_document.GetFileKey(self._project_file,"Open"),"")
+        
+        filename = os.path.basename(self._file_path)
+        if not document_template_name:
+            document_template_name = utils.ProfileGet("Open/filenames/%s" % filename,"")
+            if not document_template_name:
+                document_template_name = utils.ProfileGet("Open/extensions/%s" % strutils.GetFileExt(filename),"")
+                if document_template_name:
+                    self._open_with_mode = self.OPEN_WITH_FILE_EXTENSION
+            else:
+                self._open_with_mode = self.OPEN_WITH_FILE_NAME
+                
+        self._document_template_name = document_template_name
+        
         for i,temp in enumerate(self.templates):
             show_name = temp.GetViewName()
             if 0 == i:
                 show_name += (" (" + _("Default") + ")")
             self.lc.InsertImageStringItem( i,show_name ,i)
-        boxsizer.Add(self.lc,1,flag = wx.EXPAND|wx.BOTTOM|wx.RIGHT|wx.LEFT,border = SPACE)
+            if document_template_name == temp.GetDocumentName():
+                self.lc.Select(i)
+        if document_template_name == "":
+            self._document_template_name = self.templates[0].GetDocumentName()
+            self.lc.Select(0)
+            
+        boxsizer.Add(self.lc,1,flag = wx.EXPAND|wx.RIGHT|wx.LEFT,border = SPACE)
+        if not sysutilslib.isWindows():
+            ##on linux os,the first radiobox will be selected as default within a group radiobox.
+            ###so use a hidden radiobox to set as the default selected one
+            lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+            self._hiddenRadioBox = wx.RadioButton(self, -1, _("____") + " '%s'" % os.path.basename(self._file_path))
+            self._hiddenRadioBox.Show(False)
+            lineSizer.Add(self._hiddenRadioBox, 0,flag=wx.LEFT|wx.EXPAND,border=SPACE)
+            boxsizer.Add(lineSizer,0,flag = wx.EXPAND|wx.RIGHT|wx.TOP,border = HALF_SPACE) 
+            
+        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._applyNameRadioBox = wx.RadioButton(self, -1, _("Use this editor for all files named") + " '%s'" % os.path.basename(self._file_path))
+        lineSizer.Add(self._applyNameRadioBox, 0,flag=wx.LEFT|wx.EXPAND,border=SPACE)
+        boxsizer.Add(lineSizer,0,flag = wx.EXPAND|wx.RIGHT|wx.TOP,border = HALF_SPACE) 
         
+        ext = strutils.GetFileExt(os.path.basename(self._file_path))
+        if ext != "":
+            lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+            self._applyAllRadioBox = wx.RadioButton(self, -1, _("Use it for all files with extension") + " '.%s'" % ext)
+            lineSizer.Add(self._applyAllRadioBox, 0,flag=wx.LEFT|wx.EXPAND,border=SPACE)
+            boxsizer.Add(lineSizer,0,flag = wx.EXPAND|wx.RIGHT|wx.TOP|wx.BOTTOM,border = HALF_SPACE) 
+            
         bsizer = wx.StdDialogButtonSizer()
         ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
         wx.EVT_BUTTON(ok_btn, -1, self.OnOKClick)
@@ -145,7 +195,7 @@ class EditorSelectionDialog(wx.Dialog):
         cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
         bsizer.AddButton(cancel_btn)
         bsizer.Realize()
-        boxsizer.Add(bsizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM,HALF_SPACE)
+        boxsizer.Add(bsizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM|wx.TOP,SPACE)
         self.SetSizer(boxsizer)
         self.Fit()
         
@@ -163,10 +213,25 @@ class EditorSelectionDialog(wx.Dialog):
         templates.insert(0,default_template)
         return templates
         
+    @property
+    def OpenwithMode(self):
+        return self._open_with_mode
+
+    def GetOpenwithMode(self):
+        if self._applyNameRadioBox.GetValue():
+            return self.OPEN_WITH_FILE_NAME
+        elif hasattr(self,"_applyAllRadioBox") and self._applyAllRadioBox.GetValue():
+            return self.OPEN_WITH_FILE_EXTENSION
+        return self.OPEN_WITH_FILE_PATH
+        
     def OnOKClick(self,event):
         if self.lc.GetFirstSelected() == -1:
             wx.MessageBox(_("Please choose one editor"))
             return
         self.selected_template = self.templates[self.lc.GetFirstSelected()]
+        self._is_changed = False if self._open_with_mode == self.GetOpenwithMode() else True
+        if not self._is_changed:
+            self._is_changed =  False if self._document_template_name == self.selected_template.GetDocumentName() else True
+        self._open_with_mode = self.GetOpenwithMode()
         self.EndModal(wx.ID_OK)
  

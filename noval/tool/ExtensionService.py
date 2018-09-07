@@ -33,6 +33,7 @@ import noval.tool.interpreter.Interpreter as Interpreter
 import getpass
 import noval.util.fileutils as fileutils
 import which as whichpath
+import noval.tool.images as images
 _ = wx.GetTranslation
 
 
@@ -153,7 +154,9 @@ class ExtensionService(Service.BaseService):
             
             if sysutilslib.isWindows():
                 id = wx.NewId()
-                toolsMenu.Append(id,_("&Web Browser"))
+                item = wx.MenuItem(toolsMenu,id,_("&Web Browser"))
+                item.SetBitmap(images.load("web.png"))
+                toolsMenu.AppendItem(item)
                 wx.EVT_MENU(frame, id, self.GotoDefaultWebView)
         
         helpMenuIndex = menuBar.FindMenu(_("&Help"))
