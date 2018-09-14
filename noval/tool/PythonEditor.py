@@ -694,9 +694,9 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         # Left in for debugging purposes:
         #for i in range(len(text)):
         #    print i, text[i], self._tokenizerChars[i]
-
+        eol_char = self.GetEOLChar()
         if caretPos == 0 or len(string.strip(text)) == 0:  # At beginning of line or within an empty line
-            self.AddText('\n')
+            self.AddText(eol_char)
         else:
             doExtraIndent = False
             brackets = False
@@ -754,7 +754,7 @@ class PythonCtrl(CodeEditor.CodeCtrl):
                 textNoTrailingSpaces = text[0:caretPos].rstrip()
                 if doExtraIndent or len(textNoTrailingSpaces) and textNoTrailingSpaces[-1] == ':':
                     spaces = spaces + ' ' * self.GetIndent()
-            self.AddText('\n' + spaces)
+            self.AddText(eol_char + spaces)
         self.EnsureCaretVisible()
 
 

@@ -275,15 +275,20 @@ class ChoicePanel(wx.Panel):
 
 
 class EOLFormatDlg(ChoiceDialog):
+    
+    EOL_CHARS = ["\r","\n","\r\n"]
+    
+    EOL_CHOICES = [_("Old Machintosh (\\r)"), _("Unix (\\n)"),
+                   _("Windows (\\r\\n)")]
+    EOL_ITEMS = [wx.stc.STC_EOL_CR, wx.stc.STC_EOL_LF, wx.stc.STC_EOL_CRLF]
     """Dialog for selecting EOL format"""
     def __init__(self, parent, msg=u'', title=u'', selection=0):
         """Create the dialog
         @keyword selection: default selection (wx.stc.STC_EOL_*)
 
         """
-        choices = [_("Old Machintosh (\\r)"), _("Unix (\\n)"),
-                   _("Windows (\\r\\n)")]
-        self._eol = [wx.stc.STC_EOL_CR, wx.stc.STC_EOL_LF, wx.stc.STC_EOL_CRLF]
+        choices = self.EOL_CHOICES
+        self._eol = self.EOL_ITEMS
         idx = self._eol.index(selection)
         super(EOLFormatDlg, self).__init__(parent, msg=msg, title=title,
                                              choices=choices,

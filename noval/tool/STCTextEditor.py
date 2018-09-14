@@ -37,6 +37,7 @@ from noval.tool.syntax import syntax
 import noval.util.strutils as strutils
 import json
 import noval.util.utils as utils
+import EOLFormat
 
 _ = wx.GetTranslation
 
@@ -1089,15 +1090,25 @@ class TextOptionsPanel(wx.Panel):
         if self._hasFolding:
             self._viewFoldingCheckBox = wx.CheckBox(self, -1, _("Show folding"))
             self._viewFoldingCheckBox.SetValue(config.ReadInt(self._configPrefix + "EditorViewFolding", True))
+        self._highlightCaretLineCheckBox = wx.CheckBox(self, -1, _("Highlight Caret Line"))
+        self._highlightCaretLineCheckBox.SetValue(config.ReadInt(self._configPrefix + "EditorHighlightCaretLine", True))
         if self._hasTabs:
             self._hasTabsCheckBox = wx.CheckBox(self, -1, _("Use spaces instead of tabs"))
             self._hasTabsCheckBox.SetValue(not wx.ConfigBase_Get().ReadInt(self._configPrefix + "EditorUseTabs", False))
             indentWidthLabel = wx.StaticText(self, -1, _("Indent Width:"))
             self._indentWidthChoice = wx.Choice(self, -1, choices = ["2", "4", "6", "8", "10"])
             self._indentWidthChoice.SetStringSelection(str(config.ReadInt(self._configPrefix + "EditorIndentWidth", 4)))
-            
         edgeWidthLabel = wx.StaticText(self, -1, _("Edge Guide Width:"))
         self.edge_spin_ctrl = wx.SpinCtrl(self, -1,str(utils.ProfileGetInt('EdgeGuideWidth',consts.DEFAULT_EDGE_GUIDE_WIDTH)), min=0, max=160)
+        defaultEOLModelLabel = wx.StaticText(self, -1, _("Default EOL Mode:"))
+        self.eol_model_combox = wx.ComboBox(self, -1,choices=EOLFormat.EOLFormatDlg.EOL_CHOICES,style= wx.CB_READONLY)
+        if sysutilslib.isWindows():
+            eol_mode = config.ReadInt(self._configPrefix + "EditorEOLMode", wx.stc.STC_EOL_CRLF)
+        else:
+            eol_mode = config.ReadInt(self._configPrefix + "EditorEOLMode", wx.stc.STC_EOL_LF)
+        idx = EOLFormat.EOLFormatDlg.EOL_ITEMS.index(eol_mode)
+        self.eol_model_combox.SetSelection(idx)
+        
         textPanelBorderSizer = wx.BoxSizer(wx.VERTICAL)
         textPanelSizer = wx.BoxSizer(wx.VERTICAL)
         textFontSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1114,6 +1125,7 @@ class TextOptionsPanel(wx.Panel):
         textPanelSizer.Add(self._viewLineNumbersCheckBox, 0, wx.ALL, HALF_SPACE)
         if self._hasFolding:
             textPanelSizer.Add(self._viewFoldingCheckBox, 0, wx.ALL, HALF_SPACE)
+        textPanelSizer.Add(self._highlightCaretLineCheckBox, 0, wx.ALL, HALF_SPACE)
         if self._hasTabs:
             textPanelSizer.Add(self._hasTabsCheckBox, 0, wx.ALL, HALF_SPACE)
             textIndentWidthSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1126,6 +1138,11 @@ class TextOptionsPanel(wx.Panel):
         line_sizer.Add(self.edge_spin_ctrl, 0, wx.ALIGN_LEFT | wx.EXPAND, HALF_SPACE)
         textPanelSizer.Add(line_sizer, 0, wx.ALL, HALF_SPACE)
         self.CheckRightEdge(None)
+        
+        line_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        line_sizer.Add(defaultEOLModelLabel, 0, wx.ALIGN_LEFT | wx.RIGHT | wx.TOP, HALF_SPACE)
+        line_sizer.Add(self.eol_model_combox, 0, wx.ALIGN_LEFT | wx.EXPAND, HALF_SPACE)
+        textPanelSizer.Add(line_sizer, 0, wx.ALL, HALF_SPACE)
         
         textPanelBorderSizer.Add(textPanelSizer, 0, wx.ALL|wx.EXPAND, SPACE)
 ##        styleButton = wx.Button(self, -1, _("Choose Style..."))
@@ -1195,6 +1212,15 @@ class TextOptionsPanel(wx.Panel):
         config.WriteInt(self._configPrefix + "EditorViewRightEdge", self._viewRightEdgeCheckBox.GetValue())
         doViewStuffUpdate = doViewStuffUpdate or config.ReadInt(self._configPrefix + "EditorViewLineNumbers", True) != self._viewLineNumbersCheckBox.GetValue()
         config.WriteInt(self._configPrefix + "EditorViewLineNumbers", self._viewLineNumbersCheckBox.GetValue())
+        doViewStuffUpdate = doViewStuffUpdate or config.ReadInt(self._configPrefix + "EditorHighlightCaretLine", True) != self._highlightCaretLineCheckBox.GetValue()
+        config.WriteInt(self._configPrefix + "EditorHighlightCaretLine", self._highlightCaretLineCheckBox.GetValue())
+        if sysutilslib.isWindows():
+            default_eol_mode = wx.stc.STC_EOL_CRLF
+        else:
+            default_eol_mode = wx.stc.STC_EOL_LF
+        eol_mode = EOLFormat.EOLFormatDlg.EOL_ITEMS[self.eol_model_combox.GetSelection()]
+        doViewStuffUpdate = doViewStuffUpdate or config.ReadInt(self._configPrefix + "EditorEOLMode", default_eol_mode) != eol_mode
+        config.WriteInt(self._configPrefix + "EditorEOLMode", eol_mode)
         if self._viewRightEdgeCheckBox.GetValue():
             doViewStuffUpdate = doViewStuffUpdate or config.ReadInt("EdgeGuideWidth", consts.DEFAULT_EDGE_GUIDE_WIDTH) != int(self.edge_spin_ctrl.GetValue())
             config.WriteInt("EdgeGuideWidth", int(self.edge_spin_ctrl.GetValue()))
@@ -1253,6 +1279,13 @@ class TextCtrl(FindTextCtrl.FindTextCtrl):
         """
         evt.Skip()
         
+    def SetCaretLineColor(self,color):
+        caretline_visbile = utils.ProfileGetInt("TextEditorHighlightCaretLine",True)
+        if caretline_visbile:
+            FindTextCtrl.FindTextCtrl.SetCaretLineColor(self,color)
+        else:
+            self.SetCaretLineVisible(False)
+        
     def GetViewLineNumbers(self):
         return self.GetMarginWidth(TextView.LINE_MARKER_NUM) > 0
 
@@ -1294,7 +1327,13 @@ class TextCtrl(FindTextCtrl.FindTextCtrl):
             self.SetIndent(4)
             self.SetTabWidth(4)
         self.SetEdgeColumn(config.ReadInt("EdgeGuideWidth",consts.DEFAULT_EDGE_GUIDE_WIDTH))
-            
+        self.SetCaretLineVisible(config.ReadInt(configPrefix + "EditorHighlightCaretLine", True))
+        if sysutilslib.isWindows():
+            default_eol_mode = wx.stc.STC_EOL_CRLF
+        else:
+            default_eol_mode = wx.stc.STC_EOL_LF
+        self.SetEOLMode(config.ReadInt(configPrefix + "EditorEOLMode", default_eol_mode))
+        
     def OnUpdateLineNumberMarginWidth(self, event):
         self.UpdateLineNumberMarginWidth()
             

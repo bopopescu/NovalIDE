@@ -35,6 +35,8 @@ from noval.tool.syntax import syntax
 import consts
 import noval.util.appdirs as appdirs
 import images
+import noval.util.utils as utils
+import EOLFormat
 _ = wx.GetTranslation
 
 ENABLE_FOLD_ID = wx.NewId()
@@ -734,10 +736,11 @@ class CodeCtrl(STCTextEditor.TextCtrl):
             wx.stc.EVT_STC_UPDATEUI(self, self.GetId(), self.OnUpdateUI)
 
         if sysutilslib.isWindows():
-            STCTextEditor.TextCtrl.SetEOLMode(self,wx.stc.STC_EOL_CRLF)
+            default_eol_mode = wx.stc.STC_EOL_CRLF
         else:
-            STCTextEditor.TextCtrl.SetEOLMode(self,wx.stc.STC_EOL_LF)
-
+            default_eol_mode = wx.stc.STC_EOL_LF
+        eol_mode = utils.ProfileGetInt("TextEditorEOLMode", default_eol_mode)
+        STCTextEditor.TextCtrl.SetEOLMode(self,eol_mode)
     ##    self.StyleClearAll()
         self.SetLangLexer()
         
@@ -915,9 +918,13 @@ class CodeCtrl(STCTextEditor.TextCtrl):
 
     def OnDwellEnd(self, evt):
         evt.Skip()
+        
+    def GetEOLChar(self):
+        idx = EOLFormat.EOLFormatDlg.EOL_ITEMS.index(self.GetEOLMode())
+        eol_char = EOLFormat.EOLFormatDlg.EOL_CHARS[idx]
 
     def DoIndent(self):
-        self.AddText('\n')
+        self.AddText(self.GetEOLChar())
         self.EnsureCaretVisible()
         # Need to do a default one for all languges
 
@@ -1070,10 +1077,6 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         
         self.SetFoldMarginHiColour(True, fore)
         self.SetFoldMarginColour(True, fore)
-
-    def SetEOLMode(self,eol_id):
-        mode = MODE_MAP.get(eol_id, wx.stc.STC_EOL_LF)
-        STCTextEditor.TextCtrl.SetEOLMode(self,mode)
 
     def IsEOLModeId(self,eol_id):
         mode = MODE_MAP.get(eol_id, wx.stc.STC_EOL_LF)
