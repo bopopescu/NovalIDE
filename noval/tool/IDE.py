@@ -20,7 +20,7 @@ import noval.util.sysutils as sysutilslib
 import noval.util.appdirs as appdirs
 import noval.util.logger as logger
 import shutil
-import interpreter.manager as interpretermanager,interpreter.Interpreter as Interpreter
+import interpreter.InterpreterManager as interpretermanager,interpreter.Interpreter as Interpreter
 import noval.parser.intellisence as intellisence
 import noval.tool.syntax.lang as lang
 from consts import _,ID_MRU_FILE1,PROJECT_EXTENSION,\
@@ -161,7 +161,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import OptionService
         import NavigationService
         import TabbedFrame
-        import interpreter.configruation as configruation
+        import interpreter.InterpreterConfigruation as interpreterconfigruation
         import ColorFont
         import project.Property as Property
 ##        import UpdateLogIniService
@@ -287,7 +287,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
     ##    optionsService.AddOptionsPanel(PerlEditor.PerlOptionsPanel)
      ###   optionsService.AddOptionsPanel(_("Editor"),_("Text"),STCTextEditor.TextOptionsPanel)
         optionsService.AddOptionsPanel(_("Environment"),OptionService.FONTS_CORLORS_ITEM_NAME,ColorFont.ColorFontOptionsPanel)
-        optionsService.AddOptionsPanel(_("Interpreter"),OptionService.INTERPRETER_ITEM_NAME,configruation.InterpreterConfigurationPanel)
+        optionsService.AddOptionsPanel(_("Interpreter"),OptionService.INTERPRETER_ITEM_NAME,interpreterconfigruation.InterpreterConfigurationPanel)
   ##      optionsService.AddOptionsPanel(SVNService.SVNOptionsPanel)
         optionsService.AddOptionsPanel(_("Other"),OptionService.EXTENSION_ITEM_NAME,ExtensionService.ExtensionOptionsPanel)
 

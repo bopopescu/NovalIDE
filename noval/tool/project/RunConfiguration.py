@@ -1,6 +1,6 @@
 import wx
 from noval.util import utils
-import noval.tool.interpreter.manager as interpretermanager
+import noval.tool.interpreter.InterpreterManager as interpretermanager
 from noval.util.exceptions import InterpreterNotExistError
 import os
 from noval.model import configuration

@@ -8,7 +8,7 @@ import __builtin__
 import threading
 from noval.util.logger import app_debugLogger
 import glob
-import manager
+import InterpreterManager
 import sys
 import cStringIO
 import py_compile
@@ -128,7 +128,7 @@ class BuiltinPythonInterpreter(Interpreter):
         super(BuiltinPythonInterpreter,self).__init__(name,executable_path)
         self._is_builtin = is_builtin
         if id is None:
-            self._id = manager.InterpreterManager.GenerateId()
+            self._id = InterpreterManager.InterpreterManager.GenerateId()
         else:
             self._id = int(id)
         self._is_default = False

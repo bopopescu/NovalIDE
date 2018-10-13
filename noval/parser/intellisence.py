@@ -1,6 +1,6 @@
 import noval.util.appdirs as appdirs
 import noval.tool.interpreter.Interpreter as Interpreter
-import noval.tool.interpreter.manager as interpretermanager
+import noval.tool.interpreter.InterpreterManager as interpretermanager
 import subprocess
 import noval.util.sysutils as sysutilslib
 from noval.tool import Singleton 

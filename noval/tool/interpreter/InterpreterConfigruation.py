@@ -5,11 +5,11 @@ import noval.parser.intellisence as intellisence
 import noval.util.sysutils as sysutils
 import os
 from noval.tool.consts import SPACE,HALF_SPACE,_ ,ERROR_OK
-import pythonbuiltins
-import environment
-import packages
-import pythonpath
-import noval.tool.interpreter.manager as interpretermanager
+import PythonBuiltins
+import Environment
+import PythonPackages
+import PythonPath
+import noval.tool.interpreter.InterpreterManager as interpretermanager
 import threading
 import noval.tool.OutputThread as OutputThread
 import subprocess
@@ -250,20 +250,20 @@ class InterpreterConfigurationPanel(wx.Panel):
         environment_icon = images.load_icon("environment.png")
         EnvironmentIconIndex = iconList.AddIcon(environment_icon)
         nb.AssignImageList(iconList)
-        self.package_panel = packages.PackagePanel(nb)
+        self.package_panel = PythonPackages.PackagePanel(nb)
         count = nb.GetPageCount()
         nb.AddPage(self.package_panel, _("Package"))
         nb.SetPageImage(count,PackageIconIndex)
         count = nb.GetPageCount()
-        self.path_panel = pythonpath.PythonPathPanel(nb)
+        self.path_panel = PythonPath.PythonPathPanel(nb)
         nb.AddPage(self.path_panel, _("Search Path"))
         nb.SetPageImage(count,SearchPathIconIndex)
         count = nb.GetPageCount()
-        self.builtin_panel = pythonbuiltins.PythonBuiltinsPanel(nb)
+        self.builtin_panel = PythonBuiltins.PythonBuiltinsPanel(nb)
         nb.AddPage(self.builtin_panel, _("Builtin Modules"))
         nb.SetPageImage(count,BuiltinIconIndex)
         count = nb.GetPageCount()
-        self.environment_panel = environment.EnvironmentPanel(nb)
+        self.environment_panel = Environment.EnvironmentPanel(nb)
         nb.AddPage(self.environment_panel, _("Environment Variable"))
         nb.SetPageImage(count,EnvironmentIconIndex)
         bottom_sizer.Add(nb, 1, wx.ALL|wx.EXPAND, 0)

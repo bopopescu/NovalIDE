@@ -4,7 +4,7 @@ import noval.tool.images as images
 import os
 import noval.util.fileutils as fileutils
 import wx.dataview as dataview
-import noval.tool.interpreter.manager as interpretermanager
+import noval.tool.interpreter.InterpreterManager as interpretermanager
 import noval.tool.project.PythonVariables as PythonVariables
 import ProjectDialog
 import noval.tool.project.RunConfiguration as RunConfiguration

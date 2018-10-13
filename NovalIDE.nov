@@ -110,13 +110,7 @@
   <noval:file filePath="./noval/parser/scope.py" logicalFolder="noval/parser" isStartup="false"/>
   <noval:file filePath="./noval/parser/utils.py" logicalFolder="noval/parser" isStartup="false"/>
   <noval:file filePath="./noval/parser/__init__.py" logicalFolder="noval/parser" isStartup="false"/>
-  <noval:file filePath="./noval/tool/interpreter/configruation.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
-  <noval:file filePath="./noval/tool/interpreter/environment.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
   <noval:file filePath="./noval/tool/interpreter/Interpreter.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
-  <noval:file filePath="./noval/tool/interpreter/manager.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
-  <noval:file filePath="./noval/tool/interpreter/packages.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
-  <noval:file filePath="./noval/tool/interpreter/pythonbuiltins.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
-  <noval:file filePath="./noval/tool/interpreter/pythonpath.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
   <noval:file filePath="./noval/tool/interpreter/__init__.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
   <noval:file filePath="./noval/util/fchecker.py" logicalFolder="noval/util" isStartup="false"/>
   <noval:file filePath="./noval/dummy/basedb.py" logicalFolder="noval/dummy" isStartup="false"/>
@@ -256,5 +250,11 @@
   <noval:file filePath="./noval/tool/project/Pages/EnvironmentMixin.py" logicalFolder="noval/tool/project/Pages" isStartup="false"/>
   <noval:file filePath="./noval/tool/interpreter/PythonPathMixin.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
   <noval:file filePath="./noval/tool/project/Pages/ProjectDialog.py" logicalFolder="noval/tool/project/Pages" isStartup="false"/>
+  <noval:file filePath="./noval/tool/interpreter/InterpreterManager.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
+  <noval:file filePath="./noval/tool/interpreter/PythonPackages.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
+  <noval:file filePath="./noval/tool/interpreter/PythonPath.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
+  <noval:file filePath="./noval/tool/interpreter/PythonBuiltins.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
+  <noval:file filePath="./noval/tool/interpreter/InterpreterConfigruation.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
+  <noval:file filePath="./noval/tool/interpreter/Environment.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>

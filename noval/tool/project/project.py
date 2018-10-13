@@ -15,7 +15,7 @@ import os
 import os.path
 import noval.util.xmlutils as xmlutils
 import noval.util.logger as logger
-import noval.tool.interpreter.manager as interpretermanager
+import noval.tool.interpreter.InterpreterManager as interpretermanager
 import noval.util.sysutils as sysutilslib
 from noval.tool.consts import PROJECT_NAMESPACE_URL
 

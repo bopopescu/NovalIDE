@@ -3,7 +3,7 @@ import wx
 from noval.tool.consts import SPACE,HALF_SPACE,_ 
 import noval.util.WxThreadSafe as WxThreadSafe
 import wx.dataview as dataview
-import noval.tool.interpreter.manager as interpretermanager
+import noval.tool.interpreter.InterpreterManager as interpretermanager
 import os
 import subprocess
 import noval.tool.OutputThread as OutputThread

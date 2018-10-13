@@ -23,7 +23,7 @@ import noval.util.xmlutils as xmlutils
 import interpreter.Interpreter as Interpreter
 import noval.parser.utils as dirutils
 import wx.lib.agw.hyperlink as hl
-import noval.tool.interpreter.manager as interpretermanager
+import noval.tool.interpreter.InterpreterManager as interpretermanager
 from noval.tool.consts import HALF_SPACE,_ ,SPACE,PROJECT_EXTENSION
 from noval.model import configuration as projectconfiguration
 import OptionService

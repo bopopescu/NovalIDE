@@ -48,7 +48,7 @@ import noval.tool.syntax.lang as lang
 import noval.util.WxThreadSafe as WxThreadSafe
 import DebugOutputCtrl
 import noval.parser.intellisence as intellisence
-import noval.tool.interpreter.manager as interpretermanager
+import noval.tool.interpreter.InterpreterManager as interpretermanager
 from noval.tool.consts import PYTHON_PATH_NAME,NOT_IN_ANY_PROJECT,\
         SPACE,HALF_SPACE,DEBUG_RUN_ITEM_NAME
 import noval.util.strutils as strutils

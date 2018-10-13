@@ -40,7 +40,7 @@ import noval.tool.debugger as debugger
 from noval.parser.utils import CmpMember
 from noval.util.logger import app_debugLogger
 import noval.util.sysutils as sysutilslib
-import noval.tool.interpreter.manager as interpretermanager
+import noval.tool.interpreter.InterpreterManager as interpretermanager
 import threading
 import PyShell
 import noval.util.fileutils as fileutils
