@@ -13,7 +13,6 @@
 import wx
 import wx.lib.docview
 import wx.lib.pydocview
-import STCTextEditor
 import noval.util.sysutils as sysutilslib
 import os
 import images
@@ -270,11 +269,7 @@ class BaseService(wx.lib.pydocview.DocService):
 
     @staticmethod
     def GetActiveView():
-        active_book = wx.GetApp().MainFrame.GetActiveChild()
-        if not active_book:
-            return None
-        doc_view = active_book.GetView()
-        return doc_view if isinstance(doc_view,STCTextEditor.TextView) else None
+        return wx.GetApp().MainFrame.GetActiveTextView()
 
 class Service(BaseService):
 

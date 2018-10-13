@@ -151,13 +151,12 @@ class ExtensionService(Service.BaseService):
             item.SetBitmap(wx.BitmapFromImage(wx.Image(os.path.join(app_image_path,"interpreter.png"),wx.BITMAP_TYPE_ANY)))
             toolsMenu.AppendItem(item)
             wx.EVT_MENU(frame, id, self.OpenInterpreter)
-            
-            if sysutilslib.isWindows():
-                id = wx.NewId()
-                item = wx.MenuItem(toolsMenu,id,_("&Web Browser"))
-                item.SetBitmap(images.load("web.png"))
-                toolsMenu.AppendItem(item)
-                wx.EVT_MENU(frame, id, self.GotoDefaultWebView)
+
+            id = wx.NewId()
+            item = wx.MenuItem(toolsMenu,id,_("&Web Browser"))
+            item.SetBitmap(images.load("web.png"))
+            toolsMenu.AppendItem(item)
+            wx.EVT_MENU(frame, id, self.GotoDefaultWebView)
         
         helpMenuIndex = menuBar.FindMenu(_("&Help"))
         helpMenu = menuBar.GetMenu(helpMenuIndex)

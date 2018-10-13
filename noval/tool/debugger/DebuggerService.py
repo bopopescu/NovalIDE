@@ -45,11 +45,12 @@ import shutil
 import noval.tool.interpreter.Interpreter as Interpreter
 import locale
 import noval.tool.syntax.lang as lang
-import noval.tool.WxThreadSafe as WxThreadSafe
+import noval.util.WxThreadSafe as WxThreadSafe
 import DebugOutputCtrl
 import noval.parser.intellisence as intellisence
 import noval.tool.interpreter.manager as interpretermanager
-from noval.tool.consts import PYTHON_PATH_NAME,NOT_IN_ANY_PROJECT,SPACE,HALF_SPACE
+from noval.tool.consts import PYTHON_PATH_NAME,NOT_IN_ANY_PROJECT,\
+        SPACE,HALF_SPACE,DEBUG_RUN_ITEM_NAME
 import noval.util.strutils as strutils
 import noval.parser.utils as parserutils
 import noval.util.fileutils as fileutils
@@ -61,6 +62,8 @@ from noval.model import configuration
 import noval.tool.images as images
 import BreakPoints
 import pickle
+from noval.util.exceptions import StartupPathNotExistError,PromptErrorException
+import noval.tool.project.RunConfiguration as RunConfiguration
 
 import sys
 reload(sys)
@@ -159,7 +162,7 @@ class OutputReaderThread(threading.Thread):
         self._keepGoing = False
 
 
-class Executor:
+class Executor(object):
     def GetPythonExecutablePath():
         path = UICommon.GetPythonExecPath()
         if path:
@@ -168,42 +171,35 @@ class Executor:
         return None
     GetPythonExecutablePath = staticmethod(GetPythonExecutablePath)
 
-    def __init__(self, fileName, wxComponent, arg1=None, arg2=None, arg3=None, arg4=None, arg5=None, arg6=None, arg7=None, arg8=None, arg9=None, callbackOnExit=None):
-        self._fileName = fileName
+    def __init__(self, run_parameter, wxComponent, callbackOnExit=None,cmd_contain_path = True):
+        self._run_parameter = run_parameter
         self._stdOutCallback = self.OutCall
         self._stdErrCallback = self.ErrCall
         self._callbackOnExit = callbackOnExit
         self._wxComponent = wxComponent
-        self._path = Executor.GetPythonExecutablePath()
-        self._cmd = '"' + self._path + '" -u \"' + fileName + '\"'
-        #Better way to do this? Quotes needed for windows file paths.
-        def spaceAndQuote(text):
-            if text.startswith("\"") and text.endswith("\""):
-                return  ' ' + text
-            else:
-                return ' \"' + text + '\"'
-        if(arg1 != None):
-            self._cmd += spaceAndQuote(arg1)
-        if(arg2 != None):
-            self._cmd += spaceAndQuote(arg2)
-        if(arg3 != None):
-            self._cmd += spaceAndQuote(arg3)
-        if(arg4 != None):
-            self._cmd += spaceAndQuote(arg4)
-        if(arg5 != None):
-            self._cmd += spaceAndQuote(arg5)
-        if(arg6 != None):
-            self._cmd += spaceAndQuote(arg6)
-        if(arg7 != None):
-            self._cmd += spaceAndQuote(arg7)
-        if(arg8 != None):
-            self._cmd += spaceAndQuote(arg8)
-        if(arg9 != None):
-            self._cmd += spaceAndQuote(arg9)
+        assert(self._run_parameter.Interpreter != None)
+        if sysutilslib.isWindows():
+            #should convert to unicode when interpreter path contains chinese character
+            self._path = self._run_parameter.Interpreter.GetUnicodePath()
+        else:
+            self._path = self._run_parameter.Interpreter.Path
+            
+        self._cmd = strutils.emphasis_path(self._path)
+        if self._run_parameter.InterpreterOption and self._run_parameter.InterpreterOption != ' ':
+            self._cmd = self._cmd + " " + self._run_parameter.InterpreterOption
+        if cmd_contain_path:
+            self._cmd += self.spaceAndQuote(self._run_parameter.FilePath)
 
         self._stdOutReader = None
         self._stdErrReader = None
         self._process = None
+        
+    #Better way to do this? Quotes needed for windows file paths.
+    def spaceAndQuote(self,text):
+        if text.startswith("\"") and text.endswith("\""):
+            return  ' ' + text
+        else:
+            return ' \"' + text + '\"'
 
     def OutCall(self, text):
         evt = UpdateTextEvent(value = text)
@@ -216,7 +212,9 @@ class Executor:
     def Execute(self, arguments, startIn=None, environment=None):
         if not startIn:
             startIn = str(os.getcwd())
-        startIn = os.path.abspath(startIn)
+        ###startIn = os.path.abspath(startIn)
+        if not os.path.exists(startIn):
+            raise StartupPathNotExistError(startIn)
 
         if arguments and arguments != " ":
             command = self._cmd + ' ' + arguments
@@ -224,6 +222,7 @@ class Executor:
             command = self._cmd
 
         if _VERBOSE: print "start debugger executable: " + command + "\n"
+        utils.GetLogger().debug("start debugger executable: %s",command)
         self._process = process.ProcessOpen(command, mode='b', cwd=startIn, env=environment)
         # Kick off threads to read stdout and stderr and write them
         # to our text control.
@@ -250,6 +249,33 @@ class Executor:
         if None == self._process:
             return
         self._process.stdin.write(text)
+        
+class DebuggerExecutor(Executor):
+    
+    def __init__(self, debugger_fileName,run_parameter, wxComponent, arg1=None, arg2=None, arg3=None, arg4=None, arg5=None, arg6=None, arg7=None, arg8=None, arg9=None, callbackOnExit=None):
+        
+        super(DebuggerExecutor,self).__init__(run_parameter,wxComponent,callbackOnExit,cmd_contain_path=False)
+        self._debugger_fileName = debugger_fileName
+        self._cmd += self.spaceAndQuote(self._debugger_fileName)
+        
+        if(arg1 != None):
+            self._cmd += self.spaceAndQuote(arg1)
+        if(arg2 != None):
+            self._cmd += self.spaceAndQuote(arg2)
+        if(arg3 != None):
+            self._cmd += self.spaceAndQuote(arg3)
+        if(arg4 != None):
+            self._cmd += self.spaceAndQuote(arg4)
+        if(arg5 != None):
+            self._cmd += self.spaceAndQuote(arg5)
+        if(arg6 != None):
+            self._cmd += self.spaceAndQuote(arg6)
+        if(arg7 != None):
+            self._cmd += self.spaceAndQuote(arg7)
+        if(arg8 != None):
+            self._cmd += self.spaceAndQuote(arg8)
+        if(arg9 != None):
+            self._cmd += self.spaceAndQuote(arg9)
 
 class RunCommandUI(wx.Panel):
     runners = []
@@ -329,7 +355,7 @@ class RunCommandUI(wx.Panel):
 
         self._stopped = False
         # Executor initialization
-        self._executor = Executor(fileName, self, callbackOnExit=self.ExecutorFinished)
+        self._executor = Executor(self._run_parameter, self, callbackOnExit=self.ExecutorFinished)
         self.Bind(EVT_UPDATE_STDTEXT, self.AppendText)
         self.Bind(EVT_UPDATE_ERRTEXT, self.AppendErrorText)
 
@@ -345,6 +371,10 @@ class RunCommandUI(wx.Panel):
             startIn = self._run_parameter.StartupPath
             environment = self._run_parameter.Environment
             self._executor.Execute(initialArgs, startIn, environment)
+        except StartupPathNotExistError as e:
+            wx.MessageBox(e.msg,_("Startup path not exist"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
+            self.StopExecution()
+            self.ExecutorFinished()
         except Exception,e:
             wx.MessageBox(str(e),_("Run Error"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
             self.StopExecution()
@@ -379,11 +409,12 @@ class RunCommandUI(wx.Panel):
         self._textCtrl.SetReadOnly(True)
         self.UpdateAllRunnerTerminateAllUI()
 
-    def StopExecution(self):
+    def StopExecution(self,unbind_evt=False):
         if not self._stopped:
             ####self._stopped = True
-            self.Unbind(EVT_UPDATE_STDTEXT)
-            self.Unbind(EVT_UPDATE_ERRTEXT)
+            if unbind_evt:
+                self.Unbind(EVT_UPDATE_STDTEXT)
+                self.Unbind(EVT_UPDATE_ERRTEXT)
             self._executor.DoStopExecution()
             self._textCtrl.SetReadOnly(True)
 
@@ -409,7 +440,7 @@ class RunCommandUI(wx.Panel):
             if ret == wx.NO:
                 return False
 
-        self.StopExecution()
+        self.StopExecution(unbind_evt=True)
         index = self._noteBook.GetSelection()
         self._noteBook.GetPage(index).Show(False)
         self._noteBook.RemovePage(index)
@@ -917,9 +948,9 @@ class PythonDebuggerUI(BaseDebuggerUI):
                 fname = DebuggerHarness.__file__
                 parts = fname.split('library.zip')
                 if interpreter.IsV2():
-                    path = os.path.join(parts[0],'noval', 'tool', 'DebuggerHarness.py')
+                    path = os.path.join(parts[0],'noval', 'tool','debugger', 'DebuggerHarness.py')
                 elif interpreter.IsV3():
-                    path = os.path.join(parts[0],'noval', 'tool', 'DebuggerHarness3.py')
+                    path = os.path.join(parts[0],'noval', 'tool','debugger', 'DebuggerHarness3.py')
             except:
                 tp, val, tb = sys.exc_info()
                 traceback.print_exception(tp, val, tb)
@@ -929,7 +960,7 @@ class PythonDebuggerUI(BaseDebuggerUI):
             path = DebuggerService.ExpandPath(DebuggerHarness.__file__)
             if interpreter.IsV3():
                 path = path.replace("DebuggerHarness","DebuggerHarness3").replace("DebuggerHarness3.pyc","DebuggerHarness3.py")
-        self._executor = Executor(path, self, self._debuggerHost, \
+        self._executor = DebuggerExecutor(path, self._run_parameter,self, self._debuggerHost, \
                                                 self._debuggerPort, self._debuggerBreakPort, self._guiHost, self._guiPort, self._command, callbackOnExit=self.ExecutorFinished)
 
         self._stopped = False
@@ -2472,7 +2503,7 @@ class DebuggerService(Service.Service):
         if run_parameter.Environment is not None and PYTHON_PATH_NAME in run_parameter.Environment:
             config.Write(self.GetKey(cur_project_document,"LastPythonPath"),run_parameter.Environment[PYTHON_PATH_NAME])
             
-    def GetRunEnvironment(self,run_parameter):
+    def UpdateRunEnvironment(self,run_parameter):
         interpreter = run_parameter.Interpreter
         environment = run_parameter.Environment
         environ = interpreter.Environ.GetEnviron()
@@ -2531,10 +2562,15 @@ class DebuggerService(Service.Service):
                 return True
         return False
         
-    def GetProjectStartupFile(self,project_docuemt):
-        startup_file = project_docuemt.GetStartupFile()
+    def GetProjectStartupFile(self,project_document):
+        startup_file = project_document.GetStartupFile()
         if startup_file is None:
             wx.MessageBox(_("Your project needs a Python script marked as startup file to perform this action"),style=wx.OK|wx.ICON_ERROR)
+            #show the property dialog to remind user to set the startup file
+            projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
+            project_view = projectService.GetCurrentProject().GetFirstView()
+            #force select the debug/run panel when show
+            project_view.OnProjectProperties(DEBUG_RUN_ITEM_NAME)
             return None
         return startup_file
         
@@ -2544,41 +2580,84 @@ class DebuggerService(Service.Service):
             return True
         return False
         
+    def GetRunConfiguration(self):
+        '''
+            get selected run configuration of current project
+        '''
+        cur_project_document = self.GetCurrentProject()
+        if cur_project_document is None:
+            return ''
+        pj_key = cur_project_document.GetKey()
+        run_configuration_name = utils.ProfileGet(pj_key + "/RunConfigurationName","")
+        return run_configuration_name
+        
+    def GetCurrentProject(self):
+        projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
+        return projectService.GetView().GetDocument()
+        
     def GetRunParameter(self,filetoRun=None,is_break_debug=False):
+        '''
+            @is_break_debug:user force to debug breakpoint or not
+        '''
         if not Executor.GetPythonExecutablePath():
             return None
-        interpreter = wx.GetApp().GetCurrentInterpreter()
-        projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
-        cur_project_document = projectService.GetView().GetDocument()
+        cur_project_document = self.GetCurrentProject()
         is_debug_breakpoint = False
-        if cur_project_document is None or (filetoRun is not None and \
-                    cur_project_document.GetModel().FindFile(filetoRun) is None):
-            doc_view = self.GetActiveView()
-            if doc_view:
-                document = doc_view.GetDocument()
-                if not document.Save() or document.IsNewDocument:
-                    return None
-                if self.IsFileContainBreakPoints(document) or is_break_debug:
-                    wx.MessageBox(_("Debugger can only run in active project"),style=wx.OK|wx.ICON_WARNING)
-            else:
+        #load project configuration first,if have one run configuration,the run it
+        run_configuration_name = self.GetRunConfiguration()
+        #if user force run one project file ,then will not run configuration from config
+        if filetoRun is None and run_configuration_name:
+            project_configuration = RunConfiguration.ProjectConfiguration(cur_project_document)
+            run_configuration = project_configuration.LoadConfiguration(run_configuration_name)
+            if not run_configuration:
                 return None
-            run_parameter = document.GetRunParameter()
+            try:
+                run_parameter = run_configuration.GetRunParameter()
+            except PromptErrorException as e:
+                wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR)
+                return None
         else:
-            if filetoRun is None:
-                start_up_file = self.GetProjectStartupFile(cur_project_document)
+            #when there is not project or run file is not in current project
+            # run one single python file
+            if cur_project_document is None or (filetoRun is not None and \
+                        cur_project_document.GetModel().FindFile(filetoRun) is None):
+                doc_view = self.GetActiveView()
+                if doc_view:
+                    document = doc_view.GetDocument()
+                    if not document.Save() or document.IsNewDocument:
+                        return None
+                    if self.IsFileContainBreakPoints(document) or is_break_debug:
+                        wx.MessageBox(_("Debugger can only run in active project"),style=wx.OK|wx.ICON_WARNING)
+                else:
+                    return None
+                run_parameter = document.GetRunParameter()
             else:
-                start_up_file = cur_project_document.GetModel().FindFile(filetoRun)
-            if not start_up_file:
+                #run project
+                if filetoRun is None:
+                    #default run project start up file
+                    start_up_file = self.GetProjectStartupFile(cur_project_document)
+                else:
+                    start_up_file = cur_project_document.GetModel().FindFile(filetoRun)
+                if not start_up_file:
+                    return None
+                self.PromptToSaveFiles(cur_project_document)
+                run_parameter = cur_project_document.GetRunParameter(start_up_file)
+        
+        #invalid run parameter
+        if run_parameter is None:
                 return None
-            self.PromptToSaveFiles(cur_project_document)
-            run_parameter = cur_project_document.GetRunParameter(start_up_file)
+                    
+        #check project files has breakpoint,if has one breakpoint,then run in debugger mode
+        if cur_project_document is not None:
             cur_project = cur_project_document.GetModel()
             if self.IsProjectContainBreakPoints(cur_project):
                 is_debug_breakpoint = True
-
-        run_parameter = self.GetRunEnvironment(run_parameter)
+            
+        run_parameter = self.UpdateRunEnvironment(run_parameter)
         run_parameter.IsBreakPointDebug = is_debug_breakpoint
-        run_parameter.Interpreter = interpreter
+        #check interprter path contain chinese character or not
+        #if path have chinese character,prompt a warning message
+        run_parameter.Interpreter.CheckInterpreterPath()
         return run_parameter
         
     def OnDebugRun(self,event):
@@ -2593,8 +2672,7 @@ class DebuggerService(Service.Service):
             
     def DebugRunScript(self,run_parameter):
         self.ShowWindow(True)
-        interpreter = wx.GetApp().GetCurrentInterpreter()
-        if interpreter.IsBuiltIn:
+        if run_parameter.Interpreter.IsBuiltIn:
             self.DebugRunBuiltin(run_parameter)
             return
         fileToRun = run_parameter.FilePath
@@ -2639,22 +2717,32 @@ class DebuggerService(Service.Service):
         run_parameter = self.GetRunParameter(filetoRun)
         if run_parameter is None:
             return
-        self.RunScript(run_parameter)
+        try:
+            self.RunScript(run_parameter)
+        except StartupPathNotExistError as e:
+            wx.MessageBox(e.msg,_("Startup path not exist"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
+            return
+        except Exception as e:
+            wx.MessageBox(str(e),_("Run Error"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
+            return
         self.AppendRunParameter(run_parameter)
             
     def RunScript(self,run_parameter):
         interpreter = run_parameter.Interpreter
         if interpreter.IsBuiltIn:
             return
-        python_executable_path = interpreter.Path
+        if sysutilslib.isWindows():
+            #should convert to unicode when interpreter path contains chinese character
+            python_executable_path = interpreter.GetUnicodePath()
+        else:
+            python_executable_path = interpreter.Path
         sys_encoding = locale.getdefaultlocale()[1]
         fileToRun = run_parameter.FilePath
-        #startIn = os.path.dirname(fileToRun)
         startIn,environment,initialArgs = run_parameter.StartupPath,run_parameter.Environment,run_parameter.Arg
         if not os.path.exists(startIn):
-            initDir = None
-        else:
-            initDir = startIn.encode(sys_encoding)
+            raise StartupPathNotExistError(startIn)
+
+        initDir = startIn.encode(sys_encoding)
         if sysutilslib.isWindows():
             command = u"cmd.exe /c call %s \"%s\""  % (strutils.emphasis_path(python_executable_path),fileToRun)
             if initialArgs is not None:
@@ -2706,7 +2794,7 @@ class DebuggerService(Service.Service):
         run_parameter = self.GetLastRunParameter(True)
         if run_parameter is None:
             return
-        run_parameter = self.GetRunEnvironment(run_parameter)
+        run_parameter = self.UpdateRunEnvironment(run_parameter)
         if not run_parameter.IsBreakPointDebug:
             self.DebugRunScript(run_parameter)
         else:
@@ -2716,8 +2804,13 @@ class DebuggerService(Service.Service):
         run_parameter = self.GetLastRunParameter(False)
         if run_parameter is None:
             return
-        run_parameter = self.GetRunEnvironment(run_parameter)
-        self.RunScript(run_parameter)
+        run_parameter = self.UpdateRunEnvironment(run_parameter)
+        try:
+            self.RunScript(run_parameter)
+        except StartupPathNotExistError as e:
+            wx.MessageBox(e.msg,_("Startup path not exist"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
+        except Exception as e:
+            wx.MessageBox(str(e),_("Run Error"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
         
     def DebugRunScriptBreakPoint(self,run_parameter,break_first=False):
         if _WINDOWS and not _PYWIN32_INSTALLED:
@@ -2802,7 +2895,8 @@ class DebuggerService(Service.Service):
         modify_docs = []
         docs = wx.GetApp().GetDocumentManager().GetDocuments()
         for doc in docs:
-            if doc.IsModified() and cur_project_document == projectService.FindProjectFromMapping(doc):
+              if doc.IsModified() and (cur_project_document == projectService.FindProjectFromMapping(doc) or\
+                                     cur_project_document.GetModel().FindFile(doc.GetFilename())):
                 filesModified = True
                 modify_docs.append(doc)
         if filesModified:

@@ -13,7 +13,7 @@
 import wx
 import Service
 import STCTextEditor
-import WxThreadSafe
+import noval.util.WxThreadSafe as WxThreadSafe
 import BaseCtrl
 
 #----------------------------------------------------------------------------

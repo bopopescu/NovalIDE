@@ -45,9 +45,9 @@ class UnitTestDialog(wx.Dialog):
         st_text.SetFont(wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD))
         flagSizer.Add(st_text, 1,flag=wx.LEFT|wx.EXPAND,border = SPACE)  
         icon = wx.StaticBitmap(self,bitmap = wx.Bitmap(os.path.join(sysutilslib.mainModuleDir, \
-                            "noval", "tool", "bmp_source", "python_logo.png")))  
-        flagSizer.Add(icon,0,flag=wx.TOP|wx.RIGHT,border = HALF_SPACE)
-        contentSizer.Add(flagSizer,0,flag=wx.EXPAND|wx.ALL,border = HALF_SPACE)
+                            "noval", "tool", "bmp_source", "unittest_wizard.png")))  
+        flagSizer.Add(icon,0,flag=wx.ALL,border = 0)
+        contentSizer.Add(flagSizer,0,flag=wx.EXPAND|wx.TOP,border = HALF_SPACE)
         
         isz = (16,16)
         il = wx.ImageList(isz[0], isz[1])

@@ -10,12 +10,13 @@ import consts
 import noval.tool.NavigationService
 import noval.util.appdirs as appdirs
 from wx.lib.pubsub import pub as Publisher
+import STCTextEditor
 import images
 
 _ = wx.GetTranslation
 
 
-class MessageNotification():
+class DocFrameBase():
 
     def RegisterMsg(self):
         Publisher.subscribe(self.OnUpdatePosCache,noval.tool.NavigationService.NOVAL_MSG_UI_STC_POS_JUMPED)
@@ -30,7 +31,14 @@ class MessageNotification():
             noval.tool.NavigationService.NavigationService.DocMgr.AddNaviPosition(data['fname'], data['prepos'])
         noval.tool.NavigationService.NavigationService.DocMgr.AddNaviPosition(data['fname'], data['pos'])
 
-class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotification):
+    def GetActiveTextView(self):
+        active_book = self.GetActiveChild()
+        if not active_book:
+            return None
+        doc_view = active_book.GetView()
+        return doc_view if isinstance(doc_view,STCTextEditor.TextView) else None
+        
+class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,DocFrameBase):
     
     # wxBug: Need this for linux. The status bar created in pydocview is
     # replaced in IDE.py with the status bar for the code editor. On windows
@@ -375,7 +383,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,MessageNotif
         wx.lib.pydocview.DocTabbedParentFrame.OnCloseWindow(self,event)
         noval.tool.NavigationService.NavigationService.DocMgr.WriteBook()
 
-class IDEMDIParentFrame(wx.lib.pydocview.DocMDIParentFrame,MessageNotification):
+class IDEMDIParentFrame(wx.lib.pydocview.DocMDIParentFrame,DocFrameBase):
     
     # wxBug: Need this for linux. The status bar created in pydocview is
     # replaced in IDE.py with the status bar for the code editor. On windows

@@ -15,9 +15,10 @@ import glob
 import nodeast
 import scope
 import pickle
-from noval.util.logger import app_debugLogger
 import signal
 from noval.dummy.userdb import UserDataDb
+import noval.util.utils as utils
+from noval.tool.consts import _
 
 class ModuleLoader(object):
     CHILD_KEY = "childs"
@@ -248,7 +249,7 @@ class IntellisenceDataLoader(object):
         else:
             builtin_data_path = os.path.join(self.__builtin_data_location,"3")
 
-        app_debugLogger.debug('builtin data path:%s',builtin_data_path)
+        utils.GetLogger().debug('builtin data path:%s',builtin_data_path)
         if not os.path.exists(builtin_data_path):
             return
         self.LoadIntellisenceDirData(builtin_data_path)
@@ -291,7 +292,7 @@ class IntellisenceDataLoader(object):
         return self.import_list
         
     def LoadBuiltinModule(self,interpreter):
-        app_debugLogger.debug('current interpreter builtin module name is:%s',interpreter.BuiltinModuleName)
+        utils.GetLogger().debug('current interpreter builtin module name is:%s',interpreter.BuiltinModuleName)
         builtin_module_loader = self._manager.GetModule(interpreter.BuiltinModuleName)
         data = builtin_module_loader.LoadMembers()
         self._builtin_module = BuiltinModule.BuiltinModule(builtin_module_loader.Name)
@@ -313,8 +314,10 @@ class IntellisenceManager(object):
         self._loader = IntellisenceDataLoader(self.data_root_path,self._builtin_data_path,self)
         self._is_running = False
         self._process_obj = None
+        self._is_stopped = False
         
     def Stop(self):
+        self._is_stopped = True
         if self._process_obj != None and self.IsRunning:
             for pid in sysutilslib.get_child_pids(self._process_obj.pid):
                 os.kill(pid,signal.SIGTERM)
@@ -341,6 +344,7 @@ class IntellisenceManager(object):
             startupinfo = None
         self._process_obj = subprocess.Popen(cmd_list,startupinfo=startupinfo,cwd=os.path.join(sysutilslib.mainModuleDir, "noval", "parser"))
         interpreter.Analysing = True
+        utils.UpdateStatusBar(_("Updating interpreter %s intellisence database") % interpreter.Name)
         self._is_running = interpreter.Analysing
         #if current interpreter is analysing,load data at end
         if interpreter == interpretermanager.InterpreterManager().GetCurrentInterpreter():
@@ -358,10 +362,15 @@ class IntellisenceManager(object):
         self._is_running = interpreter.Analysing
         if progress_dlg != None:
             progress_dlg.KeepGoing = False
-        if load_data_end:
+        if load_data_end and not self._is_stopped:
             self.load_intellisence_data(interpreter) 
-        self.ShareUserData()
-            
+        if progress_dlg == None:
+            self.ShareUserData()
+        if not self._is_stopped:
+            utils.UpdateStatusBar(_("Intellisence database has been updated"))
+        else:
+            utils.GetLogger().debug("smart intellisence analyse has been stopped by user")
+    
     def ShareUserData(self):
         UserDataDb.get_db().ShareUserData()
         UserDataDb.get_db().RecordStart()
@@ -373,12 +382,14 @@ class IntellisenceManager(object):
         try:
             self.generate_intellisence_data(current_interpreter,load_data_end=True)
         except Exception as e:
-            app_debugLogger.error('load interpreter name %s path %s version %s intellisence data path %s error: %s',current_interpreter.Name,\
+            utils.GetLogger().error('load interpreter name %s path %s version %s intellisence data path %s error: %s',current_interpreter.Name,\
                                     current_interpreter.Path,current_interpreter.Version,\
                                         os.path.join(self.data_root_path,str(current_interpreter.Id)),e)
         
     def load_intellisence_data(self,interpreter):
+        utils.UpdateStatusBar(_("Loading intellisence database"))
         self._loader.Load(interpreter)
+        utils.UpdateStatusBar(_("Finish load Intellisence database"))
         
     def GetImportList(self):
         return self._loader.ImportList
@@ -437,7 +448,7 @@ class IntellisenceManager(object):
         return module.FindDefinitionWithName(child_name)
 
     def GetBuiltinModuleMembers(self):
-        app_debugLogger.debug('get builtin module name is:%s',self.GetBuiltinModule().Name)
+        utils.GetLogger().debug('get builtin module name is:%s',self.GetBuiltinModule().Name)
         return self.GetModuleMembers(self.GetBuiltinModule().Name,"")
 
     def GetModuleDoc(self,module_name):

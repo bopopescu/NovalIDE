@@ -20,6 +20,8 @@ import noval.util.sysutils as sysutilslib
 import images
 if sysutilslib.isWindows():
     import wx.html2 as webview
+else:
+    import wx.html as webview
 import consts
 
 _ = wx.GetTranslation
@@ -137,11 +139,13 @@ class WebView(wx.lib.docview.View):
         frame = wx.GetApp().CreateDocumentFrame(self, doc, flags, style = wx.DEFAULT_FRAME_STYLE | wx.NO_FULL_REPAINT_ON_RESIZE)
         self.panel = wx.Panel(frame, -1)
         self.current = doc.GetFilename()
-
-        self.wv = webview.WebView.New(self.panel)
-        self.Bind(webview.EVT_WEBVIEW_NAVIGATING, self.OnWebViewNavigating, self.wv)
-        self.Bind(webview.EVT_WEBVIEW_LOADED, self.OnWebViewLoaded, self.wv)
         
+        if sysutilslib.isWindows():
+            self.wv = webview.WebView.New(self.panel)
+            self.Bind(webview.EVT_WEBVIEW_NAVIGATING, self.OnWebViewNavigating, self.wv)
+            self.Bind(webview.EVT_WEBVIEW_LOADED, self.OnWebViewLoaded, self.wv)
+        else:
+            self.wv = webview.HtmlWindow(self.panel)
         
         sizer = wx.BoxSizer(wx.VERTICAL)
         btnSizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -186,7 +190,10 @@ class WebView(wx.lib.docview.View):
         
         btnSizer.Add(self.location, 1, wx.EXPAND|wx.ALL, 2)
         
-        self.wv.LoadURL(self.current)
+        if sysutilslib.isWindows():
+            self.wv.LoadURL(self.current)
+        else:
+            self.wv.LoadPage(self.current)
         
         sizer.Add(btnSizer, 0, wx.EXPAND)
         sizer.Add(self.wv, 1, wx.EXPAND)
@@ -238,12 +245,18 @@ class WebView(wx.lib.docview.View):
     # Control bar events
     def OnLocationSelect(self, evt):
         url = self.location.GetStringSelection()
-        self.wv.LoadURL(url)
+        if sysutilslib.isWindows():
+            self.wv.LoadURL(url)
+        else:
+            self.wv.LoadPage(url)
 
     def OnLocationEnter(self, evt):
         url = self.location.GetValue()
         self.location.Append(url)
-        self.wv.LoadURL(url)
+        if sysutilslib.isWindows():
+            self.wv.LoadURL(url)
+        else:
+            self.wv.LoadPage(url)
 
     def OnOpenButton(self, event):
         dlg = wx.TextEntryDialog(self.GetFrame(), _("Open URL:"),
@@ -253,27 +266,44 @@ class WebView(wx.lib.docview.View):
 
         if dlg.ShowModal() == wx.ID_OK:
             self.current = dlg.GetValue()
-            self.wv.LoadURL(self.current)
+            if sysutilslib.isWindows():
+                self.wv.LoadURL(self.current)
+            else:
+                self.wv.LoadPage(self.current)
 
         dlg.Destroy()
 
     def OnPrevPageButton(self, event):
-        self.wv.GoBack()
+        if sysutilslib.isWindows():
+            self.wv.GoBack()
+        else:
+            self.wv.HistoryBack()
 
     def OnNextPageButton(self, event):
-        self.wv.GoForward()
+        if sysutilslib.isWindows():
+            self.wv.GoForward()
+        else:
+            self.wv.HistoryForward()
 
     def OnCheckCanGoBack(self, event):
-        event.Enable(self.wv.CanGoBack())
+        if sysutilslib.isWindows():
+            event.Enable(self.wv.CanGoBack())
+        else:
+            event.Enable(self.wv.HistoryCanBack())
         
     def OnCheckCanGoForward(self, event):
-        event.Enable(self.wv.CanGoForward())
+        if sysutilslib.isWindows():
+            event.Enable(self.wv.CanGoForward())
+        else:
+            event.Enable(self.wv.HistoryCanForward())
 
     def OnStopButton(self, evt):
-        self.wv.Stop()
+        if sysutilslib.isWindows():
+            self.wv.Stop()
 
     def OnRefreshPageButton(self, evt):
-        self.wv.Reload()
+        if sysutilslib.isWindows():
+            self.wv.Reload()
 
 
 HTMLKEYWORDS = [

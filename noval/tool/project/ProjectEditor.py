@@ -38,7 +38,7 @@ from noval.tool.consts import SPACE,HALF_SPACE,_,PROJECT_SHORT_EXTENSION,\
                     PROJECT_EXTENSION,ERROR_OK,NOT_IN_ANY_PROJECT,PYTHON_PATH_NAME
 import threading
 import shutil
-import noval.tool.WxThreadSafe as WxThreadSafe
+import noval.util.WxThreadSafe as WxThreadSafe
 import noval.parser.utils as parserutils
 from wx.lib.pubsub import pub as Publisher
 import ProjectUI
@@ -52,6 +52,8 @@ import noval.tool.debugger.DebuggerService as DebuggerService
 import datetime
 from noval.util import utils
 import Property
+import noval.tool.project.RunConfiguration as RunConfiguration
+from noval.util.exceptions import PromptErrorException
 
 from noval.tool.IDE import ACTIVEGRID_BASE_IDE
 if not ACTIVEGRID_BASE_IDE:
@@ -337,7 +339,36 @@ class ProjectDocument(wx.lib.docview.Document):
     def GetUnProjectFileKey(file_path,lastPart):
         return "%s/{%s}/%s/%s" % (PROJECT_KEY, ProjectDocument.UNPROJECT_MODEL_ID, file_path.replace(os.sep, '|'),lastPart)
 
+
+    def __init__(self, model=None):
+        wx.lib.docview.Document.__init__(self)
+        if model:
+            self.SetModel(model)
+        else:
+            self.SetModel(projectlib.PythonProject())  # initial model used by "File | New... | Project"
+        self.GetModel().SetDocCallback(GetDocCallback)
+
+        self._stageProjectFile = False
+        self._run_parameter = None
+        self.document_watcher = FileObserver.FileAlarmWatcher()
+
+    def GetRunConfiguration(self,start_up_file):
+        file_key = self.GetFileKey(start_up_file)
+        run_configuration_name = utils.ProfileGet(file_key + "/RunConfigurationName","")
+        return run_configuration_name
+        
     def GetRunParameter(self,start_up_file):
+        #check the run configuration first,if exist,use run configuration
+        run_configuration_name = self.GetRunConfiguration(start_up_file)
+        if run_configuration_name:
+            file_configuration = RunConfiguration.FileConfiguration(self,start_up_file)
+            run_configuration = file_configuration.LoadConfiguration(run_configuration_name)
+            try:
+                return run_configuration.GetRunParameter()
+            except PromptErrorException as e:
+                wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR)
+                return None
+            
         config = wx.ConfigBase_Get()
         use_argument = config.ReadInt(self.GetFileKey(start_up_file,"UseArgument"),True)
         if use_argument:
@@ -359,24 +390,11 @@ class ProjectDocument(wx.lib.docview.Document):
         env[PYTHON_PATH_NAME] = os.pathsep.join(list(paths))
         return configuration.RunParameter(wx.GetApp().GetCurrentInterpreter(),start_up_file.filePath,initialArgs,env,startIn,project=self)
 
-    def __init__(self, model=None):
-        wx.lib.docview.Document.__init__(self)
-        if model:
-            self.SetModel(model)
-        else:
-            self.SetModel(projectlib.PythonProject())  # initial model used by "File | New... | Project"
-        self.GetModel().SetDocCallback(GetDocCallback)
-
-        self._stageProjectFile = False
-        self._run_parameter = None
-        self.document_watcher = FileObserver.FileAlarmWatcher()
-
     def __copy__(self):
         model = copy.copy(self.GetModel())        
         clone =  ProjectDocument(model)
         clone.SetFilename(self.GetFilename())
         return clone
-
 
     def GetFirstView(self):
         """ Bug: workaround.  If user tries to open an already open project with main menu "File | Open...", docview.DocManager.OnFileOpen() silently returns None if project is already open.
@@ -388,23 +406,28 @@ class ProjectDocument(wx.lib.docview.Document):
             view.SetProject(self.GetFilename())  # ensure project is displayed in view
         return view
 
-
     def GetModel(self):
         return self._projectModel
-        
+
+    def GetPath(self):
+        return os.path.dirname(self.GetFilename())
 
     def SetModel(self, model):
         self._projectModel = model
         
-    def GetKey(self,lastPart):
+    def GetKey(self,lastPart=None):
+        if not lastPart:
+            return "%s/{%s}" % (PROJECT_KEY, self.GetModel().Id)
         return "%s/{%s}/%s" % (PROJECT_KEY, self.GetModel().Id, lastPart)
         
-    def GetFileKey(self,pj_file,lastPart):
+    def GetFileKey(self,pj_file,lastPart=None):
         if pj_file.logicalFolder is None:
             key_path = os.path.basename(pj_file.filePath)
         else:
             key_path = os.path.join(pj_file.logicalFolder,os.path.basename(pj_file.filePath))
         key_path = fileutils.opj(key_path)
+        if lastPart is None:
+           return "%s/{%s}/%s" % (PROJECT_KEY, self.GetModel().Id, key_path.replace(os.sep, '|')) 
         return "%s/{%s}/%s/%s" % (PROJECT_KEY, self.GetModel().Id, key_path.replace(os.sep, '|'),lastPart)
 
     def OnCreate(self, path, flags):
@@ -1253,9 +1276,9 @@ class NewProjectWizard(Wizard.BaseWizard):
                         view.SelectView()
                     view.AddProjectToView(doc)
                     if self._project_configuration.PythonPathPattern == \
-                                    configuration.ProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH:
+                                    configuration.ProjectSettings.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH:
                             doc.GetCommandProcessor().Submit(ProjectAddFolderCommand(view, doc, \
-                                    configuration.ProjectConfiguration.DEFAULT_PROJECT_SRC_PATH))
+                                    configuration.ProjectSettings.DEFAULT_PROJECT_SRC_PATH))
                     break
 
         self.Destroy()
@@ -2402,7 +2425,7 @@ class ProjectView(wx.lib.docview.View):
             self.OnProperties(event)
             return True
         elif id == ProjectService.PROJECT_PROPERTIES_ID:
-            self.OnProjectProperties(event)
+            self.OnProjectProperties()
             return True
         elif id == ProjectService.IMPORT_FILES_ID:
             self.ImportFilesToProject(event)
@@ -2450,9 +2473,14 @@ class ProjectView(wx.lib.docview.View):
             return False
 
     def SetProjectStartupFile(self):
+        item = self._treeCtrl.GetSingleSelectItem()
+        self.SetProjectStartupFileItem(item)
+        
+    def SetProjectStartupFileItem(self,item):
+        if item == self._bold_item:
+            return
         if self._bold_item is not None:
             self._treeCtrl.SetItemBold(self._bold_item ,False)
-        item = self._treeCtrl.GetSingleSelectItem()
         pjfile = self._GetItemFile(item)
         self._treeCtrl.SetItemBold(item)
         self._bold_item = item
@@ -2976,7 +3004,7 @@ class ProjectView(wx.lib.docview.View):
 
     def OnProperties(self, event):
         if self.ProjectHasFocus():
-            self.OnProjectProperties(event)
+            self.OnProjectProperties()
         elif self.FilesHasFocus():
             items = self._treeCtrl.GetSelections()
             if not items:
@@ -2985,10 +3013,10 @@ class ProjectView(wx.lib.docview.View):
             filePropertiesService = wx.GetApp().GetService(Property.FilePropertiesService)
             filePropertiesService.ShowPropertiesDialog(self.GetDocument(),item)
 
-    def OnProjectProperties(self, event):
+    def OnProjectProperties(self, option_name=None):
         if self.GetDocument():
             filePropertiesService = wx.GetApp().GetService(Property.FilePropertiesService)
-            filePropertiesService.ShowPropertiesDialog(self.GetDocument(),self._treeCtrl.GetRootItem())
+            filePropertiesService.ShowPropertiesDialog(self.GetDocument(),self._treeCtrl.GetRootItem(),option_name)
             
     def OnAddNewFile(self,event):
         items = self._treeCtrl.GetSelections()

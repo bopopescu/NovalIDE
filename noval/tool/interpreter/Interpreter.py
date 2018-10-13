@@ -14,6 +14,7 @@ import cStringIO
 import py_compile
 import getpass
 import noval.util.fileutils as fileutils
+from noval.util.exceptions import PromptErrorException
 
 _ = wx.GetTranslation
 
@@ -29,6 +30,19 @@ class Interpreter(object):
     @property
     def Path(self):
         return self._path
+        
+    def GetUnicodePath(self):
+        sys_encoding = locale.getdefaultlocale()[1]
+        upath = self.Path.decode(sys_encoding)
+        return upath
+        
+    def CheckInterpreterPath(self):
+        '''
+            check interprter path contain chinese character
+        '''
+        upath = self.GetUnicodePath()
+        if upath != self.Path:
+            wx.MessageBox(_("Interpreter path '%s' contains no asc character") % upath,_("Warning"),wx.OK|wx.ICON_WARNING,wx.GetApp().GetTopWindow())
         
     @property
     def InstallPath(self):
@@ -82,8 +96,11 @@ class PythonEnvironment(object):
         for key in dct:
             #should avoid environment contain unicode string,such as u'xxx'
             if len(key) != len(str(key)) or len(dct[key]) != len(str(dct[key])):
-                raise EnvironmentError(_("Environment variable contains invalid character"))
+                raise PromptErrorException(_("Environment variable contains invalid character"))
             self.environ[str(key)] = str(dct[key])
+        #must use this environment variable to unbuffered binary stdout and stderr
+        #environment value must be a string,not a digit,which linux os does not support a digit value
+        self.environ['PYTHONUNBUFFERED'] = '1'
             
     @property
     def IncludeSystemEnviron(self):
@@ -461,11 +478,4 @@ class PythonInterpreter(BuiltinPythonInterpreter):
         BuiltinPythonInterpreter.SetInterpreter(self,**kwargs)
         #if self.IsV3():
          #   self._builtin_module_name = self.PYTHON3_BUILTIN_MODULE_NAME
-        
-class EnvironmentError(Exception):
-    
-    def __init__(self, error_msg):
-        self.msg = error_msg
-        
-    def __str__(self):
-        return repr(self.msg) 
+

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import wx
 from noval.tool.consts import SPACE,HALF_SPACE,_ 
-import noval.tool.WxThreadSafe as WxThreadSafe
+import noval.util.WxThreadSafe as WxThreadSafe
 import wx.dataview as dataview
 import noval.tool.interpreter.manager as interpretermanager
 import os
@@ -60,8 +60,8 @@ class ManagePackagesDialog(wx.Dialog):
         box_sizer.Add(lineSizer, 0, wx.RIGHT|wx.BOTTOM|wx.EXPAND, SPACE)
         
         self.detailSizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.output_ctrl = wx.TextCtrl(self, -1, "", style = wx.TE_MULTILINE,size=(-1,250))
-        self.output_ctrl.Enable(False)
+        self.output_ctrl = wx.TextCtrl(self, -1, "", style = wx.TE_MULTILINE|wx.TE_READONLY,size=(-1,250))
+      ###  self.output_ctrl.Enable(False)
         self.detailSizer.Add(self.output_ctrl, 1, wx.LEFT|wx.BOTTOM, SPACE)
         box_sizer.Add(self.detailSizer, 0, wx.RIGHT|wx.BOTTOM|wx.EXPAND, SPACE)
         box_sizer.Hide(self.detailSizer)

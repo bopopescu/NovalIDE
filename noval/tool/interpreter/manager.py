@@ -9,6 +9,7 @@ import Interpreter
 from noval.util.logger import app_debugLogger
 import noval.parser.nodeast as nodeast
 import json
+from noval.util.exceptions import PromptErrorException
 
 BUILTIN_INTERPRETER_NAME = _("Builtin_Interpreter")
 
@@ -39,6 +40,7 @@ class InterpreterManager(Singleton):
         elif 1 < len(self.interpreters):
             self.ChooseDefaultInterpreter()
         self.SetCurrentInterpreter(self.DefaultInterpreter)
+        #when load interpreter first,save the interpreter info to config
         self.SavePythonInterpretersConfig()
         
     def ChooseDefaultInterpreter(self):
@@ -209,20 +211,6 @@ class InterpreterManager(Singleton):
                 config.Write("%s/%d/Environ"%(prefix,kl.Id),json.dumps(kl.Environ.environ))
                 config.Write("%s/%d/Packages"%(prefix,kl.Id),json.dumps(kl.Packages))
         
-    def AddPythonInterpreter(self,interpreter_path,name):
-        interpreter = Interpreter.PythonInterpreter(name,interpreter_path)
-        if not interpreter.IsValidInterpreter:
-            raise InterpreterAddError(_("%s is not a valid interpreter path") % interpreter_path)
-        interpreter.Name = name
-        if self.CheckInterpreterExist(interpreter):
-            raise InterpreterAddError(_("interpreter have already exist"))
-        self.interpreters.append(interpreter)
-        #first interpreter should be the default interpreter by default
-        if 1 == len(self.interpreters):
-            self.MakeDefaultInterpreter()
-            self.SetCurrentInterpreter(self.DefaultInterpreter)
-        return interpreter
-        
     def RemovePythonInterpreter(self,interpreter):
         #if current interpreter has been removed,choose default interpreter as current interpreter 
         if interpreter == self.CurrentInterpreter:
@@ -254,19 +242,7 @@ class InterpreterManager(Singleton):
             choices.append(interpreter.Name)
         return choices,default_index
         
-    def GetInterpreterById(self,id):
-        for interpreter in self.interpreters:
-            if interpreter.Id == id:
-                return interpreter
-        return None
-        
-    def CheckInterpreterExist(self,interpreter):
-        for kb in self.interpreters:
-            if kb.Name.lower() == interpreter.Name.lower():
-                return True  
-            elif kb.Path.lower() == interpreter.Path.lower():
-                return True
-        return False
+
         
     @classmethod
     def CheckIdExist(cls,id):
@@ -304,9 +280,35 @@ class InterpreterManager(Singleton):
         builtin_interpreter = Interpreter.BuiltinPythonInterpreter(BUILTIN_INTERPRETER_NAME,sys.executable)
         self.interpreters.append(builtin_interpreter)
         
-class InterpreterAddError(Exception):
-    def __init__(self, error_msg):
-        self.msg = error_msg
+class InterpreterAdmin():
+    def __init__(self,interpreters):
+        self.interpreters = interpreters
         
-    def __str__(self):
-        return repr(self.msg)
+    def CheckInterpreterExist(self,interpreter):
+        for kb in self.interpreters:
+            if kb.Name.lower() == interpreter.Name.lower():
+                return True  
+            elif kb.Path.lower() == interpreter.Path.lower():
+                return True
+        return False
+
+    def AddPythonInterpreter(self,interpreter_path,name):
+        interpreter = Interpreter.PythonInterpreter(name,interpreter_path)
+        if not interpreter.IsValidInterpreter:
+            raise PromptErrorException(_("%s is not a valid interpreter path") % interpreter_path)
+        interpreter.Name = name
+        if self.CheckInterpreterExist(interpreter):
+            raise PromptErrorException(_("interpreter have already exist"))
+        self.interpreters.append(interpreter)
+        #first interpreter should be the default interpreter by default
+        if 1 == len(self.interpreters):
+            self.MakeDefaultInterpreter()
+            self.SetCurrentInterpreter(self.DefaultInterpreter)
+        return interpreter
+
+    def GetInterpreterById(self,id):
+        for interpreter in self.interpreters:
+            if interpreter.Id == id:
+                return interpreter
+        return None
+    

@@ -1,5 +1,7 @@
 import wx
 from noval.util.logger import app_debugLogger
+import noval.util.sysutils as sysutilslib
+import WxThreadSafe
 
 def GetLogger():
     return app_debugLogger
@@ -25,5 +27,9 @@ def ProfileSet(key,value):
     else:
         wx.ConfigBase_Get().Write(key,value)
 
+@WxThreadSafe.call_after
+def UpdateStatusBar(msg,number=0):
+    wx.GetApp().MainFrame.GetStatusBar().SetStatusText(msg,number)
 
-
+def GetMainModulePath():
+    return sysutilslib.mainModuleDir

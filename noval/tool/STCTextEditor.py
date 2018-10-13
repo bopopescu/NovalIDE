@@ -22,7 +22,7 @@ import chardet
 import codecs
 import shutil
 import FileObserver
-import WxThreadSafe
+import noval.util.WxThreadSafe as WxThreadSafe
 import noval.tool.syntax.lang as lang
 import MarkerService
 import TextService

@@ -1,5 +1,6 @@
 import os
-class ProjectConfiguration(object):
+
+class ProjectSettings(object):
     
     PROJECT_SRC_PATH_ADD_TO_PYTHONPATH = 1
     PROJECT_PATH_ADD_TO_PYTHONPATH = 2
@@ -33,7 +34,7 @@ class ProjectConfiguration(object):
         return self._pythonpath_pattern
         
 class RunParameter():
-    def __init__(self,interpreter,file_path,arg='',env=None,start_up=None,is_debug_breakpoint=False,project=None):
+    def __init__(self,interpreter,file_path,arg='',env=None,start_up=None,is_debug_breakpoint=False,project=None,interpreter_option=""):
         self._interpreter = interpreter
         self._file_path = file_path
         self._arg = arg
@@ -41,6 +42,7 @@ class RunParameter():
         self._start_up_path = start_up
         self._is_debug_breakpoint = is_debug_breakpoint
         self._project = project
+        self._interpreter_option = interpreter_option
         
     @property
     def Interpreter(self):
@@ -75,4 +77,8 @@ class RunParameter():
     @property
     def Project(self):
         return self._project
+        
+    @property
+    def InterpreterOption(self):
+        return self._interpreter_option
     

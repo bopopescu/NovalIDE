@@ -136,6 +136,9 @@ class BaseProject(object):
                     if file.filePath == filePath:
                         return file
         return None
+        
+    def GetRelativePath(self,pj_file):
+        return pj_file.filePath.replace(self.homeDir,"").lstrip(os.sep)
 
     def _GetFilePaths(self):
         return [file.filePath for file in self._files]

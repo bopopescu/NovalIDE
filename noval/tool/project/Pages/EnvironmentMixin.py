@@ -1,39 +1,23 @@
 import wx
-from noval.tool.consts import SPACE,HALF_SPACE,_ 
+from noval.tool.consts import SPACE,HALF_SPACE,_
 import wx.dataview as dataview
-import wx.lib.agw.hyperlink as hl
-import os
-import EnvironmentVariableDialog
+import noval.tool.interpreter.EnvironmentVariableDialog as EnvironmentVariableDialog
 
-class SystemEnvironmentVariableDialog(wx.Dialog):
-    def __init__(self,parent,dlg_id,title):
-        wx.Dialog.__init__(self,parent,dlg_id,title)
-        self.Sizer = wx.BoxSizer()
-        self.dvlc = dataview.DataViewListCtrl(self,size=(350,400))
-        self.dvlc.AppendTextColumn(_('Key'), width=150)
-        self.dvlc.AppendTextColumn(_('Value'),width=200)
-        self.Sizer.Add(self.dvlc, 1, wx.EXPAND)
-        self.SetVariables()
-        self.Fit()
-        
-    def SetVariables(self):
-        for env in os.environ:
-            self.dvlc.AppendItem([env, os.environ[env]])
+class BaseEnvironmentUI:
+    """description of class"""
 
-class EnvironmentPanel(wx.Panel):
-    def __init__(self,parent):
-        wx.Panel.__init__(self, parent)
-        
+    def InitUI(self):
+    
         box_sizer = wx.BoxSizer(wx.VERTICAL)
         
         line_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        line_sizer.Add(wx.StaticText(self, label=_("Set user defined environment variable:")),0, wx.ALL|wx.EXPAND, 0)
+        line_sizer.Add(wx.StaticText(self, label=_("Environment variables to set:")),0, wx.ALL|wx.EXPAND, 0)
         box_sizer.Add(line_sizer, 0, wx.TOP,HALF_SPACE)
         
         line_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.dvlc = dataview.DataViewListCtrl(self,size=(-1,230))
-        self.dvlc.AppendTextColumn(_('Key'), width=200)
-        self.dvlc.AppendTextColumn(_('Value'),width=250)
+        self.dvlc.AppendTextColumn(_('Key'), width=100)
+        self.dvlc.AppendTextColumn(_('Value'),width=300)
         dataview.EVT_DATAVIEW_SELECTION_CHANGED(self.dvlc, -1, self.UpdateUI)
         line_sizer.Add(self.dvlc, 1, wx.ALL|wx.EXPAND,0)
         
@@ -51,32 +35,8 @@ class EnvironmentPanel(wx.Panel):
         right_sizer.Add(self.remove_btn, 0, wx.LEFT|wx.BOTTOM|wx.EXPAND|wx.RIGHT, HALF_SPACE)
         
         line_sizer.Add(right_sizer, 0,flag=wx.ALL|wx.EXPAND)
-        box_sizer.Add(line_sizer, 0, flag=wx.ALL|wx.EXPAND)
-
-        line_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self._includeCheckBox = wx.CheckBox(self, -1, _("Include system environment variable"))
-        self.Bind(wx.EVT_CHECKBOX,self.checkInclude,self._includeCheckBox)
-        line_sizer.Add(self._includeCheckBox, 0, wx.LEFT|wx.ALIGN_BOTTOM)
-            
-        self.hyperLinkCtrl = hl.HyperLinkCtrl(self, wx.ID_ANY, _("View"))
-        self.hyperLinkCtrl.SetColours("BLUE", "BLUE", "BLUE")
-        self.hyperLinkCtrl.AutoBrowse(False)
-        self.hyperLinkCtrl.SetBold(True)
-        self.Bind(hl.EVT_HYPERLINK_LEFT, self.OnGotoLink,self.hyperLinkCtrl)
-        line_sizer.Add(self.hyperLinkCtrl, 0, wx.LEFT|wx.ALIGN_BOTTOM, SPACE)
-        
-        box_sizer.Add(line_sizer, 0, wx.TOP, HALF_SPACE)
-
+        box_sizer.Add(line_sizer, 1, flag=wx.ALL|wx.EXPAND)
         self.SetSizer(box_sizer)
-        self.interpreter = None
-        
-        self.UpdateUI(None)
-        
-    def checkInclude(self,event):
-        if self.interpreter is None:
-            return
-        include_system_environ = self._includeCheckBox.GetValue()
-        self.interpreter.Environ.IncludeSystemEnviron = include_system_environ
         
     def UpdateUI(self,event):
         index = self.dvlc.GetSelectedRow()
@@ -86,19 +46,8 @@ class EnvironmentPanel(wx.Panel):
         else:
             self.remove_btn.Enable(True)
             self.edit_btn.Enable(True)
-        if self.interpreter is None:
-            self.new_btn.Enable(False)
-        else:
-            self.new_btn.Enable(True)
             
-    def SetVariables(self,interpreter):
-        self.interpreter = interpreter
-        self.dvlc.DeleteAllItems()
-        for env in self.interpreter.Environ:
-            self.dvlc.AppendItem([env,self.interpreter.Environ[env]])
-        self._includeCheckBox.SetValue(self.interpreter.Environ.IncludeSystemEnviron)
-        self.UpdateUI(None)
-            
+
     def RemoveVariable(self,event):
         index = self.dvlc.GetSelectedRow()
         if index == wx.NOT_FOUND:
@@ -157,12 +106,6 @@ class EnvironmentPanel(wx.Panel):
             self.dvlc.SetTextValue(value,index,1)
         self.UpdateUI(None)
         dlg.Destroy()
-        
-    def OnGotoLink(self,event):
-        dlg = SystemEnvironmentVariableDialog(self,-1,_("System Environment Variable"))
-        dlg.CenterOnParent()
-        dlg.ShowModal()
-        dlg.Destroy()
     
     def CheckKeyExist(self,key):
         for row in range(self.dvlc.GetStore().GetCount()):
@@ -171,24 +114,6 @@ class EnvironmentPanel(wx.Panel):
         return False
         
     def GetEnviron(self):
-        dct = self.GetEnvironValues()
-        is_environ_changed = self.IsEnvironChanged(dct)
-        if is_environ_changed:
-            self.interpreter.Environ.SetEnviron(dct)
-        return is_environ_changed
-        
-    def IsEnvironChanged(self,dct):
-        if len(dct) != self.interpreter.Environ.GetCount():
-            return True
-        for name in dct:
-            if not self.interpreter.Environ.Exist(name):
-                return True
-        return False
-        
-    def CheckEnviron(self):
-        return self.IsEnvironChanged(self.GetEnvironValues())
-
-    def GetEnvironValues(self):
         dct = {}
         for row in range(self.dvlc.GetStore().GetCount()):
             dct[self.dvlc.GetTextValue(row,0)] = self.dvlc.GetTextValue(row,1)

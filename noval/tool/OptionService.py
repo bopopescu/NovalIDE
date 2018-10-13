@@ -85,6 +85,7 @@ class OptionsDialog(wx.Dialog):
 
         sizer.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL), 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM|wx.TOP, consts.HALF_SPACE)
         wx.EVT_BUTTON(self, wx.ID_OK, self.OnOK)
+        wx.EVT_BUTTON(self, wx.ID_CANCEL, self.OnCancel)
         self.SetSizer(sizer)
         self.Layout()
         self.Fit()
@@ -144,6 +145,13 @@ class OptionsDialog(wx.Dialog):
         text = self.tree.GetPyData(sel)
         wx.ConfigBase_Get().Write("OptionName",text)
         self.EndModal(wx.ID_OK)
+        
+    def OnCancel(self, event):
+        for name in self._optionsPanels:
+            optionsPanel = self._optionsPanels[name]
+            if hasattr(optionsPanel,"OnCancel") and not optionsPanel.OnCancel(self):
+                return
+        self.EndModal(wx.ID_CANCEL)
 
 class OptionsService(wx.lib.pydocview.DocOptionsService):
     def __init__(self,showGeneralOptions=True, supportedModes=wx.lib.docview.DOC_SDI & wx.lib.docview.DOC_MDI):

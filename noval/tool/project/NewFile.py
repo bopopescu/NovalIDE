@@ -263,7 +263,13 @@ class FileTemplateDialog(wx.Dialog):
         select_item = self.lc.GetFirstSelected()
         self.lc.DeleteItem(select_item)
         self._file_templates.remove(self._file_templates[select_item])
+        self.UpdateItemData()
         self.UpdateUI()
+        
+    def UpdateItemData(self):
+        assert(self.lc.GetItemCount() == len(self._file_templates))
+        for i in range(self.lc.GetItemCount()):
+            self.lc.SetItemData(i,i)
         
     def UpItem(self,event):
         select_item = self.lc.GetFirstSelected()
@@ -554,20 +560,28 @@ class NewFileDialog(wx.Dialog):
         return file_type
         
     def LoadFileTypes(self):
+        user_template_path = os.path.join(appdirs.getAppDataFolder(),USER_CACHE_DIR,TEMPLATE_FILE_NAME)
+        sys_template_path = os.path.join(appdirs.GetAppLocation(), TEMPLATE_FILE_NAME)
+        if os.path.exists(user_template_path):
+            file_template_path = user_template_path
+        elif os.path.exists(sys_template_path):
+            file_template_path = sys_template_path
+        else:
+            return
+        root_item = self.treeCtrl.AddRoot(_("FileTypes"))
+        self.LoadFromFileTemplate(file_template_path)
+        #if load template fail,load template from default path
+        if 0 == len(self.file_templates):
+           self.LoadFromFileTemplate(sys_template_path)
+            
+    def LoadFromFileTemplate(self,file_template_path):
+        root_item = self.treeCtrl.GetRootItem()
         try:
-            user_template_path = os.path.join(appdirs.getAppDataFolder(),USER_CACHE_DIR,TEMPLATE_FILE_NAME)
-            sys_template_path = os.path.join(appdirs.GetAppLocation(), TEMPLATE_FILE_NAME)
-            if os.path.exists(user_template_path):
-                file_template_path = user_template_path
-            elif os.path.exists(sys_template_path):
-                file_template_path = sys_template_path
             tree = ET.parse(file_template_path)
             doc = tree.getroot()
-            root_item = self.treeCtrl.AddRoot(_("FileTypes"))
         except Exception as e:
             wx.MessageBox(_("Load Template File Error.%s") % e,style=wx.OK | wx.ICON_ERROR)
             return
-        
         config = wx.ConfigBase_Get()
         langId = GeneralOption.GetLangId(config.Read("Language",sysutilslib.GetLangConfig()))
         lang = wx.Locale.GetLanguageInfo(langId).CanonicalName

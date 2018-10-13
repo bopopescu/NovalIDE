@@ -16,7 +16,7 @@ import wx.lib.pydocview
 import Service
 import noval.util.sysutils as sysutilslib
 import os
-import WxThreadSafe
+import noval.util.WxThreadSafe as WxThreadSafe
 import noval.parser.config as parserconfig
 _ = wx.GetTranslation
 

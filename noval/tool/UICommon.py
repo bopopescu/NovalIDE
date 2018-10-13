@@ -101,7 +101,7 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
     
     def OnGotoLink(event):
         option_service = wx.GetApp().GetService(OptionService.OptionsService)
-        option_service.OnOption(option_name =_("Python Interpreter"))
+        option_service.OnOption(option_name = OptionService.INTERPRETER_ITEM_NAME)
         choices,default_selection = interpretermanager.InterpreterManager().GetChoices()
         interpreterCombo.Clear()
         if len(choices) > 0:
@@ -205,17 +205,17 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
                     wx.MessageBox(_("That %sfile already exists. Please choose a different name.") % infoString, "File Exists")
                     return False,None
                     
-        pythonpath_pattern = projectconfiguration.ProjectConfiguration.NONE_PATH_ADD_TO_PYTHONPATH
+        pythonpath_pattern = projectconfiguration.ProjectSettings.NONE_PATH_ADD_TO_PYTHONPATH
         if addsrcPathRadioBtn.GetValue():
-            pythonpath_pattern = projectconfiguration.ProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH
-            project_src_path = os.path.join(dirName,projectconfiguration.ProjectConfiguration.DEFAULT_PROJECT_SRC_PATH)
+            pythonpath_pattern = projectconfiguration.ProjectSettings.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH
+            project_src_path = os.path.join(dirName,projectconfiguration.ProjectSettings.DEFAULT_PROJECT_SRC_PATH)
             if not os.path.exists(project_src_path):
                 dirutils.MakeDirs(project_src_path)
         elif addProjectPathRadioBtn.GetValue():
-            pythonpath_pattern = projectconfiguration.ProjectConfiguration.PROJECT_PATH_ADD_TO_PYTHONPATH
+            pythonpath_pattern = projectconfiguration.ProjectSettings.PROJECT_PATH_ADD_TO_PYTHONPATH
         elif configureNonePathRadioBtn.GetValue():
-            pythonpath_pattern = projectconfiguration.ProjectConfiguration.NONE_PATH_ADD_TO_PYTHONPATH
-        pjconfiguration = projectconfiguration.ProjectConfiguration(nameControl.GetValue().strip(),
+            pythonpath_pattern = projectconfiguration.ProjectSettings.NONE_PATH_ADD_TO_PYTHONPATH
+        pjconfiguration = projectconfiguration.ProjectSettings(nameControl.GetValue().strip(),
                     dirControl.GetValue().strip(),interpreterCombo.GetValue(),dirCheck.GetValue(),pythonpath_pattern)
         return True, pjconfiguration
          
@@ -246,7 +246,7 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
     dirCheck = wx.CheckBox(parent, -1, _("Create Project Name Directory"))
     option_sizer.Add(dirCheck,0,flag=wx.TOP,border=HALF_SPACE)
     addsrcPathRadioBtn = wx.RadioButton(parent,-1, label = "Create '%s' Folder And Add it to the PYTHONPATH" % \
-                            projectconfiguration.ProjectConfiguration.DEFAULT_PROJECT_SRC_PATH,style = wx.RB_GROUP)
+                            projectconfiguration.ProjectSettings.DEFAULT_PROJECT_SRC_PATH,style = wx.RB_GROUP)
     option_sizer.Add(addsrcPathRadioBtn,0,flag=wx.TOP,border=HALF_SPACE)
     addProjectPathRadioBtn = wx.RadioButton(parent,-1, label = 'Add Project Directory to the PYTHONPATH')
     option_sizer.Add(addProjectPathRadioBtn,0,flag=wx.TOP,border=HALF_SPACE)

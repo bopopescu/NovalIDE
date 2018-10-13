@@ -14,10 +14,13 @@ import threading
 import noval.tool.OutputThread as OutputThread
 import subprocess
 import noval.tool.which as whichpath
-import noval.tool.WxThreadSafe as WxThreadSafe
+import noval.util.WxThreadSafe as WxThreadSafe
 import noval.util.strutils as strutils
 import getpass
 import noval.util.fileutils as fileutils
+import noval.tool.images as images
+from noval.util.exceptions import PromptErrorException
+import noval.util.utils as utils
 
 ID_COPY_INTERPRETER_NAME = wx.NewId()
 ID_COPY_INTERPRETER_VERSION = wx.NewId()
@@ -26,6 +29,9 @@ ID_MODIFY_INTERPRETER_NAME = wx.NewId()
 ID_REMOVE_INTERPRETER = wx.NewId()
 ID_NEW_INTERPRETER_VIRTUALENV = wx.NewId()
 ID_GOTO_INTERPRETER_PATH = wx.NewId()
+
+YES_FLAG = _("Yes")
+NO_FLAG = _("No")
 
 
 class NewVirtualEnvProgressDialog(wx.ProgressDialog):
@@ -194,8 +200,14 @@ class InterpreterConfigurationPanel(wx.Panel):
     def __init__(self,parent,dlg_id,size):
         wx.Panel.__init__(self, parent, dlg_id,size=size)
         box_sizer = wx.BoxSizer(wx.VERTICAL)
+        
+        line_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        interpreter_staticText = wx.StaticText(self, label=_("Python interpreters(eg.:such as python.exe, pythonw.exe). Double or right click to rename."))
+        line_sizer.Add(interpreter_staticText,0, wx.BOTTOM|wx.EXPAND, HALF_SPACE)
+        box_sizer.Add(line_sizer, 0, wx.TOP|wx.LEFT,SPACE)
+        
         top_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.dvlc = dataview.DataViewListCtrl(self,size=(-1,150))
+        self.dvlc = dataview.DataViewListCtrl(self,size=(-1,180))
         self.dvlc.AppendTextColumn(_('Name'), width=100)
         self.dvlc.AppendTextColumn(_('Version'), width=70)
         self.dvlc.AppendTextColumn(_('Path'), width=250)
@@ -208,42 +220,66 @@ class InterpreterConfigurationPanel(wx.Panel):
         right_sizer = wx.BoxSizer(wx.VERTICAL)
         self.add_btn = wx.Button(self, -1, _("Add"))
         wx.EVT_BUTTON(self.add_btn, -1, self.AddInterpreter)
-        right_sizer.Add(self.add_btn, 0, wx.TOP|wx.EXPAND, SPACE)
+        right_sizer.Add(self.add_btn, 0, wx.TOP|wx.EXPAND, 0)
         
         self.remove_btn = wx.Button(self, -1, _("Remove"))
         wx.EVT_BUTTON(self.remove_btn, -1, self.RemoveInterpreter)
-        right_sizer.Add(self.remove_btn, 0, wx.TOP|wx.EXPAND, SPACE)
+        right_sizer.Add(self.remove_btn, 0, wx.TOP|wx.EXPAND, HALF_SPACE)
         
         self.smart_analyse_btn = wx.Button(self, -1, _("Smart Analyse"))
         wx.EVT_BUTTON(self.smart_analyse_btn, -1, self.SmartAnalyseIntreprter)
-        right_sizer.Add(self.smart_analyse_btn, 0, wx.TOP|wx.EXPAND, SPACE)
+        right_sizer.Add(self.smart_analyse_btn, 0, wx.TOP|wx.EXPAND, HALF_SPACE)
         
         self.set_default_btn = wx.Button(self, -1, _("Set Default"))
         wx.EVT_BUTTON(self.set_default_btn, -1, self.SetDefaultInterpreter)
-        right_sizer.Add(self.set_default_btn, 0, wx.TOP|wx.EXPAND, SPACE)
+        right_sizer.Add(self.set_default_btn, 0, wx.TOP|wx.EXPAND, HALF_SPACE)
         
         top_sizer.Add(right_sizer, 0, flag=wx.LEFT|wx.EXPAND,border=SPACE)
         
         bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
         nb = wx.Notebook(self,-1,size = (-1,350))
+        
+        iconList = wx.ImageList(16, 16, 3)
+        
+        package_icon = images.load_icon("package_obj.gif")
+        PackageIconIndex = iconList.AddIcon(package_icon)
+        search_path_icon = images.load_icon("jar_l_obj.gif")
+        SearchPathIconIndex = iconList.AddIcon(search_path_icon)
+        builtin_icon = images.load_icon("builtin.png")
+        BuiltinIconIndex = iconList.AddIcon(builtin_icon)
+        environment_icon = images.load_icon("environment.png")
+        EnvironmentIconIndex = iconList.AddIcon(environment_icon)
+        nb.AssignImageList(iconList)
         self.package_panel = packages.PackagePanel(nb)
+        count = nb.GetPageCount()
         nb.AddPage(self.package_panel, _("Package"))
+        nb.SetPageImage(count,PackageIconIndex)
+        count = nb.GetPageCount()
         self.path_panel = pythonpath.PythonPathPanel(nb)
         nb.AddPage(self.path_panel, _("Search Path"))
+        nb.SetPageImage(count,SearchPathIconIndex)
+        count = nb.GetPageCount()
         self.builtin_panel = pythonbuiltins.PythonBuiltinsPanel(nb)
         nb.AddPage(self.builtin_panel, _("Builtin Modules"))
+        nb.SetPageImage(count,BuiltinIconIndex)
+        count = nb.GetPageCount()
         self.environment_panel = environment.EnvironmentPanel(nb)
         nb.AddPage(self.environment_panel, _("Environment Variable"))
+        nb.SetPageImage(count,EnvironmentIconIndex)
         bottom_sizer.Add(nb, 1, wx.ALL|wx.EXPAND, 0)
         
-        box_sizer.Add(top_sizer, 0, flag=wx.LEFT|wx.TOP|wx.BOTTOM|wx.EXPAND, border=SPACE)
+        box_sizer.Add(top_sizer, 0, flag=wx.LEFT|wx.EXPAND, border=SPACE)
         box_sizer.Add(bottom_sizer, 0, wx.LEFT|wx.TOP|wx.BOTTOM|wx.EXPAND,SPACE)
+        self._interprter_configuration_changed = False
+        self._interpreters = []
 
         self.SetSizer(box_sizer) 
         self.ScanAllInterpreters()
         self.UpdateUI(None)
         #should use Layout ,could not use Fit method
         self.Layout()
+        #wrap the lable control to fit the ui
+        interpreter_staticText.Wrap(self.dvlc.GetSize().x + self.add_btn.GetSize().x/2)
         
     def OnContextMenu(self, event):
         menu = wx.Menu()
@@ -285,7 +321,7 @@ class InterpreterConfigurationPanel(wx.Panel):
             return
         item = self.dvlc.RowToItem(index)
         id = self.dvlc.GetItemData(item)
-        interpreter = interpretermanager.InterpreterManager().GetInterpreterById(id)   
+        interpreter = interpretermanager.InterpreterAdmin(self._interpreters).GetInterpreterById(id)   
         id = event.GetId()
         if id == ID_COPY_INTERPRETER_NAME:
             sysutils.CopyToClipboard(interpreter.Name)
@@ -330,10 +366,11 @@ class InterpreterConfigurationPanel(wx.Panel):
                 else:
                     python_path = os.path.join(location,"bin/python")
                 try:
-                    interpreter = interpretermanager.InterpreterManager().AddPythonInterpreter(python_path,name)
+                    interpreter = interpretermanager.InterpreterAdmin(self._interpreters).AddPythonInterpreter(python_path,name)
                     self.AddOneInterpreter(interpreter)
                     self.SmartAnalyse(interpreter)
-                except Exception,e:
+                    self._interprter_configuration_changed = True
+                except PromptErrorException,e:
                     wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR,self)
             return True
         elif id == ID_GOTO_INTERPRETER_PATH:
@@ -406,7 +443,7 @@ class InterpreterConfigurationPanel(wx.Panel):
         if event.GetId() == ID_NEW_INTERPRETER_VIRTUALENV:
             item = self.dvlc.RowToItem(index)
             id = self.dvlc.GetItemData(item)
-            interpreter = interpretermanager.InterpreterManager().GetInterpreterById(id)
+            interpreter = interpretermanager.InterpreterAdmin(self._interpreters).GetInterpreterById(id)
             if interpreter.IsBuiltIn:
                 event.Enable(False)
                 return True
@@ -421,12 +458,13 @@ class InterpreterConfigurationPanel(wx.Panel):
             return
         item = self.dvlc.RowToItem(index)
         id = self.dvlc.GetItemData(item)
-        interpreter = interpretermanager.InterpreterManager().GetInterpreterById(id)
         dlg = AddInterpreterDialog(self,-1,_("Modify Interpreter Name"))
-        dlg.path_ctrl.SetValue(interpreter.Path)
+        interpreter_path = self.dvlc.GetTextValue(index,2)
+        dlg.path_ctrl.SetValue(interpreter_path)
         dlg.path_ctrl.Enable(False)
         dlg.browser_btn.Enable(False)
-        dlg.name_ctrl.SetValue(interpreter.Name)
+        interpreter_name = self.dvlc.GetTextValue(index,0)
+        dlg.name_ctrl.SetValue(interpreter_name)
         dlg.CenterOnParent()
         status = dlg.ShowModal()
         passedCheck = False
@@ -436,8 +474,9 @@ class InterpreterConfigurationPanel(wx.Panel):
                 status = dlg.ShowModal()
             else:
                 name = dlg.name_ctrl.GetValue()
-                interpreter.Name = name
-                self.dvlc.SetTextValue(interpreter.Name,index,0)
+                if interpreter_name != name:
+                    self._interprter_configuration_changed = True
+                    self.dvlc.SetTextValue(name,index,0)
                 passedCheck = True
         dlg.Destroy()
         
@@ -458,11 +497,12 @@ class InterpreterConfigurationPanel(wx.Panel):
                 status = dlg.ShowModal()
             else:
                 try:
-                    interpreter = interpretermanager.InterpreterManager().AddPythonInterpreter(dlg.path_ctrl.GetValue(),dlg.name_ctrl.GetValue())
+                    interpreter = interpretermanager.InterpreterAdmin(self._interpreters).AddPythonInterpreter(dlg.path_ctrl.GetValue(),dlg.name_ctrl.GetValue())
                     self.AddOneInterpreter(interpreter)
+                    self._interprter_configuration_changed = True
                     self.SmartAnalyse(interpreter)
                     passedCheck = True
-                except Exception,e:
+                except PromptErrorException,e:
                     wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR,self)
                     status = dlg.ShowModal()     
         self.UpdateUI(None)
@@ -471,9 +511,9 @@ class InterpreterConfigurationPanel(wx.Panel):
     def AddOneInterpreter(self,interpreter):
         def GetDefaultFlag(is_default):
             if is_default:
-                return _("Yes")
+                return YES_FLAG
             else:
-                return _("No")
+                return NO_FLAG
         item_count = self.dvlc.GetStore().GetCount()
         self.dvlc.AppendItem([interpreter.Name,interpreter.Version,interpreter.Path,GetDefaultFlag(interpreter.Default)],interpreter.Id)
         self.path_panel.AppendSysPath(interpreter)
@@ -490,14 +530,15 @@ class InterpreterConfigurationPanel(wx.Panel):
             
         item = self.dvlc.RowToItem(index)
         id = self.dvlc.GetItemData(item)
-        interpreter = interpretermanager.InterpreterManager().GetInterpreterById(id)
-        if interpreter.Default:
+        if self.dvlc.GetTextValue(index,3) == YES_FLAG:
             wx.MessageBox(_("Default Interpreter cannot be remove"),_("Warning"),wx.OK|wx.ICON_WARNING,self)
             return
         ret = wx.MessageBox(_("Interpreter remove action cannot be recover,Do you want to continue remove this interpreter?"),_("Warning"),wx.YES_NO|wx.ICON_QUESTION,self)
         if ret == wx.YES:
-            interpretermanager.InterpreterManager().RemovePythonInterpreter(interpreter)
-            self.ReloadAllInterpreters()
+            interpreter = interpretermanager.InterpreterAdmin(self._interpreters).GetInterpreterById(id)
+            self._interpreters.remove(interpreter)
+            self.dvlc.DeleteItem(index)
+            self._interprter_configuration_changed = True
             
         self.UpdateUI(None)
         
@@ -508,11 +549,15 @@ class InterpreterConfigurationPanel(wx.Panel):
             
         item = self.dvlc.RowToItem(index)
         id = self.dvlc.GetItemData(item)
-        interpreter = interpretermanager.InterpreterManager().GetInterpreterById(id)
-        if interpreter.Default:
+        if self.dvlc.GetTextValue(index,3) == YES_FLAG:
             return
-        interpretermanager.InterpreterManager().SetDefaultInterpreter(interpreter)
-        self.ReloadAllInterpreters()
+        for row in range(self.dvlc.GetStore().GetCount()):
+            print row,index
+            if row == index:
+                self.dvlc.SetTextValue(YES_FLAG,row,3)
+            else:
+                self.dvlc.SetTextValue(NO_FLAG,row,3)
+        self._interprter_configuration_changed = True
         
     def SmartAnalyseIntreprter(self,event):
         index = self.dvlc.GetSelectedRow()
@@ -520,7 +565,7 @@ class InterpreterConfigurationPanel(wx.Panel):
             return
         item = self.dvlc.RowToItem(index)
         id = self.dvlc.GetItemData(item)
-        interpreter = interpretermanager.InterpreterManager().GetInterpreterById(id)
+        interpreter = interpretermanager.InterpreterAdmin(self._interpreters).GetInterpreterById(id)
         self.SmartAnalyse(interpreter)
 
     def SmartAnalyse(self,interpreter):
@@ -556,10 +601,7 @@ class InterpreterConfigurationPanel(wx.Panel):
     def ScanAllInterpreters(self):
         for interpreter in interpretermanager.InterpreterManager.interpreters:
             self.AddOneInterpreter(interpreter)
-            
-    def ReloadAllInterpreters(self):
-        self.dvlc.DeleteAllItems()
-        self.ScanAllInterpreters()
+            self._interpreters.append(interpreter)
         
     def UpdateUI(self,event):
         index = self.dvlc.GetSelectedRow()
@@ -568,12 +610,13 @@ class InterpreterConfigurationPanel(wx.Panel):
             self.remove_btn.Enable(False)
             self.set_default_btn.Enable(False)
             self.package_panel.LoadPackages(None)
+            self.path_panel.AppendSysPath(None)
         else:
             self.remove_btn.Enable(True)
             self.set_default_btn.Enable(True)
             item = self.dvlc.RowToItem(index)
             id = self.dvlc.GetItemData(item)
-            interpreter = interpretermanager.InterpreterManager().GetInterpreterById(id)
+            interpreter = interpretermanager.InterpreterAdmin(self._interpreters).GetInterpreterById(id)
             if interpretermanager.InterpreterManager().IsInterpreterAnalysing() or not interpreter.IsValidInterpreter:
                 self.smart_analyse_btn.Enable(False)
             else:
@@ -584,14 +627,50 @@ class InterpreterConfigurationPanel(wx.Panel):
             self.package_panel.LoadPackages(interpreter)
             
     def OnOK(self,optionsDialog):
+        current_interpreter = interpretermanager.InterpreterManager.GetCurrentInterpreter()
+        if current_interpreter is None:
+            utils.GetLogger().warn("there is no interpreter load success")
+            return True
+        is_pythonpath_changed = self.path_panel.GetPythonPathList()
+        self._interprter_configuration_changed = self._interprter_configuration_changed or is_pythonpath_changed
         try:
-            self.path_panel.GetPythonPathList()
-            self.environment_panel.GetEnviron()
-            interpretermanager.InterpreterManager().SavePythonInterpretersConfig()
-            self.Destroy()
-        except Exception as e:
-            wx.MessageBox(e.msg,_("Save Interpreter Error"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
+            is_environment_changed = self.environment_panel.GetEnviron()
+            self._interprter_configuration_changed = self._interprter_configuration_changed or is_environment_changed
+        except PromptErrorException as e:
+            wx.MessageBox(e.msg,_("Environment Variable Error"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
             return False
+        if self._interprter_configuration_changed:
+            self.SaveInterpreterConfiguration()
+            
+        #if current interpreter has been removed,use the default interprter as current interpreter
+        interpreter = interpretermanager.InterpreterManager().GetInterpreterByName(current_interpreter.Name)
+        if current_interpreter != interpreter:
+            interpretermanager.InterpreterManager.SetCurrentInterpreter(interpretermanager.InterpreterManager().GetDefaultInterpreter())
+
+        return True
+
+    def SaveInterpreterConfiguration(self):
+        #update latest interpreters
+        interpretermanager.InterpreterManager.interpreters = self._interpreters
+        for row in range(self.dvlc.GetStore().GetCount()):
+            interpreter = self._interpreters[row]
+            interpreter.Name = self.dvlc.GetTextValue(row,0)
+            if self.dvlc.GetTextValue(row,3) == YES_FLAG and not interpreter.Default:
+                interpretermanager.InterpreterManager().SetDefaultInterpreter(interpreter)
+        interpretermanager.InterpreterManager().SavePythonInterpretersConfig()
+        
+    def OnCancel(self,optionsDialog):
+        if interpretermanager.InterpreterManager.GetCurrentInterpreter() is None:
+            return True
+        self._interprter_configuration_changed = self._interprter_configuration_changed or self.path_panel.CheckPythonPath()
+        self._interprter_configuration_changed = self._interprter_configuration_changed or self.environment_panel.CheckEnviron()
+        if self._interprter_configuration_changed:
+            ret = wx.MessageBox(_("Interpreter configuration has already been modified outside,Do you want to save?"), _("Save interpreter configuration"),
+                           wx.YES_NO  | wx.ICON_QUESTION,self)
+            if ret == wx.YES:
+                #should reset to unchanged status
+                self._interprter_configuration_changed = False
+                self.OnOK(optionsDialog)
         return True
             
         
