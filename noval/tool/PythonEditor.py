@@ -19,23 +19,22 @@ import keyword  # So it knows what to hilite
 import wx.py  # For the Python interpreter
 import wx.stc # For the Python interpreter
 import StringIO  # For indent
-import OutlineService
+import service.OutlineService as OutlineService
 import STCTextEditor
 import keyword # for GetAutoCompleteKeywordList
 import sys # for GetAutoCompleteKeywordList
-import MessageService # for OnCheckCode
-import OutlineService
-import FindInDirService
+import service.MessageService as MessageService # for OnCheckCode
+import service.OutlineService as OutlineService
 import codecs
 import noval.tool.syntax.lang as lang
-import Service
+import service.Service as Service
 import noval.parser.fileparser as parser
 import noval.parser.scope as scope
 import interpreter.Interpreter as Interpreter
 import noval.parser.intellisence as intellisence
 import noval.parser.nodeast as nodeast
 import noval.util.strutils as strutils
-import CompletionService
+import service.CompletionService as CompletionService
 import noval.tool.debugger as debugger
 from noval.parser.utils import CmpMember
 from noval.util.logger import app_debugLogger
@@ -45,7 +44,7 @@ import threading
 import PyShell
 import noval.util.fileutils as fileutils
 import noval.parser.utils as parserutils
-import TextService
+import service.TextService as TextService
 import consts
 import noval.tool.project as project
 from noval.model import configuration
@@ -575,11 +574,6 @@ class PythonCtrl(CodeEditor.CodeCtrl):
     def CreatePopupMenu(self):
         SYNCTREE_ID = wx.NewId()
         menu = CodeEditor.CodeCtrl.CreatePopupMenu(self)
-      #  self.Bind(wx.EVT_MENU, self.OnPopFindDefinition, id=FINDDEF_ID)
-       # menu.Insert(1, FINDDEF_ID, _("Find 'def'"))
-
-        #self.Bind(wx.EVT_MENU, self.OnPopFindClass, id=FINDCLASS_ID)
-        #menu.Insert(2, FINDCLASS_ID, _("Find 'class'"))
         menu.AppendSeparator()
         self.Bind(wx.EVT_MENU, self.OnPopSyncOutline, id=SYNCTREE_ID)
         item = wx.MenuItem(menu, SYNCTREE_ID, _("Find in Outline View"))
@@ -623,24 +617,6 @@ class PythonCtrl(CodeEditor.CodeCtrl):
     def RunScript(self,event):
         view = wx.GetApp().GetDocumentManager().GetCurrentView()
         wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).Run(view.GetDocument().GetFilename())
-
-    def OnPopFindDefinition(self, event):
-        view = wx.GetApp().GetDocumentManager().GetCurrentView()
-        if hasattr(view, "GetCtrl") and view.GetCtrl() and hasattr(view.GetCtrl(), "GetSelectedText"):
-            pattern = view.GetCtrl().GetSelectedText().strip()
-            if pattern:
-                searchPattern = "def\s+%s" % pattern
-                wx.GetApp().GetService(FindInDirService.FindInDirService).FindInProject(searchPattern)
-
-
-    def OnPopFindClass(self, event):
-        view = wx.GetApp().GetDocumentManager().GetCurrentView()
-        if hasattr(view, "GetCtrl") and view.GetCtrl() and hasattr(view.GetCtrl(), "GetSelectedText"):
-            definition = "class\s+%s"
-            pattern = view.GetCtrl().GetSelectedText().strip()
-            if pattern:
-                searchPattern = definition % pattern
-                wx.GetApp().GetService(FindInDirService.FindInDirService).FindInProject(searchPattern)
 
     def GetFontAndColorFromConfig(self):
         return CodeEditor.CodeCtrl.GetFontAndColorFromConfig(self, configPrefix = "Python")

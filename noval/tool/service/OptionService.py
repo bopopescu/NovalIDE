@@ -1,7 +1,7 @@
 import wx
-import consts
+import noval.tool.consts as consts
 import wx.lib.agw.customtreectrl as CT
-import GeneralOption
+import noval.tool.GeneralOption as GeneralOption
 import os
 import noval.util.sysutils as sysutilslib
 import noval.util.appdirs as appdirs
@@ -22,13 +22,13 @@ class OptionsDialog(wx.Dialog):
     PANEL_WIDITH = 650
     PANEL_HEIGHT = 580
 
-    def __init__(self, parent, category_dct,category_list, docManager,option_name):
+    def __init__(self, parent, serivce,category_dct,category_list, docManager,option_name):
         """
         Initializes the options dialog with a notebook page that contains new
         instances of the passed optionsPanelClasses.
         """
         wx.Dialog.__init__(self, parent, -1, _("Options"))
-
+        self._service = serivce
         self._optionsPanels = {}
         self.current_panel = None
         self.current_item = None
@@ -152,6 +152,9 @@ class OptionsDialog(wx.Dialog):
             if hasattr(optionsPanel,"OnCancel") and not optionsPanel.OnCancel(self):
                 return
         self.EndModal(wx.ID_CANCEL)
+        
+    def GetService(self):
+        return self._service 
 
 class OptionsService(wx.lib.pydocview.DocOptionsService):
     def __init__(self,showGeneralOptions=True, supportedModes=wx.lib.docview.DOC_SDI & wx.lib.docview.DOC_MDI):
@@ -169,7 +172,7 @@ class OptionsService(wx.lib.pydocview.DocOptionsService):
     def OnOption(self,option_name):
         if len(self._optionsPanels) == 0:
             return
-        optionsDialog = OptionsDialog(wx.GetApp().GetTopWindow(), self._optionsPanels,self.category_list, self._docManager,option_name)
+        optionsDialog = OptionsDialog(wx.GetApp().GetTopWindow(),self, self._optionsPanels,self.category_list, self._docManager,option_name)
         optionsDialog.CenterOnParent()
         optionsDialog.ShowModal()
         optionsDialog.Destroy()

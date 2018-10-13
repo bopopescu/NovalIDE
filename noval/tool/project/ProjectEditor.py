@@ -14,7 +14,7 @@ import wx
 import wx.lib.docview
 import wx.lib.pydocview
 import wx.lib.buttons
-import noval.tool.Service as Service
+import noval.tool.service.Service as Service
 import copy
 import os
 import os.path
@@ -28,9 +28,9 @@ import noval.util.fileutils as fileutils
 import noval.util.logger as logger
 import noval.tool.UICommon as UICommon
 import Wizard
-import noval.tool.SVNService as SVNService
+import noval.tool.service.SVNService as SVNService
 import project as projectlib
-import noval.tool.ExtensionService as ExtensionService
+import noval.tool.service.ExtensionService as ExtensionService
 import noval.tool.ResourceView as ResourceView
 import noval.util.sysutils as sysutilslib
 import ImportFiles
@@ -73,7 +73,7 @@ if not ACTIVEGRID_BASE_IDE:
     DataServiceExistenceException = DeploymentGeneration.DataServiceExistenceException
     import WebBrowserService
 
-from noval.tool.SVNService import SVN_INSTALLED
+from noval.tool.service.SVNService import SVN_INSTALLED
 
 
 if wx.Platform == '__WXMSW__':

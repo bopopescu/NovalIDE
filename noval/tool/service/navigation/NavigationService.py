@@ -1,5 +1,5 @@
 import wx
-import Service
+import noval.tool.service.Service as Service
 import doctools
 import os
 import noval.util.sysutils as sysutilslib

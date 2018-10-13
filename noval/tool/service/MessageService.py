@@ -12,9 +12,8 @@
 
 import wx
 import Service
-import STCTextEditor
 import noval.util.WxThreadSafe as WxThreadSafe
-import BaseCtrl
+import noval.tool.BaseCtrl as BaseCtrl
 
 #----------------------------------------------------------------------------
 # Utility

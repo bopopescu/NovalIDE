@@ -7,7 +7,7 @@ import getpass
 import os
 import noval.util.strutils as strutils
 import noval.util.sysutils as sysutilslib
-import consts
+import noval.tool.consts as consts
 _ = wx.GetTranslation
 
 #----------------------------------------------------------------------------

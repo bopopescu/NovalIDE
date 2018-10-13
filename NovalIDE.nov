@@ -35,38 +35,34 @@
   <noval:file filePath="./noval/tool/AbstractEditor.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/checker.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/CodeEditor.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/CompletionService.py" logicalFolder="noval/tool" isStartup="false"/>
+  <noval:file filePath="./noval/tool/service/CompletionService.py" logicalFolder="noval/tool/service" isStartup="false"/>
   <noval:file filePath="./noval/tool/consts.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/debugger/DebuggerHarness.py" logicalFolder="noval/tool/debugger" isStartup="false"/>
   <noval:file filePath="./noval/tool/debugger/DebuggerService.py" logicalFolder="noval/tool/debugger" isStartup="false"/>
   <noval:file filePath="./noval/tool/debugger/DebugOutputCtrl.py" logicalFolder="noval/tool/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/tool/doctools.py" logicalFolder="noval/tool" isStartup="false"/>
+  <noval:file filePath="./noval/tool/service/navigation/doctools.py" logicalFolder="noval/tool/service/navigation" isStartup="false"/>
   <noval:file filePath="./noval/tool/EOLFormat.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/ExtensionService.py" logicalFolder="noval/tool" isStartup="false"/>
+  <noval:file filePath="./noval/tool/service/ExtensionService.py" logicalFolder="noval/tool/service" isStartup="false"/>
   <noval:file filePath="./noval/tool/FileObserver.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/FindInDirService.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/FindService.py" logicalFolder="noval/tool" isStartup="false"/>
+  <noval:file filePath="./noval/tool/service/FindInDirService.py" logicalFolder="noval/tool/service" isStartup="false"/>
+  <noval:file filePath="./noval/tool/service/FindService.py" logicalFolder="noval/tool/service" isStartup="false"/>
   <noval:file filePath="./noval/tool/GeneralOption.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/hiscache.py" logicalFolder="noval/tool" isStartup="false"/>
+  <noval:file filePath="./noval/tool/service/navigation/hiscache.py" logicalFolder="noval/tool/service/navigation" isStartup="false"/>
   <noval:file filePath="./noval/tool/HtmlEditor.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/IDE.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/ImageEditor.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/MarkerService.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/MessageService.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/NavigationService.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/OutlineService.py" logicalFolder="noval/tool" isStartup="false"/>
+  <noval:file filePath="./noval/tool/service/MarkerService.py" logicalFolder="noval/tool/service" isStartup="false"/>
+  <noval:file filePath="./noval/tool/service/MessageService.py" logicalFolder="noval/tool/service" isStartup="false"/>
+  <noval:file filePath="./noval/tool/service/navigation/NavigationService.py" logicalFolder="noval/tool/service/navigation" isStartup="false"/>
   <noval:file filePath="./noval/tool/OutputThread.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/PerlEditor.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/PyShell.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/PythonEditor.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/ResourceView.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/Service.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/Singleton.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/STCTextEditor.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/SVNService.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/TabbedFrame.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/TabbedView.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/TextService.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/UICommon.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/UnitTestDialog.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/which.py" logicalFolder="noval/tool" isStartup="false"/>
@@ -132,7 +128,6 @@
   <noval:file filePath="./noval/tests/test_user_db.py" logicalFolder="noval/tests" isStartup="false"/>
   <noval:file filePath="./noval/tests/test_interpreter.py" logicalFolder="noval/tests" isStartup="false"/>
   <noval:file filePath="./noval/tests/test_project.py" logicalFolder="noval/tests" isStartup="false"/>
-  <noval:file filePath="./noval/tool/OptionService.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/syntax/lexer/_cpp.py" logicalFolder="noval/tool/syntax/lexer" isStartup="false"/>
   <noval:file filePath="./noval/tool/syntax/lexer/_css.py" logicalFolder="noval/tool/syntax/lexer" isStartup="false"/>
   <noval:file filePath="./noval/tool/syntax/lexer/_html.py" logicalFolder="noval/tool/syntax/lexer" isStartup="false"/>
@@ -256,5 +251,12 @@
   <noval:file filePath="./noval/tool/interpreter/PythonBuiltins.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
   <noval:file filePath="./noval/tool/interpreter/InterpreterConfigruation.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
   <noval:file filePath="./noval/tool/interpreter/Environment.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
+  <noval:file filePath="./noval/tool/service/__init__.py" logicalFolder="noval/tool/service" isStartup="false"/>
+  <noval:file filePath="./noval/tool/service/Service.py" logicalFolder="noval/tool/service" isStartup="false"/>
+  <noval:file filePath="./noval/tool/service/TextService.py" logicalFolder="noval/tool/service" isStartup="false"/>
+  <noval:file filePath="./noval/tool/service/SVNService.py" logicalFolder="noval/tool/service" isStartup="false"/>
+  <noval:file filePath="./noval/tool/service/OutlineService.py" logicalFolder="noval/tool/service" isStartup="false"/>
+  <noval:file filePath="./noval/tool/service/OptionService.py" logicalFolder="noval/tool/service" isStartup="false"/>
+  <noval:file filePath="./noval/tool/service/navigation/__init__.py" logicalFolder="noval/tool/service/navigation" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>

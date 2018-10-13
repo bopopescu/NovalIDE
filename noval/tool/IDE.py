@@ -136,30 +136,28 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         self.ShowSplash(getIDESplashBitmap())
 
         import STCTextEditor
-        import TextService
-        import FindInDirService
-        import MarkerService
+        import service.TextService as TextService
+        import service.FindInDirService as FindInDirService
+        import service.MarkerService as MarkerService
         import project.project as projectlib
         import project.ProjectEditor as ProjectEditor
         import PythonEditor
-        import OutlineService
+        import service.OutlineService as OutlineService
         import XmlEditor
         import HtmlEditor
         import TabbedView
-        import MessageService
-      ##  import OutputService
-        import Service
+        import service.MessageService as MessageService
         import ImageEditor
         import PerlEditor
         import wx.lib.ogl as ogl
         import debugger.DebuggerService as DebuggerService
         import AboutDialog
-        import SVNService
-        import ExtensionService
-        import CompletionService
+        import service.SVNService as SVNService
+        import service.ExtensionService as ExtensionService
+        import service.CompletionService as CompletionService
         import GeneralOption
-        import OptionService
-        import NavigationService
+        import service.OptionService as OptionService
+        import service.navigation.NavigationService as NavigationService
         import TabbedFrame
         import interpreter.InterpreterConfigruation as interpreterconfigruation
         import ColorFont

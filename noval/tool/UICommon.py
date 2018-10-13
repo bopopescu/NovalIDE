@@ -26,7 +26,7 @@ import wx.lib.agw.hyperlink as hl
 import noval.tool.interpreter.InterpreterManager as interpretermanager
 from noval.tool.consts import HALF_SPACE,_ ,SPACE,PROJECT_EXTENSION
 from noval.model import configuration as projectconfiguration
-import OptionService
+import service.OptionService as OptionService
 
 def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Directory:"), fileExtension="*", startingName="", startingDirectory=None, choiceDirs=None, appDirDefaultStartDir=False, returnAll=False, useDirDialog=False):
 

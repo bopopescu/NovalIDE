@@ -15,7 +15,7 @@ import wx.lib.docview
 import wx.lib.pydocview
 import noval.util.sysutils as sysutilslib
 import os
-import images
+import noval.tool.images as images
 _ = wx.GetTranslation
 
 

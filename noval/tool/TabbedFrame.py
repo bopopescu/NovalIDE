@@ -7,7 +7,7 @@ import noval.util.strutils as strutils
 import noval.tool.syntax.lang as lang
 import noval.tool.syntax.syntax as syntax
 import consts
-import noval.tool.NavigationService
+import noval.tool.service.navigation.NavigationService as NavigationService
 import noval.util.appdirs as appdirs
 from wx.lib.pubsub import pub as Publisher
 import STCTextEditor
@@ -19,7 +19,7 @@ _ = wx.GetTranslation
 class DocFrameBase():
 
     def RegisterMsg(self):
-        Publisher.subscribe(self.OnUpdatePosCache,noval.tool.NavigationService.NOVAL_MSG_UI_STC_POS_JUMPED)
+        Publisher.subscribe(self.OnUpdatePosCache,NavigationService.NOVAL_MSG_UI_STC_POS_JUMPED)
 
     def OnUpdatePosCache(self, msg):
         """Update the position cache for buffer position changes
@@ -28,8 +28,8 @@ class DocFrameBase():
         """
         data = msg
         if data.has_key('prepos'):
-            noval.tool.NavigationService.NavigationService.DocMgr.AddNaviPosition(data['fname'], data['prepos'])
-        noval.tool.NavigationService.NavigationService.DocMgr.AddNaviPosition(data['fname'], data['pos'])
+            NavigationService.NavigationService.DocMgr.AddNaviPosition(data['fname'], data['prepos'])
+        NavigationService.NavigationService.DocMgr.AddNaviPosition(data['fname'], data['pos'])
 
     def GetActiveTextView(self):
         active_book = self.GetActiveChild()
@@ -381,7 +381,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,DocFrameBase
 
     def OnCloseWindow(self, event):
         wx.lib.pydocview.DocTabbedParentFrame.OnCloseWindow(self,event)
-        noval.tool.NavigationService.NavigationService.DocMgr.WriteBook()
+        NavigationService.NavigationService.DocMgr.WriteBook()
 
 class IDEMDIParentFrame(wx.lib.pydocview.DocMDIParentFrame,DocFrameBase):
     
@@ -398,5 +398,5 @@ class IDEMDIParentFrame(wx.lib.pydocview.DocMDIParentFrame,DocFrameBase):
        pass
        
     def OnCloseWindow(self, event):
-        noval.tool.NavigationService.NavigationService.DocMgr.WriteBook()
+        NavigationService.NavigationService.DocMgr.WriteBook()
         wx.lib.pydocview.DocMDIParentFrame.OnCloseWindow(self,event)

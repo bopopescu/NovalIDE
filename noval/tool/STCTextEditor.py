@@ -15,7 +15,7 @@ import wx.stc
 import wx.lib.docview
 import wx.lib.multisash
 import string
-import FindService
+import service.FindService as FindService
 import os
 import sys
 import chardet
@@ -24,10 +24,10 @@ import shutil
 import FileObserver
 import noval.util.WxThreadSafe as WxThreadSafe
 import noval.tool.syntax.lang as lang
-import MarkerService
-import TextService
-import CompletionService
-import NavigationService
+import service.MarkerService as MarkerService
+import service.TextService as TextService
+import service.CompletionService as CompletionService
+import service.navigation.NavigationService as NavigationService
 import consts
 import noval.util.sysutils as sysutilslib
 import noval.util.fileutils as fileutils

@@ -20,7 +20,7 @@ import noval.util.appdirs as appdirs
 import noval.parser.utils as dirutils
 import wx
 import codecs
-import consts
+import noval.tool.consts as consts
 #--------------------------------------------------------------------------#
 
 GOTO_PREV_POS = 0

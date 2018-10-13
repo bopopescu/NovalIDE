@@ -1,6 +1,6 @@
 import wx
 import BaseCtrl
-import FindService
+import service.FindService as FindService
 from noval.tool.consts import _
 
 class FindTextCtrl(BaseCtrl.ScintillaCtrl):

@@ -2,7 +2,7 @@ import wx
 from noval.tool.consts import SPACE,HALF_SPACE,_
 import noval.tool.interpreter.InterpreterManager as interpretermanager
 import wx.lib.agw.hyperlink as hl
-import noval.tool.OptionService as OptionService
+import noval.tool.service.OptionService as OptionService
 import BasePanel
 import noval.util.utils as utils
 

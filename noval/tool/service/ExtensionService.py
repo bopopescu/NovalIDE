@@ -19,21 +19,22 @@ import os.path
 import noval.util.xmlutils as xmlutils
 import subprocess
 import sys
-import UnitTestDialog
+import noval.tool.UnitTestDialog as UnitTestDialog
 import noval.util.sysutils as sysutilslib
 import noval.util.fileutils as fileutils
 import Service
 from noval.dummy.userdb import UserDataDb
-import GeneralOption
+import noval.tool.GeneralOption as GeneralOption
 import noval.util.appdirs as appdirs
 import noval.parser.utils as parserutils
 import requests
-from download import FileDownloader
+from noval.tool.download import FileDownloader
 import noval.tool.interpreter.Interpreter as Interpreter
 import getpass
 import noval.util.fileutils as fileutils
-import which as whichpath
+import noval.tool.which as whichpath
 import noval.tool.images as images
+import noval.util.utils as utils
 _ = wx.GetTranslation
 
 
@@ -67,7 +68,10 @@ class ExtensionService(Service.BaseService):
     EXTENSIONS_KEY = "/AG_Extensions"
 
     def __init__(self):
-        self.LoadExtensions()
+        try:
+            self.LoadExtensions()
+        except Exception as e:
+            utils.GetLogger().error("load extensions error")
 
 
     def __getExtensionKeyName(extensionName):

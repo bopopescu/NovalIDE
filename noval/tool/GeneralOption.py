@@ -8,7 +8,6 @@ import os
 import sys
 import codecs
 import consts
-import OptionService
 from Validator import NumValidator
 import noval.util.utils as utils
 
@@ -179,7 +178,7 @@ class GeneralOptionsPanel(wx.Panel):
         self._chkUpdateCheckBox.SetValue(config.ReadInt(consts.CHECK_UPDATE_ATSTARTUP_KEY, True))
         
         if self._AllowModeChanges():
-            supportedModes = wx.GetApp().GetService(OptionService.OptionsService).GetSupportedModes()
+            supportedModes = self.GetParent().GetService().GetSupportedModes()
             choices = []
             self._sdiChoice = _("Show each document in its own window")
             self._mdiChoice = _("Show all documents in a single window with tabs")
@@ -298,7 +297,7 @@ class GeneralOptionsPanel(wx.Panel):
         self._mru_ctrl.Enable(enableMRU)
 
     def _AllowModeChanges(self):
-        supportedModes = wx.GetApp().GetService(OptionService.OptionsService).GetSupportedModes()
+        supportedModes = self.GetParent().GetService().GetSupportedModes()
         return supportedModes & wx.lib.docview.DOC_SDI and supportedModes & wx.lib.docview.DOC_MDI or wx.Platform == "__WXMSW__" and supportedModes & wx.lib.docview.DOC_MDI  # More than one mode is supported, allow selection
 
 

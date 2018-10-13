@@ -14,8 +14,8 @@ import wx
 import wx.stc
 import wx.lib.docview
 import wx.lib.pydocview
-import STCTextEditor
 import Service
+import noval.tool.consts as consts
 _ = wx.GetTranslation
 
 SPACE = 10
@@ -59,7 +59,7 @@ class CompletionService(Service.BaseService):
         pass
 
     def InstallControls(self, frame, menuBar = None, toolBar = None, statusBar = None, document = None):
-        if document and document.GetDocumentTemplate().GetDocumentType() != STCTextEditor.TextDocument:
+        if document and document.GetFirstView().GetType() != consts.TEXT_VIEW:
             return
         if not document and wx.GetApp().GetDocumentManager().GetFlags() & wx.lib.docview.DOC_SDI:
             return

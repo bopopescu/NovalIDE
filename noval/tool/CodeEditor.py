@@ -14,22 +14,22 @@
 import STCTextEditor
 import wx
 import wx.lib.docview
-import OutlineService
+import service.OutlineService as OutlineService
 import os
 import re
 import string
 import sys
-import MarkerService
+import service.MarkerService as MarkerService
 from UICommon import CaseInsensitiveCompare
 import noval.parser.nodeast as nodeast
 import noval.parser.intellisence as intellisence
 import noval.parser.config as parserconfig
-import FindService
+import service.FindService as FindService
 import noval.tool.debugger as debugger
-import TextService
+import service.TextService as TextService
 import noval.util.sysutils as sysutilslib
 import EOLFormat
-import CompletionService
+import service.CompletionService as CompletionService
 import noval.util.strutils as strutils
 from noval.tool.syntax import syntax
 import consts

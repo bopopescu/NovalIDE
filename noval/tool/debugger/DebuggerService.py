@@ -16,7 +16,8 @@ import wx.lib.dialogs
 import wx.gizmos
 import wx._core
 import wx.lib.pydocview
-from noval.tool import Service,BaseCtrl,CodeEditor,PythonEditor
+from noval.tool import BaseCtrl,CodeEditor,PythonEditor
+from noval.tool.service import Service
 import noval.model.projectmodel as projectmodel
 from noval.tool.IDE import ACTIVEGRID_BASE_IDE
 if not ACTIVEGRID_BASE_IDE:
@@ -55,7 +56,7 @@ import noval.util.strutils as strutils
 import noval.parser.utils as parserutils
 import noval.util.fileutils as fileutils
 import copy
-import noval.tool.OptionService as OptionService
+import noval.tool.service.OptionService as OptionService
 import noval.util.appdirs as appdirs
 import noval.util.utils as utils
 from noval.model import configuration
