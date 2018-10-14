@@ -63,17 +63,18 @@ class VariablesDialog(wx.Dialog):
     def __init__(self,parent,dlg_id,title,current_project_document = None):
         wx.Dialog.__init__(self,parent,dlg_id,title)
         box_sizer = wx.BoxSizer(wx.VERTICAL)
+        box_sizer.Add(wx.StaticText(self, -1, consts._("Input the variable name:")), 0,flag=wx.TOP|wx.LEFT,border=consts.HALF_SPACE)
         self.current_project_document = current_project_document
         
         self.search_variable_ctrl = wx.TextCtrl(self, -1, "", size=(-1,-1))
         self.Bind(wx.EVT_TEXT,self.SeachVariable)
-        box_sizer.Add(self.search_variable_ctrl, 0, flag=wx.BOTTOM|wx.RIGHT|wx.EXPAND,border=consts.SPACE)
+        box_sizer.Add(self.search_variable_ctrl, 0, flag=wx.BOTTOM|wx.TOP|wx.EXPAND|wx.LEFT|wx.RIGHT,border=consts.HALF_SPACE)
         
         self.dvlc = dataview.DataViewListCtrl(self,size=(400,380))
         self.dvlc.AppendTextColumn(consts._('Name'), width=150)
         self.dvlc.AppendTextColumn(consts._('Value'),width=250)
         dataview.EVT_DATAVIEW_ITEM_ACTIVATED(self.dvlc, -1, self.OnOKClick)
-        box_sizer.Add(self.dvlc, 1, wx.EXPAND)
+        box_sizer.Add(self.dvlc, 1, wx.EXPAND|wx.ALL,border=consts.HALF_SPACE)
         self.SetVariables()
         
         bsizer = wx.StdDialogButtonSizer()

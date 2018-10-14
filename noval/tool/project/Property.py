@@ -8,7 +8,7 @@ import noval.util.sysutils as sysutilslib
 import noval.util.fileutils as fileutils
 import ProjectEditor
 import noval.util.utils as utils
-from Pages import *
+from pages import *
 
 RESOURCE_ITEM_NAME = "Resource"
 DEBUG_RUN_ITEM_NAME = "Debug/Run Settings"

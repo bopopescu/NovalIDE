@@ -396,7 +396,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 lineNum = foundView.LineFromPosition(pos)
                 foundView.GetCtrl().GotoPos(pos)
             if foundView.GetLangId() == lang.ID_LANG_PYTHON:
-                import OutlineService
+                import service.OutlineService as OutlineService
                 self.GetService(OutlineService.OutlineService).LoadOutline(foundView, lineNum=lineNum)
 
 
