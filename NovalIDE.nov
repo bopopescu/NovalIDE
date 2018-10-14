@@ -231,20 +231,11 @@
   <noval:file filePath="./noval/model/constants.py" logicalFolder="noval/model" isStartup="false"/>
   <noval:file filePath="./noval/tool/FindTextCtrl.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/NewDocument.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/project/Pages/__init__.py" logicalFolder="noval/tool/project/Pages" isStartup="false"/>
-  <noval:file filePath="./noval/tool/project/Pages/Resource.py" logicalFolder="noval/tool/project/Pages" isStartup="false"/>
-  <noval:file filePath="./noval/tool/project/Pages/DebugRun.py" logicalFolder="noval/tool/project/Pages" isStartup="false"/>
-  <noval:file filePath="./noval/tool/project/Pages/PythonPath.py" logicalFolder="noval/tool/project/Pages" isStartup="false"/>
-  <noval:file filePath="./noval/tool/project/Pages/PythonInterpreter.py" logicalFolder="noval/tool/project/Pages" isStartup="false"/>
   <noval:file filePath="./noval/tool/project/RunConfiguration.py" logicalFolder="noval/tool/project" isStartup="false"/>
-  <noval:file filePath="./noval/tool/project/Pages/ProjectReferrence.py" logicalFolder="noval/tool/project/Pages" isStartup="false"/>
   <noval:file filePath="./noval/tool/project/PythonVariables.py" logicalFolder="noval/tool/project" isStartup="false"/>
-  <noval:file filePath="./noval/tool/project/Pages/BasePanel.py" logicalFolder="noval/tool/project/Pages" isStartup="false"/>
   <noval:file filePath="./noval/util/exceptions.py" logicalFolder="noval/util" isStartup="false"/>
   <noval:file filePath="./noval/tool/interpreter/EnvironmentVariableDialog.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
-  <noval:file filePath="./noval/tool/project/Pages/EnvironmentMixin.py" logicalFolder="noval/tool/project/Pages" isStartup="false"/>
   <noval:file filePath="./noval/tool/interpreter/PythonPathMixin.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
-  <noval:file filePath="./noval/tool/project/Pages/ProjectDialog.py" logicalFolder="noval/tool/project/Pages" isStartup="false"/>
   <noval:file filePath="./noval/tool/interpreter/InterpreterManager.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
   <noval:file filePath="./noval/tool/interpreter/PythonPackages.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
   <noval:file filePath="./noval/tool/interpreter/PythonPath.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
@@ -258,5 +249,14 @@
   <noval:file filePath="./noval/tool/service/OutlineService.py" logicalFolder="noval/tool/service" isStartup="false"/>
   <noval:file filePath="./noval/tool/service/OptionService.py" logicalFolder="noval/tool/service" isStartup="false"/>
   <noval:file filePath="./noval/tool/service/navigation/__init__.py" logicalFolder="noval/tool/service/navigation" isStartup="false"/>
+  <noval:file filePath="./noval/tool/project/pages/__init__.py" logicalFolder="noval/tool/project/pages" isStartup="false"/>
+  <noval:file filePath="./noval/tool/project/pages/Resource.py" logicalFolder="noval/tool/project/pages" isStartup="false"/>
+  <noval:file filePath="./noval/tool/project/pages/DebugRun.py" logicalFolder="noval/tool/project/pages" isStartup="false"/>
+  <noval:file filePath="./noval/tool/project/pages/PythonPath.py" logicalFolder="noval/tool/project/pages" isStartup="false"/>
+  <noval:file filePath="./noval/tool/project/pages/PythonInterpreter.py" logicalFolder="noval/tool/project/pages" isStartup="false"/>
+  <noval:file filePath="./noval/tool/project/pages/ProjectReferrence.py" logicalFolder="noval/tool/project/pages" isStartup="false"/>
+  <noval:file filePath="./noval/tool/project/pages/BasePanel.py" logicalFolder="noval/tool/project/pages" isStartup="false"/>
+  <noval:file filePath="./noval/tool/project/pages/EnvironmentMixin.py" logicalFolder="noval/tool/project/pages" isStartup="false"/>
+  <noval:file filePath="./noval/tool/project/pages/ProjectDialog.py" logicalFolder="noval/tool/project/pages" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>
