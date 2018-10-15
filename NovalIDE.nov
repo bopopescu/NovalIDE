@@ -62,7 +62,6 @@
   <noval:file filePath="./noval/tool/Singleton.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/STCTextEditor.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/TabbedFrame.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/TabbedView.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/UICommon.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/UnitTestDialog.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/which.py" logicalFolder="noval/tool" isStartup="false"/>
@@ -258,5 +257,6 @@
   <noval:file filePath="./noval/tool/project/pages/BasePanel.py" logicalFolder="noval/tool/project/pages" isStartup="false"/>
   <noval:file filePath="./noval/tool/project/pages/EnvironmentMixin.py" logicalFolder="noval/tool/project/pages" isStartup="false"/>
   <noval:file filePath="./noval/tool/project/pages/ProjectDialog.py" logicalFolder="noval/tool/project/pages" isStartup="false"/>
+  <noval:file filePath="./noval/tool/interpreter/GeneralConfiguration.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>

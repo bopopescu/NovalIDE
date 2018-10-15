@@ -7,12 +7,21 @@ import noval.util.sysutils as sysutilslib
 import noval.util.appdirs as appdirs
 _ = wx.GetTranslation
 
+##option names
+ENVIRONMENT_OPTION_NAME = "Environment"
+INTERPRETER_OPTION_NAME = "Interpreter"
+OTHER_OPTION_NAME = "Other"
+
+#option item names
 GENERAL_ITEM_NAME = "General"
 TEXT_ITEM_NAME = "Text"
 PROJECT_ITEM_NAME = "Project"
 FONTS_CORLORS_ITEM_NAME = "Fonts and Colors"
-INTERPRETER_ITEM_NAME = "Python Interpreter"
+INTERPRETER_CONFIGURATIONS_ITEM_NAME = "Configuration List"
 EXTENSION_ITEM_NAME = "Extension"
+
+def GetOptionName(caterory,name):
+    return caterory + "/" + name
 
 class OptionsDialog(wx.Dialog):
     """
@@ -22,7 +31,7 @@ class OptionsDialog(wx.Dialog):
     PANEL_WIDITH = 650
     PANEL_HEIGHT = 580
 
-    def __init__(self, parent, serivce,category_dct,category_list, docManager,option_name):
+    def __init__(self, parent, serivce,category_dct,category_list, docManager,selection=ENVIRONMENT_OPTION_NAME+"/"+GENERAL_ITEM_NAME):
         """
         Initializes the options dialog with a notebook page that contains new
         instances of the passed optionsPanelClasses.
@@ -68,19 +77,21 @@ class OptionsDialog(wx.Dialog):
         self.tree.il = il                
         self.tree.SetButtonsImageList(il)
         self.root = self.tree.AddRoot("TheRoot")
+        option_catetory,option_name = self.GetOptionNames(selection)
         for category in category_list:
-            item = self.tree.AppendItem(self.root,category)
+            item = self.tree.AppendItem(self.root,_(category))
+            self.tree.SetPyData(item,category)
             optionsPanelClasses = category_dct[category]
             for name,optionsPanelClass in optionsPanelClasses:
                 option_panel = optionsPanelClass(self,-1,size=(self.PANEL_WIDITH,self.PANEL_HEIGHT))
                 option_panel.Hide()
-                self._optionsPanels[name] = option_panel
+                self._optionsPanels[GetOptionName(category , name)] = option_panel
                 child = self.tree.AppendItem(item,_(name))
                 self.tree.SetPyData(child,name)
                 #select the default item,to avoid select no item
-                if name == GENERAL_ITEM_NAME:
+                if name == GENERAL_ITEM_NAME and category == ENVIRONMENT_OPTION_NAME:
                     self.tree.SelectItem(child)
-                if name == option_name:
+                if name == option_name and category == option_catetory:
                     self.tree.SelectItem(child)
 
         sizer.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL), 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM|wx.TOP, consts.HALF_SPACE)
@@ -90,13 +101,23 @@ class OptionsDialog(wx.Dialog):
         self.Layout()
         self.Fit()
         wx.CallAfter(self.DoRefresh)
+        
+    def GetSelectOptionName(self,item):
+        item_select_name = ""
+        parent_item = item
+        item_names = []
+        while parent_item != self.tree.GetRootItem():
+            item_names.append(self.tree.GetPyData(parent_item))
+            parent_item = parent_item.GetParent()
+        item_names.reverse()
+        return '/'.join(item_names)
 
     def DoSelection(self,event):
         sel = self.tree.GetSelection()
         if self.tree.GetChildrenCount(sel) > 0:
             (item, cookie) = self.tree.GetFirstChild(sel)
             sel = item
-        text = self.tree.GetPyData(sel)
+        text = self.GetSelectOptionName(sel)
         panel = self._optionsPanels[text]
         if self.current_item is not None and sel != self.current_item:
             if not self.current_panel.Validate():
@@ -142,7 +163,7 @@ class OptionsDialog(wx.Dialog):
         if self.tree.GetChildrenCount(sel) > 0:
             (item, cookie) = self.tree.GetFirstChild(sel)
             sel = item
-        text = self.tree.GetPyData(sel)
+        text = self.GetSelectOptionName(sel)
         wx.ConfigBase_Get().Write("OptionName",text)
         self.EndModal(wx.ID_OK)
         
@@ -155,13 +176,19 @@ class OptionsDialog(wx.Dialog):
         
     def GetService(self):
         return self._service 
+        
+    def GetOptionNames(self,selection_name):
+        names = selection_name.split("/")
+        if 1 >= len(names):
+            return "",selection_name
+        return names[0],names[1]
 
 class OptionsService(wx.lib.pydocview.DocOptionsService):
     def __init__(self,showGeneralOptions=True, supportedModes=wx.lib.docview.DOC_SDI & wx.lib.docview.DOC_MDI):
         wx.lib.pydocview.DocOptionsService.__init__(self,False,supportedModes=wx.lib.docview.DOC_MDI)
         self._optionsPanels = {}
         self.category_list = []
-        self.AddOptionsPanel(_("Environment"),GENERAL_ITEM_NAME,GeneralOption.GeneralOptionsPanel)
+        self.AddOptionsPanel(ENVIRONMENT_OPTION_NAME,GENERAL_ITEM_NAME,GeneralOption.GeneralOptionsPanel)
         
     def OnOptions(self, event):
         """

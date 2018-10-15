@@ -116,5 +116,5 @@ class BaseEnvironmentUI:
     def GetEnviron(self):
         dct = {}
         for row in range(self.dvlc.GetStore().GetCount()):
-            dct[self.dvlc.GetTextValue(row,0)] = self.dvlc.GetTextValue(row,1)
+            dct[str(self.dvlc.GetTextValue(row,0))] = str(self.dvlc.GetTextValue(row,1))
         return dct

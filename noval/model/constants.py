@@ -10,7 +10,11 @@ _("Extension")
 _("Search Results")
 _("Outline")
 _("Projects/Resources View")
+_("Configuration List")
 
 _("Resource")
 _("Debug/Run Settings")
 _("Project References")
+
+_("Yes")
+_("No")

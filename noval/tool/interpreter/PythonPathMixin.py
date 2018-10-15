@@ -198,7 +198,13 @@ class BasePythonPathPanel:
         if item is None or not item.IsOk():
             return
         self.tree_ctrl.Delete(item)
-        
-    def EncodePath(self,path):
+
+    def ConvertPath(self,path):
         sys_encoding = locale.getdefaultlocale()[1]
-        return path.encode(sys_encoding)
+        try:
+            return path.encode(sys_encoding)
+        except:
+            try:
+                return path.decode(sys_encoding)
+            except:
+                return path

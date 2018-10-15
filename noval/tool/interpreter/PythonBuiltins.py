@@ -9,4 +9,5 @@ class PythonBuiltinsPanel(wx.Panel):
         
     def SetBuiltiins(self,interpreter):
         self.listbox.Clear()
-        self.listbox.InsertItems(interpreter.Builtins,0)
+        if interpreter is not None:
+            self.listbox.InsertItems(interpreter.Builtins,0)

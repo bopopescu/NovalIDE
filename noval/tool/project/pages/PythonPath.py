@@ -149,7 +149,17 @@ class EnvironmentPage(wx.Panel,EnvironmentMixin.BaseEnvironmentUI):
     def __init__(self,parent):
         wx.Panel.__init__(self, parent)
         self.InitUI()
+        self.LoadEnviron()
         self.UpdateUI(None)
+        
+    def LoadEnviron(self):
+        environ_str = utils.ProfileGet(self.GetParent().GetParent().ProjectDocument.GetKey() + "/Environment","{}")
+        try:
+            environ = eval(environ_str)
+        except:
+            environ = {}
+        for env in environ:
+            self.dvlc.AppendItem([env,environ[env]])
 
 class PythonPathPanel(BasePanel.BasePanel):
     def __init__(self,filePropertiesService,parent,dlg_id,size,selected_item):
@@ -165,7 +175,7 @@ class PythonPathPanel(BasePanel.BasePanel):
         EnvironmentIconIndex = iconList.AddIcon(environment_icon)
         nb.AssignImageList(iconList)
         
-        pythonpath_StaticText = wx.StaticText(self, -1, _("The final PYTHONPATH used for a launch is composed of paths defined here,joined with the paths defined by the selected interpreter."))
+        pythonpath_StaticText = wx.StaticText(self, -1, _("The final PYTHONPATH used for a launch is composed of paths defined here,joined with the paths defined by the selected interpreter.\n"))
         box_sizer.Add(pythonpath_StaticText,0,flag=wx.LEFT|wx.TOP,border=SPACE)
         
         count = nb.GetPageCount()
@@ -184,20 +194,17 @@ class PythonPathPanel(BasePanel.BasePanel):
         self.SetSizer(box_sizer)
         #should use Layout ,could not use Fit method
         self.Layout()
-        #wrap the static text to fit the ui
-        pythonpath_StaticText.Wrap(nb.GetSize().x)
-        #should call layout again
-        self.Layout()
         
     def OnOK(self,optionsDialog):
         
         internal_path_list = self.internal_path_panel.GetPythonPathList(True)
-        if len(internal_path_list) > 0:
-            utils.ProfileSet(self.ProjectDocument.GetKey() + "/InternalPath",internal_path_list.__repr__())
+        utils.ProfileSet(self.ProjectDocument.GetKey() + "/InternalPath",internal_path_list.__repr__())
             
         external_path_list = self.external_path_panel.GetPythonPathList()
-        if len(external_path_list) > 0:
-            utils.ProfileSet(self.ProjectDocument.GetKey() + "/ExternalPath",external_path_list.__repr__())
+        utils.ProfileSet(self.ProjectDocument.GetKey() + "/ExternalPath",external_path_list.__repr__())
+            
+        environment_list = self.environment_panel.GetEnviron()
+        utils.ProfileSet(self.ProjectDocument.GetKey() + "/Environment",environment_list.__repr__())
 
         return True
 

@@ -94,9 +94,10 @@ class EnvironmentPanel(wx.Panel):
     def SetVariables(self,interpreter):
         self.interpreter = interpreter
         self.dvlc.DeleteAllItems()
-        for env in self.interpreter.Environ:
-            self.dvlc.AppendItem([env,self.interpreter.Environ[env]])
-        self._includeCheckBox.SetValue(self.interpreter.Environ.IncludeSystemEnviron)
+        if self.interpreter is not None:
+            for env in self.interpreter.Environ:
+                self.dvlc.AppendItem([env,self.interpreter.Environ[env]])
+            self._includeCheckBox.SetValue(self.interpreter.Environ.IncludeSystemEnviron)
         self.UpdateUI(None)
             
     def RemoveVariable(self,event):

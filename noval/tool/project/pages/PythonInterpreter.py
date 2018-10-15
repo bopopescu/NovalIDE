@@ -44,7 +44,7 @@ class PythonInterpreterPanel(BasePanel.BasePanel):
         
     def GotoInterpreterConfiguration(self,event):
         option_service = wx.GetApp().GetService(OptionService.OptionsService)
-        option_service.OnOption(option_name = OptionService.INTERPRETER_ITEM_NAME)
+        option_service.OnOption(option_name = OptionService.GetOptionName(OptionService.INTERPRETER_OPTION_NAME,OptionService.INTERPRETER_CONFIGURATIONS_ITEM_NAME))
         choices,default_selection = interpretermanager.InterpreterManager().GetChoices()
         self.interpreterCombo.Clear()
         if len(choices) > 0:

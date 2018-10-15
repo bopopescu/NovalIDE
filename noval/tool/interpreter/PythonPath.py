@@ -11,15 +11,16 @@ class PythonPathPanel(wx.Panel,PythonPathMixin.BasePythonPathPanel):
         
     def AppendSysPath(self,interpreter):
         self._interpreter = interpreter
+        self.tree_ctrl.DeleteAllItems()
         if self._interpreter is not None:
-            self.tree_ctrl.DeleteAllItems()
             root_item = self.tree_ctrl.AddRoot(_("Path List"))
             self.tree_ctrl.SetItemImage(root_item,self.LibraryIconIdx,wx.TreeItemIcon_Normal)
             path_list = interpreter.SysPathList + interpreter.PythonPathList
             for path in path_list:
                 if path.strip() == "":
                     continue
-                item = self.tree_ctrl.AppendItem(root_item, self.EncodePath(path))
+                #process path contains chinese character
+                item = self.tree_ctrl.AppendItem(root_item, self.ConvertPath(path))
                 self.tree_ctrl.SetItemImage(item,self.LibraryIconIdx,wx.TreeItemIcon_Normal)
             self.tree_ctrl.ExpandAll()
         self.UpdateUI()
@@ -58,8 +59,10 @@ class PythonPathPanel(wx.Panel,PythonPathMixin.BasePythonPathPanel):
         path_list = self.GetPathList()
         python_path_list = []
         for path in path_list:
-            if not parserutils.PathsContainPath(self._interpreter.SysPathList,path):
-                python_path_list.append(path)
+            #process path contains chinese character
+            new_path = self.ConvertPath(path)
+            if not parserutils.PathsContainPath(self._interpreter.SysPathList,new_path):
+                python_path_list.append(new_path)
         return python_path_list
         
     def UpdateUI(self):

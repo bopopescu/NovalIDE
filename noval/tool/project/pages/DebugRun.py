@@ -556,6 +556,7 @@ class PyDebugRunProertyPanel(BasePanel.BasePanel):
         if project_file is None:
             key_path = self.current_project_document.GetKey()
             utils.ProfileSet(key_path + "/ConfigurationList",[].__repr__())
+            utils.ProfileSet(key_path + "/RunConfigurationName","")
             return
         config = wx.ConfigBase_Get()
         key_path = self.current_project_document.GetFileKey(project_file)
@@ -569,6 +570,7 @@ class PyDebugRunProertyPanel(BasePanel.BasePanel):
             group_path = key_path + "/" + name
             config.DeleteGroup(group_path)
         utils.ProfileSet(key_path + "/ConfigurationList",[].__repr__())
+        utils.ProfileSet(key_path + "/RunConfigurationName","")
 
     def OnOK(self,optionsDialog):
         #when is the property of project,check the startup file

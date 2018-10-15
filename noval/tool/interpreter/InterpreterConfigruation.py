@@ -30,8 +30,8 @@ ID_REMOVE_INTERPRETER = wx.NewId()
 ID_NEW_INTERPRETER_VIRTUALENV = wx.NewId()
 ID_GOTO_INTERPRETER_PATH = wx.NewId()
 
-YES_FLAG = _("Yes")
-NO_FLAG = _("No")
+YES_FLAG = "Yes"
+NO_FLAG = "No"
 
 
 class NewVirtualEnvProgressDialog(wx.ProgressDialog):
@@ -272,7 +272,8 @@ class InterpreterConfigurationPanel(wx.Panel):
         box_sizer.Add(bottom_sizer, 0, wx.LEFT|wx.TOP|wx.BOTTOM|wx.EXPAND,SPACE)
         self._interprter_configuration_changed = False
         self._interpreters = []
-
+        #current selected interpreter
+        self._current_interpreter = None
         self.SetSizer(box_sizer) 
         self.ScanAllInterpreters()
         self.UpdateUI(None)
@@ -511,9 +512,9 @@ class InterpreterConfigurationPanel(wx.Panel):
     def AddOneInterpreter(self,interpreter):
         def GetDefaultFlag(is_default):
             if is_default:
-                return YES_FLAG
+                return _(YES_FLAG)
             else:
-                return NO_FLAG
+                return _(NO_FLAG)
         item_count = self.dvlc.GetStore().GetCount()
         self.dvlc.AppendItem([interpreter.Name,interpreter.Version,interpreter.Path,GetDefaultFlag(interpreter.Default)],interpreter.Id)
         self.path_panel.AppendSysPath(interpreter)
@@ -530,7 +531,7 @@ class InterpreterConfigurationPanel(wx.Panel):
             
         item = self.dvlc.RowToItem(index)
         id = self.dvlc.GetItemData(item)
-        if self.dvlc.GetTextValue(index,3) == YES_FLAG:
+        if self.dvlc.GetTextValue(index,3) == _(YES_FLAG):
             wx.MessageBox(_("Default Interpreter cannot be remove"),_("Warning"),wx.OK|wx.ICON_WARNING,self)
             return
         ret = wx.MessageBox(_("Interpreter remove action cannot be recover,Do you want to continue remove this interpreter?"),_("Warning"),wx.YES_NO|wx.ICON_QUESTION,self)
@@ -549,14 +550,13 @@ class InterpreterConfigurationPanel(wx.Panel):
             
         item = self.dvlc.RowToItem(index)
         id = self.dvlc.GetItemData(item)
-        if self.dvlc.GetTextValue(index,3) == YES_FLAG:
+        if self.dvlc.GetTextValue(index,3) == _(YES_FLAG):
             return
         for row in range(self.dvlc.GetStore().GetCount()):
-            print row,index
             if row == index:
-                self.dvlc.SetTextValue(YES_FLAG,row,3)
+                self.dvlc.SetTextValue(_(YES_FLAG),row,3)
             else:
-                self.dvlc.SetTextValue(NO_FLAG,row,3)
+                self.dvlc.SetTextValue(_(NO_FLAG),row,3)
         self._interprter_configuration_changed = True
         
     def SmartAnalyseIntreprter(self,event):
@@ -606,27 +606,28 @@ class InterpreterConfigurationPanel(wx.Panel):
     def UpdateUI(self,event):
         index = self.dvlc.GetSelectedRow()
         if index == wx.NOT_FOUND:
+            self._current_interpreter = None
             self.smart_analyse_btn.Enable(False)
             self.remove_btn.Enable(False)
             self.set_default_btn.Enable(False)
-            self.package_panel.LoadPackages(None)
-            self.path_panel.AppendSysPath(None)
         else:
             self.remove_btn.Enable(True)
             self.set_default_btn.Enable(True)
             item = self.dvlc.RowToItem(index)
             id = self.dvlc.GetItemData(item)
-            interpreter = interpretermanager.InterpreterAdmin(self._interpreters).GetInterpreterById(id)
-            if interpretermanager.InterpreterManager().IsInterpreterAnalysing() or not interpreter.IsValidInterpreter:
+            self._current_interpreter = interpretermanager.InterpreterAdmin(self._interpreters).GetInterpreterById(id)
+            if interpretermanager.InterpreterManager().IsInterpreterAnalysing() or not self._current_interpreter.IsValidInterpreter:
                 self.smart_analyse_btn.Enable(False)
             else:
                 self.smart_analyse_btn.Enable(True)
-            self.path_panel.AppendSysPath(interpreter)
-            self.builtin_panel.SetBuiltiins(interpreter)
-            self.environment_panel.SetVariables(interpreter)
-            self.package_panel.LoadPackages(interpreter)
+        self.path_panel.AppendSysPath(self._current_interpreter)
+        self.builtin_panel.SetBuiltiins(self._current_interpreter)
+        self.environment_panel.SetVariables(self._current_interpreter)
+        self.package_panel.LoadPackages(self._current_interpreter)
             
     def OnOK(self,optionsDialog):
+        if self._current_interpreter is None:
+            return True
         current_interpreter = interpretermanager.InterpreterManager.GetCurrentInterpreter()
         if current_interpreter is None:
             utils.GetLogger().warn("there is no interpreter load success")
@@ -655,12 +656,12 @@ class InterpreterConfigurationPanel(wx.Panel):
         for row in range(self.dvlc.GetStore().GetCount()):
             interpreter = self._interpreters[row]
             interpreter.Name = self.dvlc.GetTextValue(row,0)
-            if self.dvlc.GetTextValue(row,3) == YES_FLAG and not interpreter.Default:
+            if self.dvlc.GetTextValue(row,3) == _(YES_FLAG) and not interpreter.Default:
                 interpretermanager.InterpreterManager().SetDefaultInterpreter(interpreter)
         interpretermanager.InterpreterManager().SavePythonInterpretersConfig()
         
     def OnCancel(self,optionsDialog):
-        if interpretermanager.InterpreterManager.GetCurrentInterpreter() is None:
+        if self._current_interpreter is None or interpretermanager.InterpreterManager.GetCurrentInterpreter() is None:
             return True
         self._interprter_configuration_changed = self._interprter_configuration_changed or self.path_panel.CheckPythonPath()
         self._interprter_configuration_changed = self._interprter_configuration_changed or self.environment_panel.CheckEnviron()
@@ -668,8 +669,6 @@ class InterpreterConfigurationPanel(wx.Panel):
             ret = wx.MessageBox(_("Interpreter configuration has already been modified outside,Do you want to save?"), _("Save interpreter configuration"),
                            wx.YES_NO  | wx.ICON_QUESTION,self)
             if ret == wx.YES:
-                #should reset to unchanged status
-                self._interprter_configuration_changed = False
                 self.OnOK(optionsDialog)
         return True
             

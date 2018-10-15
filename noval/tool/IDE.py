@@ -145,7 +145,6 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import service.OutlineService as OutlineService
         import XmlEditor
         import HtmlEditor
-        import TabbedView
         import service.MessageService as MessageService
         import ImageEditor
         import PerlEditor
@@ -160,6 +159,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import service.navigation.NavigationService as NavigationService
         import TabbedFrame
         import interpreter.InterpreterConfigruation as interpreterconfigruation
+        import interpreter.GeneralConfiguration as generalconfiguration
         import ColorFont
         import project.Property as Property
 ##        import UpdateLogIniService
@@ -268,7 +268,6 @@ class IDEApplication(wx.lib.pydocview.DocApp):
     ##    outputService          = self.InstallService(OutputService.OutputService("Output", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         debuggerService         = self.InstallService(DebuggerService.DebuggerService("Debugger", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         extensionService        = self.InstallService(ExtensionService.ExtensionService())
-        ###optionsService          = self.InstallService(wx.lib.pydocview.DocOptionsService(supportedModes=wx.lib.docview.DOC_MDI))
         optionsService          = self.InstallService(OptionService.OptionsService())
         aboutService            = self.InstallService(wx.lib.pydocview.AboutService(AboutDialog.AboutDialog))
      ###   svnService              = self.InstallService(SVNService.SVNService())
@@ -279,15 +278,14 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             windowService       = self.InstallService(wx.lib.pydocview.WindowMenuService())
         
         # order of these added determines display order of Options Panels
-        optionsService.AddOptionsPanel(_("Environment"),OptionService.PROJECT_ITEM_NAME,ProjectEditor.ProjectOptionsPanel)
+        optionsService.AddOptionsPanel(OptionService.ENVIRONMENT_OPTION_NAME,OptionService.PROJECT_ITEM_NAME,ProjectEditor.ProjectOptionsPanel)
        ## optionsService.AddOptionsPanel(DebuggerService.DebuggerOptionsPanel)
-        optionsService.AddOptionsPanel(_("Environment"),OptionService.TEXT_ITEM_NAME,STCTextEditor.TextOptionsPanel)
-    ##    optionsService.AddOptionsPanel(PerlEditor.PerlOptionsPanel)
-     ###   optionsService.AddOptionsPanel(_("Editor"),_("Text"),STCTextEditor.TextOptionsPanel)
-        optionsService.AddOptionsPanel(_("Environment"),OptionService.FONTS_CORLORS_ITEM_NAME,ColorFont.ColorFontOptionsPanel)
-        optionsService.AddOptionsPanel(_("Interpreter"),OptionService.INTERPRETER_ITEM_NAME,interpreterconfigruation.InterpreterConfigurationPanel)
+        optionsService.AddOptionsPanel(OptionService.ENVIRONMENT_OPTION_NAME,OptionService.TEXT_ITEM_NAME,STCTextEditor.TextOptionsPanel)
+        optionsService.AddOptionsPanel(OptionService.ENVIRONMENT_OPTION_NAME,OptionService.FONTS_CORLORS_ITEM_NAME,ColorFont.ColorFontOptionsPanel)
+        optionsService.AddOptionsPanel(OptionService.INTERPRETER_OPTION_NAME,OptionService.GENERAL_ITEM_NAME,generalconfiguration.InterpreterGeneralConfigurationPanel)
+        optionsService.AddOptionsPanel(OptionService.INTERPRETER_OPTION_NAME,OptionService.INTERPRETER_CONFIGURATIONS_ITEM_NAME,interpreterconfigruation.InterpreterConfigurationPanel)
   ##      optionsService.AddOptionsPanel(SVNService.SVNOptionsPanel)
-        optionsService.AddOptionsPanel(_("Other"),OptionService.EXTENSION_ITEM_NAME,ExtensionService.ExtensionOptionsPanel)
+        optionsService.AddOptionsPanel(OptionService.OTHER_OPTION_NAME,OptionService.EXTENSION_ITEM_NAME,ExtensionService.ExtensionOptionsPanel)
 
         filePropertiesService.AddCustomEventHandler(projectService)
 

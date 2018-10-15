@@ -215,6 +215,8 @@ class RunConfiguration():
         env = environment_configuration.GetEnviron()
         project_configuration = ProjectConfiguration(self.ProjectDocument)
         python_path_list = project_configuration.LoadProjectPythonPath()
+        project_environ = project_configuration.LoadProjectEnviron()
+        env.update(project_environ)
         env[PYTHON_PATH_NAME] = str(os.pathsep.join(python_path_list))
         return configuration.RunParameter(interpreter,fileToRun,initialArgs,env,startIn,project=self.ProjectDocument,interpreter_option=interpreter_option)
 
@@ -300,6 +302,7 @@ class ProjectConfiguration(BaseConfiguration):
         for run_configuration in file_configuration_list:
             if run_configuration.Name == configuration_name:
                 return run_configuration
+        utils.GetLogger().warn("run configuration name %s is not exist",name)
         return None
         
     def LoadReferenceProjects(self):
@@ -355,4 +358,12 @@ class ProjectConfiguration(BaseConfiguration):
         if run_configuration_name == "":
             return run_configuration_name
         return run_configuration_name.split('/')[1]
+
+    def LoadProjectEnviron(self):
+        enviroment_str = utils.ProfileGet(self.ProjectDocument.GetKey() + "/Environment","{}")
+        try:
+            environ = eval(enviroment_str)
+        except:
+            environ = {}
+        return environ
         

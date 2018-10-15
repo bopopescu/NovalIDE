@@ -83,6 +83,7 @@ DEFAULT_EDGE_GUIDE_WIDTH = 78
 
 DEFAULT_DOCUMENT_TYPE_NAME = "Python Document"
 
+#project or file property panel names
 RESOURCE_ITEM_NAME = "Resource"
 DEBUG_RUN_ITEM_NAME = "Debug/Run Settings"
 INTERPRETER_ITEM_NAME = "Interpreter"

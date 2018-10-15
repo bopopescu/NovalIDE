@@ -2300,7 +2300,7 @@ class DebuggerService(Service.Service):
                 prompt = True
             else:
                 option_service = wx.GetApp().GetService(OptionService.OptionsService)
-                option_service.OnOption(option_name = OptionService.INTERPRETER_ITEM_NAME)
+                option_service.OnOption(option_name = OptionService.GetOptionName(OptionService.INTERPRETER_OPTION_NAME,OptionService.INTERPRETER_CONFIGURATIONS_ITEM_NAME))
                 wx.GetApp().AddInterpreters()
         else:
             interpreter = cb.GetClientData(selection)
@@ -2596,6 +2596,36 @@ class DebuggerService(Service.Service):
         projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
         return projectService.GetView().GetDocument()
         
+    def GetFileRunParameter(self,filetoRun=None):
+        cur_project_document = self.GetCurrentProject()
+        
+        #when there is not project or run file is not in current project
+        # run one single python file
+        if cur_project_document is None or (filetoRun is not None and \
+                    cur_project_document.GetModel().FindFile(filetoRun) is None):
+            doc_view = self.GetActiveView()
+            if doc_view:
+                document = doc_view.GetDocument()
+                if not document.Save() or document.IsNewDocument:
+                    return None
+                if self.IsFileContainBreakPoints(document) or is_break_debug:
+                    wx.MessageBox(_("Debugger can only run in active project"),style=wx.OK|wx.ICON_WARNING)
+            else:
+                return None
+            run_parameter = document.GetRunParameter()
+        else:
+            #run project
+            if filetoRun is None:
+                #default run project start up file
+                start_up_file = self.GetProjectStartupFile(cur_project_document)
+            else:
+                start_up_file = cur_project_document.GetModel().FindFile(filetoRun)
+            if not start_up_file:
+                return None
+            self.PromptToSaveFiles(cur_project_document)
+            run_parameter = cur_project_document.GetRunParameter(start_up_file)
+        return run_parameter
+        
     def GetRunParameter(self,filetoRun=None,is_break_debug=False):
         '''
             @is_break_debug:user force to debug breakpoint or not
@@ -2610,39 +2640,17 @@ class DebuggerService(Service.Service):
         if filetoRun is None and run_configuration_name:
             project_configuration = RunConfiguration.ProjectConfiguration(cur_project_document)
             run_configuration = project_configuration.LoadConfiguration(run_configuration_name)
+            #if run configuration name does not exist,then run in normal
             if not run_configuration:
-                return None
-            try:
-                run_parameter = run_configuration.GetRunParameter()
-            except PromptErrorException as e:
-                wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR)
-                return None
-        else:
-            #when there is not project or run file is not in current project
-            # run one single python file
-            if cur_project_document is None or (filetoRun is not None and \
-                        cur_project_document.GetModel().FindFile(filetoRun) is None):
-                doc_view = self.GetActiveView()
-                if doc_view:
-                    document = doc_view.GetDocument()
-                    if not document.Save() or document.IsNewDocument:
-                        return None
-                    if self.IsFileContainBreakPoints(document) or is_break_debug:
-                        wx.MessageBox(_("Debugger can only run in active project"),style=wx.OK|wx.ICON_WARNING)
-                else:
-                    return None
-                run_parameter = document.GetRunParameter()
+                run_parameter = self.GetFileRunParameter(filetoRun)
             else:
-                #run project
-                if filetoRun is None:
-                    #default run project start up file
-                    start_up_file = self.GetProjectStartupFile(cur_project_document)
-                else:
-                    start_up_file = cur_project_document.GetModel().FindFile(filetoRun)
-                if not start_up_file:
+                try:
+                    run_parameter = run_configuration.GetRunParameter()
+                except PromptErrorException as e:
+                    wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR)
                     return None
-                self.PromptToSaveFiles(cur_project_document)
-                run_parameter = cur_project_document.GetRunParameter(start_up_file)
+        else:
+            run_parameter = self.GetFileRunParameter(filetoRun)
         
         #invalid run parameter
         if run_parameter is None:
@@ -2657,8 +2665,9 @@ class DebuggerService(Service.Service):
         run_parameter = self.UpdateRunEnvironment(run_parameter)
         run_parameter.IsBreakPointDebug = is_debug_breakpoint
         #check interprter path contain chinese character or not
-        #if path have chinese character,prompt a warning message
-        run_parameter.Interpreter.CheckInterpreterPath()
+        if utils.ProfileGetInt("WarnInterpreterPath", True):
+            #if path have chinese character,prompt a warning message
+            run_parameter.Interpreter.CheckInterpreterPath()
         return run_parameter
         
     def OnDebugRun(self,event):
