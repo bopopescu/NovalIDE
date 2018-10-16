@@ -6,7 +6,7 @@ import noval.util.sysutils as sysutils
 import noval.util.strutils as strutils
 import __builtin__
 import threading
-from noval.util.logger import app_debugLogger
+from noval.util import utils
 import glob
 import InterpreterManager
 import sys
@@ -71,7 +71,7 @@ def GetCommandOutput(command,read_error=False):
             return p.stderr.read()
         return p.stdout.read()
     except Exception as e:
-        app_debugLogger.error("get command %s output error:%s",command,e)
+        utils.GetLogger().error("get command %s output error:%s",command,e)
         return ''
     
 #this class should inherit from object class
@@ -296,10 +296,10 @@ class PythonInterpreter(BuiltinPythonInterpreter):
         output = GetCommandOutput("%s -V" % strutils.emphasis_path(self.Path),True).strip().lower()
         version_flag = "python "
         if output.find(version_flag) == -1:
-            app_debugLogger.error("get version stderr output is *****%s***",output)
+            utils.GetLogger().error("get version stderr output is *****%s***",output)
             output = GetCommandOutput("%s -V" % strutils.emphasis_path(self.Path),False).strip().lower()
             if output.find(version_flag) == -1:
-                app_debugLogger.error("get version stdout output is *****%s****",output)
+                utils.GetLogger().error("get version stdout output is *****%s****",output)
                 return
         self._version = output.replace(version_flag,"").strip()
         self._is_valid_interpreter = True
@@ -467,8 +467,12 @@ class PythonInterpreter(BuiltinPythonInterpreter):
                 name,raw_version = line.split()[0:2]
                 version = raw_version.replace("(","").replace(")","")
                 self._packages[name] = version
-        self._is_loading_package = False
-        ui_panel.LoadPackageEnd(self)
+        
+        if self._is_loading_package:
+            ui_panel.LoadPackageEnd(self)
+            self._is_loading_package = False
+        else:
+            utils.GetLogger().warn("user stop loading interpreter %s package....." % self.Name)
         
     @property
     def IsLoadingPackage(self):
@@ -478,4 +482,7 @@ class PythonInterpreter(BuiltinPythonInterpreter):
         BuiltinPythonInterpreter.SetInterpreter(self,**kwargs)
         #if self.IsV3():
          #   self._builtin_module_name = self.PYTHON3_BUILTIN_MODULE_NAME
+         
+    def StopLoadingPackage(self):
+        self._is_loading_package = False
 

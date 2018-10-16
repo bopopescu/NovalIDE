@@ -5,6 +5,7 @@ import wx.lib.agw.hyperlink as hl
 import noval.tool.service.OptionService as OptionService
 import BasePanel
 import noval.util.utils as utils
+import noval.tool.project.RunConfiguration as RunConfiguration
 
 class PythonInterpreterPanel(BasePanel.BasePanel):
     def __init__(self,filePropertiesService,parent,dlg_id,size,selected_item):
@@ -34,12 +35,12 @@ class PythonInterpreterPanel(BasePanel.BasePanel):
         #should use Layout ,could not use Fit method
         self.Layout()
         
-        project_interpreter_name = utils.ProfileGet(self.ProjectDocument.GetKey() + "/Interpreter","")
+        project_interpreter_name = RunConfiguration.ProjectConfiguration.LoadProjectInterpreter(self.ProjectDocument.GetKey())
         if project_interpreter_name:
             self.interpreterCombo.SetValue(project_interpreter_name)
         
     def OnOK(self,optionsDialog):
-        utils.ProfileSet(self.ProjectDocument.GetKey() + "/Interpreter",self.interpreterCombo.GetValue())
+        utils.ProfileSet(self.ProjectDocument.GetKey() + "/Interpreter",self.GetInterpreterName())
         return True
         
     def GotoInterpreterConfiguration(self,event):
@@ -51,3 +52,6 @@ class PythonInterpreterPanel(BasePanel.BasePanel):
             self.interpreterCombo.InsertItems(choices,0)
             self.interpreterCombo.SetSelection(default_selection)
             wx.GetApp().AddInterpreters()
+
+    def GetInterpreterName(self):
+        return self.interpreterCombo.GetValue()

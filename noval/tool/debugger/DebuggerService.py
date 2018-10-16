@@ -1023,6 +1023,9 @@ class PythonDebuggerUI(BaseDebuggerUI):
 
 
 class BreakpointsUI(wx.Panel):
+    
+    FILE_NAME_COLUMN_WIDTH = 150
+    FILE_LINE_COLUMN_WIDTH = 50
     def __init__(self, parent, id, ui):
         wx.Panel.__init__(self, parent, id)
         self._ui = ui
@@ -1038,8 +1041,8 @@ class BreakpointsUI(wx.Panel):
         self._bpListCtrl.InsertColumn(0, _("File"))
         self._bpListCtrl.InsertColumn(1, _("Line"))
         self._bpListCtrl.InsertColumn(2, _("Path"))
-        self._bpListCtrl.SetColumnWidth(0, 150)
-        self._bpListCtrl.SetColumnWidth(1, 50)
+        self._bpListCtrl.SetColumnWidth(0, self.FILE_NAME_COLUMN_WIDTH)
+        self._bpListCtrl.SetColumnWidth(1, self.FILE_LINE_COLUMN_WIDTH)
         self._bpListCtrl.SetColumnWidth(2, 450)
         self._bpListCtrl.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.OnListRightClick)
         self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.ListItemSelected, self._bpListCtrl)
@@ -1183,49 +1186,39 @@ class WatchDialog(wx.Dialog):
         self.Layout()
 
 class BaseFramesUI(wx.SplitterWindow):
+    
+    THING_COLUMN_WIDTH = 175
     def __init__(self, parent, id, ui):
         wx.SplitterWindow.__init__(self, parent, id, style = wx.SP_3D)
         self._ui = ui
         self._p1 = p1 = wx.ScrolledWindow(self, -1)
+        self.MakeConsoleOutput(self._p1)
 
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        framesLabel = wx.StaticText(self, -1, "Stack Frame:")
-        sizer.Add(framesLabel, 0, flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT|wx.LEFT, border=2)
-
-        self._framesChoiceCtrl = wx.Choice(p1, -1, choices=["                                           "])
-        sizer.Add(self._framesChoiceCtrl, 1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 1)
-        self._framesChoiceCtrl.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.OnListRightClick)
-        self.Bind(wx.EVT_CHOICE, self.ListItemSelected, self._framesChoiceCtrl)
-
-        sizer2 = wx.BoxSizer(wx.VERTICAL)
-        p1.SetSizer(sizer2)
-        self._treeCtrl = wx.gizmos.TreeListCtrl(p1, -1, style=wx.TR_DEFAULT_STYLE| wx.TR_FULL_ROW_HIGHLIGHT)
-        self._treeCtrl.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnRightClick)
-        sizer2.Add(sizer, 0, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 1)
-        sizer2.Add(self._treeCtrl,1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 1)
-        tree = self._treeCtrl
-        tree.AddColumn("Thing")
-        tree.AddColumn("Value")
-        tree.SetMainColumn(0) # the one with the tree in it...
-        tree.SetColumnWidth(0, 175)
-        tree.SetColumnWidth(1, 355)
-        self._root = tree.AddRoot("Frame")
-        tree.SetPyData(self._root, "root")
-        tree.SetItemText(self._root, "", 1)
-        tree.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.IntrospectCallback)
         self._p2 = p2 = wx.Window(self, -1)
         sizer3 = wx.BoxSizer(wx.HORIZONTAL)
         p2.SetSizer(sizer3)
         p2.Bind(wx.EVT_SIZE, self.OnSize)
         self._notebook = wx.Notebook(p2, -1, size=(20,20))
+        iconList = wx.ImageList(16, 16, 4)
+        
+        stackframe_icon = images.load_icon("debugger/flag.ico")
+        stackframe_icon_index = iconList.AddIcon(stackframe_icon)
+        interact_icon = images.load_icon("debugger/interact.png")
+        interact_icon_index = iconList.AddIcon(interact_icon)
+        breakpoints_icon = images.load_icon("debugger/breakpoints.png")
+        breakpoints_icon_index = iconList.AddIcon(breakpoints_icon)
+        self._notebook.AssignImageList(iconList)
         self._notebook.Hide()
         sizer3.Add(self._notebook, 1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 1)
-        self.consoleTab = self.MakeConsoleTab(self._notebook, wx.NewId())
+        self.stackFrameTab = self.MakeStackFrameTab(self._notebook, wx.NewId())
         self.inspectConsoleTab = self.MakeInspectConsoleTab(self._notebook, wx.NewId())
         self.breakPointsTab = self.MakeBreakPointsTab(self._notebook, wx.NewId())
-        self._notebook.AddPage(self.consoleTab, _("Output"))
+        self._notebook.AddPage(self.stackFrameTab, _("Stack Frame"))
+        self._notebook.SetPageImage(self._notebook.GetPageCount() - 1,stackframe_icon_index)
         self._notebook.AddPage(self.inspectConsoleTab, _("Interact"))
+        self._notebook.SetPageImage(self._notebook.GetPageCount() - 1,interact_icon_index)
         self._notebook.AddPage(self.breakPointsTab, _("Break Points"))
+        self._notebook.SetPageImage(self._notebook.GetPageCount() - 1,breakpoints_icon_index)
         self.SetMinimumPaneSize(20)
         self.SplitVertically(p1, p2, 550)
         self.currentItem = None
@@ -1236,6 +1229,9 @@ class BaseFramesUI(wx.SplitterWindow):
 
     def OnSize(self, event):
         self._notebook.SetSize(self._p2.GetSize())
+        #fit thing column width
+        self._treeCtrl.SetColumnWidth(1, self._notebook.GetSize().x-self.THING_COLUMN_WIDTH-SPACE*2)
+        self.breakPointsTab._bpListCtrl.SetColumnWidth(2, self._notebook.GetSize().x-self.breakPointsTab.FILE_NAME_COLUMN_WIDTH - self.breakPointsTab.FILE_LINE_COLUMN_WIDTH-SPACE)
 
     def OnDoubleClick(self, event):
         # Looking for a stack trace line.
@@ -1281,10 +1277,40 @@ class BaseFramesUI(wx.SplitterWindow):
             import noval.tool.OutlineService as OutlineService
             wx.GetApp().GetService(OutlineService.OutlineService).LoadOutline(foundView, lineNum=lineNum)
 
-    def MakeConsoleTab(self, parent, id):
+
+    def MakeStackFrameTab(self, parent, id):
+        
         panel = wx.Panel(parent, id)
+        panel_sizer = wx.BoxSizer(wx.VERTICAL)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self._textCtrl = BaseCtrl.ScintillaCtrl(panel, wx.NewId())
+        framesLabel = wx.StaticText(panel, -1, "Stack Frame:")
+        sizer.Add(framesLabel, 0, flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT|wx.LEFT, border=2)
+
+        self._framesChoiceCtrl = wx.Choice(panel, -1, choices=["                                           "])
+        sizer.Add(self._framesChoiceCtrl, 1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 1)
+        self._framesChoiceCtrl.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.OnListRightClick)
+        self.Bind(wx.EVT_CHOICE, self.ListItemSelected, self._framesChoiceCtrl)
+        self._treeCtrl = wx.gizmos.TreeListCtrl(panel, -1, style=wx.TR_DEFAULT_STYLE| wx.TR_FULL_ROW_HIGHLIGHT)
+        self._treeCtrl.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnRightClick)
+        panel_sizer.Add(sizer, 0, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 1)
+        panel_sizer.Add(self._treeCtrl,1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 1)
+        tree = self._treeCtrl
+        tree.AddColumn("Thing")
+        tree.AddColumn("Value")
+        tree.SetMainColumn(0) # the one with the tree in it...
+        tree.SetColumnWidth(0, self.THING_COLUMN_WIDTH)
+        tree.SetColumnWidth(1, 355)
+        self._root = tree.AddRoot("Frame")
+        tree.SetPyData(self._root, "root")
+        tree.SetItemText(self._root, "", 1)
+        tree.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.IntrospectCallback)
+        panel.SetSizer(panel_sizer)
+        
+        return panel
+        
+    def MakeConsoleOutput(self, parent):
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._textCtrl = BaseCtrl.ScintillaCtrl(parent, wx.NewId())
         sizer.Add(self._textCtrl, 1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 2)
         self._textCtrl.HideLineNumber()
         self._textCtrl.SetReadOnly(True)
@@ -1297,10 +1323,9 @@ class BaseFramesUI(wx.SplitterWindow):
         self._textCtrl.StyleClearAll()
         wx.stc.EVT_STC_DOUBLECLICK(self._textCtrl, self._textCtrl.GetId(), self.OnDoubleClick)
 
-        panel.SetSizer(sizer)
+        parent.SetSizer(sizer)
         #sizer.Fit(panel)
 
-        return panel
     def ExecuteCommand(self, command):
         assert False, "ExecuteCommand not overridden"
 
@@ -2838,16 +2863,14 @@ class DebuggerService(Service.Service):
         fileToDebug = run_parameter.FilePath
         fileToDebug = DebuggerService.ExpandPath(fileToDebug)
         shortFile = os.path.basename(fileToDebug)
-        try:
-            self.ShowHideDebuggerMenu(True)
-            self._debugger_ui = PythonDebuggerUI(Service.ServiceView.bottomTab, -1, str(fileToDebug),self,run_parameter,break_first=break_first)
-            count = Service.ServiceView.bottomTab.GetPageCount()
-            Service.ServiceView.bottomTab.AddPage(self._debugger_ui, _("Debugging: ") + shortFile)
-            Service.ServiceView.bottomTab.SetPageImage(count,self.GetBreakDebugIconIndex())
-            Service.ServiceView.bottomTab.SetSelection(count)
-            self._debugger_ui.Execute()
-        except:
-            pass
+
+        self.ShowHideDebuggerMenu(True)
+        self._debugger_ui = PythonDebuggerUI(Service.ServiceView.bottomTab, -1, str(fileToDebug),self,run_parameter,break_first=break_first)
+        count = Service.ServiceView.bottomTab.GetPageCount()
+        Service.ServiceView.bottomTab.AddPage(self._debugger_ui, _("Debugging: ") + shortFile)
+        Service.ServiceView.bottomTab.SetPageImage(count,self.GetBreakDebugIconIndex())
+        Service.ServiceView.bottomTab.SetSelection(count)
+        self._debugger_ui.Execute()
         
     def OnDebugWebServerContinue(self, event):
         self.OnDebugWebServer(event, autoContinue=True)

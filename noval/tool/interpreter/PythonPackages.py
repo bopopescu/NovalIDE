@@ -10,6 +10,7 @@ import noval.tool.OutputThread as OutputThread
 import threading
 import noval.util.strutils as strutils
 import noval.util.sysutils as sysutils
+import noval.util.utils as utils
 
 class ManagePackagesDialog(wx.Dialog):
     
@@ -245,6 +246,7 @@ class PackagePanel(wx.Panel):
             self.uninstall_btn.Enable(True)
         self.dvlc.DeleteAllItems()
         if self.interpreter is not None:
+            utils.GetLogger().debug("load interpreter %s package" % self.interpreter.Name)
             self.interpreter.LoadPackages(self,force)
             if self.interpreter.IsLoadingPackage:
                 self.dvlc.AppendItem([_("Loading Package List....."),""])
@@ -254,10 +256,12 @@ class PackagePanel(wx.Panel):
     def LoadPackageList(self,interpreter):
         for name in interpreter.Packages:
             self.dvlc.AppendItem([name,interpreter.Packages[name]])
+        utils.GetLogger().debug("load interpreter %s package end" % self.interpreter.Name)
             
     @WxThreadSafe.call_after
     def LoadPackageEnd(self,interpreter):
         if self.interpreter != interpreter:
+            utils.GetLogger().debug("interpreter %s is not panel current interprter,current interpreter is %s" , interpreter.Name,self.interpreter.Name)
             return
         self.dvlc.DeleteAllItems()
         self.LoadPackageList(interpreter)

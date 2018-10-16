@@ -24,7 +24,8 @@ import interpreter.InterpreterManager as interpretermanager,interpreter.Interpre
 import noval.parser.intellisence as intellisence
 import noval.tool.syntax.lang as lang
 from consts import _,ID_MRU_FILE1,PROJECT_EXTENSION,\
-        PROJECT_SHORT_EXTENSION,DEFAULT_MRU_FILE_NUM,CHECK_UPDATE_ATSTARTUP_KEY,DEFAULT_DOCUMENT_TYPE_NAME
+        PROJECT_SHORT_EXTENSION,DEFAULT_MRU_FILE_NUM,CHECK_UPDATE_ATSTARTUP_KEY,DEFAULT_DOCUMENT_TYPE_NAME,\
+        APPLICATION_NAME,DEBUG_APPLICATION_NAME
 from noval.util import strutils
 import noval.parser.utils as parserutils
 from noval.dummy.userdb import UserDataDb
@@ -112,18 +113,18 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             self.SetAppName("NovalBuilderDev")
             self.SetDebug(False)
         elif isInArgs("debug", args):
-            self.SetAppName("NovalBuilderDebug")
+            self.SetAppName(DEBUG_APPLICATION_NAME)
             self.SetDebug(True)
             ACTIVEGRID_BASE_IDE = True
             log_mode = logger.LOG_MODE_TESTRUN
             self.SetSingleInstance(False)
         elif isInArgs("baseide", args):
-            self.SetAppName("NovalIDE")
+            self.SetAppName(APPLICATION_NAME)
             ACTIVEGRID_BASE_IDE = True
         elif isInArgs("tools", args):
             USE_OLD_PROJECTS = True
         else:
-            self.SetAppName("NovalBuilder")
+            self.SetAppName(APPLICATION_NAME)
             self.SetDebug(False)
         if isInArgs("multiple", args) and wx.Platform != "__WXMAC__":
             self.SetSingleInstance(False)
@@ -186,7 +187,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             self.my_locale = wx.Locale(lang_id)
             if self.my_locale.IsOk():
                 self.my_locale.AddCatalogLookupPathPrefix(os.path.join(sysutilslib.mainModuleDir,'noval','locale'))
-                ibRet = self.my_locale.AddCatalog(self.GetAppName().lower())
+                ibRet = self.my_locale.AddCatalog(APPLICATION_NAME.lower())
                 ibRet = self.my_locale.AddCatalog("wxstd")
                 self.my_locale.AddCatalog("wxstock")
 
@@ -413,7 +414,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             startPos = foundView.PositionFromLine(lineNum)
             foundView.GotoPos(startPos+col)
             if foundView.GetLangId() == lang.ID_LANG_PYTHON:
-                import OutlineService
+                import service.OutlineService as OutlineService
                 self.GetService(OutlineService.OutlineService).LoadOutline(foundView, lineNum=lineNum)
                 
     def AddInterpreters(self):

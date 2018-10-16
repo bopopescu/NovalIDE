@@ -167,7 +167,7 @@ class RunConfiguration():
     
     @classmethod
     def CreateNewConfiguration(cls,project_doc,main_module_file=None,configuration_name=""):
-        interpreter_name = utils.ProfileGet(project_doc.GetKey() + "/Interpreter",interpretermanager.InterpreterManager.GetCurrentInterpreter().Name)
+        interpreter_name = ProjectConfiguration.LoadProjectInterpreter(project_doc.GetKey())
         args = {
             StartupConfiguration.CONFIGURATION_NAME:StartupConfiguration(project_doc,main_module_file),
             AugumentsConfiguration.CONFIGURATION_NAME:AugumentsConfiguration(project_doc,main_module_file),
@@ -211,11 +211,13 @@ class RunConfiguration():
         fileToRun = self.MainModuleFile.filePath
         initialArgs = arguments_configuration.GetArgs()
         startIn = startup_configuration.StartupPath
+        if startup_configuration.StartupPathPattern != StartupConfiguration.DEFAULT_PROJECT_DIR_PATH:
+            startIn = PythonVariables.ProjectVariablesManager(self.ProjectDocument).EvalulateValue(startIn)
         interpreter_option = arguments_configuration.GetInterpreterOption()
         env = environment_configuration.GetEnviron()
         project_configuration = ProjectConfiguration(self.ProjectDocument)
-        python_path_list = project_configuration.LoadProjectPythonPath()
-        project_environ = project_configuration.LoadProjectEnviron()
+        python_path_list = project_configuration.LoadPythonPath()
+        project_environ = project_configuration.LoadEnviron()
         env.update(project_environ)
         env[PYTHON_PATH_NAME] = str(os.pathsep.join(python_path_list))
         return configuration.RunParameter(interpreter,fileToRun,initialArgs,env,startIn,project=self.ProjectDocument,interpreter_option=interpreter_option)
@@ -313,14 +315,6 @@ class ProjectConfiguration(BaseConfiguration):
             ref_project_names = []
         return ref_project_names
         
-    def GetProjectPythonPath(self,key):
-        path_str = utils.ProfileGet(self.ProjectDocument.GetKey() + key )
-        try:
-            python_path_list = eval(path_str)
-        except:
-            python_path_list = []
-        return python_path_list
-        
     def GetProjectPath(self,project_name):
         projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
         current_project_document = projectService.GetCurrentProject()
@@ -340,13 +334,15 @@ class ProjectConfiguration(BaseConfiguration):
                 utils.GetLogger().warn("project %s is not exist",ref_project_name)
         return project_path_list
         
-    def LoadProjectPythonPath(self):
-        python_path_list = self.GetProjectPythonPath("/InternalPath")
+    def LoadPythonPath(self):
+        python_path_list = self.LoadProjectInternalPath(self.ProjectDocument.GetKey())
         for i,python_path in enumerate(python_path_list):
             python_variable_manager = PythonVariables.ProjectVariablesManager(self.ProjectDocument)
             path = python_variable_manager.EvalulateValue(python_path)
             python_path_list[i] = path
-        external_python_path_list = self.GetProjectPythonPath("/ExternalPath")
+        if self.IsAppendProjectPath(self.ProjectDocument.GetKey()):
+            python_path_list.append(self.ProjectDocument.GetPath())
+        external_python_path_list = self.LoadProjectExternalPath(self.ProjectDocument.GetKey())
         reference_path_list = self.GetReferenceProjectPythonPath()
         python_path_list.extend(external_python_path_list)
         python_path_list.extend(reference_path_list)
@@ -359,11 +355,41 @@ class ProjectConfiguration(BaseConfiguration):
             return run_configuration_name
         return run_configuration_name.split('/')[1]
 
-    def LoadProjectEnviron(self):
-        enviroment_str = utils.ProfileGet(self.ProjectDocument.GetKey() + "/Environment","{}")
+    def LoadEnviron(self):
+        return self.LoadProjectEnviron(self.ProjectDocument.GetKey())
+    
+    @staticmethod
+    def LoadProjectEnviron(pj_key):
+        enviroment_str = utils.ProfileGet(pj_key + "/Environment","{}")
         try:
             environ = eval(enviroment_str)
         except:
             environ = {}
         return environ
+        
+    @classmethod
+    def LoadProjectInternalPath(cls,pj_key):
+        return cls.LoadProjectPythonPath(pj_key,"InternalPath")
+        
+    @classmethod
+    def LoadProjectExternalPath(cls,pj_key):
+        return cls.LoadProjectPythonPath(pj_key,"ExternalPath")
+        
+    @staticmethod
+    def LoadProjectPythonPath(pj_key,last_part):
+        path_str = utils.ProfileGet(pj_key + "/" + last_part,"[]")
+        try:
+            python_path_list = eval(path_str)
+        except:
+            python_path_list = []
+        return python_path_list
+        
+    @staticmethod
+    def LoadProjectInterpreter(pj_key):
+        interpreter_name = utils.ProfileGet(pj_key + "/Interpreter",interpretermanager.InterpreterManager.GetCurrentInterpreter().Name)
+        return interpreter_name
+    
+    @staticmethod
+    def IsAppendProjectPath(pj_key):
+        return utils.ProfileGetInt(pj_key + "/AppendProjectPath",True)
         

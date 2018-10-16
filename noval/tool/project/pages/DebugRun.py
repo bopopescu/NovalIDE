@@ -1,5 +1,5 @@
 import wx
-from noval.tool.consts import SPACE,HALF_SPACE,_,PROJECT_REFERENCE_ITEM_NAME,PYTHONPATH_ITEM_NAME
+from noval.tool.consts import SPACE,HALF_SPACE,_,PROJECT_REFERENCE_ITEM_NAME,PYTHONPATH_ITEM_NAME,INTERPRETER_ITEM_NAME
 import noval.tool.images as images
 import os
 import noval.util.fileutils as fileutils
@@ -271,9 +271,17 @@ class InterpreterConfigurationPage(BasePage):
         box_sizer.Add(lineSizer,0,flag = wx.EXPAND|wx.RIGHT|wx.TOP,border = SPACE)
         self.SetSizer(box_sizer)
         self.Fit()
-        if interpreter_configuration.InterpreterName:
-            self.interpretersCombo.SetValue(interpreter_configuration.InterpreterName)
+        self.SetCurrentInterpreterName(interpreter_configuration)
         self.GetInterpreterPythonPath(None)
+        
+    def SetCurrentInterpreterName(self,interpreter_configuration):
+        interpreter_name = interpreter_configuration.InterpreterName
+        proprty_dlg = self.GetParent().GetParent().GetParent().GetParent()
+        if proprty_dlg.HasPanel(INTERPRETER_ITEM_NAME):
+            project_interpreter_panel = proprty_dlg.GetPanel(INTERPRETER_ITEM_NAME)
+            interpreter_name = project_interpreter_panel.GetInterpreterName()
+        if interpreter_name:
+            self.interpretersCombo.SetValue(interpreter_name)
         
     def GetInterpreterPythonPath(self,event):
         self.listbox.Clear()
@@ -294,7 +302,7 @@ class InterpreterConfigurationPage(BasePage):
             self.listbox.AppendItems(python_path_panel.GetPythonPathList())
         else:
             project_configuration = RunConfiguration.ProjectConfiguration(self.ProjectDocument)
-            self.listbox.AppendItems(project_configuration.LoadProjectPythonPath())
+            self.listbox.AppendItems(project_configuration.LoadPythonPath())
         
     def GetConfiguration(self):
         main_module_file = self.GetParent().GetParent().GetMainModuleFile()

@@ -12,6 +12,7 @@ import BasePanel
 import noval.util.utils as utils
 import EnvironmentMixin
 import noval.tool.interpreter.PythonPathMixin as PythonPathMixin
+import noval.tool.project.RunConfiguration as RunConfiguration
 
 class InternalPathPage(wx.Panel):
     
@@ -26,6 +27,9 @@ class InternalPathPage(wx.Panel):
         left_sizer = wx.BoxSizer(wx.VERTICAL)
         self.tree_ctrl = wx.TreeCtrl(self,size=(300,-1),style=wx.TR_NO_LINES|wx.TR_HIDE_ROOT|wx.TR_DEFAULT_STYLE)
         left_sizer.Add(self.tree_ctrl, 1,  wx.EXPAND)
+        self._useProjectPathCheckBox = wx.CheckBox(self, -1, _("Append project root path to PYTHONPATH"))
+        left_sizer.Add(self._useProjectPathCheckBox, 0,  wx.EXPAND|wx.TOP|wx.BOTTOM,HALF_SPACE)
+        self._useProjectPathCheckBox.SetValue(RunConfiguration.ProjectConfiguration.IsAppendProjectPath(self.current_project_document.GetKey()))
         
         iconList = wx.ImageList(16, 16, initialCount = 1)
         folder_bmp = images.load("packagefolder_obj.gif")
@@ -53,11 +57,7 @@ class InternalPathPage(wx.Panel):
         self.AppendPathPath()
         
     def AppendPathPath(self):
-        path_str = utils.ProfileGet(self.GetParent().GetParent().ProjectDocument.GetKey() + "/InternalPath","[]")
-        try:
-            python_path_list = eval(path_str)
-        except:
-            python_path_list = []
+        python_path_list = RunConfiguration.ProjectConfiguration.LoadProjectInternalPath(self.GetParent().GetParent().ProjectDocument.GetKey())
         for path in python_path_list:
             item = self.tree_ctrl.AppendItem(self.tree_ctrl.GetRootItem(), path)
             self.tree_ctrl.SetItemImage(item,self.FolderIdx,wx.TreeItemIcon_Normal)
@@ -122,6 +122,8 @@ class InternalPathPage(wx.Panel):
                 path = python_variable_manager.EvalulateValue(text)
                 python_path_list.append(str(path))
             (item, cookie) = self.tree_ctrl.GetNextChild(root_item, cookie)
+        ###if self._useProjectPathCheckBox.GetValue():
+           ### python_path_list.append(self.current_project_document.GetPath())
         return python_path_list
 
 class ExternalPathPage(wx.Panel,PythonPathMixin.BasePythonPathPanel):
@@ -132,11 +134,7 @@ class ExternalPathPage(wx.Panel,PythonPathMixin.BasePythonPathPanel):
         self.AppendPathPath()
         
     def AppendPathPath(self):
-        path_str = utils.ProfileGet(self.GetParent().GetParent().ProjectDocument.GetKey() + "/ExternalPath","[]")
-        try:
-            python_path_list = eval(path_str)
-        except:
-            python_path_list = []
+        python_path_list = RunConfiguration.ProjectConfiguration.LoadProjectExternalPath(self.GetParent().GetParent().ProjectDocument.GetKey())
         for path in python_path_list:
             item = self.tree_ctrl.AppendItem(self.tree_ctrl.GetRootItem(), path)
             self.tree_ctrl.SetItemImage(item,self.LibraryIconIdx,wx.TreeItemIcon_Normal)
@@ -153,11 +151,7 @@ class EnvironmentPage(wx.Panel,EnvironmentMixin.BaseEnvironmentUI):
         self.UpdateUI(None)
         
     def LoadEnviron(self):
-        environ_str = utils.ProfileGet(self.GetParent().GetParent().ProjectDocument.GetKey() + "/Environment","{}")
-        try:
-            environ = eval(environ_str)
-        except:
-            environ = {}
+        environ = RunConfiguration.ProjectConfiguration.LoadProjectEnviron(self.GetParent().GetParent().ProjectDocument.GetKey())
         for env in environ:
             self.dvlc.AppendItem([env,environ[env]])
 
@@ -199,6 +193,7 @@ class PythonPathPanel(BasePanel.BasePanel):
         
         internal_path_list = self.internal_path_panel.GetPythonPathList(True)
         utils.ProfileSet(self.ProjectDocument.GetKey() + "/InternalPath",internal_path_list.__repr__())
+        utils.ProfileSet(self.ProjectDocument.GetKey() + "/AppendProjectPath",int(self.internal_path_panel._useProjectPathCheckBox.GetValue()))
             
         external_path_list = self.external_path_panel.GetPythonPathList()
         utils.ProfileSet(self.ProjectDocument.GetKey() + "/ExternalPath",external_path_list.__repr__())

@@ -27,7 +27,7 @@ def GetAvailLocales():
     avail_loc = list()
     loc = glob.glob(os.path.join(sysutilslib.mainModuleDir,'noval','locale', "*"))
     for path in loc:
-        the_path = os.path.join(path, "LC_MESSAGES", wx.GetApp().GetAppName().lower() + ".mo")
+        the_path = os.path.join(path, "LC_MESSAGES", consts.APPLICATION_NAME.lower() + ".mo")
         if os.path.exists(the_path):
             avail_loc.append(os.path.basename(path))
     return avail_loc
