@@ -259,9 +259,7 @@ class BreakListenerThread(threading.Thread):
         self._queue.put(bn)
         return ""
         
-    def update_breakpoints(self, pickled_Binary_bpts,break_first):
-        if break_first:
-            self.break_requested()
+    def update_breakpoints(self, pickled_Binary_bpts):
         dict = pickle.loads(pickled_Binary_bpts.data)
         bn = BreakNotify(bps=dict)
         self._queue.put(bn)
@@ -395,7 +393,7 @@ class DebuggerHarness(object):
                 return self.get_watch_document(item, name)
             except: 
                 tp, val, tb = sys.exc_info()
-                return self.get_exception_document(tp, val, tb) 
+                return self.get_exception_document(name,tp, val, tb) 
         return ""
         
     def execute_in_frame(self, frame_message, command):
@@ -443,7 +441,7 @@ class DebuggerHarness(object):
         if self.isTupleized(identifier):
             return self.deTupleize(link, identifier)
         else:
-            if tp == types.DictType or tp == types.DictProxyType:
+            if tp is dict or tp == types.MappingProxyType:
                 return link[identifier]
             else:
                 if hasattr(link, identifier):
@@ -475,7 +473,7 @@ class DebuggerHarness(object):
                         
     def wrapAndCompress(self, stringDoc):
         import bz2
-        return xmlrpclib.Binary(bz2.compress(stringDoc))
+        return xmlrpclib.Binary(bz2.compress(stringDoc.encode()))
 
     def get_empty_introspection_document(self):
         doc = getDOMImplementation().createDocument(None, "replacement", None)
@@ -504,6 +502,7 @@ class DebuggerHarness(object):
         item_node.setAttribute('value', wholeStack)
         item_node.setAttribute('name', str(name))    
         top_element.appendChild(item_node)
+        return self.wrapAndCompress(doc.toxml())
         
     cantIntro = [types.FunctionType, 
              types.LambdaType,
@@ -704,7 +703,7 @@ class DebuggerHarness(object):
         top_element = doc.documentElement
         if frame:
             self.addFrame(frame, top_element, doc, includeContent=True)
-        return xmlrpclib.Binary(bz2.compress(doc.toxml()))
+        return xmlrpclib.Binary(bz2.compress(doc.toxml().encode()))
             
     def getRepr(self, varName, globals, locals):
         try:

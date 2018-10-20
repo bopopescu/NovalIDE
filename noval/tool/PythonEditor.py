@@ -24,7 +24,6 @@ import STCTextEditor
 import keyword # for GetAutoCompleteKeywordList
 import sys # for GetAutoCompleteKeywordList
 import service.MessageService as MessageService # for OnCheckCode
-import service.OutlineService as OutlineService
 import codecs
 import noval.tool.syntax.lang as lang
 import service.Service as Service
@@ -403,7 +402,7 @@ class PythonView(CodeEditor.CodeView):
     def IsUnitTestEnable(self):
         return True
 
-class PythonInterpreterView(Service.ServiceView):
+class PythonInterpreterView(Service.TabbedServiceView):
 
     def _CreateControl(self, parent, id):
         sizer = wx.BoxSizer()
@@ -604,11 +603,70 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         item = wx.MenuItem(menu,debugger.DebuggerService.DebuggerService.BREAK_INTO_DEBUGGER_ID,_("&Break into Debugger"), kind = wx.ITEM_NORMAL)
         debug_menu.AppendItem(item)
         wx.EVT_MENU(self, debugger.DebuggerService.DebuggerService.BREAK_INTO_DEBUGGER_ID, self.BreakintoDebugger)
+        
+        if debugger.DebuggerService.BaseDebuggerUI.DebuggerRunning():
+            
+            item = wx.MenuItem(menu,debugger.DebuggerService.DebuggerService.QUICK_ADD_WATCH_ID,_("&Quick add Watch"), kind = wx.ITEM_NORMAL)
+            item.SetBitmap(debugger.Watchs.getQuickAddWatchBitmap())
+            menu.AppendItem(item)
+            wx.EVT_MENU(self, debugger.DebuggerService.DebuggerService.QUICK_ADD_WATCH_ID, self.QuickAddWatch)
+            
+            item = wx.MenuItem(menu,debugger.DebuggerService.DebuggerService.ADD_WATCH_ID,_("&Add Watch"), kind = wx.ITEM_NORMAL)
+            item.SetBitmap(debugger.Watchs.getAddWatchBitmap())
+            menu.AppendItem(item)
+            wx.EVT_MENU(self, debugger.DebuggerService.DebuggerService.ADD_WATCH_ID, self.AddWatch)
+            
+            item = wx.MenuItem(menu,debugger.DebuggerService.DebuggerService.ADD_TO_WATCH_ID,_("&Add to Watch"), kind = wx.ITEM_NORMAL)
+            item.SetBitmap(debugger.Watchs.getAddtoWatchBitmap())
+            menu.AppendItem(item)
+            wx.EVT_MENU(self, debugger.DebuggerService.DebuggerService.ADD_TO_WATCH_ID, self.AddtoWatch)
+            
         return menu
 
     def DebugRunScript(self,event):
         view = wx.GetApp().GetDocumentManager().GetCurrentView()
         wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).RunWithoutDebug(view.GetDocument().GetFilename())
+        
+    def QuickAddWatch(self,event):
+        if self.HasSelection():
+            text = self.GetSelectedText()
+            watch = debugger.Watchs.Watch(text,text)
+            wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).AddWatch(watch,True)
+        else:
+            if self.IsCaretLocateInWord():
+                pos = self.GetCurrentPos()
+                text = self.GetTypeWord(pos)
+                watch = debugger.Watchs.Watch(text,text)
+                wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).AddWatch(watch,True)
+            else:
+                wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).AddWatch(None,True)
+        
+    def AddWatch(self,event):
+        if self.HasSelection():
+            text = self.GetSelectedText()
+            watch = debugger.Watchs.Watch(text,text)
+            wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).AddWatch(watch)
+        else:
+            if self.IsCaretLocateInWord():
+                pos = self.GetCurrentPos()
+                text = self.GetTypeWord(pos)
+                watch = debugger.Watchs.Watch(text,text)
+                wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).AddWatch(watch)
+            else:
+                wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).AddWatch(None)
+
+    def AddtoWatch(self,event):
+        
+        if self.HasSelection():
+            text = self.GetSelectedText()
+            watch = debugger.Watchs.Watch(text,text)
+            wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).AddtoWatch(watch)
+        else:
+            if self.IsCaretLocateInWord():
+                pos = self.GetCurrentPos()
+                text = self.GetTypeWord(pos)
+                watch = debugger.Watchs.Watch(text,text)
+                wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).AddtoWatch(watch)
         
     def BreakintoDebugger(self,event):
         view = wx.GetApp().GetDocumentManager().GetCurrentView()

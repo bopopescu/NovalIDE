@@ -16,6 +16,7 @@ import wx.lib.pydocview
 import noval.util.sysutils as sysutilslib
 import os
 import noval.tool.images as images
+import noval.util.utils as utils
 _ = wx.GetTranslation
 
 
@@ -30,8 +31,6 @@ class ServiceView(wx.EvtHandler):
     SearchIconIndex = -1
     DebugRunIconIndex = -1
     BreakDebugIconIndex = -1
-    #the page count which could not be removed
-    UNREMOVABLE_PAGE_COUNT = 2
     
     #----------------------------------------------------------------------------
     # Overridden methods
@@ -137,10 +136,18 @@ class ServiceView(wx.EvtHandler):
                 # Factor this out.
                 self._control = self._CreateControl(ServiceView.bottomTab, wx.NewId())
                 if self._control != None:
-                    ServiceView.bottomTab.AddPage(self._control, self._service.GetMenuString())
-                    if self._service.GetIconIndex() != -1:
-                        index = ServiceView.bottomTab.GetPageCount() - 1
-                        ServiceView.bottomTab.SetPageImage(index,self._service.GetIconIndex())
+                    #read if service page is show,if not then not add to tag pag
+                    if utils.ProfileGetInt(self._service.GetServiceName() + "Shown", True):
+                        ServiceView.bottomTab.AddPage(self._control, self._service.GetMenuString())
+                        if self._service.GetIconIndex() != -1:
+                            index = ServiceView.bottomTab.GetPageCount() - 1
+                            ServiceView.bottomTab.SetPageImage(index,self._service.GetIconIndex())
+                    else:
+                        utils.GetLogger().debug("service %s tag page is hiden",self._service.GetServiceName())
+                        #hide the tab page control
+                        self._control.Show(False)
+                
+                    
                 ServiceView.bottomTab.Layout()
             else:
                 # Factor this out.
@@ -159,39 +166,51 @@ class ServiceView(wx.EvtHandler):
     def OnNotebookMiddleClick(self, event):
         index, type = ServiceView.bottomTab.HitTest(event.GetPosition())
         # 0 tab is always message. This code assumes the rest are run/debug windows
-        if index > 0:
-            page = ServiceView.bottomTab.GetPage(index)
+        if index > -1:
+            self.RemovePage(index)
+                
+    def RemovePage(self,index):
+        page = ServiceView.bottomTab.GetPage(index)
+        if hasattr(page, 'StopAndRemoveUI'):
+            page.StopAndRemoveUI(None)
+        self.CheckNotebookPageCount()
+    
+    def CheckNotebookPageCount(self):
+        '''
+            if notebook page count is zero,then hide the parent docker bottom sash window
+        '''
+        if ServiceView.bottomTab.GetPageCount()  == 0:
+            self.ShowFrame(False)
+            
+    def RemoveAllPages(self):
+        for i in range(ServiceView.bottomTab.GetPageCount() - 1, -1, -1): # Go from len-1 to 1
+            page = ServiceView.bottomTab.GetPage(i)
             if hasattr(page, 'StopAndRemoveUI'):
-                page.StopAndRemoveUI(event)
- 
+                ServiceView.bottomTab.SetSelection(i)
+                page.StopAndRemoveUI(None)
+        self.CheckNotebookPageCount()
        
     def OnNotebookRightClick(self, event):
         index, type = ServiceView.bottomTab.HitTest(event.GetPosition())
+        if index < 0:
+            return
         menu = wx.Menu()
         x, y = event.GetX(), event.GetY()
-        # 0 tab is always message. This code assumes the rest are run/debug windows
-        if index >= self.UNREMOVABLE_PAGE_COUNT:
-            page = ServiceView.bottomTab.GetPage(index)
+        page = ServiceView.bottomTab.GetPage(index)
+        # only run/debug panel has StopAndRemoveUI property. This code assumes the rest are run/debug windows
+        if hasattr(page, 'StopAndRemoveUI'):
             id = wx.NewId()
             menu.Append(id, _("Close"))
             def OnRightMenuSelect(event):
-                if hasattr(page, 'StopAndRemoveUI'):
-                    page.StopAndRemoveUI(event)
+                self.RemovePage(index)
             wx.EVT_MENU(ServiceView.bottomTab, id, OnRightMenuSelect)
-            if ServiceView.bottomTab.GetPageCount() > self.UNREMOVABLE_PAGE_COUNT:
-                id = wx.NewId()
-                menu.Append(id, _("Close All"))
-                def OnRightMenuSelect(event):
-                    for i in range(ServiceView.bottomTab.GetPageCount() - 1, self.UNREMOVABLE_PAGE_COUNT - 1, -1): # Go from len-1 to 1
-                        ServiceView.bottomTab.SetSelection(i)
-                        page = ServiceView.bottomTab.GetPage(i)
-                        if hasattr(page, 'StopAndRemoveUI'):
-                            page.StopAndRemoveUI(event)
-                wx.EVT_MENU(ServiceView.bottomTab, id, OnRightMenuSelect)
-        
+            id = wx.NewId()
+            menu.Append(id, _("Close All"))
+            def OnRightMenuSelect(event):
+                self.RemoveAllPages()
+            wx.EVT_MENU(ServiceView.bottomTab, id, OnRightMenuSelect)
         ServiceView.bottomTab.PopupMenu(menu, wx.Point(x, y))
         menu.Destroy()
-
         
     def OnCloseWindow(self, event):
         frame = self.GetFrame()
@@ -261,7 +280,68 @@ class ServiceView(wx.EvtHandler):
             if self._embeddedWindow:
                 mdiParentFrame = wx.GetApp().GetTopWindow()
                 mdiParentFrame.ShowEmbeddedWindow(self.GetFrame(), show)
-				
+
+class TabbedServiceView(ServiceView):
+    """ Service View for notebook.
+    """
+
+    
+    #----------------------------------------------------------------------------
+    # Overridden methods
+    #----------------------------------------------------------------------------
+
+    def __init__(self, service):
+        ServiceView.__init__(self, service)
+        
+    def Show(self, show = True):
+        nb = ServiceView.bottomTab
+        initialCount = nb.GetPageCount()
+        index = -1
+        for i in range(nb.GetPageCount()):
+            if nb.GetPage(i) == self._control:
+                index = i
+                break
+        if show:
+            if index == -1:
+                index = 0
+                #if tab page is hidden,should show first
+                if not self._control.IsShown():
+                    self._control.Show(True)
+                    
+                nb.InsertPage(index, self._control, self._service.GetMenuString())
+                nb.SetPageImage(index,self._service.GetIconIndex())
+        else:
+            if index > -1:
+                nb.GetPage(index).Show(False)
+                nb.RemovePage(index)
+         
+        endCount = nb.GetPageCount()       
+        if endCount == 0:
+            self.ShowFrame(False)
+        elif initialCount == 0 and endCount == 1:
+            self.ShowFrame(True)
+        else:
+            self.ShowFrame(True)
+            
+    def ShowFrame(self, show):
+        if self.GetFrame():
+            self.GetFrame().Show(show)
+            if self._embeddedWindow:
+                mdiParentFrame = wx.GetApp().GetTopWindow()
+                mdiParentFrame.ShowEmbeddedWindow(self.GetFrame(), show)
+
+    def IsShown(self):
+        #if sash frame is hidden,the service is also hidden
+        if not ServiceView.IsShown(self):
+            return False
+        nb = ServiceView.bottomTab
+        index = -1
+        for i in range(nb.GetPageCount()):
+            if nb.GetPage(i) == self._control:
+                index = i
+                break
+        return index > -1
+        
 class BaseService(wx.lib.pydocview.DocService):
 
     def __init__(self):
@@ -379,4 +459,13 @@ class Service(BaseService):
 
     def GetIconIndex(self):
         return -1
+        
+    def GetPageIndex(self):
+        nb = ServiceView.bottomTab
+        index = -1
+        for i in range(nb.GetPageCount()):
+            if nb.GetPage(i) == self.GetView()._control:
+                index = i
+                break
+        return index
 

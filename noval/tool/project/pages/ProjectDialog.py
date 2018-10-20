@@ -79,7 +79,7 @@ class SelectModuleFileDialog(wx.Dialog):
         python_file_bmp = images.load("python_module.png")
         self.PythonFileIdx = iconList.Add(python_file_bmp)
         
-        zip_file_bmp = images.load("zip.png")
+        zip_file_bmp = images.load("project/zip.png")
         self.ZipFileIdx = iconList.Add(zip_file_bmp)
 
         self._treeCtrl.AssignImageList(iconList)

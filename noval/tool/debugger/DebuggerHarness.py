@@ -255,9 +255,7 @@ class BreakListenerThread(threading.Thread):
         self._queue.put(bn)
         return ""
         
-    def update_breakpoints(self, pickled_Binary_bpts,break_first):
-        if break_first:
-            self.break_requested()
+    def update_breakpoints(self, pickled_Binary_bpts):
         dict = pickle.loads(pickled_Binary_bpts.data)
         bn = BreakNotify(bps=dict)
         self._queue.put(bn)
@@ -387,7 +385,7 @@ class DebuggerHarness(object):
                 return self.get_watch_document(item, name)
             except: 
                 tp, val, tb = sys.exc_info()
-                return self.get_exception_document(tp, val, tb) 
+                return self.get_exception_document(name,tp, val, tb) 
         return ""
         
     def execute_in_frame(self, frame_message, command):
@@ -494,6 +492,7 @@ class DebuggerHarness(object):
         item_node.setAttribute('value', wholeStack)
         item_node.setAttribute('name', str(name))    
         top_element.appendChild(item_node)
+        return self.wrapAndCompress(doc.toxml())
         
     cantIntro = [types.FunctionType, 
              types.LambdaType,

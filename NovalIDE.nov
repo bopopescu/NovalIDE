@@ -258,5 +258,6 @@
   <noval:file filePath="./noval/tool/project/pages/EnvironmentMixin.py" logicalFolder="noval/tool/project/pages" isStartup="false"/>
   <noval:file filePath="./noval/tool/project/pages/ProjectDialog.py" logicalFolder="noval/tool/project/pages" isStartup="false"/>
   <noval:file filePath="./noval/tool/interpreter/GeneralConfiguration.py" logicalFolder="noval/tool/interpreter" isStartup="false"/>
+  <noval:file filePath="./noval/tool/debugger/Watchs.py" logicalFolder="noval/tool/debugger" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>

@@ -366,7 +366,7 @@ class NewFileDialog(wx.Dialog):
         
         app_image_path = appdirs.GetAppImageDirLocation()
         
-        large_view_image_path = os.path.join(app_image_path, "ViewLarge.ico")
+        large_view_image_path = os.path.join(app_image_path, "project/ViewLarge.ico")
         large_view_image = wx.Image(large_view_image_path,wx.BITMAP_TYPE_ANY)
         
         self._largeviewBtn = wx.lib.buttons.GenBitmapToggleButton(self, -1, wx.BitmapFromImage(large_view_image), size=(16,16))
@@ -375,7 +375,7 @@ class NewFileDialog(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.OnSelectMode, self._largeviewBtn)
         self._largeviewBtn.SetToggle(True)
         
-        small_view_image_path = os.path.join(app_image_path, "ViewSmall.ico")
+        small_view_image_path = os.path.join(app_image_path, "project/ViewSmall.ico")
         small_view_image = wx.Image(small_view_image_path,wx.BITMAP_TYPE_ANY)
         self._smallviewBtn = wx.lib.buttons.GenBitmapToggleButton(self, -1, wx.BitmapFromImage(small_view_image), size=(16,16))
         lineSizer.Add(self._smallviewBtn,0,flag = wx.LEFT|wx.ALIGN_TOP|wx.RIGHT,border = SPACE)

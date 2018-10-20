@@ -362,7 +362,7 @@ class RunConfigurationDialog(wx.Dialog):
         st_text.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))
         top_sizer.Add(st_text, 1,flag=wx.LEFT|wx.EXPAND,border = SPACE)  
           
-        icon = wx.StaticBitmap(self,bitmap = images.load("run_wizard.png"))  
+        icon = wx.StaticBitmap(self,bitmap = images.load("project/run_wizard.png"))  
         top_sizer.Add(icon,0,flag=wx.TOP|wx.RIGHT,border = HALF_SPACE)
         box_sizer.Add(top_sizer,0,flag=wx.EXPAND|wx.ALL,border = HALF_SPACE)
         
@@ -382,9 +382,9 @@ class RunConfigurationDialog(wx.Dialog):
         self.nb = wx.Notebook(self,-1,size = (600,400))
         iconList = wx.ImageList(16, 16, 4)
         
-        startup_icon = images.load_icon("startup.png")
+        startup_icon = images.load_icon("project/startup.png")
         StartupIconIndex = iconList.AddIcon(startup_icon)
-        arguments_icon = images.load_icon("parameter.png")
+        arguments_icon = images.load_icon("project/parameter.png")
         ArgumentsIconIndex = iconList.AddIcon(arguments_icon)
         interpreter_icon = images.load_icon("interpreter.ico")
         InterpreterIconIndex = iconList.AddIcon(interpreter_icon)
@@ -500,7 +500,7 @@ class PyDebugRunProertyPanel(BasePanel.BasePanel):
         wx.EVT_LIST_ITEM_DESELECTED(self.configuration_ListCtrl, self.configuration_ListCtrl.GetId(), self.UpdateUI)
         wx.EVT_LIST_ITEM_ACTIVATED(self.configuration_ListCtrl, self.configuration_ListCtrl.GetId(), self.EditRunConfiguration)
         iconList = wx.ImageList(16, 16, initialCount = 1)
-        run_config_bmp = images.load("runconfig.png")
+        run_config_bmp = images.load("project/runconfig.png")
         self.ConfigurationIconIndex = iconList.Add(run_config_bmp)
         self.configuration_ListCtrl.AssignImageList(iconList,wx.IMAGE_LIST_SMALL)
         left_sizer.Add(self.configuration_ListCtrl, 1, wx.TOP|wx.EXPAND,HALF_SPACE)

@@ -31,7 +31,7 @@ if sys.platform == "win32":
                              + glob.glob("noval/tool/bmp_source/*.png") + glob.glob("noval/tool/bmp_source/*.gif")),
                     ("noval/tool/bmp_source/toolbar",glob.glob("noval/tool/bmp_source/toolbar/*.png")),
                     ("noval/tool/bmp_source/web",glob.glob("noval/tool/bmp_source/web/*.png")),
-                    ("noval/tool/bmp_source/project",glob.glob("noval/tool/bmp_source/project/*.png")),
+                    ("noval/tool/bmp_source/project",glob.glob("noval/tool/bmp_source/project/*.png")+glob.glob("noval/tool/bmp_source/project/*.gif")+glob.glob("noval/tool/bmp_source/project/*.ico")),
                     ("noval/tool/bmp_source/debugger",glob.glob("noval/tool/bmp_source/debugger/*.png") \
                                                         + glob.glob("noval/tool/bmp_source/debugger/*.ico")),
                     ("noval/tool/bmp_source/template",glob.glob("noval/tool/bmp_source/template/*.*")),
@@ -48,7 +48,7 @@ if sys.platform == "win32":
                              + glob.glob("noval/tool/bmp_source/*.png") + glob.glob("noval/tool/bmp_source/*.gif")),
                     ("noval/tool/bmp_source/toolbar",glob.glob("noval/tool/bmp_source/toolbar/*.png")),
                     ("noval/tool/bmp_source/web",glob.glob("noval/tool/bmp_source/web/*.png")),
-                    ("noval/tool/bmp_source/project",glob.glob("noval/tool/bmp_source/project/*.png")),
+                    ("noval/tool/bmp_source/project",glob.glob("noval/tool/bmp_source/project/*.png")+glob.glob("noval/tool/bmp_source/project/*.gif")+glob.glob("noval/tool/bmp_source/project/*.ico")),
                     ("noval/tool/bmp_source/debugger",glob.glob("noval/tool/bmp_source/debugger/*.png") \
                                                         + glob.glob("noval/tool/bmp_source/debugger/*.ico")),
                     ("noval/tool/bmp_source/template",glob.glob("noval/tool/bmp_source/template/*.*")),

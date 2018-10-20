@@ -44,7 +44,7 @@ def ShowMessages(messages, clear=False):
 #----------------------------------------------------------------------------
 
 
-class MessageView(Service.ServiceView):
+class MessageView(Service.TabbedServiceView):
     """ Reusable Message View for any document.
         When an item is selected, the document view is called back (with DoSelectCallback) to highlight and display the corresponding item in the document view.
     """

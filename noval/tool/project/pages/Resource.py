@@ -65,12 +65,12 @@ class FileProertyPanel(BasePanel.BasePanel):
             self.location_label_ctrl.SetLabel(show_path)
 
         lineSizer.Add(self.location_label_ctrl,  0,flag=wx.LEFT|wx.ALIGN_CENTER,border=HALF_SPACE)
-        into_btn = wx.BitmapButton(self,-1,images.load("into.png"))
+        into_btn = wx.BitmapButton(self,-1,images.load("project/into.png"))
         into_btn.SetToolTipString(_("Into file explorer"))
         into_btn.Bind(wx.EVT_BUTTON, self.IntoExplorer)
         lineSizer.Add(into_btn,  0,flag=wx.LEFT,border=SPACE)
         
-        copy_btn = wx.BitmapButton(self,-1,images.load("copy.png"))
+        copy_btn = wx.BitmapButton(self,-1,images.load("project/copy.png"))
         copy_btn.SetToolTipString(_("Copy path"))
         copy_btn.Bind(wx.EVT_BUTTON, self.CopyPath)
         lineSizer.Add(copy_btn,  0,flag=wx.LEFT,border=HALF_SPACE)

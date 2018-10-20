@@ -12,6 +12,7 @@ import noval.util.appdirs as appdirs
 from wx.lib.pubsub import pub as Publisher
 import STCTextEditor
 import images
+import noval.tool.service.MessageService as MessageService
 
 _ = wx.GetTranslation
 
@@ -53,6 +54,11 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,DocFrameBase
     
     def CreateDefaultStatusBar(self):
        pass
+       
+    def _InitFrame(self, embeddedWindows, minSize):
+       wx.lib.pydocview.DocMDIParentFrameMixIn._InitFrame(self, embeddedWindows, minSize)
+       #should check the bottom tag page count,if count is 0,then hiden the docker bottom embeddedWindow window
+       wx.GetApp().GetService(MessageService.MessageService).GetView().CheckNotebookPageCount()
        
     def CreateDefaultToolBar(self):
         """

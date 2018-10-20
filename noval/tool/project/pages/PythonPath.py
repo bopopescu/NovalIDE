@@ -161,7 +161,7 @@ class PythonPathPanel(BasePanel.BasePanel):
         box_sizer = wx.BoxSizer(wx.VERTICAL)
         nb = wx.Notebook(self,-1,size = (-1,350))
         iconList = wx.ImageList(16, 16, 3)
-        internal_path_icon = images.load_icon("openpath.gif")
+        internal_path_icon = images.load_icon("project/openpath.gif")
         InternalPathIconIndex = iconList.AddIcon(internal_path_icon)
         external_path_icon = images.load_icon("jar_l_obj.gif")
         ExternalPathIconIndex = iconList.AddIcon(external_path_icon)

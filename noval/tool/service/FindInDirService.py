@@ -377,8 +377,9 @@ class FindInDirService(FindService.FindService):
         frame.Destroy()
         if status == wx.ID_OK:
             messageService = wx.GetApp().GetService(MessageService.MessageService)
-            MessageService.MessageView.bottomTab.SetSelection(1)
             messageService.ShowWindow()
+            assert(messageService.GetPageIndex() > -1)
+            MessageService.MessageView.bottomTab.SetSelection(messageService.GetPageIndex())
 
             view = messageService.GetView()
             found_line = 0
@@ -448,7 +449,7 @@ class FindInDirService(FindService.FindService):
         
         try:
             #Switch to messages tab.
-            view.GetControl().GetParent().SetSelection(1) 
+            view.GetControl().GetParent().SetSelection(messageService.GetPageIndex())
             view.ClearLines()
             view.SetCallback(self.OnJumpToFoundLine)
     

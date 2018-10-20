@@ -249,9 +249,10 @@ class CodeView(STCTextEditor.TextView):
         if not outlineService:
             return
         outlineService.LoadOutline(self, force=force)
-
-    def DoLoadOutlineCallback(self, force=False):
-        return False
+        
+    #comment out below codes,only allow python editor to parse systax tree in outline view
+##    def DoLoadOutlineCallback(self, force=False,lineNum=-1):
+  ##      return False
 
     def DoSelectCallback(self, node):
         if node and not isinstance(node,nodeast.Module):

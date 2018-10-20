@@ -1776,7 +1776,7 @@ class ProjectView(wx.lib.docview.View):
 
     def __init__(self, service = None):
         wx.lib.docview.View.__init__(self)
-        # self._service = service  # not used, but kept to match other Services
+        self._service = service  # not used, but kept to match other Services
         self._projectChoice = None
         self._logicalBtn = None
         self._physicalBtn = None
@@ -5242,35 +5242,27 @@ from wx import ImageFromStream, BitmapFromImage
 import cStringIO
 
 def getProjectBitmap():
-    project_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "project.png")
-    project_image = wx.Image(project_image_path,wx.BITMAP_TYPE_ANY)
-    return BitmapFromImage(project_image)
+    return images.load("project/project.png")
 
 def getProjectIcon():
     return wx.IconFromBitmap(getProjectBitmap())
 
 #----------------------------------------------------------------------
 def getFolderClosedBitmap():
-    folder_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "folder_close.png")
-    folder_image = wx.Image(folder_image_path,wx.BITMAP_TYPE_ANY)
-    return BitmapFromImage(folder_image)
+    return images.load("project/folder_close.png")
 
 def getFolderClosedIcon():
     return wx.IconFromBitmap(getFolderClosedBitmap())
 
 #----------------------------------------------------------------------
 def getFolderOpenBitmap():
-    folder_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "folder_open.png")
-    folder_image = wx.Image(folder_image_path,wx.BITMAP_TYPE_ANY)
-    return BitmapFromImage(folder_image)
+    return images.load("project/folder_open.png")
 
 def getFolderOpenIcon():
     return wx.IconFromBitmap(getFolderOpenBitmap())
     
 def getPackageFolderBitmap():
-    folder_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "package_obj.gif")
-    folder_image = wx.Image(folder_image_path,wx.BITMAP_TYPE_ANY)
-    return BitmapFromImage(folder_image)
+    return images.load("package_obj.gif")
 
 def getPackageFolderIcon():
     return wx.IconFromBitmap(getPackageFolderBitmap())

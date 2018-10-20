@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2018-10-15 00:51+中国标准时间\n"
+"POT-Creation-Date: 2018-10-20 00:20+中国标准时间\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,7 +20,7 @@ msgid "Fonts and Colors"
 msgstr ""
 
 #: D:\env\Noval\noval\model\constants.py:8
-#: D:\env\Noval\noval\tool\PythonEditor.py:559
+#: D:\env\Noval\noval\tool\PythonEditor.py:558
 msgid "Python Interpreter"
 msgstr ""
 
@@ -66,19 +66,19 @@ msgstr ""
 msgid "No"
 msgstr ""
 
-#: D:\env\Noval\noval\parser\intellisence.py:347
+#: D:\env\Noval\noval\parser\intellisence.py:351
 msgid "Updating interpreter %s intellisence database"
 msgstr ""
 
-#: D:\env\Noval\noval\parser\intellisence.py:370
+#: D:\env\Noval\noval\parser\intellisence.py:374
 msgid "Intellisence database has been updated"
 msgstr ""
 
-#: D:\env\Noval\noval\parser\intellisence.py:390
+#: D:\env\Noval\noval\parser\intellisence.py:394
 msgid "Loading intellisence database"
 msgstr ""
 
-#: D:\env\Noval\noval\parser\intellisence.py:392
+#: D:\env\Noval\noval\parser\intellisence.py:396
 msgid "Finish load Intellisence database"
 msgstr ""
 
@@ -134,127 +134,127 @@ msgstr ""
 msgid "Move/Resize %s"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:333
+#: D:\env\Noval\noval\tool\CodeEditor.py:334
 msgid "The file successfully compiled"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:337
+#: D:\env\Noval\noval\tool\CodeEditor.py:338
 msgid "Syntax Error: %s"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:433
+#: D:\env\Noval\noval\tool\CodeEditor.py:434
 msgid "Enter new indent width (2-10):"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:433
+#: D:\env\Noval\noval\tool\CodeEditor.py:434
 msgid "Set Indent Width"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:531
-#: D:\env\Noval\noval\tool\CodeEditor.py:634
-#: D:\env\Noval\noval\tool\TabbedFrame.py:189
+#: D:\env\Noval\noval\tool\CodeEditor.py:532
+#: D:\env\Noval\noval\tool\CodeEditor.py:635
+#: D:\env\Noval\noval\tool\TabbedFrame.py:195
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:4695
 #: D:\env\Noval\noval\tool\service\ExtensionService.py:141
 #: D:\env\Noval\noval\tool\service\OutlineService.py:448
-#: D:\env\Noval\noval\tool\service\Service.py:293
+#: D:\env\Noval\noval\tool\service\Service.py:373
 #: D:\env\Noval\noval\tool\service\TextService.py:161
 #: D:\env\Noval\noval\tool\service\TextService.py:224
 #: D:\env\Noval\noval\tool\service\navigation\NavigationService.py:86
 msgid "&View"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:536
+#: D:\env\Noval\noval\tool\CodeEditor.py:537
 msgid "&Use Fold Style"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:536
+#: D:\env\Noval\noval\tool\CodeEditor.py:537
 msgid "Show or hide fold index"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:540
+#: D:\env\Noval\noval\tool\CodeEditor.py:541
 msgid "&Expand\tNumpad-Plus"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:540
-#: D:\env\Noval\noval\tool\CodeEditor.py:542
+#: D:\env\Noval\noval\tool\CodeEditor.py:541
+#: D:\env\Noval\noval\tool\CodeEditor.py:543
 msgid "Expands a collapsed block of text"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:542
+#: D:\env\Noval\noval\tool\CodeEditor.py:543
 msgid "&Expand"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:548
+#: D:\env\Noval\noval\tool\CodeEditor.py:549
 msgid "&Collapse\tNumpad+Minus"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:548
-#: D:\env\Noval\noval\tool\CodeEditor.py:550
+#: D:\env\Noval\noval\tool\CodeEditor.py:549
+#: D:\env\Noval\noval\tool\CodeEditor.py:551
 msgid "Collapse a block of text"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:550
+#: D:\env\Noval\noval\tool\CodeEditor.py:551
 msgid "&Collapse"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:555
+#: D:\env\Noval\noval\tool\CodeEditor.py:556
 msgid "Expand &Top Level\tCtrl+Numpad+Plus"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:555
-#: D:\env\Noval\noval\tool\CodeEditor.py:557
+#: D:\env\Noval\noval\tool\CodeEditor.py:556
+#: D:\env\Noval\noval\tool\CodeEditor.py:558
 msgid "Expands the top fold levels in the document"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:557
+#: D:\env\Noval\noval\tool\CodeEditor.py:558
 msgid "Expand &Top Level"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:562
+#: D:\env\Noval\noval\tool\CodeEditor.py:563
 msgid "Collapse Top &Level\tCtrl+Numpad+Minus"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:562
-#: D:\env\Noval\noval\tool\CodeEditor.py:564
+#: D:\env\Noval\noval\tool\CodeEditor.py:563
+#: D:\env\Noval\noval\tool\CodeEditor.py:565
 msgid "Collapses the top fold levels in the document"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:564
+#: D:\env\Noval\noval\tool\CodeEditor.py:565
 msgid "Collapse Top &Level"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:569
+#: D:\env\Noval\noval\tool\CodeEditor.py:570
 msgid "Expand &All\tShift+Numpad+Plus"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:569
-#: D:\env\Noval\noval\tool\CodeEditor.py:571
+#: D:\env\Noval\noval\tool\CodeEditor.py:570
+#: D:\env\Noval\noval\tool\CodeEditor.py:572
 msgid "Expands all of the fold levels in the document"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:571
+#: D:\env\Noval\noval\tool\CodeEditor.py:572
 msgid "Expand &All"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:576
+#: D:\env\Noval\noval\tool\CodeEditor.py:577
 msgid "Colla&pse All\tShift+Numpad+Minus"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:576
-#: D:\env\Noval\noval\tool\CodeEditor.py:578
+#: D:\env\Noval\noval\tool\CodeEditor.py:577
+#: D:\env\Noval\noval\tool\CodeEditor.py:579
 msgid "Collapses all of the fold levels in the document"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:578
+#: D:\env\Noval\noval\tool\CodeEditor.py:579
 msgid "Colla&pse All"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:582
+#: D:\env\Noval\noval\tool\CodeEditor.py:583
 msgid "&Folding"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:585
-#: D:\env\Noval\noval\tool\CodeEditor.py:635
+#: D:\env\Noval\noval\tool\CodeEditor.py:586
+#: D:\env\Noval\noval\tool\CodeEditor.py:636
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:4693
 #: D:\env\Noval\noval\tool\service\ExtensionService.py:139
 #: D:\env\Noval\noval\tool\service\OptionService.py:223
@@ -263,124 +263,124 @@ msgstr ""
 msgid "&Format"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:592
+#: D:\env\Noval\noval\tool\CodeEditor.py:593
 msgid "&Check Code"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:592
+#: D:\env\Noval\noval\tool\CodeEditor.py:593
 msgid "Checks the document for syntax and indentation errors"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:595
+#: D:\env\Noval\noval\tool\CodeEditor.py:596
 #: D:\env\Noval\noval\tool\service\CompletionService.py:75
 msgid "&Auto Complete\tCtrl+Shift+Space"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:595
+#: D:\env\Noval\noval\tool\CodeEditor.py:596
 #: D:\env\Noval\noval\tool\service\CompletionService.py:75
 msgid "Provides suggestions on how to complete the current statement"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:598
+#: D:\env\Noval\noval\tool\CodeEditor.py:599
 msgid "Clean &Whitespace"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:598
+#: D:\env\Noval\noval\tool\CodeEditor.py:599
 msgid "Converts leading spaces to tabs or vice versa per 'use tabs' and clears trailing spaces"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:602
+#: D:\env\Noval\noval\tool\CodeEditor.py:603
 msgid "&Indent Lines\tTab"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:602
+#: D:\env\Noval\noval\tool\CodeEditor.py:603
 msgid "Indents the selected lines one indent width"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:608
+#: D:\env\Noval\noval\tool\CodeEditor.py:609
 msgid "&Dedent Lines\tShift+Tab"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:608
+#: D:\env\Noval\noval\tool\CodeEditor.py:609
 msgid "Dedents the selected lines one indent width"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:614
+#: D:\env\Noval\noval\tool\CodeEditor.py:615
 msgid "Comment &Lines\tCtrl+Q"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:614
+#: D:\env\Noval\noval\tool\CodeEditor.py:615
 msgid "Comments out the selected lines be prefixing each one with a comment indicator"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:620
+#: D:\env\Noval\noval\tool\CodeEditor.py:621
 msgid "&Uncomment Lines\tCtrl+Shift+Q"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:620
+#: D:\env\Noval\noval\tool\CodeEditor.py:621
 msgid "Removes comment prefixes from each of the selected lines"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:627
+#: D:\env\Noval\noval\tool\CodeEditor.py:628
 msgid "Toggles use of tabs or whitespaces for indents"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:627
+#: D:\env\Noval\noval\tool\CodeEditor.py:628
 msgid "Use &Tabs"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:630
+#: D:\env\Noval\noval\tool\CodeEditor.py:631
 msgid "&Set Indent Width..."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:630
+#: D:\env\Noval\noval\tool\CodeEditor.py:631
 msgid "Sets the indent width"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:646
-#: D:\env\Noval\noval\tool\CodeEditor.py:648
+#: D:\env\Noval\noval\tool\CodeEditor.py:647
+#: D:\env\Noval\noval\tool\CodeEditor.py:649
 #: D:\env\Noval\noval\tool\EOLFormat.py:281
 msgid "Old Machintosh (\\r)"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:647
-#: D:\env\Noval\noval\tool\CodeEditor.py:652
-#: D:\env\Noval\noval\tool\CodeEditor.py:657
+#: D:\env\Noval\noval\tool\CodeEditor.py:648
+#: D:\env\Noval\noval\tool\CodeEditor.py:653
+#: D:\env\Noval\noval\tool\CodeEditor.py:658
 msgid "Format all EOL characters to %s Mode"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:651
-#: D:\env\Noval\noval\tool\CodeEditor.py:653
+#: D:\env\Noval\noval\tool\CodeEditor.py:652
+#: D:\env\Noval\noval\tool\CodeEditor.py:654
 #: D:\env\Noval\noval\tool\EOLFormat.py:281
 msgid "Unix (\\n)"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:656
-#: D:\env\Noval\noval\tool\CodeEditor.py:658
+#: D:\env\Noval\noval\tool\CodeEditor.py:657
+#: D:\env\Noval\noval\tool\CodeEditor.py:659
 #: D:\env\Noval\noval\tool\EOLFormat.py:282
 msgid "Windows (\\r\\n)"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:661
+#: D:\env\Noval\noval\tool\CodeEditor.py:662
 msgid "EOL Mode"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:801
+#: D:\env\Noval\noval\tool\CodeEditor.py:802
 msgid "Toggle Breakpoint"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:806
+#: D:\env\Noval\noval\tool\CodeEditor.py:807
 msgid "Toggle Bookmark"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:1126
+#: D:\env\Noval\noval\tool\CodeEditor.py:1127
 msgid ""
 "Mixed EOL characters detected.\n"
 "\n"
 "Would you like to format them to all be the same?"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\CodeEditor.py:1129
+#: D:\env\Noval\noval\tool\CodeEditor.py:1130
 msgid "Format EOL?"
 msgstr ""
 
@@ -647,52 +647,52 @@ msgstr ""
 msgid "Enter a full URL or local path"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:198
+#: D:\env\Noval\noval\tool\IDE.py:199
 #: D:\env\Noval\noval\tool\STCTextEditor.py:98
 msgid "Any File"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:203
+#: D:\env\Noval\noval\tool\IDE.py:204
 #: D:\env\Noval\noval\tool\syntax\lexer\_txt.py:45
 msgid "Text Editor"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:211
+#: D:\env\Noval\noval\tool\IDE.py:212
 msgid "WebView"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:216
+#: D:\env\Noval\noval\tool\IDE.py:217
 msgid "Internal Web Browser"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:224
+#: D:\env\Noval\noval\tool\IDE.py:225
 msgid "Image File"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:229
+#: D:\env\Noval\noval\tool\IDE.py:230
 msgid "Image Viewer"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:238
+#: D:\env\Noval\noval\tool\IDE.py:239
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:2516
 msgid "Project File"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:243
+#: D:\env\Noval\noval\tool\IDE.py:244
 msgid "Project Resolver"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:424 D:\env\Noval\noval\tool\UICommon.py:95
+#: D:\env\Noval\noval\tool\IDE.py:425 D:\env\Noval\noval\tool\UICommon.py:95
 msgid "Configuration"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:485 D:\env\Noval\noval\tool\IDE.py:487
+#: D:\env\Noval\noval\tool\IDE.py:486 D:\env\Noval\noval\tool\IDE.py:488
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:3203
 #: D:\env\Noval\noval\util\strutils.py:165
 msgid "All Files"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:490
+#: D:\env\Noval\noval\tool\IDE.py:491
 msgid "Select a File"
 msgstr ""
 
@@ -720,17 +720,18 @@ msgstr ""
 
 #: D:\env\Noval\noval\tool\NewDocument.py:24
 #: D:\env\Noval\noval\tool\UnitTestDialog.py:73
-#: D:\env\Noval\noval\tool\debugger\BreakPoints.py:50
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2925
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3129
+#: D:\env\Noval\noval\tool\debugger\BreakPoints.py:52
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3029
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3248
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:108
 #: D:\env\Noval\noval\tool\interpreter\EnvironmentVariableDialog.py:22
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:89
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:175
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:77
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:78
 #: D:\env\Noval\noval\tool\project\NewFile.py:142
 #: D:\env\Noval\noval\tool\project\ProjectUI.py:84
 #: D:\env\Noval\noval\tool\project\ProjectUI.py:189
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:412
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:420
 #: D:\env\Noval\noval\tool\project\pages\ProjectDialog.py:29
 #: D:\env\Noval\noval\tool\project\pages\ProjectDialog.py:93
 #: D:\env\Noval\noval\tool\service\CompletionService.py:33
@@ -739,18 +740,19 @@ msgstr ""
 
 #: D:\env\Noval\noval\tool\NewDocument.py:30
 #: D:\env\Noval\noval\tool\UnitTestDialog.py:76
-#: D:\env\Noval\noval\tool\debugger\BreakPoints.py:56
+#: D:\env\Noval\noval\tool\debugger\BreakPoints.py:58
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:121
 #: D:\env\Noval\noval\tool\interpreter\EnvironmentVariableDialog.py:27
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:95
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:178
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:83
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:84
 #: D:\env\Noval\noval\tool\project\ImportFiles.py:122
 #: D:\env\Noval\noval\tool\project\NewFile.py:146
 #: D:\env\Noval\noval\tool\project\NewFile.py:418
 #: D:\env\Noval\noval\tool\project\ProjectUI.py:90
 #: D:\env\Noval\noval\tool\project\ProjectUI.py:195
 #: D:\env\Noval\noval\tool\project\PythonVariables.py:87
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:418
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:426
 #: D:\env\Noval\noval\tool\project\pages\ProjectDialog.py:35
 #: D:\env\Noval\noval\tool\project\pages\ProjectDialog.py:99
 #: D:\env\Noval\noval\tool\service\CompletionService.py:35
@@ -766,77 +768,91 @@ msgstr ""
 msgid "New Document"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\PythonEditor.py:113
+#: D:\env\Noval\noval\tool\PythonEditor.py:112
 msgid ""
 "Detect your python file contain chinese character,please insert encoding declare.\n"
 "\n"
 "Click 'Yes' to insert,or 'No' to cancel?"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\PythonEditor.py:113
+#: D:\env\Noval\noval\tool\PythonEditor.py:112
 #: D:\env\Noval\noval\tool\service\TextService.py:322
 #: D:\env\Noval\noval\tool\service\TextService.py:330
 msgid "Declare Encoding"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\PythonEditor.py:280
+#: D:\env\Noval\noval\tool\PythonEditor.py:279
 msgid "pychecker not found.  Please install pychecker."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\PythonEditor.py:280
-#: D:\env\Noval\noval\tool\PythonEditor.py:287
+#: D:\env\Noval\noval\tool\PythonEditor.py:279
+#: D:\env\Noval\noval\tool\PythonEditor.py:286
 #: D:\env\Noval\noval\tool\checker.py:764
 msgid "Check Code"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\PythonEditor.py:287
+#: D:\env\Noval\noval\tool\PythonEditor.py:286
 msgid "'%s' has been modfied and must be saved first.  Save file and check code?"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\PythonEditor.py:579
+#: D:\env\Noval\noval\tool\PythonEditor.py:578
 msgid "Find in Outline View"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\PythonEditor.py:584
+#: D:\env\Noval\noval\tool\PythonEditor.py:583
 #: D:\env\Noval\noval\tool\service\CompletionService.py:69
 msgid "Goto Definition\tF12"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\PythonEditor.py:590
+#: D:\env\Noval\noval\tool\PythonEditor.py:589
 #: D:\env\Noval\noval\tool\debugger\DebuggerService.py:634
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2240
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2253
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2290
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2303
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:3379
 #: D:\env\Noval\noval\tool\service\ExtensionService.py:135
 msgid "&Run"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\PythonEditor.py:596
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2770
+#: D:\env\Noval\noval\tool\PythonEditor.py:595
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2873
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:3385
 msgid "Debug"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\PythonEditor.py:599
+#: D:\env\Noval\noval\tool\PythonEditor.py:598
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:3388
 msgid "&Debug"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\PythonEditor.py:604
+#: D:\env\Noval\noval\tool\PythonEditor.py:603
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:3393
 msgid "&Break into Debugger"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\PythonEditor.py:956
+#: D:\env\Noval\noval\tool\PythonEditor.py:609
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2319
+msgid "&Quick add Watch"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\PythonEditor.py:614
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2313
+msgid "&Add Watch"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\PythonEditor.py:619
+msgid "&Add to Watch"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\PythonEditor.py:1014
 msgid "Cannot find definition"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\PythonEditor.py:956
-#: D:\env\Noval\noval\tool\PythonEditor.py:968
+#: D:\env\Noval\noval\tool\PythonEditor.py:1014
+#: D:\env\Noval\noval\tool\PythonEditor.py:1026
 msgid "Goto Definition"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\PythonEditor.py:968
+#: D:\env\Noval\noval\tool\PythonEditor.py:1026
 msgid "Cannot go to definition"
 msgstr ""
 
@@ -860,7 +876,7 @@ msgid "Open Command Prompt here..."
 msgstr ""
 
 #: D:\env\Noval\noval\tool\ResourceView.py:74
-#: D:\env\Noval\noval\tool\TabbedFrame.py:325
+#: D:\env\Noval\noval\tool\TabbedFrame.py:331
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:312
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:3403
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:3422
@@ -879,8 +895,8 @@ msgid "Open Directory Error"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\ResourceView.py:241
-#: D:\env\Noval\noval\tool\TabbedFrame.py:376
-#: D:\env\Noval\noval\tool\service\FindInDirService.py:716
+#: D:\env\Noval\noval\tool\TabbedFrame.py:382
+#: D:\env\Noval\noval\tool\service\FindInDirService.py:717
 msgid "The file '%s' doesn't exist and couldn't be opened!"
 msgstr ""
 
@@ -894,7 +910,7 @@ msgstr ""
 
 #: D:\env\Noval\noval\tool\STCTextEditor.py:146
 #: D:\env\Noval\noval\tool\STCTextEditor.py:253
-#: D:\env\Noval\noval\tool\TabbedFrame.py:374
+#: D:\env\Noval\noval\tool\TabbedFrame.py:380
 #: D:\env\Noval\noval\tool\debugger\DebuggerService.py:526
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:482
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:500
@@ -915,12 +931,12 @@ msgid "Could not open '%s':  %s"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\STCTextEditor.py:583
-#: D:\env\Noval\noval\tool\TabbedFrame.py:139
+#: D:\env\Noval\noval\tool\TabbedFrame.py:145
 msgid "&Undo\tCtrl+Z"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\STCTextEditor.py:587
-#: D:\env\Noval\noval\tool\TabbedFrame.py:143
+#: D:\env\Noval\noval\tool\TabbedFrame.py:149
 msgid "&Redo\tCtrl+Y"
 msgstr ""
 
@@ -1005,217 +1021,217 @@ msgstr ""
 msgid " pt. "
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:62
-#: D:\env\Noval\noval\tool\TabbedFrame.py:87
+#: D:\env\Noval\noval\tool\TabbedFrame.py:68
+#: D:\env\Noval\noval\tool\TabbedFrame.py:93
 msgid "Creates a new document"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:62
+#: D:\env\Noval\noval\tool\TabbedFrame.py:68
 #: D:\env\Noval\noval\tool\project\NewFile.py:57
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:502
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:510
 msgid "New"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:63
+#: D:\env\Noval\noval\tool\TabbedFrame.py:69
 msgid "Open"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:63
-#: D:\env\Noval\noval\tool\TabbedFrame.py:91
+#: D:\env\Noval\noval\tool\TabbedFrame.py:69
+#: D:\env\Noval\noval\tool\TabbedFrame.py:97
 msgid "Opens an existing document"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:64
+#: D:\env\Noval\noval\tool\TabbedFrame.py:70
 msgid "Save"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:64
-#: D:\env\Noval\noval\tool\TabbedFrame.py:100
+#: D:\env\Noval\noval\tool\TabbedFrame.py:70
+#: D:\env\Noval\noval\tool\TabbedFrame.py:106
 msgid "Saves the active document"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:65
+#: D:\env\Noval\noval\tool\TabbedFrame.py:71
 msgid "Save All"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:65
+#: D:\env\Noval\noval\tool\TabbedFrame.py:71
 msgid "Saves all the active documents"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:67
+#: D:\env\Noval\noval\tool\TabbedFrame.py:73
 msgid "Print"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:67
-#: D:\env\Noval\noval\tool\TabbedFrame.py:118
+#: D:\env\Noval\noval\tool\TabbedFrame.py:73
+#: D:\env\Noval\noval\tool\TabbedFrame.py:124
 msgid "Displays full pages"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:68
+#: D:\env\Noval\noval\tool\TabbedFrame.py:74
 msgid "Print Preview"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:68
-#: D:\env\Noval\noval\tool\TabbedFrame.py:114
+#: D:\env\Noval\noval\tool\TabbedFrame.py:74
+#: D:\env\Noval\noval\tool\TabbedFrame.py:120
 msgid "Prints the active document"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:70
-#: D:\env\Noval\noval\tool\TabbedFrame.py:150
+#: D:\env\Noval\noval\tool\TabbedFrame.py:76
+#: D:\env\Noval\noval\tool\TabbedFrame.py:156
 msgid "Cuts the selection and puts it on the Clipboard"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:70
+#: D:\env\Noval\noval\tool\TabbedFrame.py:76
 #: D:\env\Noval\noval\tool\debugger\DebugOutputCtrl.py:46
 msgid "Cut"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:71
-#: D:\env\Noval\noval\tool\TabbedFrame.py:156
+#: D:\env\Noval\noval\tool\TabbedFrame.py:77
+#: D:\env\Noval\noval\tool\TabbedFrame.py:162
 msgid "Copies the selection and puts it on the Clipboard"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:71
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:514
+#: D:\env\Noval\noval\tool\TabbedFrame.py:77
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:522
 msgid "Copy"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:72
+#: D:\env\Noval\noval\tool\TabbedFrame.py:78
 msgid "Paste"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:72
-#: D:\env\Noval\noval\tool\TabbedFrame.py:162
+#: D:\env\Noval\noval\tool\TabbedFrame.py:78
+#: D:\env\Noval\noval\tool\TabbedFrame.py:168
 msgid "Inserts Clipboard contents"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:73
-#: D:\env\Noval\noval\tool\TabbedFrame.py:139
+#: D:\env\Noval\noval\tool\TabbedFrame.py:79
+#: D:\env\Noval\noval\tool\TabbedFrame.py:145
 msgid "Reverses the last action"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:73
+#: D:\env\Noval\noval\tool\TabbedFrame.py:79
 #: D:\env\Noval\noval\tool\debugger\DebugOutputCtrl.py:43
 msgid "Undo"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:74
-#: D:\env\Noval\noval\tool\TabbedFrame.py:143
+#: D:\env\Noval\noval\tool\TabbedFrame.py:80
+#: D:\env\Noval\noval\tool\TabbedFrame.py:149
 msgid "Reverses the last undo"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:74
+#: D:\env\Noval\noval\tool\TabbedFrame.py:80
 #: D:\env\Noval\noval\tool\debugger\DebugOutputCtrl.py:44
 msgid "Redo"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:87
+#: D:\env\Noval\noval\tool\TabbedFrame.py:93
 msgid "&New...\tCtrl+N"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:91
+#: D:\env\Noval\noval\tool\TabbedFrame.py:97
 msgid "&Open...\tCtrl+O"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:95
+#: D:\env\Noval\noval\tool\TabbedFrame.py:101
 msgid "&Close\tCtrl+W"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:95
+#: D:\env\Noval\noval\tool\TabbedFrame.py:101
 msgid "Closes the active document"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:97
+#: D:\env\Noval\noval\tool\TabbedFrame.py:103
 msgid "Close A&ll"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:97
+#: D:\env\Noval\noval\tool\TabbedFrame.py:103
 msgid "Closes all open documents"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:100
+#: D:\env\Noval\noval\tool\TabbedFrame.py:106
 msgid "&Save\tCtrl+S"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:104
+#: D:\env\Noval\noval\tool\TabbedFrame.py:110
 msgid "Save &As..."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:104
+#: D:\env\Noval\noval\tool\TabbedFrame.py:110
 msgid "Saves the active document with a new name"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:106
+#: D:\env\Noval\noval\tool\TabbedFrame.py:112
 msgid "Save All\tCtrl+Shift+A"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:106
+#: D:\env\Noval\noval\tool\TabbedFrame.py:112
 msgid "Saves the all active documents"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:114
+#: D:\env\Noval\noval\tool\TabbedFrame.py:120
 msgid "&Print\tCtrl+P"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:118
+#: D:\env\Noval\noval\tool\TabbedFrame.py:124
 msgid "Print Pre&view"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:122
+#: D:\env\Noval\noval\tool\TabbedFrame.py:128
 msgid "Changes page layout settings"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:122
+#: D:\env\Noval\noval\tool\TabbedFrame.py:128
 msgid "Page Set&up"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:128
+#: D:\env\Noval\noval\tool\TabbedFrame.py:134
 msgid "&Quit"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:128
-#: D:\env\Noval\noval\tool\TabbedFrame.py:130
+#: D:\env\Noval\noval\tool\TabbedFrame.py:134
+#: D:\env\Noval\noval\tool\TabbedFrame.py:136
 msgid "Closes this program"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:130
+#: D:\env\Noval\noval\tool\TabbedFrame.py:136
 msgid "E&xit"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:136
+#: D:\env\Noval\noval\tool\TabbedFrame.py:142
 #: D:\env\Noval\noval\tool\project\Property.py:49
 msgid "&File"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:150
+#: D:\env\Noval\noval\tool\TabbedFrame.py:156
 msgid "Cu&t\tCtrl+X"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:156
+#: D:\env\Noval\noval\tool\TabbedFrame.py:162
 msgid "&Copy\tCtrl+C"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:162
+#: D:\env\Noval\noval\tool\TabbedFrame.py:168
 msgid "&Paste\tCtrl+V"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:168
+#: D:\env\Noval\noval\tool\TabbedFrame.py:174
 msgid "&Delete"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:168
+#: D:\env\Noval\noval\tool\TabbedFrame.py:174
 msgid "Erases the selection"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:174
+#: D:\env\Noval\noval\tool\TabbedFrame.py:180
 msgid "Select A&ll\tCtrl+A"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:174
+#: D:\env\Noval\noval\tool\TabbedFrame.py:180
 msgid "Selects all available data"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:177
+#: D:\env\Noval\noval\tool\TabbedFrame.py:183
 #: D:\env\Noval\noval\tool\project\NewFile.py:408
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:4697
 #: D:\env\Noval\noval\tool\service\CompletionService.py:67
@@ -1226,63 +1242,63 @@ msgstr ""
 msgid "&Edit"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:183
+#: D:\env\Noval\noval\tool\TabbedFrame.py:189
 msgid "&Toolbar"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:183
+#: D:\env\Noval\noval\tool\TabbedFrame.py:189
 msgid "Shows or hides the toolbar"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:186
+#: D:\env\Noval\noval\tool\TabbedFrame.py:192
 msgid "Shows or hides the status bar"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:186
-#: D:\env\Noval\noval\tool\service\Service.py:294
+#: D:\env\Noval\noval\tool\TabbedFrame.py:192
+#: D:\env\Noval\noval\tool\service\Service.py:374
 msgid "&Status Bar"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:192
+#: D:\env\Noval\noval\tool\TabbedFrame.py:198
 msgid "Displays program information, version number, and copyright"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:195
+#: D:\env\Noval\noval\tool\TabbedFrame.py:201
 #: D:\env\Noval\noval\tool\service\ExtensionService.py:165
 msgid "&Help"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:281
+#: D:\env\Noval\noval\tool\TabbedFrame.py:287
 msgid "Creates a new python module"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:281
+#: D:\env\Noval\noval\tool\TabbedFrame.py:287
 msgid "New Module"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:320
+#: D:\env\Noval\noval\tool\TabbedFrame.py:326
 msgid "Close All but \"%s\""
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:323
+#: D:\env\Noval\noval\tool\TabbedFrame.py:329
 msgid "Select Tab"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:326
+#: D:\env\Noval\noval\tool\TabbedFrame.py:332
 msgid "Open Path in Terminator"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:327
+#: D:\env\Noval\noval\tool\TabbedFrame.py:333
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:296
 msgid "Copy Path"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:328
+#: D:\env\Noval\noval\tool\TabbedFrame.py:334
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:288
 msgid "Copy Name"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:330
+#: D:\env\Noval\noval\tool\TabbedFrame.py:336
 msgid "Copy Module Name"
 msgstr ""
 
@@ -1298,9 +1314,9 @@ msgstr ""
 
 #: D:\env\Noval\noval\tool\UICommon.py:87
 #: D:\env\Noval\noval\tool\UICommon.py:313
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3187
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3306
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:162
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:47
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:48
 #: D:\env\Noval\noval\tool\project\ImportFiles.py:52
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:3174
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:4392
@@ -1315,7 +1331,7 @@ msgstr ""
 
 #: D:\env\Noval\noval\tool\UICommon.py:89
 #: D:\env\Noval\noval\tool\project\pages\DebugRun.py:254
-#: D:\env\Noval\noval\tool\project\pages\PythonInterpreter.py:15
+#: D:\env\Noval\noval\tool\project\pages\PythonInterpreter.py:16
 msgid "Interpreter:"
 msgstr ""
 
@@ -1579,28 +1595,55 @@ msgstr ""
 msgid "No Syntax Errors"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\BreakPoints.py:20
+#: D:\env\Noval\noval\tool\debugger\BreakPoints.py:22
 msgid "Break when exception is:"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\BreakPoints.py:27
+#: D:\env\Noval\noval\tool\debugger\BreakPoints.py:29
 #: D:\env\Noval\noval\tool\project\ImportFiles.py:83
 #: D:\env\Noval\noval\tool\project\pages\ProjectReferrence.py:21
 msgid "Select All"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\BreakPoints.py:31
+#: D:\env\Noval\noval\tool\debugger\BreakPoints.py:33
 #: D:\env\Noval\noval\tool\project\ImportFiles.py:87
 #: D:\env\Noval\noval\tool\project\pages\ProjectReferrence.py:25
 msgid "UnSelect All"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\BreakPoints.py:37
+#: D:\env\Noval\noval\tool\debugger\BreakPoints.py:39
 msgid "User defined exceptions:"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\BreakPoints.py:44
+#: D:\env\Noval\noval\tool\debugger\BreakPoints.py:46
 msgid "Add Exception"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\BreakPoints.py:116
+#: D:\env\Noval\noval\tool\project\pages\Resource.py:32
+msgid "File"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\BreakPoints.py:117
+msgid "Line"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\BreakPoints.py:118
+#: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:213
+msgid "Path"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\BreakPoints.py:154
+msgid "Clear Breakpoint"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\BreakPoints.py:156
+msgid "Goto Source Line"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\BreakPoints.py:158
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2284
+msgid "&Clear All Breakpoints"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\debugger\DebugOutputCtrl.py:47
@@ -1612,7 +1655,8 @@ msgid "Paste\tCtrl+V"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\debugger\DebugOutputCtrl.py:49
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1359
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1339
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:242
 msgid "Clear"
 msgstr ""
 
@@ -1625,51 +1669,51 @@ msgstr ""
 msgid "Word Wrap"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:171
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:172
 msgid "Python Executable Location Unknown"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:171
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:172
 msgid ""
 "To proceed we need to know the location of the python.exe you would like to use.\n"
 "To set this, go to Tools-->Options and use the 'Python Inpterpreter' panel to configuration a interpreter.\n"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:321
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:322
 #: D:\env\Noval\noval\tool\debugger\DebuggerService.py:643
 msgid "Close Window"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:325
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:326
 msgid "Stop the Run."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:329
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:330
 msgid "Stop All the Run."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:333
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:334
 msgid "Restart the Run."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:376
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2725
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2813
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:377
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2828
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2916
 msgid "Startup path not exist"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:380
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2728
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2815
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:381
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2831
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2918
 msgid "Run Error"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:406
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:407
 #: D:\env\Noval\noval\tool\debugger\DebuggerService.py:475
 msgid "Finished Running"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:406
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:407
 #: D:\env\Noval\noval\tool\debugger\DebuggerService.py:475
 msgid "Running"
 msgstr ""
@@ -1682,322 +1726,334 @@ msgstr ""
 msgid "Process is still running,Do you want to kill the process and remove it?"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:647
-msgid "Stop Debugging"
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:648
+msgid "Continue Execution"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\debugger\DebuggerService.py:653
 msgid "Break into Debugger"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:659
-msgid "Continue Execution"
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:657
+msgid "Stop Debugging"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:665
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:661
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2331
+msgid "Restart Debugging"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:666
 msgid "Step to next line"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:669
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:670
 msgid "Step in"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:673
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:674
 msgid "Stop at function return"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:679
-msgid "Add a watch"
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:681
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1546
+msgid "Quick Add a Watch"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:684
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:685
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1455
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1528
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1530
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2313
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:223
+msgid "Add a Watch"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:690
 msgid "Clear output pane"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:787
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:793
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1104
 msgid "Debugging"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:787
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:793
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1104
 msgid "Finished Debugging"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:801
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1322
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:808
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1302
 msgid "Debugger has been stopped."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:852
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:859
 msgid "Debugger Running.."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:852
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:859
 msgid "Debugger is still running,Do you want to kill the debugger and remove it?"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:893
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:907
 msgid "Out of Ports"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:893
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:907
 msgid ""
 "Out of ports for debugging!  Please restart the application builder.\n"
 "If that does not work, check for and remove running instances of python."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1038
-#: D:\env\Noval\noval\tool\project\pages\Resource.py:32
-msgid "File"
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1091
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2928
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2959
+msgid "A debugger is already running. Please shut down the other debugger first."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1039
-msgid "Line"
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1091
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2928
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2959
+msgid "Debugger Running"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1040
-#: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:213
-msgid "Path"
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1164
+msgid "Stack Frame"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1076
-msgid "Clear Breakpoint"
-msgstr ""
-
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1078
-msgid "Goto Source Line"
-msgstr ""
-
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1080
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2234
-msgid "&Clear All Breakpoints"
-msgstr ""
-
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1132
-msgid "The OK button completes the dialog"
-msgstr ""
-
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1135
-msgid "You must enter a name for the watch."
-msgstr ""
-
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1135
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1138
-msgid "Add Watch"
-msgstr ""
-
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1138
-msgid "You must enter some code to run for the watch."
-msgstr ""
-
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1143
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3216
-msgid "Cancel"
-msgstr ""
-
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1144
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3217
-msgid "The Cancel button cancels the dialog."
-msgstr ""
-
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1226
-msgid "Output"
-msgstr ""
-
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1227
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1166
 msgid "Interact"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1228
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1168
 msgid "Break Points"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1354
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1170
+msgid "Watchs"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1237
+msgid "Stack Frame:"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1334
 msgid "Cmd: "
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1358
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1338
 msgid "Execute"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2162
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1461
+msgid "Add to Watch"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1469
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:231
+msgid "View in Dialog"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1474
+msgid "Send to Interact"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:1968
+msgid "Could not connect to break server!"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2212
 msgid "&Start Running\tF5"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2162
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2212
 msgid "Start Running a file"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2168
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2218
 msgid "&Start Debugging\tCtrl+F5"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2168
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2218
 msgid "Start Debugging a file"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2174
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2224
 msgid "&Start Without Debugging"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2174
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2224
 msgid "Start execute a file Without Debugging"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2179
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2229
 msgid "&Exceptions..."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2179
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2229
 msgid "Set the exception breakpoint"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2185
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2235
 msgid "&Step Into\tF11"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2185
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2235
 msgid "step into function"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2191
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2241
 msgid "&Step Over\tF10"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2191
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2241
 msgid "step into next"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2198
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2248
 msgid "&Check Syntax...\tCtrl+F3"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2198
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2248
 msgid "Check syntax of file"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2202
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2252
 msgid "&Set Parameter And Environment"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2202
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2252
 msgid "Set Parameter and Environment of Python Script"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2208
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2258
 msgid "&Run Using Last Settings\tCtrl+R"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2208
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2258
 msgid "Run a file using previous settings"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2212
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2262
 msgid "&Debug Using Last Settings\tCtrl+D"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2212
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2262
 msgid "Debug a file using previous settings"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2218
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2268
 msgid "Debug Internal Web Server"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2218
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2268
 msgid "Debugs the internal webservier"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2221
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2271
 msgid "Restart Internal Web Server"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2221
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2271
 msgid "Restarts the internal webservier"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2228
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2278
 msgid "&Toggle Breakpoint\tCtrl+B"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2228
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2278
 msgid "Toggle a breakpoint"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2234
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2284
 msgid "Clear All Breakpoints"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2239
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2289
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:4696
 #: D:\env\Noval\noval\tool\service\ExtensionService.py:137
 msgid "&Project"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2243
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2293
 msgid "Run a file in command teminator"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2243
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2293
 msgid "Start Running"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2244
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2294
 msgid "Debugging a file in Editor"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2244
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2294
 msgid "Start Debuging"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2258
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2319
+msgid "Quick add a Watch"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2325
 msgid "&Step Out\tShift+F11"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2258
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2325
 msgid "Step out the function"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2264
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2331
+msgid "&Restart"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2338
 msgid "&Stop Debugging"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2264
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2338
 msgid "Stop the debugger"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2270
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2344
 msgid "&Break"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2270
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2344
 msgid "Break into the debugger"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2276
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2350
 msgid "&Continue"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2276
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2350
 msgid "Continue the debugger"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2312
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2394
 msgid "Please stop the debugger first!"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2475
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2569
 msgid "Interpreter not exists"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2480
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2574
 msgid "Check Syntax Ok!"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2569
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2664
 msgid "Your project needs a Python script marked as startup file to perform this action"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2618
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2707
+msgid "Debugger can only run in active project"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2745
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:375
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:474
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:491
@@ -2008,159 +2064,229 @@ msgstr ""
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:369
 #: D:\env\Noval\noval\tool\project\pages\DebugRun.py:180
 #: D:\env\Noval\noval\tool\project\pages\DebugRun.py:239
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:315
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:546
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:323
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:554
 #: D:\env\Noval\noval\tool\syntax\lexer\_perl.py:85
 #: D:\env\Noval\noval\tool\syntax\lexer\_sh.py:87
 #: D:\env\Noval\noval\tool\syntax\lexer\_yml.py:55
 msgid "Error"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2631
-msgid "Debugger can only run in active project"
-msgstr ""
-
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2684
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2787
 msgid "Running: "
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2690
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2793
 msgid "Add Python Exception Breakpoint"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2766
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2869
 msgid "Run File"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2767
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2870
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:5023
 msgid "Run"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2769
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2872
 msgid "Debug File"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2819
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2925
 msgid "Python for Windows extensions (pywin32) is required to debug on Windows machines. Please download and install pywin32 via pip tool"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2822
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2855
-msgid "A debugger is already running. Please shut down the other debugger first."
-msgstr ""
-
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2822
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2855
-msgid "Debugger Running"
-msgstr ""
-
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2827
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2864
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2933
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2968
 msgid "No Debugger Host"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2827
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2864
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2933
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2968
 msgid "No debugger host set. Please go to Tools->Options->Debugger and set one."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2837
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2943
 msgid "Debugging: "
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2850
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2954
 msgid "Python for Windows extensions (pywin32) is required to debug on Windows machines. Please go to http://sourceforge.net/projects/pywin32/, download and install pywin32."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2873
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2977
 msgid "Debugging: Internal WebServer"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2908
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3012
 msgid ""
 "Files have been modified.\n"
 "Would you like to save all files before running?"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2909
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3013
 msgid "Run Project"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:2925
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3029
 msgid "Set Parameter And Environment"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3072
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3191
 msgid "Local Host Name:"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3074
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3193
 msgid "Port Range:"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3075
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3194
 msgid "through to"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3135
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3254
 msgid "Nothing to Run"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3135
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3254
 msgid "To run or debug you must have an open runnable file or project containing runnable files. Use File->Open to open the file you wish to run or debug."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3140
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3259
 msgid "PYTHONPATH:"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3142
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3261
 msgid "Project:"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3143
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3262
 msgid "File:"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3144
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3263
 msgid "Arguments:"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3145
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3264
 msgid "Start in:"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3147
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3266
 msgid "Postpend content root path"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3170
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3289
 msgid "Use"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3200
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3319
 msgid "multiple path is seperated by %s"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3213
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3332
 msgid " button completes the dialog"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3213
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3332
 msgid "The "
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3303
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3335
+msgid "Cancel"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3336
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:122
+msgid "The Cancel button cancels the dialog."
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3422
 msgid "You must select a file to proceed. Note that not all projects have files that can be run or debugged."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3307
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3426
 msgid "Starting directory does not exist. Please change this value."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3374
+#: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3493
 msgid "Choose a starting directory:"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:84
+msgid "Watch in all frames"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:85
+msgid "Watch in this frame only"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:86
+msgid "Watch once and delete"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:99
+msgid "Watch Name:"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:102
+msgid "Expression:"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:106
+msgid "Watch Information"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:110
+msgid "The OK button completes the dialog"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:113
+msgid "You must enter a name for the watch."
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:113
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:116
+msgid "Add Watch"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:116
+msgid "You must enter some code to run for the watch."
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:192
+#: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:211
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:204
+#: D:\env\Noval\noval\tool\project\NewFile.py:39
+#: D:\env\Noval\noval\tool\project\PythonVariables.py:74
+msgid "Name"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:193
+#: D:\env\Noval\noval\tool\interpreter\Environment.py:14
+#: D:\env\Noval\noval\tool\interpreter\Environment.py:36
+#: D:\env\Noval\noval\tool\project\PythonVariables.py:75
+#: D:\env\Noval\noval\tool\project\pages\EnvironmentMixin.py:20
+#: D:\env\Noval\noval\tool\syntax\lexer\_css.py:159
+#: D:\env\Noval\noval\tool\syntax\lexer\_html.py:168
+msgid "Value"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:234
+msgid "Edit Watch"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:238
+msgid "Copy Watch Expression"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:247
+msgid "Clear All"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\debugger\Watchs.py:345
+msgid "Edit a Watch"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\download.py:17
@@ -2182,15 +2308,6 @@ msgstr ""
 msgid "Key"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\Environment.py:14
-#: D:\env\Noval\noval\tool\interpreter\Environment.py:36
-#: D:\env\Noval\noval\tool\project\PythonVariables.py:75
-#: D:\env\Noval\noval\tool\project\pages\EnvironmentMixin.py:20
-#: D:\env\Noval\noval\tool\syntax\lexer\_css.py:159
-#: D:\env\Noval\noval\tool\syntax\lexer\_html.py:168
-msgid "Value"
-msgstr ""
-
 #: D:\env\Noval\noval\tool\interpreter\Environment.py:30
 msgid "Set user defined environment variable:"
 msgstr ""
@@ -2201,7 +2318,7 @@ msgid "New.."
 msgstr ""
 
 #: D:\env\Noval\noval\tool\interpreter\Environment.py:45
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:506
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:514
 #: D:\env\Noval\noval\tool\project\pages\EnvironmentMixin.py:29
 #: D:\env\Noval\noval\tool\service\TextService.py:63
 msgid "Edit"
@@ -2255,8 +2372,12 @@ msgstr ""
 msgid "Value:"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\GeneralConfiguration.py:11
+#: D:\env\Noval\noval\tool\interpreter\GeneralConfiguration.py:12
 msgid "Warn when interpreter path contain no asc character on debug and run"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\interpreter\GeneralConfiguration.py:17
+msgid "Show the builtin interpreter window"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\interpreter\Interpreter.py:45
@@ -2279,7 +2400,7 @@ msgstr ""
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:63
 #: D:\env\Noval\noval\tool\project\NewFile.py:99
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:1242
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:367
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:375
 msgid "Name:"
 msgstr ""
 
@@ -2343,15 +2464,8 @@ msgstr ""
 msgid "Python interpreters(eg.:such as python.exe, pythonw.exe). Double or right click to rename."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:211
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:203
-#: D:\env\Noval\noval\tool\project\NewFile.py:39
-#: D:\env\Noval\noval\tool\project\PythonVariables.py:74
-msgid "Name"
-msgstr ""
-
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:212
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:204
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:205
 msgid "Version"
 msgstr ""
 
@@ -2362,7 +2476,7 @@ msgstr ""
 
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:225
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:304
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:510
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:518
 msgid "Remove"
 msgstr ""
 
@@ -2435,19 +2549,19 @@ msgstr ""
 msgid "Environment Variable Error"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:669
+#: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:672
 msgid "Interpreter configuration has already been modified outside,Do you want to save?"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:669
+#: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:672
 msgid "Save interpreter configuration"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:679
+#: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:682
 msgid "Interpreter Smart Analyse"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:680
+#: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:683
 msgid "Please wait a minute for end analysing"
 msgstr ""
 
@@ -2492,90 +2606,90 @@ msgstr ""
 msgid "interpreter have already exist"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:25
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:26
 msgid "Type the name of package to install"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:27
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:28
 msgid "Type the name of package to uninstall"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:32
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:33
 msgid "We will download and install it in the interpreter:"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:35
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:36
 msgid "We will uninstall it in the interpreter:"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:54
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:55
 msgid ""
 "To install the specific version,type \"xxx==1.0.1\"\n"
 "To install more packages,please specific the path of requirements.txt"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:58
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:59
 msgid "To uninstall more packages,please specific the path of requirements.txt"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:70
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:93
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:71
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:94
 msgid "Show Details"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:98
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:99
 msgid "Hide Details"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:104
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:105
 msgid "Text File (*.txt)|*.txt"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:105
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:106
 msgid "Choose requirements.txt"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:130
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:131
 msgid "Install Success"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:132
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:133
 msgid "Uninstall Success"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:136
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:137
 msgid "Install Fail"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:138
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:139
 msgid "Uninstall Fail"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:184
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:185
 msgid "package name is empty"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:189
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:190
 msgid "Could not find pip on the path"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:208
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:209
 msgid "Install with pip"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:212
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:213
 msgid "Uninstall with pip"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:219
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:220
 msgid "Install Package"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:231
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:232
 msgid "Uninstall Package"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:250
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:252
 msgid "Loading Package List....."
 msgstr ""
 
@@ -2588,17 +2702,17 @@ msgid "The Python System Path could not be removed"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\interpreter\PythonPathMixin.py:34
-#: D:\env\Noval\noval\tool\project\pages\PythonPath.py:37
+#: D:\env\Noval\noval\tool\project\pages\PythonPath.py:41
 msgid "Add Path.."
 msgstr ""
 
 #: D:\env\Noval\noval\tool\interpreter\PythonPathMixin.py:38
-#: D:\env\Noval\noval\tool\project\pages\PythonPath.py:41
+#: D:\env\Noval\noval\tool\project\pages\PythonPath.py:45
 msgid "Add File..."
 msgstr ""
 
 #: D:\env\Noval\noval\tool\interpreter\PythonPathMixin.py:42
-#: D:\env\Noval\noval\tool\project\pages\PythonPath.py:45
+#: D:\env\Noval\noval\tool\project\pages\PythonPath.py:49
 msgid "Remove Path..."
 msgstr ""
 
@@ -3588,66 +3702,66 @@ msgstr ""
 msgid "PYTHONPATH that will be used in the run:"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:351
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:359
 msgid "New Debug/Run Configuration"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:353
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:361
 msgid "Edit Debug/Run Configuration"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:389
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:397
 msgid "Startup"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:393
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:401
 msgid "Arguments"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:397
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:405
 msgid "Interpreter"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:401
-#: D:\env\Noval\noval\tool\project\pages\PythonPath.py:191
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:409
+#: D:\env\Noval\noval\tool\project\pages\PythonPath.py:185
 msgid "Environment"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:428
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:436
 msgid "A name is required for the configuration"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:459
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:467
 msgid "Set the default startup file when run project."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:472
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:623
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:480
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:633
 msgid "Select the startup file"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:482
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:490
 msgid ""
 "You can manage launch run configurations and set default configuration as belows.\n"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:488
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:496
 msgid "Set run configurations for project '%s':"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:551
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:559
 msgid "File \"%s\" is not in project"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:648
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:658
 msgid "configuration name is already in used!"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:664
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:674
 msgid "New Configuration"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:682
+#: D:\env\Noval\noval\tool\project\pages\DebugRun.py:692
 msgid "Edit Configuration"
 msgstr ""
 
@@ -3668,8 +3782,12 @@ msgstr ""
 msgid "The reference projects for '%s':"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\pages\PythonInterpreter.py:25
+#: D:\env\Noval\noval\tool\project\pages\PythonInterpreter.py:26
 msgid "Click to configure interpreters not listed"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\project\pages\PythonPath.py:30
+msgid "Append project root path to PYTHONPATH"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\project\pages\PythonPath.py:67
@@ -3680,16 +3798,16 @@ msgstr ""
 msgid "Select Internal Path"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\pages\PythonPath.py:178
+#: D:\env\Noval\noval\tool\project\pages\PythonPath.py:172
 msgid ""
 "The final PYTHONPATH used for a launch is composed of paths defined here,joined with the paths defined by the selected interpreter.\n"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\pages\PythonPath.py:183
+#: D:\env\Noval\noval\tool\project\pages\PythonPath.py:177
 msgid "Internal Path"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\pages\PythonPath.py:187
+#: D:\env\Noval\noval\tool\project\pages\PythonPath.py:181
 msgid "External Path"
 msgstr ""
 
@@ -3941,8 +4059,8 @@ msgid "Searches for the specified text in all the files in the directory"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\service\FindInDirService.py:156
-#: D:\env\Noval\noval\tool\service\FindInDirService.py:414
-#: D:\env\Noval\noval\tool\service\FindInDirService.py:529
+#: D:\env\Noval\noval\tool\service\FindInDirService.py:415
+#: D:\env\Noval\noval\tool\service\FindInDirService.py:530
 msgid "Warning, unable to read file: '%s'.  %s"
 msgstr ""
 
@@ -3963,8 +4081,8 @@ msgid "Search hidden files"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\service\FindInDirService.py:289
-#: D:\env\Noval\noval\tool\service\FindInDirService.py:572
-#: D:\env\Noval\noval\tool\service\FindInDirService.py:629
+#: D:\env\Noval\noval\tool\service\FindInDirService.py:573
+#: D:\env\Noval\noval\tool\service\FindInDirService.py:630
 #: D:\env\Noval\noval\tool\service\FindService.py:347
 #: D:\env\Noval\noval\tool\service\FindService.py:442
 msgid "Find what:"
@@ -3979,32 +4097,32 @@ msgid "Multiple file types seperated by semicolon"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\service\FindInDirService.py:305
-#: D:\env\Noval\noval\tool\service\FindInDirService.py:578
-#: D:\env\Noval\noval\tool\service\FindInDirService.py:635
+#: D:\env\Noval\noval\tool\service\FindInDirService.py:579
+#: D:\env\Noval\noval\tool\service\FindInDirService.py:636
 #: D:\env\Noval\noval\tool\service\FindService.py:354
 #: D:\env\Noval\noval\tool\service\FindService.py:452
 msgid "Match whole word only"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\service\FindInDirService.py:307
-#: D:\env\Noval\noval\tool\service\FindInDirService.py:580
-#: D:\env\Noval\noval\tool\service\FindInDirService.py:637
+#: D:\env\Noval\noval\tool\service\FindInDirService.py:581
+#: D:\env\Noval\noval\tool\service\FindInDirService.py:638
 #: D:\env\Noval\noval\tool\service\FindService.py:356
 #: D:\env\Noval\noval\tool\service\FindService.py:454
 msgid "Match case"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\service\FindInDirService.py:309
-#: D:\env\Noval\noval\tool\service\FindInDirService.py:582
-#: D:\env\Noval\noval\tool\service\FindInDirService.py:639
+#: D:\env\Noval\noval\tool\service\FindInDirService.py:583
+#: D:\env\Noval\noval\tool\service\FindInDirService.py:640
 #: D:\env\Noval\noval\tool\service\FindService.py:358
 #: D:\env\Noval\noval\tool\service\FindService.py:456
 msgid "Regular expression"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\service\FindInDirService.py:317
-#: D:\env\Noval\noval\tool\service\FindInDirService.py:590
-#: D:\env\Noval\noval\tool\service\FindInDirService.py:647
+#: D:\env\Noval\noval\tool\service\FindInDirService.py:591
+#: D:\env\Noval\noval\tool\service\FindInDirService.py:648
 #: D:\env\Noval\noval\tool\service\FindService.py:104
 #: D:\env\Noval\noval\tool\service\FindService.py:148
 msgid "Find"
@@ -4014,25 +4132,25 @@ msgstr ""
 msgid "'Find what:' cannot be empty."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\FindInDirService.py:392
+#: D:\env\Noval\noval\tool\service\FindInDirService.py:393
 msgid ""
 "Searching for '%s' in '%s'\n"
 "\n"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\FindInDirService.py:552
+#: D:\env\Noval\noval\tool\service\FindInDirService.py:553
 msgid "Search for '%s' completed, Find total %d results."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\FindInDirService.py:567
+#: D:\env\Noval\noval\tool\service\FindInDirService.py:568
 msgid "Find in Project"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\FindInDirService.py:624
+#: D:\env\Noval\noval\tool\service\FindInDirService.py:625
 msgid "Find in File"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\FindInDirService.py:717
+#: D:\env\Noval\noval\tool\service\FindInDirService.py:718
 msgid "Open File Error"
 msgstr ""
 
@@ -4573,15 +4691,15 @@ msgstr ""
 msgid "SVN"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\Service.py:176
+#: D:\env\Noval\noval\tool\service\Service.py:203
 msgid "Close"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\Service.py:183
+#: D:\env\Noval\noval\tool\service\Service.py:208
 msgid "Close All"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\Service.py:311
+#: D:\env\Noval\noval\tool\service\Service.py:391
 msgid "Show or hides the %s window"
 msgstr ""
 
