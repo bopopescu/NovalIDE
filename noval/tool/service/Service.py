@@ -310,6 +310,7 @@ class TabbedServiceView(ServiceView):
                     
                 nb.InsertPage(index, self._control, self._service.GetMenuString())
                 nb.SetPageImage(index,self._service.GetIconIndex())
+                nb.SetSelection(index)
         else:
             if index > -1:
                 nb.GetPage(index).Show(False)

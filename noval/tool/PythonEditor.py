@@ -27,7 +27,6 @@ import service.MessageService as MessageService # for OnCheckCode
 import codecs
 import noval.tool.syntax.lang as lang
 import service.Service as Service
-import noval.parser.fileparser as parser
 import noval.parser.scope as scope
 import interpreter.Interpreter as Interpreter
 import noval.parser.intellisence as intellisence
@@ -39,7 +38,6 @@ from noval.parser.utils import CmpMember
 from noval.util.logger import app_debugLogger
 import noval.util.sysutils as sysutilslib
 import noval.tool.interpreter.InterpreterManager as interpretermanager
-import threading
 import PyShell
 import noval.util.fileutils as fileutils
 import noval.parser.utils as parserutils
@@ -48,6 +46,7 @@ import consts
 import noval.tool.project as project
 from noval.model import configuration
 from noval.util import utils
+import ModuleAnalyzer
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
@@ -153,40 +152,17 @@ class PythonView(CodeEditor.CodeView):
 
     def __init__(self):
         super(PythonView,self).__init__()
-        self._module_scope = None
-        self._parse_error = None
+        self._module_analyzer = ModuleAnalyzer.PythonModuleAnalyzer(self)
         #document checksum to check document is updated
         self._checkSum = -1
-        self._lock = threading.Lock()
-        #is parsing syntax tree?
-        self._is_parsing = False
-        #when close window,the flag is set to true
-        self._is_parse_stoped = False
+        
+    @property
+    def ModuleAnalyzer(self):
+        return self._module_analyzer
         
     @property
     def ModuleScope(self):
-        return self._module_scope
-        
-    @property
-    def ParseError(self):
-        return self._parse_error
-
-    def LoadModule(self,filename):
-        module,error = parser.parse_content(self.GetCtrl().GetValue(),filename,self.GetDocument().file_encoding)
-        if module is None:
-            self._parse_error = error
-            return
-        module_scope = scope.ModuleScope(module,self.GetCtrl().GetLineCount())
-        if not self._is_parse_stoped:
-            module_scope.MakeModuleScopes()
-        if not self._is_parse_stoped:
-            module_scope.RouteChildScopes()
-        self.ModuleScope = module_scope
-        self._parse_error = None
-        
-    @ModuleScope.setter
-    def ModuleScope(self,module_scope):
-        self._module_scope = module_scope
+        return self._module_analyzer.ModuleScope
         
     def GetCtrlClass(self):
         """ Used in split window to instantiate new instances """
@@ -218,15 +194,15 @@ class PythonView(CodeEditor.CodeView):
 
     def OnClose(self, deleteWindow = True):
         logger = utils.GetLogger()
-        if self._is_parsing:
-            self._is_parse_stoped = True
-            logger.info("document %s is still parsing tree ,wait a moment to finish parsing before close",self.GetDocument().GetFilename())
+        if self._module_analyzer.IsAnalyzing():
+            logger.info("document %s is still analyzing ,wait a moment to finish analyze before close",self.GetDocument().GetFilename())
+            self._module_analyzer.StopAnalyzing()
             while True:
-                if not self._is_parsing:
+                if not self._module_analyzer.IsAnalyzing():
                     break
                 wx.MilliSleep(250)
                 wx.Yield()
-            logger.info("document %s has been finish parsing,now will close",self.GetDocument().GetFilename())
+            logger.info("document %s has been finish analyze,now will close",self.GetDocument().GetFilename())
         status = STCTextEditor.TextView.OnClose(self, deleteWindow)
         wx.CallAfter(self.ClearOutline)  # need CallAfter because when closing the document, it is Activated and then Close, so need to match OnActivateView's CallAfter
         return status
@@ -374,30 +350,8 @@ class PythonView(CodeEditor.CodeView):
         document = self.GetDocument()
         if not document:
             return True
-        t = threading.Thread(target=self.LoadMouduleSynchronizeTree,args=(view,force,treeCtrl,outlineService,lineNum))
-        t.start()
+        self._module_analyzer.AnalyzeModuleSynchronizeTree(view,force,treeCtrl,outlineService,lineNum)
         return True
-        
-    def LoadMouduleSynchronizeTree(self,view,force,treeCtrl,outlineService,lineNum):
-        with self._lock:
-            if self._is_parsing:
-                print 'document %s is already parseing,will not parse again' % self.GetDocument().GetFilename()
-                return True
-            self._is_parsing = True
-            document = self.GetDocument()
-            filename = document.GetFilename()
-            if force:
-                self.LoadModule(filename)
-            if self.ModuleScope == None:
-                if view is None or filename != view.GetDocument().GetFilename():
-                    wx.CallAfter(treeCtrl.DeleteAllItems)
-                self._is_parsing = False
-                return True
-            #should freeze control to prevent update and treectrl flick
-            if not self._is_parse_stoped:
-                treeCtrl.LoadModuleAst(self.ModuleScope,self,outlineService,lineNum)
-            else:
-                self._is_parsing = False
         
     def IsUnitTestEnable(self):
         return True

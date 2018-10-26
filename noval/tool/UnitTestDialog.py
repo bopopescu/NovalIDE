@@ -114,7 +114,7 @@ class UnitTestDialog(wx.Dialog):
     def CreateUnitTestFrame(self):
         module_scope = self._cur_view.ModuleScope
         if module_scope is None:
-            wx.MessageBox(self._cur_view.ParseError,style=wx.OK|wx.ICON_ERROR)
+            wx.MessageBox(self._cur_view.ModuleAnalyzer.SyntaxError,style=wx.OK|wx.ICON_ERROR)
             return False
         self.root = self._treeCtrl.AddRoot(module_scope.Module.Name,ct_type=1)
         self._treeCtrl.SetItemImage(self.root,self.ModuleIdx,wx.TreeItemIcon_Normal)

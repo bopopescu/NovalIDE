@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2018-10-20 00:20+ÖÐ¹ú±ê×¼Ê±¼ä\n"
-"PO-Revision-Date: 2018-10-20 00:24+0800\n"
+"PO-Revision-Date: 2018-10-20 23:25+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -2283,7 +2283,7 @@ msgstr ""
 
 #: D:\env\Noval\noval\tool\debugger\Watchs.py:113
 msgid "You must enter a name for the watch."
-msgstr ""
+msgstr "必须输入监视名称."
 
 #: D:\env\Noval\noval\tool\debugger\Watchs.py:113
 #: D:\env\Noval\noval\tool\debugger\Watchs.py:116
@@ -2292,7 +2292,7 @@ msgstr ""
 
 #: D:\env\Noval\noval\tool\debugger\Watchs.py:116
 msgid "You must enter some code to run for the watch."
-msgstr ""
+msgstr "必须输入监视执行表达式,"
 
 #: D:\env\Noval\noval\tool\debugger\Watchs.py:192
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:211

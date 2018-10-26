@@ -800,7 +800,7 @@ class BaseDebuggerUI(wx.Panel):
             if _VERBOSE: print "In ExectorFinished, got exception"
         self._tb.EnableTool(self.KILL_PROCESS_ID, False)
         self._stopped = True
-        wx.GetApp().GetService(DebuggerService).ShowHideDebuggerMenu()
+        wx.GetApp().GetService(DebuggerService).ShowHideDebuggerMenu(False)
 
     def SetStatusText(self, text):
         self._statusBar.SetStatusText(text,0)
@@ -868,6 +868,9 @@ class BaseDebuggerUI(wx.Panel):
         index = self._parentNoteBook.GetSelection()
         self._parentNoteBook.GetPage(index).Show(False)
         self._parentNoteBook.RemovePage(index)
+        if self._callback.IsWait():
+            utils.GetLogger().warn("debugger callback is still wait for rpc when debugger stoped.will stop manualy")
+            self._callback.StopWait()
         return True
 
     def OnAddWatch(self, event):
@@ -1095,7 +1098,6 @@ class PythonDebuggerUI(BaseDebuggerUI):
         
         self.OnClearOutput(event)
         self._tb.EnableTool(self.KILL_PROCESS_ID, True)
-        self._service.ShowHideDebuggerMenu(True)
         self._stopped = False
         self.CheckPortAvailable()
         self.CreateCallBack()
@@ -2032,12 +2034,15 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
                 tp, val, tb = sys.exc_info()
                 traceback.print_exception(tp, val, tb)
             wx.GetApp().Yield(True)
-        if _VERBOSE: print "Exiting WaitForRPC."
+        utils.GetLogger().debug("Exiting WaitForRPC.")
 
     def interaction(self, message, frameXML, info, quit):
 
         #This method should be hit as the debugger starts.
+        #if the debugger starts.then show the debugger menu
         if self._firstInteraction:
+            assert(self._debuggerUI._service != None)
+            self._debuggerUI._service.ShowHideDebuggerMenu()
             self._firstInteraction = False
             self._debuggerServer = xmlrpclib.ServerProxy(self._debugger_url,  allow_none=1)
             self._breakServer = xmlrpclib.ServerProxy(self._break_url, allow_none=1)
@@ -2094,6 +2099,13 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
                 print "Event posted"
         set = SendEventThread()
         set.start()
+        
+    def IsWait(self):
+        return self._waiting
+        
+    def StopWait(self):
+        assert(self._waiting)
+        self.ShutdownServer()
 
 class DebuggerService(Service.Service):
 
@@ -2301,11 +2313,12 @@ class DebuggerService(Service.Service):
         toolBar.Realize()
         return True
 
-    def ShowHideDebuggerMenu(self,force_show=False):
+    def ShowHideDebuggerMenu(self,show=True):
         menuBar = wx.GetApp().GetTopWindow().GetMenuBar()
         runMenuIndex = menuBar.FindMenu(_("&Run"))
         runMenu = menuBar.GetMenu(runMenuIndex)
-        if BaseDebuggerUI.DebuggerRunning() or force_show:
+        ###BaseDebuggerUI.DebuggerRunning() 
+        if show:
             menu_index = 3
             
             if self._watch_separater is None:
@@ -2474,11 +2487,19 @@ class DebuggerService(Service.Service):
             return True
 
         elif an_id == DebuggerService.QUICK_ADD_WATCH_ID:
-            self.GetActiveView().GetCtrl().QuickAddWatch(None)
+            active_text_view = self.GetActiveView()
+            if active_text_view is not None:
+                active_text_view.GetCtrl().QuickAddWatch(None)
+            else:
+                self.AddWatch(None,True)
             return True
 
         elif an_id == DebuggerService.ADD_WATCH_ID:
-            self.GetActiveView().GetCtrl().AddWatch(None)
+            active_text_view = self.GetActiveView()
+            if active_text_view is not None:
+                active_text_view.GetCtrl().AddWatch(None)
+            else:
+                self.AddWatch(None,False)
             return True
 
         elif an_id == DebuggerService.RESTART_DEBUGGER_ID:
@@ -2940,7 +2961,6 @@ class DebuggerService(Service.Service):
         fileToDebug = DebuggerService.ExpandPath(fileToDebug)
         shortFile = os.path.basename(fileToDebug)
 
-        self.ShowHideDebuggerMenu(True)
         self._debugger_ui = PythonDebuggerUI(Service.ServiceView.bottomTab, -1, str(fileToDebug),self,run_parameter,autoContinue=autoContinue)
         count = Service.ServiceView.bottomTab.GetPageCount()
         Service.ServiceView.bottomTab.AddPage(self._debugger_ui, _("Debugging: ") + shortFile)

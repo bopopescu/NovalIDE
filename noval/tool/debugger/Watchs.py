@@ -110,10 +110,10 @@ class WatchDialog(wx.Dialog):
         self._okButton.SetHelpText(_("The OK button completes the dialog"))
         def OnOkClick(event):
             if self._watchNameTextCtrl.GetValue() == "":
-                wx.MessageBox(_("You must enter a name for the watch."), _("Add Watch"))
+                wx.MessageBox(_("You must enter a name for the watch."), _("Add a Watch"))
                 return
             if self._watchValueTextCtrl.GetValue() == "":
-                wx.MessageBox(_("You must enter some code to run for the watch."), _("Add Watch"))
+                wx.MessageBox(_("You must enter some code to run for the watch."), _("Add a Watch"))
                 return
             self.EndModal(wx.ID_OK)
         self.Bind(wx.EVT_BUTTON, OnOkClick, self._okButton)

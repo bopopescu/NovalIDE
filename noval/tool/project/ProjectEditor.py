@@ -4102,6 +4102,7 @@ class ProjectView(wx.lib.docview.View):
             items = self._treeCtrl.GetSelections()[:]
             for item in items:
                 filepath = self._GetItemFilePath(item)
+                file_template = None
                 if filepath:
                     if not os.path.exists(filepath):
                         msgTitle = wx.GetApp().GetAppName()
@@ -4134,9 +4135,9 @@ class ProjectView(wx.lib.docview.View):
                             filepath = newpath
                         else:
                             continue
-                            
-                    project_file = self._treeCtrl.GetPyData(item)
-                    file_template = self.GetOpenDocumentTemplate(project_file)
+                    else:        
+                        project_file = self._treeCtrl.GetPyData(item)
+                        file_template = self.GetOpenDocumentTemplate(project_file)
                     if file_template:
                         doc = self.GetDocumentManager().CreateTemplateDocument(file_template,filepath, wx.lib.docview.DOC_SILENT|wx.lib.docview.DOC_OPEN_ONCE)
                     else:

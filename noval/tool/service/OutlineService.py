@@ -347,25 +347,27 @@ class OutlineTreeCtrl(wx.TreeCtrl):
             return None
             
     @WxThreadSafe.call_after
-    def LoadModuleAst(self,module_scope,view,outlineService,lineNum):
+    def LoadModuleAst(self,module_scope,module_analyzer,outlineService,lineNum):
         #should freeze control to prevent update and treectrl flick
+        view = module_analyzer.View
         self.Freeze()
         self.DeleteAllItems()
         rootItem = self.AddRoot(module_scope.Module.Name)
         self.SetItemImage(rootItem,self.ModuleIdx,wx.TreeItemIcon_Normal)
         self.SetDoSelectCallback(rootItem, view, module_scope.Module)
-        self.TranverseItem(view,module_scope.Module,rootItem)
-        if not view._is_parse_stoped:
+        self.TranverseItem(module_analyzer,module_scope.Module,rootItem)
+        if not module_analyzer.IsAnalyzingStopped():
             self.Expand(rootItem)
             #use thaw to update freezw control
             self.Thaw()
             if lineNum >= 0:
                 outlineService.SyncToPosition(view,lineNum)
-        view._is_parsing = False
+        module_analyzer.FinishAnalyzing()
         
-    def TranverseItem(self,view,node,parent):
+    def TranverseItem(self,module_analyzer,node,parent):
+        view = module_analyzer.View
         for child in node.Childs:
-            if view._is_parse_stoped:
+            if module_analyzer.IsAnalyzingStopped():
                 break
             if child.Type == parserconfig.NODE_FUNCDEF_TYPE:
                 item = self.AppendItem(parent, child.Name)
@@ -375,7 +377,7 @@ class OutlineTreeCtrl(wx.TreeCtrl):
                 item = self.AppendItem(parent, child.Name)
                 self.SetItemImage(item,self.ClassIdx,wx.TreeItemIcon_Normal)
                 self.SetDoSelectCallback(item, view, child)
-                self.TranverseItem(view,child,item)
+                self.TranverseItem(module_analyzer,child,item)
             elif child.Type == parserconfig.NODE_OBJECT_PROPERTY or \
                         child.Type == parserconfig.NODE_ASSIGN_TYPE:
                 item = self.AppendItem(parent, child.Name)
