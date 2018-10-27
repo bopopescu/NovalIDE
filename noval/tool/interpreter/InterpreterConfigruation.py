@@ -661,7 +661,8 @@ class InterpreterConfigurationPanel(wx.Panel):
         interpretermanager.InterpreterManager().SavePythonInterpretersConfig()
         
     def OnCancel(self,optionsDialog):
-        if self._current_interpreter is None or interpretermanager.InterpreterManager.GetCurrentInterpreter() is None:
+        #application has no interpreter
+        if interpretermanager.InterpreterManager.GetCurrentInterpreter() is None:
             return True
         for interpreter in interpretermanager.InterpreterManager.interpreters:
             if interpreter.IsLoadingPackage:
