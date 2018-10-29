@@ -100,14 +100,12 @@ def CreateDirectoryControl( parent, fileLabel=_("File Name:"), dirLabel=_("Direc
     allControls = [nameControl, nameLabelText, dirLabelText, dirControl, button]
     
     def OnGotoLink(event):
-        option_service = wx.GetApp().GetService(OptionService.OptionsService)
-        option_service.OnOption(option_name = OptionService.GetOptionName(OptionService.INTERPRETER_OPTION_NAME,OptionService.INTERPRETER_CONFIGURATIONS_ITEM_NAME))
+        ShowInterpreterOptionPage()
         choices,default_selection = interpretermanager.InterpreterManager().GetChoices()
         interpreterCombo.Clear()
         if len(choices) > 0:
             interpreterCombo.InsertItems(choices,0)
             interpreterCombo.SetSelection(default_selection)
-            wx.GetApp().AddInterpreters()
     parent.Bind(hl.EVT_HYPERLINK_LEFT, OnGotoLink,hyperLinkCtrl)
     
     def OnFindDirClick(event): 
@@ -809,3 +807,9 @@ class AGChoice(wx.Choice):
     def __init__(self, parent, id, choices=[]):
         super(AGChoice, self).__init__(parent=parent, id=id)
         self.AppendItems(choices)
+        
+def ShowInterpreterOptionPage():
+    option_service = wx.GetApp().GetService(OptionService.OptionsService)
+    option_service.OnOption(option_name = OptionService.GetOptionName(OptionService.INTERPRETER_OPTION_NAME,OptionService.INTERPRETER_CONFIGURATIONS_ITEM_NAME))
+    wx.GetApp().AddInterpreters()
+    

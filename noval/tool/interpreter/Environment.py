@@ -179,6 +179,8 @@ class EnvironmentPanel(wx.Panel):
         return is_environ_changed
         
     def IsEnvironChanged(self,dct):
+        if self.interpreter is None:
+            return False
         if len(dct) != self.interpreter.Environ.GetCount():
             return True
         for name in dct:

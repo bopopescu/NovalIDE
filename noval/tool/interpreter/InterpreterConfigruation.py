@@ -626,12 +626,7 @@ class InterpreterConfigurationPanel(wx.Panel):
         self.package_panel.LoadPackages(self._current_interpreter)
             
     def OnOK(self,optionsDialog):
-        if self._current_interpreter is None:
-            return True
-        current_interpreter = interpretermanager.InterpreterManager.GetCurrentInterpreter()
-        if current_interpreter is None:
-            utils.GetLogger().warn("there is no interpreter load success")
-            return True
+        
         is_pythonpath_changed = self.path_panel.GetPythonPathList()
         self._interprter_configuration_changed = self._interprter_configuration_changed or is_pythonpath_changed
         try:
@@ -643,8 +638,13 @@ class InterpreterConfigurationPanel(wx.Panel):
         if self._interprter_configuration_changed:
             self.SaveInterpreterConfiguration()
             
-        #if current interpreter has been removed,use the default interprter as current interpreter
-        interpreter = interpretermanager.InterpreterManager().GetInterpreterByName(current_interpreter.Name)
+        current_interpreter = interpretermanager.InterpreterManager.GetCurrentInterpreter()
+        if current_interpreter is not None:
+            #if current interpreter has been removed,use the default interprter as current interpreter
+            interpreter = interpretermanager.InterpreterManager().GetInterpreterByName(current_interpreter.Name)
+        else:
+            #set default interpreter as current interpreter
+            interpreter = interpretermanager.InterpreterManager().GetDefaultInterpreter()
         if current_interpreter != interpreter:
             interpretermanager.InterpreterManager.SetCurrentInterpreter(interpretermanager.InterpreterManager().GetDefaultInterpreter())
 
@@ -656,14 +656,11 @@ class InterpreterConfigurationPanel(wx.Panel):
         for row in range(self.dvlc.GetStore().GetCount()):
             interpreter = self._interpreters[row]
             interpreter.Name = self.dvlc.GetTextValue(row,0)
-            if self.dvlc.GetTextValue(row,3) == _(YES_FLAG) and not interpreter.Default:
+            if self.dvlc.GetTextValue(row,3) == _(YES_FLAG) and interpreter != interpretermanager.InterpreterManager().GetDefaultInterpreter():
                 interpretermanager.InterpreterManager().SetDefaultInterpreter(interpreter)
         interpretermanager.InterpreterManager().SavePythonInterpretersConfig()
         
     def OnCancel(self,optionsDialog):
-        #application has no interpreter
-        if interpretermanager.InterpreterManager.GetCurrentInterpreter() is None:
-            return True
         for interpreter in interpretermanager.InterpreterManager.interpreters:
             if interpreter.IsLoadingPackage:
                 interpreter.StopLoadingPackage()
@@ -675,7 +672,6 @@ class InterpreterConfigurationPanel(wx.Panel):
             if ret == wx.YES:
                 self.OnOK(optionsDialog)
         return True
-            
         
 class AnalyseProgressDialog(wx.ProgressDialog):
     

@@ -170,6 +170,7 @@ class Executor(object):
         if path:
             return path
         wx.MessageBox(_("To proceed we need to know the location of the python.exe you would like to use.\nTo set this, go to Tools-->Options and use the 'Python Inpterpreter' panel to configuration a interpreter.\n"), _("Python Executable Location Unknown"))
+        UICommon.ShowInterpreterOptionPage()
         return None
     GetPythonExecutablePath = staticmethod(GetPythonExecutablePath)
 
@@ -2397,9 +2398,7 @@ class DebuggerService(Service.Service):
             if BaseDebuggerUI.DebuggerRunning():
                 prompt = True
             else:
-                option_service = wx.GetApp().GetService(OptionService.OptionsService)
-                option_service.OnOption(option_name = OptionService.GetOptionName(OptionService.INTERPRETER_OPTION_NAME,OptionService.INTERPRETER_CONFIGURATIONS_ITEM_NAME))
-                wx.GetApp().AddInterpreters()
+                UICommon.ShowInterpreterOptionPage()
         else:
             interpreter = cb.GetClientData(selection)
             if interpreter != wx.GetApp().GetCurrentInterpreter() and BaseDebuggerUI.DebuggerRunning():

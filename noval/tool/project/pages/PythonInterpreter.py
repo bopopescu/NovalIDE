@@ -6,6 +6,7 @@ import noval.tool.service.OptionService as OptionService
 import BasePanel
 import noval.util.utils as utils
 import noval.tool.project.RunConfiguration as RunConfiguration
+import noval.tool.UICommon as UICommon
 
 class PythonInterpreterPanel(BasePanel.BasePanel):
     def __init__(self,filePropertiesService,parent,dlg_id,size,selected_item):
@@ -44,14 +45,12 @@ class PythonInterpreterPanel(BasePanel.BasePanel):
         return True
         
     def GotoInterpreterConfiguration(self,event):
-        option_service = wx.GetApp().GetService(OptionService.OptionsService)
-        option_service.OnOption(option_name = OptionService.GetOptionName(OptionService.INTERPRETER_OPTION_NAME,OptionService.INTERPRETER_CONFIGURATIONS_ITEM_NAME))
+        UICommon.ShowInterpreterOptionPage()
         choices,default_selection = interpretermanager.InterpreterManager().GetChoices()
         self.interpreterCombo.Clear()
         if len(choices) > 0:
             self.interpreterCombo.InsertItems(choices,0)
             self.interpreterCombo.SetSelection(default_selection)
-            wx.GetApp().AddInterpreters()
 
     def GetInterpreterName(self):
         return self.interpreterCombo.GetValue()

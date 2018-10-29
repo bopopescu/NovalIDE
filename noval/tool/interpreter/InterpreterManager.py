@@ -303,7 +303,6 @@ class InterpreterAdmin():
         #first interpreter should be the default interpreter by default
         if 1 == len(self.interpreters):
             self.MakeDefaultInterpreter()
-            self.SetCurrentInterpreter(self.DefaultInterpreter)
         return interpreter
 
     def GetInterpreterById(self,id):
@@ -311,4 +310,8 @@ class InterpreterAdmin():
             if interpreter.Id == id:
                 return interpreter
         return None
+        
+    def MakeDefaultInterpreter(self):
+        self.interpreters[0].Default = True
+
     

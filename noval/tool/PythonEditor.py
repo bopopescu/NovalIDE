@@ -106,7 +106,10 @@ class PythonDocument(CodeEditor.CodeDocument):
         interpreter = wx.GetApp().GetCurrentInterpreter()
         #when python version is 2,should check the encoding declare if python file contain
         #chinse character,which python3 is not necessary
-        if interpreter.IsV2():
+        is_v2 = False
+        if interpreter is None or interpreter.IsV2():
+            is_v2 = True
+        if is_v2:
             if None == declare_encoding and self.file_encoding != self.ASC_FILE_ENCODING:
                 ret = wx.MessageBox(_("Detect your python file contain chinese character,please insert encoding declare.\n\nClick 'Yes' to insert,or 'No' to cancel?"),_("Declare Encoding"),style = wx.YES_NO | wx.ICON_QUESTION)
                 if ret == wx.YES:
@@ -115,8 +118,8 @@ class PythonDocument(CodeEditor.CodeDocument):
                         lines = view.GetTopLines(consts.ENCODING_DECLARE_LINE_NUM)
                         declare_encoding = self.get_coding_spec(lines)
         if declare_encoding is None:
-            #only python2 must need encoding declare,while python3 is not must need
-            if interpreter.IsV2():
+            #if not decalare encoding,then set file encoding default to ascii encoding
+            if is_v2:
                 declare_encoding = CodeEditor.CodeDocument.DEFAULT_FILE_ENCODING
                 if self.IsDocEncodingChanged(declare_encoding):
                     self.file_encoding = declare_encoding

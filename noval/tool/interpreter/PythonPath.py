@@ -45,6 +45,8 @@ class PythonPathPanel(wx.Panel,PythonPathMixin.BasePythonPathPanel):
         return is_pythonpath_changed
         
     def IsPythonPathChanged(self,python_path_list):
+        if self._interpreter is None:
+            return False
         if len(python_path_list) != len(self._interpreter.PythonPathList):
             return True
         for pythonpath in python_path_list:
@@ -56,6 +58,8 @@ class PythonPathPanel(wx.Panel,PythonPathMixin.BasePythonPathPanel):
         return self.IsPythonPathChanged(self.GetPythonPathFromPathList())
         
     def GetPythonPathFromPathList(self):
+        if self._interpreter is None:
+            return []
         path_list = self.GetPathList()
         python_path_list = []
         for path in path_list:
