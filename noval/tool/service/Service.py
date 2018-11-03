@@ -173,7 +173,6 @@ class ServiceView(wx.EvtHandler):
         page = ServiceView.bottomTab.GetPage(index)
         if hasattr(page, 'StopAndRemoveUI'):
             page.StopAndRemoveUI(None)
-        self.CheckNotebookPageCount()
     
     def CheckNotebookPageCount(self):
         '''
@@ -466,6 +465,16 @@ class Service(BaseService):
         index = -1
         for i in range(nb.GetPageCount()):
             if nb.GetPage(i) == self.GetView()._control:
+                index = i
+                break
+        return index
+    
+    @staticmethod
+    def GetDebuggerPageIndex(page):
+        nb = ServiceView.bottomTab
+        index = -1
+        for i in range(nb.GetPageCount()):
+            if nb.GetPage(i) == page:
                 index = i
                 break
         return index

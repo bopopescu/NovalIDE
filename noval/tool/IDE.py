@@ -163,7 +163,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import interpreter.GeneralConfiguration as generalconfiguration
         import ColorFont
         import project.Property as Property
-##        import UpdateLogIniService
+        import service.logs.LogService as LogService
                             
         _EDIT_LAYOUTS = True
         self._open_project_path = None                        
@@ -277,6 +277,8 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             helpService             = self.InstallService(HelpService.HelpService(helpPath))
         if self.GetUseTabbedMDI():
             windowService       = self.InstallService(wx.lib.pydocview.WindowMenuService())
+        if wx.GetApp().GetDebug():
+            loggingService          = self.InstallService(LogService.LogService())
         
         # order of these added determines display order of Options Panels
         optionsService.AddOptionsPanel(OptionService.ENVIRONMENT_OPTION_NAME,OptionService.PROJECT_ITEM_NAME,ProjectEditor.ProjectOptionsPanel)

@@ -15,6 +15,7 @@ import py_compile
 import getpass
 import noval.util.fileutils as fileutils
 from noval.util.exceptions import PromptErrorException
+import noval.util.utils as utils
 
 _ = wx.GetTranslation
 
@@ -135,7 +136,7 @@ class BuiltinPythonInterpreter(Interpreter):
         self._sys_path_list = sys.path
         self._python_path_list = []
         self._version = ".".join([str(sys.version_info.major),str(sys.version_info.minor),str(sys.version_info.micro)])
-        self._builtins = sys.builtin_module_names
+        self._builtins = list(sys.builtin_module_names)
         self.Environ = PythonEnvironment()
         self._packages = {}
         self._help_path = ""
@@ -213,7 +214,8 @@ class BuiltinPythonInterpreter(Interpreter):
             self._builtin_module_name = self.PYTHON3_BUILTIN_MODULE_NAME
         self._builtins = kwargs.get('builtins')
         self._sys_path_list = kwargs.get('sys_path_list')
-        self._python_path_list = kwargs.get('python_path_list')
+        python_path_list = kwargs.get('python_path_list')
+        self._python_path_list = [pythonpath for pythonpath in python_path_list if str(pythonpath) != '']
         self._is_builtin = kwargs.get('is_builtin')
         
     def IsV2(self):
@@ -320,12 +322,16 @@ class PythonInterpreter(BuiltinPythonInterpreter):
 
     def IsV2(self):
         versions = self.Version.split('.')
+        if not versions[0].isdigit():
+            return False
         if int(versions[0]) == 2:
             return True
         return False
 
     def IsV3(self):
         versions = self.Version.split('.')
+        if not versions[0].isdigit():
+            return False
         if int(versions[0]) >= 3:
             return True
         return False
@@ -385,18 +391,25 @@ class PythonInterpreter(BuiltinPythonInterpreter):
             run_cmd ="%s -c \"import sys;print sys.path\"" % (strutils.emphasis_path(self.Path))
         elif self.IsV3():
             run_cmd ="%s -c \"import sys;print (sys.path)\"" % (strutils.emphasis_path(self.Path))
+        else:
+            utils.GetLogger().warn("interpreter path %s could not get python version" % self.Path)
+            self._is_valid_interpreter = False
+            return
         output = GetCommandOutput(run_cmd).strip()
         lst = eval(output)
         self._sys_path_list = lst
         
     def GetBuiltins(self):
+        if not self._is_valid_interpreter :
+            return
         if self.IsV2():
             run_cmd ="%s -c \"import sys;print sys.builtin_module_names\"" % (strutils.emphasis_path(self.Path))
         elif self.IsV3():
             run_cmd ="%s -c \"import sys;print (sys.builtin_module_names)\"" % (strutils.emphasis_path(self.Path))
         output = GetCommandOutput(run_cmd).strip()
         lst = eval(output)
-        self._builtins = lst
+        #should convert tuple type to list
+        self._builtins = list(lst)
         
     def GetPythonLibPath(self):
         if self.IsV2():

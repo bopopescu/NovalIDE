@@ -18,7 +18,11 @@ import pickle
 import signal
 from noval.dummy.userdb import UserDataDb
 import noval.util.utils as utils
-from noval.tool.consts import _
+from noval.tool.consts import _,UPDATE_ONCE_STARTUP,\
+        UPDATE_ONCE_DAY,UPDATE_ONCE_WEEK,UPDATE_ONCE_MONTH,NEVER_UPDATE_ONCE
+import factory
+import datetime
+import copy
 
 class ModuleLoader(object):
     CHILD_KEY = "childs"
@@ -271,21 +275,27 @@ class IntellisenceDataLoader(object):
         t.start()
         
     def LoadInterperterData(self,interpreter):
+        utils.UpdateStatusBar(_("Loading intellisence database"))
         self.module_dicts.clear()
-        self.import_list = []
+        #should copy builtin list to import_list,otherwise it will change
+        #the interpreter.Builtins when load import list
+        self.import_list = copy.copy(interpreter.Builtins)
         root_path = os.path.join(self._data_location,str(interpreter.Id))
         intellisence_data_path = os.path.join(root_path,interpreter.Version)
         if not os.path.exists(intellisence_data_path):
+            utils.UpdateStatusBar(_("Finish load Intellisence database"))
             return
         self.LoadIntellisenceDirData(intellisence_data_path)
         self.LodBuiltInData(interpreter)
         self.LoadImportList()
         self.LoadBuiltinModule(interpreter)
+        utils.UpdateStatusBar(_("Finish load Intellisence database"))
         
     def LoadImportList(self):
         for key in self.module_dicts.keys():
             if key.find(".") == -1:
-                self.import_list.append(key)
+                if key not in self.import_list:
+                    self.import_list.append(key)
         self.import_list.sort(CmpMember)
         
     @property
@@ -332,13 +342,19 @@ class IntellisenceManager(object):
     def IsRunning(self):
         return self._is_running
         
+    def GetInterpreterDatabasePath(self,interpreter):
+        return os.path.join(self.data_root_path,str(interpreter.Id))
+
+    def GetInterpreterIntellisenceDataPath(self,interpreter):
+        return os.path.join(self.GetInterpreterDatabasePath(interpreter),interpreter.Version)
+        
     def generate_intellisence_data(self,interpreter,progress_dlg = None,load_data_end=False):
         if interpreter.IsBuiltIn:
             return
         sys_path_list = interpreter.SysPathList
         script_path = os.path.join(sysutilslib.mainModuleDir, "noval", "parser", "factory.py")
         database_version = config.DATABASE_VERSION
-        cmd_list = [interpreter.Path,script_path,os.path.join(self.data_root_path,str(interpreter.Id)),\
+        cmd_list = [interpreter.Path,script_path,self.GetInterpreterDatabasePath(interpreter),\
                     database_version]
         if sysutilslib.isWindows():
             startupinfo = subprocess.STARTUPINFO()
@@ -379,9 +395,35 @@ class IntellisenceManager(object):
         UserDataDb.get_db().ShareUserData()
         UserDataDb.get_db().RecordStart()
         
+    def IsInterpreterNeedUpdateDatabase(self,interpreter):
+        update_interval_option = utils.ProfileGetInt("DatabaseUpdateInterval",UPDATE_ONCE_STARTUP)
+        if update_interval_option == UPDATE_ONCE_STARTUP:
+            return True
+            
+        try:
+            #if could not find last update time,update database force
+            intellisence_data_path = self.GetInterpreterIntellisenceDataPath(interpreter)
+            last_update_time = factory.GetLastUpdateTime(intellisence_data_path)
+            last_datetime = datetime.datetime.strptime(last_update_time, factory.ISO_8601_DATETIME_FORMAT)
+        except:
+            return True
+        now_datetime = datetime.datetime.now()
+        if update_interval_option == UPDATE_ONCE_DAY:
+            return now_datetime >  last_datetime + datetime.timedelta(hours=24)
+        elif update_interval_option == UPDATE_ONCE_WEEK:
+            return now_datetime >  last_datetime + datetime.timedelta(days=7)
+        elif update_interval_option == UPDATE_ONCE_MONTH:
+            return now_datetime >  last_datetime + datetime.timedelta(days=30)
+        elif update_interval_option == NEVER_UPDATE_ONCE:
+            return False
+
     def generate_default_intellisence_data(self):
         current_interpreter = interpretermanager.InterpreterManager().GetCurrentInterpreter()
         if current_interpreter is None:
+            return
+        if not self.IsInterpreterNeedUpdateDatabase(current_interpreter):
+            utils.GetLogger().info("interpreter %s is no need to update database" % current_interpreter.Name)
+            self.load_intellisence_data(current_interpreter)
             return
         try:
             self.generate_intellisence_data(current_interpreter,load_data_end=True)
@@ -391,9 +433,7 @@ class IntellisenceManager(object):
                                         os.path.join(self.data_root_path,str(current_interpreter.Id)),e)
         
     def load_intellisence_data(self,interpreter):
-        utils.UpdateStatusBar(_("Loading intellisence database"))
         self._loader.Load(interpreter)
-        utils.UpdateStatusBar(_("Finish load Intellisence database"))
         
     def GetImportList(self):
         return self._loader.ImportList

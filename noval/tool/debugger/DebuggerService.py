@@ -66,6 +66,7 @@ import pickle
 from noval.util.exceptions import StartupPathNotExistError,PromptErrorException
 import noval.tool.project.RunConfiguration as RunConfiguration
 import Watchs
+import noval.tool.service.MessageService as MessageService
 
 import sys
 reload(sys)
@@ -443,9 +444,12 @@ class RunCommandUI(wx.Panel):
                 return False
 
         self.StopExecution(unbind_evt=True)
-        index = self._noteBook.GetSelection()
+        index = DebuggerService.GetDebuggerPageIndex(self)
         self._noteBook.GetPage(index).Show(False)
         self._noteBook.RemovePage(index)
+        ###check notebook page count,if is 0,then hidden the bottom sash frame window
+        ###shoud use message view,while DebuggerView is not TabbedServiceView type
+        wx.GetApp().GetService(MessageService.MessageService).GetView().CheckNotebookPageCount()
         return True
         
     def RestartProcess(self):
@@ -866,12 +870,16 @@ class BaseDebuggerUI(wx.Panel):
         self.StopExecution(None)
         if self in BaseDebuggerUI.debuggers:
             BaseDebuggerUI.debuggers.remove(self)
-        index = self._parentNoteBook.GetSelection()
+        index = DebuggerService.GetDebuggerPageIndex(self)
         self._parentNoteBook.GetPage(index).Show(False)
         self._parentNoteBook.RemovePage(index)
         if self._callback.IsWait():
             utils.GetLogger().warn("debugger callback is still wait for rpc when debugger stoped.will stop manualy")
             self._callback.StopWait()
+            
+        ###check notebook page count,if is 0,then hidden the bottom sash frame window
+        ###shoud use message view,while DebuggerView is not TabbedServiceView type
+        wx.GetApp().GetService(MessageService.MessageService).GetView().CheckNotebookPageCount()
         return True
 
     def OnAddWatch(self, event):

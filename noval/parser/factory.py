@@ -11,8 +11,15 @@ import functools
 import multiprocessing
 import fileparser
 import utils
+import datetime
 
 DATABASE_FILE = "version"
+UPDATE_FILE = 'update_time'
+
+ISO_8601_DATE_FORMAT = "%Y-%m-%d"
+ISO_8601_TIME_FORMAT = "%H:%M:%S"
+ISO_8601_DATETIME_FORMAT = "%s %s" %(ISO_8601_DATE_FORMAT,
+                                     ISO_8601_TIME_FORMAT)
 
 def generate_builtin_data(dest_path):
     def make_python2_builtin_types(builtin_type,recursive=True):
@@ -88,6 +95,15 @@ def LoadDatabaseVersion(database_location):
 def SaveDatabaseVersion(database_location,new_database_version):
     with open(os.path.join(database_location,DATABASE_FILE),"w") as f:
         f.write(new_database_version)
+        
+def GetLastUpdateTime(database_location):
+    with open(os.path.join(database_location,UPDATE_FILE)) as f:
+        return f.read()
+        
+def SaveLastUpdateTime(database_location):
+    with open(os.path.join(database_location,UPDATE_FILE),"w") as f:
+        datetime_str = datetime.datetime.strftime(datetime.datetime.now(), ISO_8601_DATETIME_FORMAT)
+        f.write(datetime_str)
         
 def NeedRenewDatabase(database_location,new_database_version):
     if not os.path.exists(os.path.join(database_location,DATABASE_FILE)):
@@ -175,6 +191,7 @@ def generate_intelligent_data_by_pool(root_path,new_database_version):
     process_sys_modules(dest_path)
     if need_renew_database:
         SaveDatabaseVersion(dest_path,new_database_version)
+    SaveLastUpdateTime(dest_path)
      
 def scan_sys_path(src_path,dest_path,need_renew_database):
 

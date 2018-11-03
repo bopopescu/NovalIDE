@@ -2532,15 +2532,18 @@ class ProjectView(wx.lib.docview.View):
     def SaveProject(self,event):
         doc = self.GetDocument()
         if doc.IsModified():
+            wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
             wx.GetApp().GetTopWindow().PushStatusText(_("Project is saving..."))
             if doc.OnSaveDocument(doc.GetFilename()):
                 wx.GetApp().GetTopWindow().PushStatusText(_("Project save success."))
             else:
                 wx.GetApp().GetTopWindow().PushStatusText(_("Project save failed."))
+            wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_DEFAULT))
             
     def CleanProject(self):
         doc = self.GetDocument()
         path = os.path.dirname(doc.GetFilename())
+        wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
         for root,path,files in os.walk(path):
             for filename in files:
                 fullpath = os.path.join(root,filename)
@@ -2552,8 +2555,10 @@ class ProjectView(wx.lib.docview.View):
                     except:
                         pass
         wx.GetApp().GetTopWindow().PushStatusText(_("Clean Completed."))
+        wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_DEFAULT))
         
     def ArchiveProject(self):
+        wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
         doc = self.GetDocument()
         path = os.path.dirname(doc.GetFilename())
         try:
@@ -2567,6 +2572,7 @@ class ProjectView(wx.lib.docview.View):
             msg = unicode(e)
             wx.MessageBox(msg,_("Archive Error"),style = wx.OK|wx.ICON_ERROR)
             wx.GetApp().GetTopWindow().PushStatusText(_("Archive Error"))
+        wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_DEFAULT))
                 
     def BuildFileMaps(self,file_list):
         d = {}
@@ -2911,8 +2917,9 @@ class ProjectView(wx.lib.docview.View):
                 self._treeCtrl.SortChildren(rootItem)
                 for item in folderItems:
                     self._treeCtrl.SortChildren(item)
-    
-                self.LoadFolderState()
+                    
+                if utils.ProfileGetInt("LoadFolderState", True):
+                    self.LoadFolderState()
     
                 self._treeCtrl.SetFocus()
                 (child, cookie) = self._treeCtrl.GetFirstChild(self._treeCtrl.GetRootItem())
@@ -4448,12 +4455,15 @@ class ProjectOptionsPanel(wx.Panel):
         config = wx.ConfigBase_Get()
         self._projSaveDocsCheckBox = wx.CheckBox(self, -1, _("Remember open projects"))
         self._promptSaveCheckBox = wx.CheckBox(self, -1, _("Warn when run and save modify project files"))
+        self._loadFolderStateCheckBox = wx.CheckBox(self, -1, _("Load folder state when open project"))
         self._projSaveDocsCheckBox.SetValue(config.ReadInt("ProjectSaveDocs", True))
+        self._loadFolderStateCheckBox.SetValue(config.ReadInt("LoadFolderState", True))
         self._promptSaveCheckBox.SetValue(config.ReadInt("PromptSaveProjectFile", True))
         projectBorderSizer = wx.BoxSizer(wx.VERTICAL)
         projectSizer = wx.BoxSizer(wx.VERTICAL)
         projectSizer.Add(self._projSaveDocsCheckBox, 0, wx.ALL, HALF_SPACE)
         projectSizer.Add(self._promptSaveCheckBox, 0, wx.ALL, HALF_SPACE)
+        projectSizer.Add(self._loadFolderStateCheckBox, 0, wx.ALL, HALF_SPACE)
         if not ACTIVEGRID_BASE_IDE:
             self._projShowWelcomeCheckBox = wx.CheckBox(self, -1, _("Show Welcome Dialog"))
             self._projShowWelcomeCheckBox.SetValue(config.ReadInt("RunWelcomeDialog2", True))
@@ -4488,6 +4498,7 @@ class ProjectOptionsPanel(wx.Panel):
         config = wx.ConfigBase_Get()
         config.WriteInt("ProjectSaveDocs", self._projSaveDocsCheckBox.GetValue())
         config.WriteInt("PromptSaveProjectFile", self._promptSaveCheckBox.GetValue())
+        config.WriteInt("LoadFolderState", self._loadFolderStateCheckBox.GetValue())
         if not ACTIVEGRID_BASE_IDE:
             config.WriteInt("RunWelcomeDialog2", self._projShowWelcomeCheckBox.GetValue())
             config.Write(APP_LAST_LANGUAGE, self._langCtrl.GetStringSelection())

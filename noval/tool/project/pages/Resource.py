@@ -1,6 +1,6 @@
 import wx
 import os
-from noval.tool.consts import SPACE,HALF_SPACE,_
+from noval.tool.consts import SPACE,HALF_SPACE,_,ERROR_OK
 import noval.util.fileutils as fileutils
 import noval.tool.images as images
 import time

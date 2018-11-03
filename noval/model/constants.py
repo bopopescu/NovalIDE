@@ -18,3 +18,4 @@ _("Project References")
 
 _("Yes")
 _("No")
+_("Logs")

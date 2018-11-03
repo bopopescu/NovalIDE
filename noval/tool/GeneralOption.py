@@ -188,12 +188,7 @@ class GeneralOptionsPanel(wx.Panel):
             choices.append(self._mdiChoice)
             if wx.Platform == "__WXMSW__":
                 choices.append(self._winMdiChoice)
-            #when language is chinese,set radiobox width to fit ui
-            if GetLangId(config.Read("Language","")) == wx.LANGUAGE_ENGLISH_US:
-                size = (-1,-1)
-            else:
-                size = (400,-1)
-            self._documentRadioBox = wx.RadioBox(self, -1, _("Document Display Style"),size=size,
+            self._documentRadioBox = wx.RadioBox(self, -1, _("Document Display Style"),size=(-1,-1),
                                           choices = choices,
                                           majorDimension=1,
                                           )
@@ -217,7 +212,7 @@ class GeneralOptionsPanel(wx.Panel):
         optionsBorderSizer = wx.BoxSizer(wx.VERTICAL)
         optionsSizer = wx.BoxSizer(wx.VERTICAL)
         if self._AllowModeChanges():
-            optionsSizer.Add(self._documentRadioBox, 0, wx.ALL, HALF_SPACE)
+            optionsSizer.Add(self._documentRadioBox, 0, wx.LEFT|wx.EXPAND, HALF_SPACE)
         optionsSizer.Add(self._showTipsCheckBox, 0, wx.ALL, HALF_SPACE)
         optionsSizer.Add(self._chkUpdateCheckBox, 0, wx.ALL, HALF_SPACE)
 
@@ -273,7 +268,7 @@ class GeneralOptionsPanel(wx.Panel):
 
         optionsSizer.Add(lsizer, 0, wx.ALL, HALF_SPACE)
 
-        optionsBorderSizer.Add(optionsSizer, 0, wx.ALL, SPACE)
+        optionsBorderSizer.Add(optionsSizer, 0, wx.ALL|wx.EXPAND, SPACE)
         self.SetSizer(optionsBorderSizer)
         self.Layout()
         self._documentInterfaceMessageShown = False

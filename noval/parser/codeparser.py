@@ -1,4 +1,3 @@
-import wx
 import ast
 import nodeast
 import os
@@ -77,9 +76,10 @@ def get_attribute_name(node):
 class CodeParser(object):
     """description of class"""
 
-    def __init__(self,code_file_path):
+    def __init__(self,code_file_path,is_debug=False):
         self._code_file_path = code_file_path
         self._syntax_error_msg = ""
+        self._is_debug = is_debug
         
     @property
     def CodeFilePath(self):
@@ -110,8 +110,7 @@ class CodeParser(object):
             nodeast.BuiltinImportNode(module)
             return module
         except Exception as e:
-          ##  print (e)
-            if wx.GetApp().GetDebug():
+            if self._is_debug:
                 tp,val,tb = sys.exc_info()
                 traceback.print_exception(tp, val, tb)
             self._syntax_error_msg = unicode(e)

@@ -22,7 +22,7 @@ class PythonModuleAnalyzer(object):
 
     def LoadModule(self,filename):
         self._status = self.STATUS_PARSING_SYNTAX
-        self._code_parser = codeparser.CodeParser(filename)
+        self._code_parser = codeparser.CodeParser(filename,wx.GetApp().GetDebug())
         module = self._code_parser.ParseContent(self._mod_view.GetCtrl().GetValue(),self._mod_view.GetDocument().file_encoding)
         if module is None:
             self.FinishAnalyzing()

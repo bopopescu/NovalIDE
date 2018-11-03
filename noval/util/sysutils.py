@@ -50,6 +50,9 @@ def setRelease(value):
 
 def isWindows():
     return os.name == 'nt'
+    
+def isLinux():
+    return os.name == "posix"
 
 __isServer = False
 

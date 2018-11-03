@@ -186,6 +186,8 @@ class EnvironmentPanel(wx.Panel):
         for name in dct:
             if not self.interpreter.Environ.Exist(name):
                 return True
+            elif dct[name] != self.interpreter.Environ[name]:
+                return True
         return False
         
     def CheckEnviron(self):

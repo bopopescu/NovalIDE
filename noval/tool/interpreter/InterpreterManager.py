@@ -128,7 +128,8 @@ class InterpreterManager(Singleton):
                     self.SetDefaultInterpreter(interpreter)
                 data = {
                     'version': l['version'],
-                    'builtins': l['builtins'],
+                    #should convert tuple type to list
+                    'builtins': list(l['builtins']),
                     #'path_list' is the old key name of sys_path_list,we should make compatible of old version
                     'sys_path_list': l.get('sys_path_list',l.get('path_list')),
                     'python_path_list': l.get('python_path_list',[]),
