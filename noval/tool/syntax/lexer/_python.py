@@ -132,6 +132,19 @@ class SyntaxLexer(syndata.BaseLexer):
     def GetSampleCode(self):
         sample_file_path = os.path.join(appdirs.GetAppDataDirLocation(),"sample","python.sample")
         return self.GetSampleCodeFromFile(sample_file_path)
+        
+    def GetCommentTemplate(self):
+        return '''#-------------------------------------------------------------------------------
+# Name:        {File}
+# Purpose:
+#
+# Author:      {Author}
+#
+# Created:     {Date}
+# Copyright:   (c) {Author} {Year}
+# Licence:     <your licence>
+#-------------------------------------------------------------------------------
+'''
 
 #-----------------------------------------------------------------------------#
 

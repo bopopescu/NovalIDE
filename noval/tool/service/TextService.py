@@ -8,6 +8,7 @@ import os
 import noval.util.strutils as strutils
 import noval.util.sysutils as sysutilslib
 import noval.tool.consts as consts
+from noval.tool.syntax import syntax
 _ = wx.GetTranslation
 
 #----------------------------------------------------------------------------
@@ -37,18 +38,6 @@ INSERT_FILE_CONTENT_ID = wx.NewId()
 INSERT_DECLARE_ENCODING_ID = wx.NewId()
 ID_TAB_TO_SPACE =  wx.NewId()
 ID_SPACE_TO_TAB =  wx.NewId()
-
-PYTHON_COMMENT_TEMPLATE = '''#-------------------------------------------------------------------------------
-# Name:        {File}
-# Purpose:
-#
-# Author:      {Author}
-#
-# Created:     {Date}
-# Copyright:   (c) {Author} {Year}
-# Licence:     <your licence>
-#-------------------------------------------------------------------------------
-'''
 
 SPACE = 10
 HALF_SPACE = 5
@@ -291,9 +280,13 @@ class TextService(Service.BaseService):
         elif id == INSERT_COMMENT_TEMPLATE_ID:
             file_name = os.path.basename(text_view.GetDocument().GetFilename())
             now_time = datetime.datetime.now()
-            comment_template = PYTHON_COMMENT_TEMPLATE.format(File=file_name,Author=getpass.getuser(),Date=now_time.date(),Year=now_time.date().year)
-            text_view.GetCtrl().GotoPos(0)
-            text_view.AddText(comment_template)
+            langid = text_view.GetLangId()
+            lexer = syntax.LexerManager().GetLexer(langid)
+            comment_template = lexer.GetCommentTemplate()
+            if comment_template is not None:
+                comment_template_content = comment_template.format(File=file_name,Author=getpass.getuser(),Date=now_time.date(),Year=now_time.date().year)
+                text_view.GetCtrl().GotoPos(0)
+                text_view.AddText(comment_template_content)
             return True
         elif id == INSERT_FILE_CONTENT_ID:
             dlg = wx.FileDialog(wx.GetApp().GetTopWindow(),_("Select File Path"),
@@ -363,7 +356,13 @@ class TextService(Service.BaseService):
             return True
         elif id == INSERT_COMMENT_TEMPLATE_ID \
                 or id == INSERT_DECLARE_ENCODING_ID:
-            event.Enable(text_view is not None and text_view.GetLangId() == lang.ID_LANG_PYTHON )
+            if text_view is not None:
+                langid = text_view.GetLangId()
+                lexer = syntax.LexerManager().GetLexer(langid)
+                enabled = lexer.IsCommentTemplateEnable()
+            else:
+                enabled = False
+            event.Enable(enabled )
             return True
         else:
             return False

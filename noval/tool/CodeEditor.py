@@ -498,7 +498,6 @@ class CodeView(STCTextEditor.TextView):
         self.GetCtrl().ReplaceSelection(text)
         self.GetCtrl().SetSelection(selStart + len(text), selStart)
 
-
     def OnUpdate(self, sender = None, hint = None):
         if wx.lib.docview.View.OnUpdate(self, sender, hint):
             return
@@ -513,6 +512,10 @@ class CodeView(STCTextEditor.TextView):
             dbg_service = wx.GetApp().GetService(debugger.DebuggerService.DebuggerService)
             if dbg_service:
                 dbg_service.SetCurrentBreakpointMarkers(self)
+                
+    def GetLangId(self):
+        lexer = self.GetCtrl().GetLangLexer()
+        return lexer.GetLangId()
 
 
 class CodeService(TextService.TextService):
@@ -764,6 +767,8 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         #cancel calltip
         if self.CallTipActive():
             self.CallTipCancel()
+        #when popup right menu,activate the document view
+        wx.GetApp().GetDocumentManager().ActivateView(self._dynSash._view)
         #Hold onto the current line number, no way to get it later.
         self._rightClickPosition = self.PositionFromPoint(event.GetPosition())
         self._rightClickLine = self.LineFromPosition(self._rightClickPosition)
@@ -1168,7 +1173,6 @@ class CodeCtrl(STCTextEditor.TextCtrl):
             
     def GetLangLexer(self):
         document = self._dynSash._view.GetDocument()
-        file_path_name = document.GetFilename()
         file_ext = document.GetDocumentTemplate().GetDefaultExtension()
         lexer_manager = syntax.LexerManager()
         lexer = lexer_manager.GetLexer(lexer_manager.GetLangIdFromExt(file_ext))

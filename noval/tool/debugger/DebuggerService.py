@@ -16,7 +16,7 @@ import wx.lib.dialogs
 import wx.gizmos
 import wx._core
 import wx.lib.pydocview
-from noval.tool import BaseCtrl,CodeEditor,PythonEditor
+from noval.tool import CodeEditor,PythonEditor
 from noval.tool.service import Service
 import noval.model.projectmodel as projectmodel
 from noval.tool.IDE import ACTIVEGRID_BASE_IDE
@@ -309,10 +309,12 @@ class RunCommandUI(wx.Panel):
                     return False
         return True
 
-    def __init__(self, parent, id, fileName,run_parameter):
+    def __init__(self, service,parent, id, fileName,run_parameter):
         wx.Panel.__init__(self, parent, id)
+        self._service = service
         self._noteBook = parent
         self._run_parameter = run_parameter
+        self._restarted = False
         threading._VERBOSE = _VERBOSE
         # GUI Initialization follows
         sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -341,18 +343,7 @@ class RunCommandUI(wx.Panel):
         sizer.Add(self._textCtrl, 1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 1)
         self._textCtrl.HideLineNumber()
         self._textCtrl.SetReadOnly(False)
-        if wx.Platform == '__WXMSW__':
-            font = "Courier New"
-        else:
-            font = "Courier"
-        self._font = wx.Font(9, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = font)
-        self._textCtrl.SetFont(self._font)
-        self._textCtrl.SetFontColor(wx.BLACK)
         self._textCtrl.StyleClearAll()
-
-        wx.stc.EVT_STC_DOUBLECLICK(self._textCtrl, self._textCtrl.GetId(), self.OnDoubleClick)        
-        wx.stc.EVT_STC_MODIFIED(self._textCtrl, self._textCtrl.GetId(), self.OnModify)    
-        wx.EVT_KEY_DOWN(self._textCtrl, self.OnKeyPressed)
 
         self.SetSizer(sizer)
         sizer.Fit(self)
@@ -362,7 +353,7 @@ class RunCommandUI(wx.Panel):
         self._executor = Executor(self._run_parameter, self, callbackOnExit=self.ExecutorFinished)
         self.Bind(EVT_UPDATE_STDTEXT, self.AppendText)
         self.Bind(EVT_UPDATE_ERRTEXT, self.AppendErrorText)
-
+        self._textCtrl.SetExecutor(self._executor)
         RunCommandUI.runners.append(self)
 
     def __del__(self):
@@ -412,6 +403,11 @@ class RunCommandUI(wx.Panel):
         self._stopped = True
         self._textCtrl.SetReadOnly(True)
         self.UpdateAllRunnerTerminateAllUI()
+        if self._restarted:
+            wx.MilliSleep(250)
+            wx.Yield()
+            self.RestartRunProcess()
+            self._restarted = False
 
     def StopExecution(self,unbind_evt=False):
         if not self._stopped:
@@ -422,19 +418,10 @@ class RunCommandUI(wx.Panel):
             self._textCtrl.SetReadOnly(True)
 
     def AppendText(self, event):
-        self._textCtrl.SetReadOnly(False)
-        self._textCtrl.AddText(event.value)
-        self._textCtrl.ScrollToLine(self._textCtrl.GetLineCount())
+        self._textCtrl.AppendText(event.value)
 
     def AppendErrorText(self, event):
-        error_color_style = 2
-        self._textCtrl.StyleSetSpec(error_color_style, 'fore:#ff0000, back:#FFFFFF,face:%s,size:%d' % \
-                                    (self._font.GetFaceName(),self._font.GetPointSize())) 
-        pos = self._textCtrl.GetCurrentPos()
-        self._textCtrl.AddText(event.value)
-        self._textCtrl.StartStyling(pos, 2)
-        self._textCtrl.SetStyling(len(event.value), error_color_style)
-        self._textCtrl.ScrollToLine(self._textCtrl.GetLineCount())
+        self._textCtrl.AppendErrorText(event.value)
 
     def StopAndRemoveUI(self, event):
         if not self._stopped:
@@ -453,7 +440,7 @@ class RunCommandUI(wx.Panel):
         return True
         
     def RestartProcess(self):
-        self.StopExecution()
+        
         projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
         currentProj = projectService.GetCurrentProject()
         if currentProj is not None and currentProj.GetModel().FindFile(self._run_parameter.FilePath):
@@ -463,13 +450,14 @@ class RunCommandUI(wx.Panel):
             if openView:
                 openDoc = openView.GetDocument()
                 openDoc.Save()
-        while True:
-            if self._stopped:
-                break
-            wx.MilliSleep(250)
-            wx.Yield()
-        self._textCtrl.SetReadOnly(False)
-        self._textCtrl.ClearAll()
+        if not self._stopped:
+            self._restarted = True
+            self.StopExecution()
+        else:
+            self.RestartRunProcess()
+            
+    def RestartRunProcess(self):
+        self._textCtrl.ClearOutput()
         self._tb.EnableTool(self.KILL_PROCESS_ID, True)
         self._tb.EnableTool(self.TERMINATE_ALL_PROCESS_ID, True)
         self._stopped = False
@@ -500,74 +488,12 @@ class RunCommandUI(wx.Panel):
             
         elif id == self.RESTART_PROCESS_ID:
             self.RestartProcess()
-            
-    def OnDoubleClick(self, event):
-        # Looking for a stack trace line.
-        lineText, pos = self._textCtrl.GetCurLine()
-        fileBegin = lineText.find("File \"")
-        fileEnd = lineText.find("\", line ")
-        lineEnd = lineText.find(", in ")
-        if lineText == "\n" or  fileBegin == -1 or fileEnd == -1:
-            # Check the line before the one that was clicked on
-            lineNumber = self._textCtrl.GetCurrentLine()
-            if(lineNumber == 0):
-                return
-            lineText = self._textCtrl.GetLine(lineNumber - 1)
-            fileBegin = lineText.find("File \"")
-            fileEnd = lineText.find("\", line ")
-            lineEnd = lineText.find(", in ")
-            if lineText == "\n" or  fileBegin == -1 or fileEnd == -1:
-                return
-
-        filename = lineText[fileBegin + 6:fileEnd]
-        if filename == "<string>" :
-            return
-        if -1 == lineEnd:
-            lineNum = int(lineText[fileEnd + 8:])
-        else:
-            lineNum = int(lineText[fileEnd + 8:lineEnd])
-        if filename and not os.path.exists(filename):
-            wx.MessageBox("The file '%s' doesn't exist and couldn't be opened!" % filename,
-                              _("File Error"),
-                              wx.OK | wx.ICON_ERROR,
-                              wx.GetApp().GetTopWindow())
-            return
-        wx.GetApp().GotoView(filename,lineNum)
+                
+    def ProcessUpdateUIEvent(self,event):
+        return self._textCtrl.ProcessUpdateUIEvent(event)
         
-    def OnModify(self,event):
-        if self._textCtrl.GetCurrentPos() <= self._textCtrl.InputStartPos:
-            #disable back delete key
-            self._textCtrl.CmdKeyClear(wx.stc.STC_KEY_BACK ,0)
-        else:
-            #enable back delete key
-            self._textCtrl.CmdKeyAssign(wx.stc.STC_KEY_BACK ,0,wx.stc.STC_CMD_DELETEBACK)
-    
-    def OnKeyPressed(self, event):
-        if self._textCtrl.GetReadOnly():
-            return
-        if self._textCtrl.IsFirstInput:
-            self._textCtrl.InputStartPos = self._textCtrl.GetCurrentPos()
-            self._textCtrl.IsFirstInput = False
-        input_color_style = 1
-        self._textCtrl.StyleSetSpec(input_color_style, 'fore:#221dff, back:#FFFFFF,face:%s,size:%d' % \
-                     (self._font.GetFaceName(),self._font.GetPointSize())) 
-        key = event.GetKeyCode()
-        if key == wx.WXK_RETURN:
-            inputText = self._textCtrl.GetRange(self._textCtrl.InputStartPos,self._textCtrl.GetCurrentPos())
-            #should colorize last input char
-            if self._textCtrl.GetCurrentPos() - 1 >= 0:
-                self._textCtrl.StartStyling(self._textCtrl.GetCurrentPos()-1, 31)
-                self._textCtrl.SetStyling(1, input_color_style)
-            self._textCtrl.AddText('\n')
-            self._executor.WriteInput(inputText + "\n")
-            self._textCtrl.IsFirstInput = True
-        else:
-            pos = self._textCtrl.GetCurrentPos()
-            DebugOutputCtrl.DebugOutputCtrl.OnKeyPressed(self._textCtrl, event)
-            if pos-1 >= 0:
-                #should colorize input char from last pos
-                self._textCtrl.StartStyling(pos-1, 31)
-                self._textCtrl.SetStyling(1, input_color_style)
+    def ProcessEvent(self,event):
+        return self._textCtrl.ProcessEvent(event)
 
 DEFAULT_PORT = 32032
 DEFAULT_HOST = 'localhost'
@@ -628,12 +554,12 @@ class BaseDebuggerUI(wx.Panel):
         self._executor = None
         self._callback = None
         self._stopped = False
+        self._restarted = False
 
         BaseDebuggerUI.debuggers.append(self)
         self._stopped = True
         self.Bind(EVT_UPDATE_STDTEXT, self.AppendText)
         self.Bind(EVT_UPDATE_ERRTEXT, self.AppendErrorText)
-        self._executor = None
         
         menubar = wx.GetApp().GetTopWindow().GetMenuBar()
         run_menu_index = menubar.FindMenu(_("&Run"))
@@ -804,8 +730,11 @@ class BaseDebuggerUI(wx.Panel):
         except:
             if _VERBOSE: print "In ExectorFinished, got exception"
         self._tb.EnableTool(self.KILL_PROCESS_ID, False)
-        self._stopped = True
         wx.GetApp().GetService(DebuggerService).ShowHideDebuggerMenu(False)
+        if self._restarted:
+            wx.MilliSleep(250)
+            self.RestartDebuggerProcess()
+            self._restarted = False
 
     def SetStatusText(self, text):
         self._statusBar.SetStatusText(text,0)
@@ -994,7 +923,8 @@ class PythonDebuggerUI(BaseDebuggerUI):
                 path = path.replace("DebuggerHarness","DebuggerHarness3").replace("DebuggerHarness3.pyc","DebuggerHarness3.py")
         self._executor = DebuggerExecutor(path, self._run_parameter,self, self._debuggerHost, \
                                                 self._debuggerPort, self._debuggerBreakPort, self._guiHost, self._guiPort, self._command, callbackOnExit=self.ExecutorFinished)
-
+        self.framesTab.SetExecutor(self._executor)
+        
     def LoadPythonFramesList(self, framesXML):
         self.framesTab.LoadFramesList(framesXML)
         self.framesTab.UpdateWatchs()
@@ -1017,6 +947,7 @@ class PythonDebuggerUI(BaseDebuggerUI):
         # were more ugliness discovered I would not be surprised. If anyone has any help/advice, please send
         # it on to mfryer@activegrid.com.
         if not self._stopped:
+            self._stopped = True
             try:
                 self.DisableAfterStop()
             except wx._core.PyDeadObjectError:
@@ -1084,8 +1015,7 @@ class PythonDebuggerUI(BaseDebuggerUI):
         self._callback = PythonDebuggerCallback(self._guiHost, self._guiPort, url, self._breakURL, self, self._autoContinue)
             
     def RestartDebugger(self,event):
-
-        self.StopExecution(None)
+        
         projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
         currentProj = projectService.GetCurrentProject()
         if currentProj is not None and currentProj.GetModel().FindFile(self._run_parameter.FilePath):
@@ -1095,17 +1025,20 @@ class PythonDebuggerUI(BaseDebuggerUI):
             if openView:
                 openDoc = openView.GetDocument()
                 openDoc.Save()
-        while True:
-            if self._stopped:
-                break
-            wx.MilliSleep(250)
-            wx.Yield()
+        
+        if not self._stopped:
+            self._restarted = True
+            self.StopExecution(None)
+        else:
+            self.RestartDebuggerProcess()
             
+    def RestartDebuggerProcess(self):
+        
         if BaseDebuggerUI.DebuggerRunning():
             wx.MessageBox(_("A debugger is already running. Please shut down the other debugger first."), _("Debugger Running"))
             return
-        
-        self.OnClearOutput(event)
+
+        self.OnClearOutput(None)
         self._tb.EnableTool(self.KILL_PROCESS_ID, True)
         self._stopped = False
         self.CheckPortAvailable()
@@ -1142,6 +1075,13 @@ class PythonDebuggerUI(BaseDebuggerUI):
             utils.GetLogger().warn("debugger server port %s is not available,will use new port %s",old_debuggerPort,self._debuggerPort)
         else:
             utils.GetLogger().debug("when restart debugger ,debugger server port %s is still available",self._debuggerPort)
+            
+
+    def ProcessUpdateUIEvent(self,event):
+        return self.framesTab._textCtrl.ProcessUpdateUIEvent(event)
+        
+    def ProcessEvent(self,event):
+        return self.framesTab._textCtrl.ProcessEvent(event)
 
 class BaseFramesUI(wx.SplitterWindow):
     
@@ -1197,51 +1137,6 @@ class BaseFramesUI(wx.SplitterWindow):
         self._treeCtrl.SetColumnWidth(1, self._notebook.GetSize().x-self.THING_COLUMN_WIDTH-SPACE*2)
         self.breakPointsTab._bpListCtrl.SetColumnWidth(2, self._notebook.GetSize().x-self.breakPointsTab.FILE_NAME_COLUMN_WIDTH - self.breakPointsTab.FILE_LINE_COLUMN_WIDTH-SPACE)
         self.watchsTab._treeCtrl.SetColumnWidth(1, self._notebook.GetSize().x-self.watchsTab.WATCH_NAME_COLUMN_WIDTH-SPACE)
-        
-    def OnDoubleClick(self, event):
-        # Looking for a stack trace line.
-        lineText, pos = self._textCtrl.GetCurLine()
-        fileBegin = lineText.find("File \"")
-        fileEnd = lineText.find("\", line ")
-        lineEnd = lineText.find(", in ")
-        if lineText == "\n" or  fileBegin == -1 or fileEnd == -1 or lineEnd == -1:
-            # Check the line before the one that was clicked on
-            lineNumber = self._textCtrl.GetCurrentLine()
-            if(lineNumber == 0):
-                return
-            lineText = self._textCtrl.GetLine(lineNumber - 1)
-            fileBegin = lineText.find("File \"")
-            fileEnd = lineText.find("\", line ")
-            lineEnd = lineText.find(", in ")
-            if lineText == "\n" or  fileBegin == -1 or fileEnd == -1 or lineEnd == -1:
-                return
-
-        filename = lineText[fileBegin + 6:fileEnd]
-        lineNum = int(lineText[fileEnd + 8:lineEnd])
-
-        foundView = None
-        openDocs = wx.GetApp().GetDocumentManager().GetDocuments()
-        for openDoc in openDocs:
-            if openDoc.GetFilename() == filename:
-                foundView = openDoc.GetFirstView()
-                break
-
-        if not foundView:
-            doc = wx.GetApp().GetDocumentManager().CreateDocument(filename, wx.lib.docview.DOC_SILENT)
-            foundView = doc.GetFirstView()
-
-        if foundView:
-            foundView.GetFrame().SetFocus()
-            foundView.Activate()
-            if not hasattr(foundView,"GotoLine"):
-                return
-            foundView.GotoLine(lineNum)
-            startPos = foundView.PositionFromLine(lineNum)
-            lineText = foundView.GetCtrl().GetLine(lineNum - 1)
-            foundView.SetSelection(startPos, startPos + len(lineText.rstrip("\n")))
-            import noval.tool.service.OutlineService as OutlineService
-            wx.GetApp().GetService(OutlineService.OutlineService).LoadOutline(foundView, lineNum=lineNum)
-
 
     def MakeStackFrameTab(self, parent, id):
         
@@ -1275,7 +1170,7 @@ class BaseFramesUI(wx.SplitterWindow):
         
     def MakeConsoleOutput(self, parent):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self._textCtrl = BaseCtrl.ScintillaCtrl(parent, wx.NewId())
+        self._textCtrl = DebugOutputCtrl.DebugOutputCtrl(parent, wx.NewId(),is_debug=True)
         sizer.Add(self._textCtrl, 1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 2)
         self._textCtrl.HideLineNumber()
         self._textCtrl.SetReadOnly(True)
@@ -1286,7 +1181,6 @@ class BaseFramesUI(wx.SplitterWindow):
         self._textCtrl.SetFont(wx.Font(9, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = font))
         self._textCtrl.SetFontColor(wx.BLACK)
         self._textCtrl.StyleClearAll()
-        wx.stc.EVT_STC_DOUBLECLICK(self._textCtrl, self._textCtrl.GetId(), self.OnDoubleClick)
 
         parent.SetSizer(sizer)
         #sizer.Fit(panel)
@@ -1421,25 +1315,13 @@ class BaseFramesUI(wx.SplitterWindow):
         assert False, "IntrospectCallback not overridden"
 
     def AppendText(self, text):
-        self._textCtrl.SetReadOnly(False)
-        self._textCtrl.AddText(text)
-        self._textCtrl.ScrollToLine(self._textCtrl.GetLineCount())
-        self._textCtrl.SetReadOnly(True)
+        self._textCtrl.AppendText(text)
 
     def AppendErrorText(self, text):
-        self._textCtrl.SetReadOnly(False)
-        self._textCtrl.SetFontColor(wx.RED)
-        self._textCtrl.StyleClearAll()
-        self._textCtrl.AddText(text)
-        self._textCtrl.ScrollToLine(self._textCtrl.GetLineCount())
-        self._textCtrl.SetFontColor(wx.BLACK)
-        self._textCtrl.StyleClearAll()
-        self._textCtrl.SetReadOnly(True)
+        self._textCtrl.AppendErrorText(text)
 
     def ClearOutput(self, event):
-        self._textCtrl.SetReadOnly(False)
-        self._textCtrl.ClearAll()
-        self._textCtrl.SetReadOnly(True)
+        self._textCtrl.ClearOutput()
 
     def SwitchToOutputTab(self):
         self._notebook.SetSelection(0)
@@ -1447,6 +1329,9 @@ class BaseFramesUI(wx.SplitterWindow):
 class PythonFramesUI(BaseFramesUI):
     def __init__(self, parent, id, ui):
         BaseFramesUI.__init__(self, parent, id, ui)
+        
+    def SetExecutor(self,executor):
+        self._textCtrl.SetExecutor(executor)
 
     def ExecuteCommand(self, command):
         retval = self._ui._callback._debuggerServer.execute_in_frame(self._framesChoiceCtrl.GetStringSelection(), command)
@@ -1802,6 +1687,25 @@ class DebuggerView(Service.ServiceView):
     # Class methods
     #-----------------------------------------------------------------------------
 
+    def ProcessEvent(self, event):
+        if Service.ServiceView.bottomTab.GetPageCount() == 0:
+            return False
+        current_page = Service.ServiceView.bottomTab.GetPage(Service.ServiceView.bottomTab.GetSelection())
+        if isinstance(current_page,RunCommandUI) or isinstance(current_page,PythonDebuggerUI):
+            return current_page.ProcessEvent(event)
+        return False
+
+    def ProcessUpdateUIEvent(self, event):
+        if Service.ServiceView.bottomTab.GetPageCount() == 0:
+            return False
+        current_page = Service.ServiceView.bottomTab.GetPage(Service.ServiceView.bottomTab.GetSelection())
+        if isinstance(current_page,RunCommandUI) or isinstance(current_page,PythonDebuggerUI):
+            return current_page.ProcessUpdateUIEvent(event)
+        return False
+        
+    def GetDocument(self):
+        return None
+
 class Interaction:
     def __init__(self, message, framesXML,  info=None, quit=False):
         self._framesXML = framesXML
@@ -2060,7 +1964,9 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
                 self.PushExceptionBreakpoints()
         self._waiting = False
         if _VERBOSE: print "+"*40
+        #quit gui server
         if(quit):
+            #whhen quit gui server stop the debugger execution
             self._debuggerUI.StopExecution(None)
             return ""
         if(info != ""):
@@ -2813,7 +2719,7 @@ class DebuggerService(Service.Service):
             return
         fileToRun = run_parameter.FilePath
         shortFile = os.path.basename(fileToRun)
-        page = RunCommandUI(Service.ServiceView.bottomTab, -1, fileToRun,run_parameter)
+        page = RunCommandUI(self,Service.ServiceView.bottomTab, -1, fileToRun,run_parameter)
         count = Service.ServiceView.bottomTab.GetPageCount()
         Service.ServiceView.bottomTab.AddPage(page, _("Running: ") + shortFile)
         Service.ServiceView.bottomTab.SetPageImage(count,self.GetIconIndex())

@@ -155,6 +155,9 @@ class BaseLexer(object):
     def GetCommentTemplate(self):
         return None
         
+    def IsCommentTemplateEnable(self):
+        return self.GetCommentTemplate() is not None
+        
     @property
     def Exts(self):
         return self.exts

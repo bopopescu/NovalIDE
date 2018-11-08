@@ -1,20 +1,43 @@
 import wx
-from noval.tool import BaseCtrl
-from noval.tool.service import TextService
+from noval.tool import FindTextCtrl
+import noval.tool.service.FindService as FindService
+import noval.util.sysutils as sysutilslib
+import noval.tool.STCTextEditor as STCTextEditor
+import os
 _ = wx.GetTranslation
 
-class DebugOutputCtrl(BaseCtrl.ScintillaCtrl):
+class DebugOutputCtrl(FindTextCtrl.FindTextCtrl):
     
-    ItemIDs = [wx.ID_UNDO, wx.ID_REDO,wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, wx.ID_CLEAR, wx.ID_SELECTALL,TextService.WORD_WRAP_ID]
+    TEXT_WRAP_ID = wx.NewId()
+    FIND_TEXT_ID = wx.NewId()
+    EXPORT_TEXT_ID = wx.NewId()
+    ItemIDs = [wx.ID_UNDO, wx.ID_REDO,None,wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, wx.ID_CLEAR,None, wx.ID_SELECTALL,TEXT_WRAP_ID,FindService.FindService.FIND_ID,EXPORT_TEXT_ID]
     
-    def __init__(self, parent, id=-1, style = wx.NO_FULL_REPAINT_ON_RESIZE):
-        BaseCtrl.ScintillaCtrl.__init__(self, parent, id, style=style)
+    def __init__(self, parent, id=-1, style = wx.NO_FULL_REPAINT_ON_RESIZE,is_debug=False):
+        FindTextCtrl.FindTextCtrl.__init__(self, parent, id, style=style)
         self.Bind(wx.EVT_RIGHT_UP, self.OnRightUp)
-        accelTbl = wx.AcceleratorTable([(wx.ACCEL_CTRL, ord('A'), wx.ID_SELECTALL),(wx.ACCEL_CTRL, ord('C'), wx.ID_COPY),(wx.ACCEL_CTRL, ord('V'), wx.ID_PASTE)])  
-        self.SetAcceleratorTable(accelTbl)
+        if sysutilslib.isLinux():
+            accelTbl = wx.AcceleratorTable([(wx.ACCEL_CTRL, ord('A'), wx.ID_SELECTALL),(wx.ACCEL_CTRL, ord('C'), wx.ID_COPY),(wx.ACCEL_CTRL, ord('V'), wx.ID_PASTE),(wx.ACCEL_CTRL, ord('F'), FindService.FindService.FIND_ID)])  
+            self.SetAcceleratorTable(accelTbl)
+            
+        if wx.Platform == '__WXMSW__':
+            font = "Courier New"
+        else:
+            font = "Courier"
+        self._font = wx.Font(9, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = font)
+        self.SetFont(self._font)
+        self.SetFontColor(wx.BLACK)
+        
         self._first_input = True
         self._input_start_pos = 0
+        self._executor = None
+        self._is_debug = is_debug
         wx.EVT_MOUSE_CAPTURE_LOST(self,self.OnMouseCaptureLost)
+        wx.EVT_SET_FOCUS(self, self.OnFocus)
+        wx.stc.EVT_STC_DOUBLECLICK(self, self.GetId(), self.OnDoubleClick) 
+        
+        wx.stc.EVT_STC_MODIFIED(self, self.GetId(), self.OnModify)    
+        wx.EVT_KEY_DOWN(self, self.OnKeyPressed)
         
     def OnMouseCaptureLost(self,event):
         pass
@@ -36,40 +59,36 @@ class DebugOutputCtrl(BaseCtrl.ScintillaCtrl):
         self._input_start_pos = input_start_pos
         
     def OnRightUp(self, event):
+        self.ActiveDebugView()
         self.PopupMenu(self.CreatePopupMenu(), event.GetPosition())
         
     def CreatePopupMenu(self):
-        menu = wx.Menu()   
-        menu.Append(wx.ID_UNDO, _("Undo"))
-        menu.Append(wx.ID_REDO, _("Redo"))
-        menu.AppendSeparator()       
-        menu.Append(wx.ID_CUT, _("Cut"))
-        menu.Append(wx.ID_COPY, _("Copy\tCtrl+C"))
-        menu.Append(wx.ID_PASTE, _("Paste\tCtrl+V"))
-        menu.Append(wx.ID_CLEAR, _("Clear"))
-        menu.AppendSeparator()
-        menu.Append(wx.ID_SELECTALL, _("Select All\tCtrl+A"))
+        menu = wx.Menu()
+        frame = wx.GetApp().MainFrame
+        menuBar = frame.GetMenuBar()
+        for itemID in self.ItemIDs:
+            if not itemID:
+                menu.AppendSeparator()
+            else:
+                item = menuBar.FindItemById(itemID)
+                if item:
+                    menu_item = wx.MenuItem(menu,itemID,item.GetItemLabel())
+                    bmp = item.GetBitmap()
+                    if bmp:
+                        menu_item.SetBitmap(bmp)
+                    menu.AppendItem(menu_item)
+                elif itemID == self.TEXT_WRAP_ID:
+                    menu.AppendCheckItem(self.TEXT_WRAP_ID, _("Word Wrap"))
+                elif itemID == self.EXPORT_TEXT_ID:
+                    menu.Append(self.EXPORT_TEXT_ID, _("Export All"))
                     
-        menu.AppendCheckItem(TextService.WORD_WRAP_ID, _("Word Wrap"))
-        wx.EVT_MENU(self, wx.ID_UNDO, self.DSProcessEvent) 
-        wx.EVT_UPDATE_UI(self, wx.ID_UNDO, self.DSProcessUpdateUIEvent)
-        wx.EVT_MENU(self, wx.ID_REDO, self.DSProcessEvent) 
-        wx.EVT_UPDATE_UI(self, wx.ID_REDO, self.DSProcessUpdateUIEvent)
-        wx.EVT_MENU(self, wx.ID_CUT, self.DSProcessEvent) 
-        wx.EVT_UPDATE_UI(self, wx.ID_CUT, self.DSProcessUpdateUIEvent)
-        wx.EVT_MENU(self, wx.ID_COPY, self.DSProcessEvent) 
-        wx.EVT_UPDATE_UI(self, wx.ID_COPY, self.DSProcessUpdateUIEvent)
-        wx.EVT_MENU(self, wx.ID_PASTE, self.DSProcessEvent) 
-        wx.EVT_UPDATE_UI(self, wx.ID_PASTE, self.DSProcessUpdateUIEvent)
-        wx.EVT_MENU(self, wx.ID_CLEAR, self.DSProcessEvent) 
-        wx.EVT_UPDATE_UI(self, wx.ID_CLEAR, self.DSProcessUpdateUIEvent)
-        wx.EVT_MENU(self, wx.ID_SELECTALL, self.DSProcessEvent) 
-        wx.EVT_UPDATE_UI(self, wx.ID_SELECTALL, self.DSProcessUpdateUIEvent)
-        wx.EVT_MENU(self, TextService.WORD_WRAP_ID, self.DSProcessEvent) 
-        wx.EVT_UPDATE_UI(self, TextService.WORD_WRAP_ID, self.DSProcessUpdateUIEvent)
+        for itemID in self.ItemIDs:
+            if itemID:
+                wx.EVT_MENU(self, itemID, frame.ProcessEvent) 
+                wx.EVT_UPDATE_UI(self, itemID, self.ProcessUpdateUIEvent)
         return menu
         
-    def DSProcessEvent(self, event):
+    def ProcessEvent(self, event):
         id = event.GetId()
         if id == wx.ID_UNDO:
             self.Undo()
@@ -87,18 +106,29 @@ class DebugOutputCtrl(BaseCtrl.ScintillaCtrl):
             self.OnPaste()
             return True
         elif id == wx.ID_CLEAR:
-            self.OnClear()
+            self.ClearOutput()
             return True
         elif id == wx.ID_SELECTALL:
             self.SelectAll()
             return True
-        elif id == TextService.WORD_WRAP_ID:
+        elif id == self.TEXT_WRAP_ID:
             self.SetWordWrap(not self.GetWordWrap())
             return True
-        else:
-            return True
             
-    def DSProcessUpdateUIEvent(self, event):
+        elif id == FindService.FindService.FIND_ID:
+            findService = wx.GetApp().GetService(FindService.FindService)
+            findService.ShowFindReplaceDialog(findString = self.GetSelectedText())
+            return True
+        elif id == self.EXPORT_TEXT_ID:
+            self.SaveAll()
+            return True
+        elif id == FindService.FindService.FINDONE_ID:
+            self.DoFindText()
+            return True
+        else:
+            return False
+            
+    def ProcessUpdateUIEvent(self, event):
         id = event.GetId()
         if id == wx.ID_UNDO:
             event.Enable(self.CanUndo())
@@ -106,21 +136,178 @@ class DebugOutputCtrl(BaseCtrl.ScintillaCtrl):
         elif id == wx.ID_REDO:
             event.Enable(self.CanRedo())
             return True
-        elif (id == wx.ID_CUT
-        or id == wx.ID_COPY
-        or id == wx.ID_CLEAR):
+        elif id == wx.ID_CUT or id == wx.ID_PASTE:
+            event.Enable(False)
+            return True
+        elif id == wx.ID_COPY:
             event.Enable(self.HasSelection())
             return True
-        elif id == wx.ID_PASTE:
-            event.Enable(self.CanPaste())
+        elif id == wx.ID_CLEAR:
+            event.Enable(True)  # wxBug: should be stcControl.CanCut()) but disabling clear item means del key doesn't work in control as expected
             return True
-        elif id == wx.ID_SELECTALL:
+        elif id == wx.ID_SELECTALL or id == FindService.FindService.FIND_ID or id == self.EXPORT_TEXT_ID:
             hasText = self.GetTextLength() > 0
             event.Enable(hasText)
             return True
-        elif id == TextService.WORD_WRAP_ID:
+        elif id == self.TEXT_WRAP_ID:
             event.Enable(self.CanWordWrap())
             event.Check(self.CanWordWrap() and self.GetWordWrap())
             return True
         else:
-            return True        
+            return False       
+            
+    def OnFocus(self, event):
+        self.ActiveDebugView()
+        event.Skip()
+        
+    def ActiveDebugView(self):
+        if not self._is_debug:
+            wx.GetApp().GetDocumentManager().ActivateView(self.GetParent()._service.GetView())
+        else:
+            wx.GetApp().GetDocumentManager().ActivateView(self.GetParent().GetParent().GetParent()._service.GetView())
+        
+    def ClearOutput(self):
+        self.SetReadOnly(False)
+        self.ClearAll()
+        self.SetReadOnly(True)
+        
+    def DoFindText(self,forceFindNext = False, forceFindPrevious = False):
+        findService = wx.GetApp().GetService(FindService.FindService)
+        if not findService:
+            return
+        findString = findService.GetFindString()
+        if len(findString) == 0:
+            return -1
+        flags = findService.GetFlags()
+        if not FindTextCtrl.FindTextCtrl.DoFindText(self,findString,flags,forceFindNext,forceFindPrevious):
+            self.TextNotFound(findString,flags,forceFindNext,forceFindPrevious)
+            
+    def SaveAll(self):
+        text_docTemplate = wx.GetApp().GetDocumentManager().FindTemplateForPath("test.txt")
+        descr = _(text_docTemplate.GetDescription()) + " (" + text_docTemplate.GetFileFilter() + ") |" + text_docTemplate.GetFileFilter()  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
+        if text_docTemplate.GetDocumentType() == STCTextEditor.TextDocument:
+            default_ext = ""
+            descr = _("All Files") +  "(*.*) |*.*|%s" % descr
+        filename = wx.FileSelector(_("Save As"),
+                                   text_docTemplate.GetDirectory(),
+                                   "*.txt",
+                                   default_ext,
+                                   wildcard = descr,
+                                   flags = wx.SAVE | wx.OVERWRITE_PROMPT,
+                                   parent = self)
+                                   
+
+        if filename == "":
+            return
+            
+        try:
+            with open(filename,"wb") as f:
+                f.write(self.GetText())
+        except Exceptin as e:
+            wx.MessageBox(str(e),style=wx.OK|wx.ICON_ERROR)
+
+    def OnDoubleClick(self, event):
+        # Looking for a stack trace line.
+        lineText, pos = self.GetCurLine()
+        fileBegin = lineText.find("File \"")
+        fileEnd = lineText.find("\", line ")
+        lineEnd = lineText.find(", in ")
+        if lineText == "\n" or  fileBegin == -1 or fileEnd == -1:
+            # Check the line before the one that was clicked on
+            lineNumber = self.GetCurrentLine()
+            if(lineNumber == 0):
+                return
+            lineText = self.GetLine(lineNumber - 1)
+            fileBegin = lineText.find("File \"")
+            fileEnd = lineText.find("\", line ")
+            lineEnd = lineText.find(", in ")
+            if lineText == "\n" or  fileBegin == -1 or fileEnd == -1:
+                return
+
+        filename = lineText[fileBegin + 6:fileEnd]
+        if filename == "<string>" :
+            return
+        if -1 == lineEnd:
+            lineNum = int(lineText[fileEnd + 8:])
+        else:
+            lineNum = int(lineText[fileEnd + 8:lineEnd])
+        if filename and not os.path.exists(filename):
+            wx.MessageBox("The file '%s' doesn't exist and couldn't be opened!" % filename,
+                              _("File Error"),
+                              wx.OK | wx.ICON_ERROR,
+                              wx.GetApp().GetTopWindow())
+            return
+        wx.GetApp().GotoView(filename,lineNum)
+        #last activiate debug view
+        self.ActiveDebugView()
+        
+
+    def AppendText(self, text):
+        self.SetReadOnly(False)
+        self.SetCurrentPos(self.GetTextLength())
+        self.AddText(text)
+        self.ScrollToLine(self.GetLineCount())
+        #rember last position
+        self.InputStartPos = self.GetCurrentPos()
+      ###  self.SetReadOnly(True)
+
+    def AppendErrorText(self, text):
+        self.SetReadOnly(False)
+        self.SetCurrentPos(self.GetTextLength())
+        error_color_style = 2
+        self.StyleSetSpec(error_color_style, 'fore:#ff0000, back:#FFFFFF,face:%s,size:%d' % \
+                                    (self._font.GetFaceName(),self._font.GetPointSize())) 
+        pos = self.GetCurrentPos()
+        self.AddText(text)
+        self.StartStyling(pos, 2)
+        self.SetStyling(len(text), error_color_style)
+        self.ScrollToLine(self.GetLineCount())
+        #rember last position
+        self.InputStartPos = self.GetCurrentPos()
+   ###     self.SetReadOnly(True)
+   
+
+    def OnModify(self,event):
+        if self.GetCurrentPos() <= self.InputStartPos:
+            #disable back delete key
+            self.CmdKeyClear(wx.stc.STC_KEY_BACK ,0)
+        else:
+            #enable back delete key
+            self.CmdKeyAssign(wx.stc.STC_KEY_BACK ,0,wx.stc.STC_CMD_DELETEBACK)
+    
+    def OnKeyPressed(self, event):
+        #when ctrl is read only,disable all key events
+        if self.GetReadOnly():
+            return
+        key = event.GetKeyCode()
+        if key in [wx.WXK_LEFT,wx.WXK_UP,wx.WXK_RIGHT,wx.WXK_DOWN]:
+            event.Skip()
+            return
+        if self.GetCurrentPos() < self.InputStartPos:
+            return
+        if self.IsFirstInput:
+            self.InputStartPos = self.GetCurrentPos()
+            self.IsFirstInput = False
+        input_color_style = 1
+        self.StyleSetSpec(input_color_style, 'fore:#221dff, back:#FFFFFF,face:%s,size:%d' % \
+                     (self._font.GetFaceName(),self._font.GetPointSize())) 
+        
+        if key == wx.WXK_RETURN:
+            inputText = self.GetRange(self.InputStartPos,self.GetCurrentPos())
+            #should colorize last input char
+            if self.GetCurrentPos() - 1 >= 0:
+                self.StartStyling(self.GetCurrentPos()-1, 31)
+                self.SetStyling(1, input_color_style)
+            self.AddText('\n')
+            self._executor.WriteInput(inputText + "\n")
+            self.IsFirstInput = True
+        else:
+            pos = self.GetCurrentPos()
+            event.Skip()
+            if pos-1 >= 0:
+                #should colorize input char from last pos
+                self.StartStyling(pos-1, 31)
+                self.SetStyling(1, input_color_style)
+                
+    def SetExecutor(self,executor):
+        self._executor = executor

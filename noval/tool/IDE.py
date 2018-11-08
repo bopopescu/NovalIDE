@@ -196,7 +196,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
 
         # Note:  These templates must be initialized in display order for the "Files of type" dropdown for the "File | Open..." dialog
         defaultTemplate = wx.lib.docview.DocTemplate(docManager,
-                _("Any File"),
+                _("All Files"),
                 "*.*",
                 os.getcwd(),
                 ".txt",
