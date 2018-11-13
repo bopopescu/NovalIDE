@@ -11,6 +11,8 @@ class DebugOutputCtrl(FindTextCtrl.FindTextCtrl):
     TEXT_WRAP_ID = wx.NewId()
     FIND_TEXT_ID = wx.NewId()
     EXPORT_TEXT_ID = wx.NewId()
+    ERROR_COLOR_STYLE = 2
+    INPUT_COLOR_STYLE = 1
     ItemIDs = [wx.ID_UNDO, wx.ID_REDO,None,wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, wx.ID_CLEAR,None, wx.ID_SELECTALL,TEXT_WRAP_ID,FindService.FindService.FIND_ID,EXPORT_TEXT_ID]
     
     def __init__(self, parent, id=-1, style = wx.NO_FULL_REPAINT_ON_RESIZE,is_debug=False):
@@ -242,30 +244,30 @@ class DebugOutputCtrl(FindTextCtrl.FindTextCtrl):
         self.ActiveDebugView()
         
 
-    def AppendText(self, text):
+    def AppendText(self, text,last_readonly=False):
         self.SetReadOnly(False)
         self.SetCurrentPos(self.GetTextLength())
         self.AddText(text)
         self.ScrollToLine(self.GetLineCount())
         #rember last position
         self.InputStartPos = self.GetCurrentPos()
-      ###  self.SetReadOnly(True)
+        if last_readonly:
+            self.SetReadOnly(True)
 
-    def AppendErrorText(self, text):
+    def AppendErrorText(self, text,last_readonly=False):
         self.SetReadOnly(False)
         self.SetCurrentPos(self.GetTextLength())
-        error_color_style = 2
-        self.StyleSetSpec(error_color_style, 'fore:#ff0000, back:#FFFFFF,face:%s,size:%d' % \
+        self.StyleSetSpec(self.ERROR_COLOR_STYLE, 'fore:#ff0000, back:#FFFFFF,face:%s,size:%d' % \
                                     (self._font.GetFaceName(),self._font.GetPointSize())) 
         pos = self.GetCurrentPos()
         self.AddText(text)
         self.StartStyling(pos, 2)
-        self.SetStyling(len(text), error_color_style)
+        self.SetStyling(len(text), self.ERROR_COLOR_STYLE)
         self.ScrollToLine(self.GetLineCount())
         #rember last position
         self.InputStartPos = self.GetCurrentPos()
-   ###     self.SetReadOnly(True)
-   
+        if last_readonly:
+            self.SetReadOnly(True)
 
     def OnModify(self,event):
         if self.GetCurrentPos() <= self.InputStartPos:
@@ -288,16 +290,13 @@ class DebugOutputCtrl(FindTextCtrl.FindTextCtrl):
         if self.IsFirstInput:
             self.InputStartPos = self.GetCurrentPos()
             self.IsFirstInput = False
-        input_color_style = 1
-        self.StyleSetSpec(input_color_style, 'fore:#221dff, back:#FFFFFF,face:%s,size:%d' % \
-                     (self._font.GetFaceName(),self._font.GetPointSize())) 
-        
+        self.SetInputStyle()
         if key == wx.WXK_RETURN:
             inputText = self.GetRange(self.InputStartPos,self.GetCurrentPos())
             #should colorize last input char
             if self.GetCurrentPos() - 1 >= 0:
                 self.StartStyling(self.GetCurrentPos()-1, 31)
-                self.SetStyling(1, input_color_style)
+                self.SetStyling(1, self.INPUT_COLOR_STYLE)
             self.AddText('\n')
             self._executor.WriteInput(inputText + "\n")
             self.IsFirstInput = True
@@ -307,7 +306,21 @@ class DebugOutputCtrl(FindTextCtrl.FindTextCtrl):
             if pos-1 >= 0:
                 #should colorize input char from last pos
                 self.StartStyling(pos-1, 31)
-                self.SetStyling(1, input_color_style)
+                self.SetStyling(1, self.INPUT_COLOR_STYLE)
                 
     def SetExecutor(self,executor):
         self._executor = executor
+        
+    def AddInputText(self,text):
+        self.SetReadOnly(False)
+        self.SetInputStyle()
+        pos = self.GetCurrentPos()
+        self.AddText(text+"\n")
+        self.StartStyling(pos, 31)
+        self.SetStyling(len(text), self.INPUT_COLOR_STYLE)
+        self.SetReadOnly(True)
+        
+    def SetInputStyle(self):
+        self.StyleSetSpec(self.INPUT_COLOR_STYLE, 'fore:#221dff, back:#FFFFFF,face:%s,size:%d' % \
+                     (self._font.GetFaceName(),self._font.GetPointSize())) 
+        

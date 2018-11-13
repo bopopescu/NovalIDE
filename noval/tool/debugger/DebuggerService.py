@@ -1315,10 +1315,10 @@ class BaseFramesUI(wx.SplitterWindow):
         assert False, "IntrospectCallback not overridden"
 
     def AppendText(self, text):
-        self._textCtrl.AppendText(text)
+        self._textCtrl.AppendText(text,True)
 
     def AppendErrorText(self, text):
-        self._textCtrl.AppendErrorText(text)
+        self._textCtrl.AppendErrorText(text,True)
 
     def ClearOutput(self, event):
         self._textCtrl.ClearOutput()
@@ -1727,10 +1727,11 @@ class Interaction:
 
 class AGXMLRPCServer(SimpleXMLRPCServer.SimpleXMLRPCServer):
     def __init__(self, address, logRequests=0):
-        SimpleXMLRPCServer.SimpleXMLRPCServer.__init__(self, address, logRequests=logRequests)
+        ###enable request method return None value
+        SimpleXMLRPCServer.SimpleXMLRPCServer.__init__(self, address, logRequests=logRequests,allow_none=1)
 
 class RequestHandlerThread(threading.Thread):
-    def __init__(self, queue, address):
+    def __init__(self,debuggerUI, queue, address):
         threading.Thread.__init__(self)
         self._keepGoing = True
         self._queue = queue
@@ -1739,6 +1740,9 @@ class RequestHandlerThread(threading.Thread):
         self._server.register_function(self.interaction)
         self._server.register_function(self.quit)
         self._server.register_function(self.dummyOperation)
+        self._server.register_function(self.request_input)
+        self._debuggerUI = debuggerUI
+        self._input_text = ""
         if _VERBOSE: print "RequestHandlerThread on fileno %s" % str(self._server.fileno())
 
     def run(self):
@@ -1764,6 +1768,27 @@ class RequestHandlerThread(threading.Thread):
 
     def dummyOperation(self):
         return ""
+        
+    
+    def request_input(self):
+        #create a thread event
+        self.input_evt = threading.Event()
+        self.get_input_text()
+        #block until the event activated
+        self.input_evt.wait()
+        return self._input_text
+        
+    @WxThreadSafe.call_after
+    def get_input_text(self):
+        dialog = wx.TextEntryDialog(self._debuggerUI.framesTab._textCtrl, "Enter the input text:" , "Enter input")
+        if dialog.ShowModal() == wx.ID_OK:
+            self._input_text = dialog.GetValue()
+            self._debuggerUI.framesTab._textCtrl.AddInputText(self._input_text)
+        else:
+            ##simulate the keyboard interrupt when cancel button is pressed
+            self._input_text = None
+        #activated the event,then the input will return
+        self.input_evt.set()
 
     def AskToStop(self):
         if type(self._server) is not types.NoneType:
@@ -1857,7 +1882,7 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
         self._host = host
         self._port = int(port)
         threading._VERBOSE = _VERBOSE
-        self._serverHandlerThread = RequestHandlerThread(self._queue, (self._host, self._port))
+        self._serverHandlerThread = RequestHandlerThread(debuggerUI,self._queue, (self._host, self._port))
 
         self._debugger_url = debugger_url
         self._debuggerServer = None

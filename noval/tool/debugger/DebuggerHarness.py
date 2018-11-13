@@ -34,6 +34,52 @@ else:
 _VERBOSE = False
 _DEBUG_DEBUGGER = False
 
+class BaseStdIn:
+    
+    def readline(self, *args, **kwargs):
+        #sys.stderr.write('Cannot readline out of the console evaluation\n') -- don't show anything
+        #This could happen if the user had done input('enter number).<-- upon entering this, that message would appear,
+        #which is not something we want.
+        return '\n'
+    
+    def isatty(self):    
+        return False #not really a file
+        
+    def write(self, *args, **kwargs):
+        pass #not available StdIn (but it can be expected to be in the stream interface)
+        
+    def flush(self, *args, **kwargs):
+        pass #not available StdIn (but it can be expected to be in the stream interface)
+       
+    def read(self, *args, **kwargs):
+        #in the interactive interpreter, a read and a readline are the same.
+        return self.readline()
+    
+#=======================================================================================================================
+# StdIn
+#=======================================================================================================================
+class StdIn(BaseStdIn):
+    '''
+        Object to be added to stdin (to emulate it as non-blocking while the next line arrives)
+    '''
+    
+    def __init__(self, host, client_port):
+        self.client_port = client_port
+        self.host = host
+    
+    def readline(self, *args, **kwargs):
+        #Ok, callback into the client to see get the new input
+        server = xmlrpclib.Server('http://%s:%s' % (self.host, self.client_port))
+        
+        requested_input = server.request_input()
+        if not requested_input and requested_input!='':
+            raise KeyboardInterrupt("operation cancelled")
+        
+        if requested_input=='':
+            return '\n'  #Yes, a readline must return something (otherwise we can get an EOFError on the input() call).
+        
+        return requested_input
+
 class Adb(bdb.Bdb):
 
     def __init__(self, harness, queue):
@@ -307,6 +353,9 @@ class DebuggerHarness(object):
         self._guiServerUrl = 'http://' + self._guiHost + ':' + str(self._guiPort) + '/'
         if _VERBOSE: print "Connecting to gui server at ", self._guiServerUrl
         self._guiServer = xmlrpclib.ServerProxy(self._guiServerUrl,allow_none=1)
+        
+        #redirect std input 
+        sys.stdin = StdIn( self._guiHost, self._guiPort)
     
         # Start the break listener
         self._breakQueue = Queue.Queue(50)

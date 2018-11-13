@@ -81,6 +81,8 @@ class PythonModuleAnalyzer(object):
         return self._mod_view
         
     def StopAnalyzing(self):
+        utils.GetLogger().info("analyze module file %s is canceled by user,will stop analyzing",self._mod_view.GetDocument().GetFilename())
+        self.FinishAnalyzing()
         self._is_analyzing_stoped = True
         
     def IsAnalyzingStopped(self):

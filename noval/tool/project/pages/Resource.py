@@ -8,7 +8,7 @@ import BasePanel
 import noval.util.sysutils as sysutilslib
 
 #set the max width of location label,to avoid too long
-MAX_LOCATION_LABEL_WIDTH  = 500
+MAX_LOCATION_LABEL_WIDTH  = 400
 
 class FileProertyPanel(BasePanel.BasePanel):
     """description of class"""
@@ -53,16 +53,14 @@ class FileProertyPanel(BasePanel.BasePanel):
         lineSizer = wx.BoxSizer(wx.HORIZONTAL)
         lineSizer.Add(wx.StaticText(self, -1, _("Location:"),size=(max_width,-1)),0,flag=wx.LEFT|wx.ALIGN_CENTER,border=SPACE)
         self.dest_path = fileutils.opj(path)
-        self.location_label_ctrl = wx.StaticText(self, -1, self.dest_path)
+        self.location_label_ctrl = wx.StaticText(self, -1, self.dest_path,style=wx.ST_ELLIPSIZE_END)
         location_text_size = self.location_label_ctrl.GetTextExtent(self.dest_path)
         location_text_width = location_text_size[0]
         #the location label width is too long,ellipisis the text
         if location_text_width > MAX_LOCATION_LABEL_WIDTH:
-            postend_ellipsis_text = "..."
-            show_path = self.dest_path[:len(self.dest_path)*2/3] + postend_ellipsis_text
-            limit_text_width = self.location_label_ctrl.GetTextExtent(show_path)[0] + HALF_SPACE
-            self.location_label_ctrl.SetInitialSize((limit_text_width,location_text_size[1]),)
-            self.location_label_ctrl.SetLabel(show_path)
+            self.location_label_ctrl.SetInitialSize((MAX_LOCATION_LABEL_WIDTH,location_text_size[1]),)
+        else:
+            self.location_label_ctrl.SetInitialSize((location_text_size[0],location_text_size[1]),)
 
         lineSizer.Add(self.location_label_ctrl,  0,flag=wx.LEFT|wx.ALIGN_CENTER,border=HALF_SPACE)
         into_btn = wx.BitmapButton(self,-1,images.load("project/into.png"))

@@ -7,10 +7,11 @@ import noval.util.fileutils as fileutils
 from consts import _,ERROR_OK
 
 
-REFRESH__PATH_ID = wx.NewId()
+REFRESH_PATH_ID = wx.NewId()
 OPEN_DIR_PATH_ID = wx.NewId()
 OPEN_CMD_PATH_ID = wx.NewId()
 COPY_FULLPATH_ID = wx.NewId()
+ADD_FOLDER_ID = wx.NewId()
 
 if sysutils.isWindows():
     from win32com.shell import shell, shellcon
@@ -67,8 +68,8 @@ class ResourceTreeCtrl(wx.TreeCtrl):
         item_type,item_path = self.GetPyData(item)
         menu = wx.Menu()
         if item_type == ResourceView.DIRECTORY_RES_TYPE:
-            menu.Append(REFRESH__PATH_ID, _("&Refresh"))
-            wx.EVT_MENU(self, REFRESH__PATH_ID, self.ProcessEvent)
+            menu.Append(REFRESH_PATH_ID, _("&Refresh"))
+            wx.EVT_MENU(self, REFRESH_PATH_ID, self.ProcessEvent)
         menu.Append(OPEN_CMD_PATH_ID, _("Open Command Prompt here..."))
         wx.EVT_MENU(self, OPEN_CMD_PATH_ID, self.ProcessEvent)
         menu.Append(OPEN_DIR_PATH_ID, _("Open Path in Explorer"))
@@ -82,6 +83,9 @@ class ResourceTreeCtrl(wx.TreeCtrl):
     def ProcessEvent(self, event):
         id = event.GetId()
         item = self.GetSelection()
+        if item is None or not item.IsOk():
+            #when no item is selected,default select the root item,which is hidden
+            item = self.GetRootItem()
         item_type,item_path = self.GetPyData(item)
         if id == OPEN_CMD_PATH_ID:
             if item_type == ResourceView.DIRECTORY_RES_TYPE:
@@ -93,19 +97,31 @@ class ResourceTreeCtrl(wx.TreeCtrl):
             err_code,msg = fileutils.open_path_in_terminator(filePath)
             if err_code != ERROR_OK:
                 wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
+            return True
         elif id == OPEN_DIR_PATH_ID:
             err_code,msg = fileutils.open_file_directory(item_path)
             if err_code != ERROR_OK:
                 wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
+            return True
         elif id == COPY_FULLPATH_ID:
             sysutils.CopyToClipboard(item_path)
-        elif id == REFRESH__PATH_ID:
-            self.Freeze()
-            self.DeleteChildren(item)
-            ResourceView(self.GetParent()).LoadDir(item,item_path)
-            if self.GetChildrenCount(item) > 0:
-                self.SetItemHasChildren(item, True)
-            self.Thaw()
+            return True
+        elif id == REFRESH_PATH_ID:
+            self.RefreshItemPath(item,item_path)
+            return True
+        elif id == ADD_FOLDER_ID:
+            if os.path.isdir(item_path):
+                new_path = os.path.join(item_path,_("New Folder"))
+            else:
+                new_path = os.path.join(os.path.dirname(item_path),_("New Folder"))
+            try:
+                os.mkdir(new_path)
+                self.RefreshItemPath(item,item_path)
+            except Exception as e:
+                wx.MessageBox(str(e),style = wx.OK|wx.ICON_ERROR)
+            return True
+
+        return False
             
     def ExpandDir(self, event):
         item = event.GetItem()
@@ -129,11 +145,23 @@ class ResourceTreeCtrl(wx.TreeCtrl):
             return self._fileIconIndex
         self._fileIconIndexLookup[ext] = index
         return index
+        
+    def RefreshItemPath(self,item,item_path):
+        self.Freeze()
+        self.DeleteChildren(item)
+        try:
+            ResourceView(self.GetParent()).LoadDir(item,item_path)
+        except Exception as e:
+            wx.MessageBox(str(e),style = wx.OK|wx.ICON_ERROR)
+        if self.GetChildrenCount(item) > 0:
+            self.SetItemHasChildren(item, True)
+        self.Thaw()
     
 class ResourceView(object):
     
     DIRECTORY_RES_TYPE = 0
     FILE_RES_TYPE = 1
+    
     __metaclass__ = Singleton.SingletonNew
     def __init__(self,view):
         self._view = view
@@ -175,6 +203,7 @@ class ResourceView(object):
         root = self._view.dir_ctrl.AddRoot(directory.replace(":",""))
         if sysutils.isWindows():
             directory += os.sep
+        self._view.dir_ctrl.SetPyData(root, (self.DIRECTORY_RES_TYPE,directory))
         self.LoadDir(root, directory)
             
     def LoadRoot(self,root):
@@ -242,7 +271,10 @@ class ResourceView(object):
                 return
             ext = strutils.GetFileExt(item_path)
             if sysutils.IsExtSupportable(ext):
-                wx.GetApp().GotoView(item_path.decode('gbk'),0)
+                if sysutils.isWindows():
+                    wx.GetApp().GotoView(item_path.decode('gbk'),0)
+                else:
+                    wx.GetApp().GotoView(item_path,0)
             else:
                 try:
                     fileutils.start_file(item_path)

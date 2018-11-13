@@ -1888,6 +1888,37 @@ class ProjectView(wx.lib.docview.View):
         butSizer.Add(self._physicalBtn, 0)
         self.panel_sizer.Add(butSizer, 0, wx.EXPAND)
         
+
+        #Toolbar
+        self._project_tb = tb = wx.ToolBar(panel,  -1, wx.DefaultPosition, wx.DefaultSize, wx.TB_HORIZONTAL | wx.NO_BORDER | wx.TB_FLAT |wx.TB_NODIVIDER)
+        tb.SetToolBitmapSize((16,16))
+        self.panel_sizer.Add(tb, 0, wx.EXPAND|wx.TOP, 2)
+        
+        #Only one of the following buttons is needed.
+        tb.AddSimpleTool(ProjectService.NEW_PROJECT_ID, images.load("project/new.png"), _('New Project'))
+        ####wx.EVT_TOOL(panel, self._logicalID, self.OnSelectMode)
+        
+        tb.AddSimpleTool(ProjectService.OPEN_PROJECT_ID, images.load("project/open.png"), _('Open Project'))
+        tb.AddSimpleTool(ProjectService.SAVE_PROJECT_ID, images.load("project/save.png"), _('Save Project'))
+        tb.AddSimpleTool(ProjectService.ARCHIVE_PROJECT_ID, images.load("project/archive.png"), _('Archive Project'))
+        
+        tb.AddSeparator()
+        tb.AddSimpleTool(ProjectService.IMPORT_FILES_ID, images.load("project/import.png"), _('Import Files...'))
+        tb.AddSimpleTool(ProjectService.ADD_NEW_FILE_ID, images.load("project/new_file.png"), _('New File'))
+        tb.AddSimpleTool(ProjectService.ADD_FOLDER_ID, images.load("project/folder.png"), _('New Folder'))
+        tb.AddSimpleTool(ProjectService.ADD_PACKAGE_FOLDER_ID, images.load("project/package.png"), _('New Package Folder'))
+        tb.AddSimpleTool(Property.FilePropertiesService.PROPERTIES_ID, images.load("project/properties.png"), _('Project/File Properties'))
+        tb.Realize()
+        
+        self._resource_tb = tb2 = wx.ToolBar(panel,  -1, wx.DefaultPosition, wx.DefaultSize, wx.TB_HORIZONTAL | wx.NO_BORDER | wx.TB_FLAT |wx.TB_NODIVIDER)
+        tb2.SetToolBitmapSize((16,16))
+        self.panel_sizer.Add(tb2, 0, wx.EXPAND|wx.TOP, 2)
+        tb2.AddSimpleTool(ResourceView.ADD_FOLDER_ID, images.load("project/folder.png"), _('New Folder'))
+        tb2.AddSimpleTool(ResourceView.REFRESH_PATH_ID, images.load("arrow_refresh.png"), _('Refresh Folder'))
+        wx.EVT_TOOL(panel, ResourceView.ADD_FOLDER_ID, self.OnResourceViewToolClicked)
+        wx.EVT_TOOL(panel, ResourceView.REFRESH_PATH_ID, self.OnResourceViewToolClicked)
+        tb2.Realize()
+        
         self.dirSizer = wx.BoxSizer(wx.HORIZONTAL)
         self.dir_ctrl = ResourceView.ResourceTreeCtrl(panel, -1, style = wx.TR_HIDE_ROOT | wx.TR_HAS_BUTTONS | wx.TR_DEFAULT_STYLE | wx.TR_EXTENDED)
         self.dir_ctrl.AddRoot(_("Resources"))
@@ -1963,10 +1994,14 @@ class ProjectView(wx.lib.docview.View):
             if not ResourceView.ResourceView(self).IsLoad:
                 ResourceView.ResourceView(self).LoadResource()
             self.panel_sizer.Hide(self.treeSizer)
+            self._project_tb.Hide()
+            self._resource_tb.Show()
             self.panel_sizer.Show(self.dirSizer)
         else:
             self.LoadDocuments()
             #self.LoadProject(self.GetDocument())
+            self._resource_tb.Hide()
+            self._project_tb.Show()
             self.panel_sizer.Show(self.treeSizer)
             self.panel_sizer.Hide(self.dirSizer)
         self.panel_sizer.Layout()
@@ -2471,7 +2506,12 @@ class ProjectView(wx.lib.docview.View):
             return True
         else:
             return False
-
+            
+    def OnResourceViewToolClicked(self, event):
+        id = event.GetId()
+        if id == ResourceView.REFRESH_PATH_ID or id == ResourceView.ADD_FOLDER_ID:
+            return self.dir_ctrl.ProcessEvent(event)
+            
     def SetProjectStartupFile(self):
         item = self._treeCtrl.GetSingleSelectItem()
         self.SetProjectStartupFileItem(item)
@@ -3442,11 +3482,11 @@ class ProjectView(wx.lib.docview.View):
 
     def GetPopupProjectMenu(self):
         menu = wx.Menu()
-        itemIDs = [ProjectService.NEW_PROJECT_ID,ProjectService.OPEN_PROJECT_ID]
-        itemIDs.extend([ProjectService.IMPORT_FILES_ID,ProjectService.ADD_FILES_TO_PROJECT_ID, \
-                           ProjectService.ADD_DIR_FILES_TO_PROJECT_ID,ProjectService.ADD_NEW_FILE_ID,ProjectService.ADD_FOLDER_ID, ProjectService.ADD_PACKAGE_FOLDER_ID])
-        itemIDs.extend([ProjectService.CLOSE_PROJECT_ID,ProjectService.SAVE_PROJECT_ID, ProjectService.DELETE_PROJECT_ID,\
-                        ProjectService.CLEAN_PROJECT_ID,ProjectService.ARCHIVE_PROJECT_ID,None, ProjectService.PROJECT_PROPERTIES_ID])
+        itemIDs = [ProjectService.NEW_PROJECT_ID,ProjectService.OPEN_PROJECT_ID,ProjectService.CLOSE_PROJECT_ID,ProjectService.SAVE_PROJECT_ID, ProjectService.DELETE_PROJECT_ID,\
+                        ProjectService.CLEAN_PROJECT_ID,ProjectService.ARCHIVE_PROJECT_ID]
+        itemIDs.extend([None,ProjectService.IMPORT_FILES_ID,ProjectService.ADD_FILES_TO_PROJECT_ID, \
+                           ProjectService.ADD_DIR_FILES_TO_PROJECT_ID,None,ProjectService.ADD_NEW_FILE_ID,ProjectService.ADD_FOLDER_ID, ProjectService.ADD_PACKAGE_FOLDER_ID])
+        itemIDs.extend([None, ProjectService.PROJECT_PROPERTIES_ID])
         itemIDs.append(ProjectService.RENAME_ID)
         itemIDs.append(ProjectService.OPEN_PROJECT_PATH_ID)
         self.GetCommonItemsMenu(menu,itemIDs)
@@ -4626,45 +4666,7 @@ class ProjectService(Service.Service):
             wx.EVT_MENU(frame, ProjectService.OPEN_PROJECT_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, ProjectService.OPEN_PROJECT_ID, frame.ProcessUpdateUIEvent)
             
-            item = wx.MenuItem(projectMenu,ProjectService.IMPORT_FILES_ID, _("Import Files..."), _("Import files to the current project"))
-            item.SetBitmap(images.load("project/import.png"))
-            projectMenu.AppendItem(item)
-            wx.EVT_MENU(frame, ProjectService.IMPORT_FILES_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, ProjectService.IMPORT_FILES_ID, frame.ProcessUpdateUIEvent)
-            if not menuBar.FindItemById(ProjectService.ADD_FILES_TO_PROJECT_ID):
-                projectMenu.Append(ProjectService.ADD_FILES_TO_PROJECT_ID, _("Add &Files to Project..."), _("Adds a document to the current project"))
-                wx.EVT_MENU(frame, ProjectService.ADD_FILES_TO_PROJECT_ID, frame.ProcessEvent)
-                wx.EVT_UPDATE_UI(frame, ProjectService.ADD_FILES_TO_PROJECT_ID, frame.ProcessUpdateUIEvent)
-            if not menuBar.FindItemById(ProjectService.ADD_DIR_FILES_TO_PROJECT_ID):
-                projectMenu.Append(ProjectService.ADD_DIR_FILES_TO_PROJECT_ID, _("Add Directory Files to Project..."), _("Adds a directory's documents to the current project"))
-                wx.EVT_MENU(frame, ProjectService.ADD_DIR_FILES_TO_PROJECT_ID, frame.ProcessEvent)
-                wx.EVT_UPDATE_UI(frame, ProjectService.ADD_DIR_FILES_TO_PROJECT_ID, frame.ProcessUpdateUIEvent)
-            if not menuBar.FindItemById(ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID):
-                projectMenu.Append(ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID, _("&Add Active File to Project..."), _("Adds the active document to a project"))
-                wx.EVT_MENU(frame, ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID, frame.ProcessEvent)
-                wx.EVT_UPDATE_UI(frame, ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID, frame.ProcessUpdateUIEvent)
-            
-            if not menuBar.FindItemById(ProjectService.ADD_NEW_FILE_ID):
-                item = wx.MenuItem(projectMenu,ProjectService.ADD_NEW_FILE_ID, _("New File"), _("Creates a new file"))
-                item.SetBitmap(images.load("project/new_file.png"))
-                projectMenu.AppendItem(item)
-                wx.EVT_MENU(frame, ProjectService.ADD_NEW_FILE_ID, frame.ProcessEvent)
-                wx.EVT_UPDATE_UI(frame, ProjectService.ADD_NEW_FILE_ID, frame.ProcessUpdateUIEvent)
-                
-            if not menuBar.FindItemById(ProjectService.ADD_FOLDER_ID):
-                item = wx.MenuItem(projectMenu,ProjectService.ADD_FOLDER_ID, _("New Folder"), _("Creates a new folder"))
-                item.SetBitmap(images.load("project/folder.png"))
-                projectMenu.AppendItem(item)
-                wx.EVT_MENU(frame, ProjectService.ADD_FOLDER_ID, frame.ProcessEvent)
-                wx.EVT_UPDATE_UI(frame, ProjectService.ADD_FOLDER_ID, frame.ProcessUpdateUIEvent)
-            if not menuBar.FindItemById(ProjectService.ADD_PACKAGE_FOLDER_ID):
-                item = wx.MenuItem(projectMenu,ProjectService.ADD_PACKAGE_FOLDER_ID, _("New Package Folder"), _("Creates a new package folder"))
-                item.SetBitmap(images.load("project/package.png"))
-                projectMenu.AppendItem(item)
-                wx.EVT_MENU(frame, ProjectService.ADD_PACKAGE_FOLDER_ID, frame.ProcessEvent)
-                wx.EVT_UPDATE_UI(frame, ProjectService.ADD_PACKAGE_FOLDER_ID, frame.ProcessUpdateUIEvent)
             if not menuBar.FindItemById(ProjectService.CLOSE_PROJECT_ID):
-                projectMenu.AppendSeparator()
                 projectMenu.Append(ProjectService.CLOSE_PROJECT_ID, _("Close Project"), _("Closes currently open project"))
                 wx.EVT_MENU(frame, ProjectService.CLOSE_PROJECT_ID, frame.ProcessEvent)
                 wx.EVT_UPDATE_UI(frame, ProjectService.CLOSE_PROJECT_ID, frame.ProcessUpdateUIEvent)
@@ -4693,10 +4695,54 @@ class ProjectService(Service.Service):
                 projectMenu.AppendItem(item)
                 wx.EVT_MENU(frame, ProjectService.ARCHIVE_PROJECT_ID, frame.ProcessEvent)
                 wx.EVT_UPDATE_UI(frame, ProjectService.ARCHIVE_PROJECT_ID, frame.ProcessUpdateUIEvent)
+            
+            projectMenu.AppendSeparator()
+            item = wx.MenuItem(projectMenu,ProjectService.IMPORT_FILES_ID, _("Import Files..."), _("Import files to the current project"))
+            item.SetBitmap(images.load("project/import.png"))
+            projectMenu.AppendItem(item)
+            wx.EVT_MENU(frame, ProjectService.IMPORT_FILES_ID, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, ProjectService.IMPORT_FILES_ID, frame.ProcessUpdateUIEvent)
+            if not menuBar.FindItemById(ProjectService.ADD_FILES_TO_PROJECT_ID):
+                projectMenu.Append(ProjectService.ADD_FILES_TO_PROJECT_ID, _("Add &Files to Project..."), _("Adds a document to the current project"))
+                wx.EVT_MENU(frame, ProjectService.ADD_FILES_TO_PROJECT_ID, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, ProjectService.ADD_FILES_TO_PROJECT_ID, frame.ProcessUpdateUIEvent)
+            if not menuBar.FindItemById(ProjectService.ADD_DIR_FILES_TO_PROJECT_ID):
+                projectMenu.Append(ProjectService.ADD_DIR_FILES_TO_PROJECT_ID, _("Add Directory Files to Project..."), _("Adds a directory's documents to the current project"))
+                wx.EVT_MENU(frame, ProjectService.ADD_DIR_FILES_TO_PROJECT_ID, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, ProjectService.ADD_DIR_FILES_TO_PROJECT_ID, frame.ProcessUpdateUIEvent)
+            if not menuBar.FindItemById(ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID):
+                projectMenu.Append(ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID, _("&Add Active File to Project..."), _("Adds the active document to a project"))
+                wx.EVT_MENU(frame, ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID, frame.ProcessUpdateUIEvent)
+            
+            if not menuBar.FindItemById(ProjectService.ADD_NEW_FILE_ID):
+                projectMenu.AppendSeparator()
+                item = wx.MenuItem(projectMenu,ProjectService.ADD_NEW_FILE_ID, _("New File"), _("Creates a new file"))
+                item.SetBitmap(images.load("project/new_file.png"))
+                projectMenu.AppendItem(item)
+                wx.EVT_MENU(frame, ProjectService.ADD_NEW_FILE_ID, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, ProjectService.ADD_NEW_FILE_ID, frame.ProcessUpdateUIEvent)
+                
+            if not menuBar.FindItemById(ProjectService.ADD_FOLDER_ID):
+                item = wx.MenuItem(projectMenu,ProjectService.ADD_FOLDER_ID, _("New Folder"), _("Creates a new folder"))
+                item.SetBitmap(images.load("project/folder.png"))
+                projectMenu.AppendItem(item)
+                wx.EVT_MENU(frame, ProjectService.ADD_FOLDER_ID, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, ProjectService.ADD_FOLDER_ID, frame.ProcessUpdateUIEvent)
+            if not menuBar.FindItemById(ProjectService.ADD_PACKAGE_FOLDER_ID):
+                item = wx.MenuItem(projectMenu,ProjectService.ADD_PACKAGE_FOLDER_ID, _("New Package Folder"), _("Creates a new package folder"))
+                item.SetBitmap(images.load("project/package.png"))
+                projectMenu.AppendItem(item)
+                wx.EVT_MENU(frame, ProjectService.ADD_PACKAGE_FOLDER_ID, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, ProjectService.ADD_PACKAGE_FOLDER_ID, frame.ProcessUpdateUIEvent)
                 
             if not menuBar.FindItemById(ProjectService.PROJECT_PROPERTIES_ID):
                 projectMenu.AppendSeparator()
-                projectMenu.Append(ProjectService.PROJECT_PROPERTIES_ID, _("Project Properties"), _("Project Properties"))
+               ## projectMenu.Append(ProjectService.PROJECT_PROPERTIES_ID, _("Project Properties"), _("Project Properties"))
+                ###
+                item = wx.MenuItem(projectMenu,ProjectService.PROJECT_PROPERTIES_ID, _("Project Properties"), _("Project Properties"))
+                item.SetBitmap(images.load("project/properties.png"))
+                projectMenu.AppendItem(item)
                 wx.EVT_MENU(frame, ProjectService.PROJECT_PROPERTIES_ID, frame.ProcessEvent)
                 wx.EVT_UPDATE_UI(frame, ProjectService.PROJECT_PROPERTIES_ID, frame.ProcessUpdateUIEvent)
             projectMenu.Append(ProjectService.OPEN_PROJECT_PATH_ID, _("Open Project Path in Explorer"), _("Open Project Path"))
