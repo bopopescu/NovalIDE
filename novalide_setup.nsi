@@ -134,6 +134,7 @@ Section "MainSection" SEC01
   File "dist\_socket.pyd"
   File "dist\_hashlib.pyd"
   File "dist\_ctypes.pyd"
+  File "dist\_multiprocessing.pyd"
   SetOutPath "$INSTDIR\noval"
   File /r "dist\noval\*.*"
   SetOutPath "$INSTDIR\tcl"

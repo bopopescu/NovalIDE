@@ -130,7 +130,7 @@ class ImportFilesDialog(wx.Dialog):
         self.Fit()
         
     def ShowFilterFileDialog(self,event):
-        file_filter_dlg = ProjectUI.FileFilterDialog(self,-1,_("File Filters"))
+        file_filter_dlg = ProjectUI.FileFilterDialog(self,-1,_("File Filters"),self.filters)
         file_filter_dlg.ShowModal()
         self.filters = file_filter_dlg.filters
         file_filter_dlg.Destroy()

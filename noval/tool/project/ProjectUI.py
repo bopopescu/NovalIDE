@@ -63,8 +63,8 @@ class PromptMessageDialog(wx.Dialog):
         
 
 class FileFilterDialog(wx.Dialog):
-    def __init__(self,parent,dlg_id,title):
-        self.filters = []
+    def __init__(self,parent,dlg_id,title,filters):
+        self.filters = filters
         wx.Dialog.__init__(self,parent,dlg_id,title)
         boxsizer = wx.BoxSizer(wx.VERTICAL)
         
@@ -113,7 +113,9 @@ class FileFilterDialog(wx.Dialog):
             if temp.IsVisible() and temp.GetDocumentType() != ProjectEditor.ProjectDocument:
                 filters = temp.GetFileFilter().split(";")
                 for filter in filters:
-                    self.listbox.Append(filter)
+                    i = self.listbox.Append(filter)
+                    if str(filter.replace("*","").replace(".","")) in self.filters:
+                        self.listbox.Check(i)
 
 class EditorSelectionDialog(wx.Dialog):
     
