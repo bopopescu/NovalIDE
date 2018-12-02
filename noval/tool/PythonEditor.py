@@ -456,6 +456,9 @@ class PythonService(Service.Service):
     #----------------------------------------------------------------------------
     # Overridden methods
     #----------------------------------------------------------------------------
+    
+    def __init__(self, serviceName, embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM):
+        Service.Service.__init__(self, serviceName, embeddedWindowLocation,icon_path="interpreter.ico")
 
     def _CreateView(self):
         return PythonInterpreterView(self)
@@ -514,10 +517,6 @@ class PythonService(Service.Service):
                     newDoc.SetWriteable(False)
                     newDoc.GetFirstView().GetFrame().SetTitle(_("Python Interpreter"))
                 break
-
-    def GetIconIndex(self):
-        return Service.ServiceView.InterpreterIconIndex
-
 
 class PythonCtrl(CodeEditor.CodeCtrl):
 
@@ -998,6 +997,8 @@ class PythonCtrl(CodeEditor.CodeCtrl):
             line = self.LineFromPosition(position) + 1
             dwellword = self.GetTypeWord(position)
             doc_view = Service.Service.GetActiveView()
+            if doc_view is None:
+                return
             if doc_view.GetLangId() == lang.ID_LANG_PYTHON:
                 module_scope = doc_view.ModuleScope
                 if module_scope is None:

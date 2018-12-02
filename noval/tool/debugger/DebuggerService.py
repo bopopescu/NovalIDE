@@ -51,7 +51,7 @@ import DebugOutputCtrl
 import noval.parser.intellisence as intellisence
 import noval.tool.interpreter.InterpreterManager as interpretermanager
 from noval.tool.consts import PYTHON_PATH_NAME,NOT_IN_ANY_PROJECT,\
-        SPACE,HALF_SPACE,DEBUG_RUN_ITEM_NAME
+        SPACE,HALF_SPACE,DEBUG_RUN_ITEM_NAME,DEBUGGER_PAGE_COMMON_METHOD
 import noval.util.strutils as strutils
 import noval.parser.utils as parserutils
 import noval.util.fileutils as fileutils
@@ -67,6 +67,8 @@ from noval.util.exceptions import StartupPathNotExistError,PromptErrorException
 import noval.tool.project.RunConfiguration as RunConfiguration
 import Watchs
 import noval.tool.service.MessageService as MessageService
+import noval.tool.aui as aui
+import uuid
 
 import sys
 reload(sys)
@@ -302,12 +304,7 @@ class RunCommandUI(wx.Panel):
     
     @staticmethod
     def StopAndRemoveAllUI():
-        for i in range(Service.ServiceView.bottomTab.GetPageCount() - 1, - 1, -1): # Go from len-1 to 1
-            page = Service.ServiceView.bottomTab.GetPage(i)
-            if hasattr(page, 'StopAndRemoveUI'):
-                if not page.StopAndRemoveUI(None):
-                    return False
-        return True
+        return Service.ServiceView.RemoveAllPages()
 
     def __init__(self, service,parent, id, fileName,run_parameter):
         wx.Panel.__init__(self, parent, id)
@@ -393,13 +390,7 @@ class RunCommandUI(wx.Panel):
     @WxThreadSafe.call_after
     def ExecutorFinished(self):
         self._tb.EnableTool(self.KILL_PROCESS_ID, False)
-        nb = self.GetParent()
-        for i in range(0,nb.GetPageCount()):
-            if self == nb.GetPage(i):
-                text = nb.GetPageText(i)
-                newText = text.replace(_("Running"), _("Finished Running"))
-                nb.SetPageText(i, newText)
-                break
+        self.UpdateFinishedPagePaneText()
         self._stopped = True
         self._textCtrl.SetReadOnly(True)
         self.UpdateAllRunnerTerminateAllUI()
@@ -408,6 +399,10 @@ class RunCommandUI(wx.Panel):
             wx.Yield()
             self.RestartRunProcess()
             self._restarted = False
+            
+    #when process finished,update tag page text
+    def UpdateFinishedPagePaneText(self):
+        self.UpdatePagePaneText(_("Running"),_("Finished Running"))
 
     def StopExecution(self,unbind_evt=False):
         if not self._stopped:
@@ -431,12 +426,12 @@ class RunCommandUI(wx.Panel):
                 return False
 
         self.StopExecution(unbind_evt=True)
-        index = DebuggerService.GetDebuggerPageIndex(self)
-        self._noteBook.GetPage(index).Show(False)
-        self._noteBook.RemovePage(index)
-        ###check notebook page count,if is 0,then hidden the bottom sash frame window
-        ###shoud use message view,while DebuggerView is not TabbedServiceView type
-        wx.GetApp().GetService(MessageService.MessageService).GetView().CheckNotebookPageCount()
+        pane_info = self._service.AuiManager.GetPane(self)
+        pane_info.Show(False)
+        #destroy the window pane after close,but not destroy pane window
+        pane_info.DestroyOnClose()
+        self._service.AuiManager.ClosePane(pane_info,destroy_pane_window=False)
+        self._service.AuiManager.Update()
         return True
         
     def RestartProcess(self):
@@ -461,14 +456,31 @@ class RunCommandUI(wx.Panel):
         self._tb.EnableTool(self.KILL_PROCESS_ID, True)
         self._tb.EnableTool(self.TERMINATE_ALL_PROCESS_ID, True)
         self._stopped = False
-        nb = self.GetParent()
-        for i in range(0,nb.GetPageCount()):
-            if self == nb.GetPage(i):
-                text = nb.GetPageText(i)
-                newText = text.replace(_("Finished Running"),_("Running"))
-                nb.SetPageText(i, newText)
-                break
+        self.UpdateRestartPagePaneText()
         self.Execute()
+        
+    def UpdatePagePaneText(self,src_text,to_text):
+        nb = self._service.GetBottomTab()
+        pane_info = self._service.AuiManager.GetPane(self)
+        if nb is None:
+            text = pane_info.caption
+            newText = text.replace(src_text,to_text)
+            pane_info.Caption(newText)
+        else:
+            nb_pane_info = self._service.AuiManager.GetPane(nb)
+            for i in range(0,nb.GetPageCount()):
+                if self == nb.GetPage(i):
+                    text = nb.GetPageText(i)
+                    newText = text.replace(src_text,to_text)
+                    nb.SetPageText(i, newText)
+                    pane_info.Caption(newText)
+                    nb_pane_info.Caption(newText)
+                    break
+        self._service.AuiManager.Update()
+        
+    #when restart process,update tag page text
+    def UpdateRestartPagePaneText(self):
+        self.UpdatePagePaneText(_("Finished Running"), _("Running"))
 
     #------------------------------------------------------------------------------
     # Event handling
@@ -719,14 +731,7 @@ class BaseDebuggerUI(wx.Panel):
         except wx._core.PyDeadObjectError:
             pass
         try:
-            nb = self.GetParent()
-            for i in range(0, nb.GetPageCount()):
-                if self == nb.GetPage(i):
-                    text = nb.GetPageText(i)
-                    newText = text.replace(_("Debugging"), _("Finished Debugging"))
-                    nb.SetPageText(i, newText)
-                    if _VERBOSE: print "In ExectorFinished, changed tab title."
-                    break
+            self.UpdatePagePaneText(_("Debugging"), _("Finished Debugging"))
         except:
             if _VERBOSE: print "In ExectorFinished, got exception"
         self._tb.EnableTool(self.KILL_PROCESS_ID, False)
@@ -799,16 +804,16 @@ class BaseDebuggerUI(wx.Panel):
         self.StopExecution(None)
         if self in BaseDebuggerUI.debuggers:
             BaseDebuggerUI.debuggers.remove(self)
-        index = DebuggerService.GetDebuggerPageIndex(self)
-        self._parentNoteBook.GetPage(index).Show(False)
-        self._parentNoteBook.RemovePage(index)
+        tab_page_pane = self._service.AuiManager.GetPane(self)
+        tab_page_pane.Show(False)
+        #destroy the window pane after close,but not destroy pane window
+        tab_page_pane.DestroyOnClose()
+        self._service.AuiManager.ClosePane(tab_page_pane,destroy_pane_window=False)
+        self._service.AuiManager.Update()
         if self._callback.IsWait():
             utils.GetLogger().warn("debugger callback is still wait for rpc when debugger stoped.will stop manualy")
             self._callback.StopWait()
             
-        ###check notebook page count,if is 0,then hidden the bottom sash frame window
-        ###shoud use message view,while DebuggerView is not TabbedServiceView type
-        wx.GetApp().GetService(MessageService.MessageService).GetView().CheckNotebookPageCount()
         return True
 
     def OnAddWatch(self, event):
@@ -836,6 +841,25 @@ class BaseDebuggerUI(wx.Panel):
         
     def RestartDebugger(self,event):
         assert False, "RestartDebugger not overridden"
+        
+    def UpdatePagePaneText(self,src_text,to_text):
+        nb = self._service.GetBottomTab()
+        pane_info = self._service.AuiManager.GetPane(self)
+        if nb is None:
+            text = pane_info.caption
+            newText = text.replace(src_text,to_text)
+            pane_info.Caption(newText)
+        else:
+            nb_pane_info = self._service.AuiManager.GetPane(nb)
+            for i in range(0,nb.GetPageCount()):
+                if self == nb.GetPage(i):
+                    text = nb.GetPageText(i)
+                    newText = text.replace(src_text,to_text)
+                    nb.SetPageText(i, newText)
+                    pane_info.Caption(newText)
+                    nb_pane_info.Caption(newText)
+                    break
+        self._service.AuiManager.Update()
 
 
 class PythonDebuggerUI(BaseDebuggerUI):
@@ -1044,13 +1068,7 @@ class PythonDebuggerUI(BaseDebuggerUI):
         self.CheckPortAvailable()
         self.CreateCallBack()
         self.CreateExecutor()
-        nb = self.GetParent()
-        for i in range(0,nb.GetPageCount()):
-            if self == nb.GetPage(i):
-                text = nb.GetPageText(i)
-                newText = text.replace(_("Finished Debugging"),_("Debugging"))
-                nb.SetPageText(i, newText)
-                break
+        self.UpdatePagePaneText(_("Finished Debugging"),_("Debugging"))
         self.Execute()
         
     def CheckPortAvailable(self):
@@ -1688,20 +1706,30 @@ class DebuggerView(Service.ServiceView):
     #-----------------------------------------------------------------------------
 
     def ProcessEvent(self, event):
-        if Service.ServiceView.bottomTab.GetPageCount() == 0:
+        current_page = self.GetCurrentBottomPage()
+        if current_page is None:
             return False
-        current_page = Service.ServiceView.bottomTab.GetPage(Service.ServiceView.bottomTab.GetSelection())
-        if isinstance(current_page,RunCommandUI) or isinstance(current_page,PythonDebuggerUI):
+        if hasattr(current_page, DEBUGGER_PAGE_COMMON_METHOD):
             return current_page.ProcessEvent(event)
         return False
 
     def ProcessUpdateUIEvent(self, event):
-        if Service.ServiceView.bottomTab.GetPageCount() == 0:
+        current_page = self.GetCurrentBottomPage()
+        if current_page is None:
             return False
-        current_page = Service.ServiceView.bottomTab.GetPage(Service.ServiceView.bottomTab.GetSelection())
-        if isinstance(current_page,RunCommandUI) or isinstance(current_page,PythonDebuggerUI):
+        if hasattr(current_page, DEBUGGER_PAGE_COMMON_METHOD):
             return current_page.ProcessUpdateUIEvent(event)
         return False
+        
+    def GetCurrentBottomPage(self):
+        bottomTab = self._service.GetBottomTab()
+        if bottomTab is None:
+            bottom_pane = self._service.AuiManager.GetAnyPane(aui.AUI_DOCK_BOTTOM)
+            if bottom_pane is None:
+                return None
+            return bottom_pane.window
+        current_page = bottomTab.GetPage(bottomTab.GetSelection())
+        return current_page
         
     def GetDocument(self):
         return None
@@ -2111,7 +2139,7 @@ class DebuggerService(Service.Service):
     #----------------------------------------------------------------------------
 
     def __init__(self, serviceName, embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_LEFT):
-        Service.Service.__init__(self, serviceName, embeddedWindowLocation)
+        Service.Service.__init__(self, serviceName, embeddedWindowLocation,icon_path="debugger/debug.ico")
         self.BREAKPOINT_DICT_STRING = "MasterBreakpointDict"
         config = wx.ConfigBase_Get()
         pickledbps = config.Read(self.BREAKPOINT_DICT_STRING)
@@ -2605,7 +2633,7 @@ class DebuggerService(Service.Service):
         pythonService = wx.GetApp().GetService(PythonEditor.PythonService)
         pythonService.ShowWindow()
         #switch to builtin interpreter tab
-        Service.ServiceView.bottomTab.SetSelection(pythonService.GetPageIndex())
+        pythonService.SwitchtoTabPage()
         python_interpreter_view = pythonService.GetView()
         old_argv = sys.argv
         environment,initialArgs = run_parameter.Environment,run_parameter.Arg
@@ -2744,11 +2772,11 @@ class DebuggerService(Service.Service):
             return
         fileToRun = run_parameter.FilePath
         shortFile = os.path.basename(fileToRun)
-        page = RunCommandUI(self,Service.ServiceView.bottomTab, -1, fileToRun,run_parameter)
-        count = Service.ServiceView.bottomTab.GetPageCount()
-        Service.ServiceView.bottomTab.AddPage(page, _("Running: ") + shortFile)
-        Service.ServiceView.bottomTab.SetPageImage(count,self.GetIconIndex())
-        Service.ServiceView.bottomTab.SetSelection(count)
+        page = RunCommandUI(self,self._frame, -1, fileToRun,run_parameter)
+        target_pane = self.GetTargetPane(aui.AUI_DOCK_BOTTOM)
+        pane_info = self.CreatePane(aui.AUI_DOCK_BOTTOM,target=target_pane,control=page,caption=_("Running: ") + shortFile,\
+                                    name=self.GetServiceName() + str(uuid.uuid1()).lower())
+        self._frame._mgr.Update()
         page.Execute(onWebServer = False)
         
     def SetExceptionBreakPoint(self):
@@ -2899,11 +2927,12 @@ class DebuggerService(Service.Service):
         fileToDebug = DebuggerService.ExpandPath(fileToDebug)
         shortFile = os.path.basename(fileToDebug)
 
-        self._debugger_ui = PythonDebuggerUI(Service.ServiceView.bottomTab, -1, str(fileToDebug),self,run_parameter,autoContinue=autoContinue)
-        count = Service.ServiceView.bottomTab.GetPageCount()
-        Service.ServiceView.bottomTab.AddPage(self._debugger_ui, _("Debugging: ") + shortFile)
-        Service.ServiceView.bottomTab.SetPageImage(count,self.GetBreakDebugIconIndex())
-        Service.ServiceView.bottomTab.SetSelection(count)
+        self._debugger_ui = PythonDebuggerUI(self._frame, -1, str(fileToDebug),self,run_parameter,autoContinue=autoContinue)
+        target_pane = self.GetTargetPane(aui.AUI_DOCK_BOTTOM)
+        pane_info = self.CreatePane(aui.AUI_DOCK_BOTTOM,target=target_pane,control=self._debugger_ui,caption=_("Debugging: ") + shortFile,\
+                                    name= self.GetServiceName() + str(uuid.uuid1()).lower(),icon=self.GetBreakDebugIcon())
+        self._frame._mgr.Update()
+        
         self._debugger_ui.Execute()
         
     def OnDebugWebServerContinue(self, event):
@@ -3120,12 +3149,9 @@ class DebuggerService(Service.Service):
 
     def SetPhpDbgParam(self, value = None):
         self.phpDbgParam = value
-
-    def GetIconIndex(self):
-        return Service.ServiceView.DebugRunIconIndex
         
-    def GetBreakDebugIconIndex(self):
-        return Service.ServiceView.BreakDebugIconIndex
+    def GetBreakDebugIcon(self):
+        return images.load("debugger/debugger.png")
         
     def AppendWatch(self,watch_obj):
         self.watchs.append(watch_obj)

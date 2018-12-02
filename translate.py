@@ -6,4 +6,4 @@ cmd = r'python C:\Python27\Tools\i18n\pygettext.py -a -d novalide -o novalide.po
 
 subprocess.call(cmd)
 
-os.system(r'"C:\Program Files (x86)\Poedit\Poedit.exe" G:\work\Noval\noval\locale\novalide.pot')
+os.system(r'"C:\Program Files (x86)\Poedit\Poedit.exe" D:\env\Noval\noval\locale\zh_CN.po')

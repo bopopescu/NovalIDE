@@ -12,23 +12,40 @@ import datetime
 import noval.parser.utils as parserutils
 import requests
 import json
-from noval.util.logger import app_debugLogger
 import noval.tool.consts as consts
+import noval.util.utils as utils
 
 if sysutilslib.isWindows():
     import wmi
     import pythoncom
 
     def get_host_info():
+        pythoncom.CoInitialize()
         c = wmi.WMI ()
         os_name = ''
         os_bit = ''
         sn = ''
-        for os_sys in c.Win32_OperatingSystem():
-            os_name = os_sys.Caption.encode("UTF8").strip()
-            os_bit = os_sys.OSArchitecture.encode("UTF8")
-        for physical_disk in c.Win32_DiskDrive():
-            sn = physical_disk.SerialNumber.strip()
+        try:
+            for os_sys in c.Win32_OperatingSystem():
+                os_name = os_sys.Caption.encode("UTF8").strip()
+                os_bit = os_sys.OSArchitecture.encode("UTF8")
+            for physical_disk in c.Win32_DiskDrive():
+                sn = physical_disk.SerialNumber.strip()
+        except Exception as e:
+            utils.GetLogger().warn("get system info error:%s,will use external tool to get system info",e)
+            get_system_tool_path = os.path.join(sysutilslib.mainModuleDir,"tools\\dummytool.exe")
+            p = os.popen(get_system_tool_path)
+            content = p.read()
+            os_name_flag = "os name:"
+            os_bit_flat = "os bit:"
+            sn_flag = "serial number:"
+            for line in content.splitlines():
+                if line.find(os_name_flag) != -1:
+                    os_name = line.replace(os_name_flag,"").strip()
+                elif line.find(os_bit_flat) != -1:
+                    os_bit = line.replace(os_bit_flat,"").strip()
+                elif line.find(sn_flag) != -1:
+                    sn = line.replace(sn_flag,"").strip()
         return os_name,os_bit,sn
 else:
     import platform
@@ -54,8 +71,6 @@ class UserDataDb(BaseDb):
     __metaclass__ = Singleton.SingletonNew
 
     def __init__(self):
-        if sysutilslib.isWindows():
-            pythoncom.CoInitialize()
         db_dir = os.path.join(appdirs.getAppDataFolder(),consts.USER_CACHE_DIR)
         if not os.path.exists(db_dir):
             parserutils.MakeDirs(db_dir)
@@ -127,12 +142,12 @@ class UserDataDb(BaseDb):
                     'user_name':result[2]
                 }
                 data = self.RequestData(api_addr,arg = args,method='post')
-                if data is not None and data['code'] == 0:
-                    member_id = data['member_id']
-                    update_sql = '''
-                        update user set user_id='%s' where id=%d
-                    ''' % (member_id,self.user_id )
-                    self.update(update_sql)
+            if data is not None and data['code'] == 0:
+                member_id = data['member_id']
+                update_sql = '''
+                    update user set user_id='%s' where id=%d
+                ''' % (member_id,self.user_id )
+                self.update(update_sql)
         
     def RecordStart(self):
         self.GetUser()
@@ -204,7 +219,7 @@ class UserDataDb(BaseDb):
                 req = requests.post(addr,data = arg,**params)
             return req.json()
         except Exception as e:
-            app_debugLogger.error('open %s error:%s' ,addr,e)
+            utils.GetLogger().error('open %s error:%s' ,addr,e)
         return None
         
     def GetUserId(self):

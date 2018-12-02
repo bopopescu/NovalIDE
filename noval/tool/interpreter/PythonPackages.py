@@ -126,16 +126,20 @@ class ManagePackagesDialog(wx.Dialog):
     
     @WxThreadSafe.call_after
     def EndDialog(self,retcode):
+        package_name = self.value_ctrl.GetValue().strip()
+        python_package = self.interpreter.GetInstallPackage(package_name)
         if retcode == 0:
-            if self._manage_action == self.MANAGE_INSTALL_PACKAGE:
+            if self._manage_action == self.MANAGE_INSTALL_PACKAGE and python_package:
+                self.GetParent().AddPackage(python_package,self.interpreter)
                 wx.MessageBox(_("Install Success"))
-            else:
+            elif self._manage_action == self.MANAGE_UNINSTALL_PACKAGE and not python_package:
+                self.GetParent().RemovePackage(package_name,self.interpreter)
                 wx.MessageBox(_("Uninstall Success"))
             self.EndModal(wx.ID_OK)
         else:
-            if self._manage_action == self.MANAGE_INSTALL_PACKAGE:
+            if self._manage_action == self.MANAGE_INSTALL_PACKAGE and not python_package:
                 wx.MessageBox(_("Install Fail"),style=wx.OK|wx.ICON_ERROR)
-            else:
+            elif self._manage_action == self.MANAGE_UNINSTALL_PACKAGE and python_package:
                 wx.MessageBox(_("Uninstall Fail"),style=wx.OK|wx.ICON_ERROR)
             self.value_ctrl.Enable(True)
             self.ok_btn.Enable(True)
@@ -185,16 +189,16 @@ class ManagePackagesDialog(wx.Dialog):
             wx.MessageBox(_("package name is empty"))
             return
         interpreter_name = self._interpreterCombo.GetStringSelection()
-        interpreter = interpretermanager.InterpreterManager().GetInterpreterByName(interpreter_name)
-        if interpreter.IsBuiltIn or interpreter.GetPipPath() is None:
+        self.interpreter = interpretermanager.InterpreterManager().GetInterpreterByName(interpreter_name)
+        if self.interpreter.IsBuiltIn or self.interpreter.GetPipPath() is None:
             wx.MessageBox(_("Could not find pip on the path"),style=wx.OK|wx.ICON_ERROR)
             return
         self.value_ctrl.Enable(False)
         self.ok_btn.Enable(False)
         if self._manage_action == ManagePackagesDialog.MANAGE_INSTALL_PACKAGE:
-            self.InstallPackage(interpreter)
+            self.InstallPackage(self.interpreter)
         else:
-            self.UninstallPackage(interpreter)
+            self.UninstallPackage(self.interpreter)
         
 class PackagePanel(wx.Panel):
     def __init__(self,parent):
@@ -255,7 +259,7 @@ class PackagePanel(wx.Panel):
             
     def LoadPackageList(self,interpreter):
         for name in interpreter.Packages:
-            self.dvlc.AppendItem([name,interpreter.Packages[name]])
+            self.AddPackage(interpreter.Packages[name])
         utils.GetLogger().debug("load interpreter %s package end" % self.interpreter.Name)
             
     @WxThreadSafe.call_after
@@ -265,3 +269,23 @@ class PackagePanel(wx.Panel):
             return
         self.dvlc.DeleteAllItems()
         self.LoadPackageList(interpreter)
+        
+    def AddPackage(self,python_package,interpreter=None):
+        self.dvlc.AppendItem([python_package.Name,python_package.Version])
+        if interpreter is not None:
+            interpreter.Packages[python_package.Name] = python_package
+        
+    def RemovePackage(self,name,interpreter):
+        row,package_name = self.GetPackageRow(name)
+        if row == -1:
+            return
+        self.dvlc.DeleteItem(row)
+        del interpreter.Packages[package_name]
+        
+    def GetPackageRow(self,package_name):
+        count = self.dvlc.GetStore().GetCount()
+        for i in range(count):
+            column_value = self.dvlc.GetTextValue(i,0)
+            if column_value.lower() == package_name.lower():
+                return i,column_value
+        return -1,""

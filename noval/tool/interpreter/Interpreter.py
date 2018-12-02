@@ -124,6 +124,18 @@ class PythonEnvironment(object):
     def __getitem__(self,name):
         return self.environ[name]
         
+
+class PythonPackage():
+    def __init__(self,**kwargs):        
+        for arg in kwargs:
+            attr = arg
+            if arg == 'name':
+                arg = 'Name'
+            elif arg == 'version':
+                arg = 'Version'
+            setattr(self,arg,kwargs[attr])
+        
+
 class BuiltinPythonInterpreter(Interpreter):
     def __init__(self,name,executable_path,id=None,is_builtin = True):
         super(BuiltinPythonInterpreter,self).__init__(name,executable_path)
@@ -264,6 +276,12 @@ class BuiltinPythonInterpreter(Interpreter):
         if package_name in self.Packages:
             return True
         return False
+        
+    def LoaPackagesFromDict(self,package_dct):
+        return {}
+        
+    def DumpPackages(self):
+        return {}
         
 class PythonInterpreter(BuiltinPythonInterpreter):
     
@@ -445,10 +463,15 @@ class PythonInterpreter(BuiltinPythonInterpreter):
     def GetPipPath(self):
         if sysutils.isWindows():
             pip_name = "pip.exe"
+            pip3_name = "pip3.exe"
         else:
             pip_name = "pip"
+            pip3_name = "pip3"
         python_location = os.path.dirname(self.Path)
         pip_path_list = [os.path.join(python_location,"Scripts",pip_name),os.path.join(python_location,pip_name)]
+        #py3 may get pip3 as the pip tool
+        if self.IsV3():
+            pip_path_list.extend([os.path.join(python_location,"Scripts",pip3_name),os.path.join(python_location,pip3_name)])
         for pip_path in pip_path_list:
             if os.path.exists(pip_path):
                 return pip_path
@@ -469,6 +492,8 @@ class PythonInterpreter(BuiltinPythonInterpreter):
             t.start()
             
     def LoadPackageList(self,ui_panel):
+        #clear all packages first
+        self._packages = {}
         self._is_loading_package = True
         pip_path = self.GetPipPath()
         if pip_path is not None:
@@ -478,8 +503,16 @@ class PythonInterpreter(BuiltinPythonInterpreter):
                 if line.strip() == "":
                     continue
                 name,raw_version = line.split()[0:2]
+                #filter output lines like
+                '''
+                    Package                      Version
+                    ---------------------------- ---------
+                '''
+                if raw_version.startswith("-----") or raw_version.strip() == "Version":
+                    continue
                 version = raw_version.replace("(","").replace(")","")
-                self._packages[name] = version
+                python_package = PythonPackage(**{'Name':name,'Version':version})
+                self._packages[name] = python_package
         
         if self._is_loading_package:
             ui_panel.LoadPackageEnd(self)
@@ -499,3 +532,44 @@ class PythonInterpreter(BuiltinPythonInterpreter):
     def StopLoadingPackage(self):
         self._is_loading_package = False
 
+    def GetInstallPackage(self,package_name):
+        command = "%s show %s" % (strutils.emphasis_path(self.GetPipPath()),package_name)
+        output = GetCommandOutput(command)
+        if output.strip() == "":
+            return None
+        name = package_name
+        version = 'Unknown'
+        name_flag = 'Name:'
+        ver_flag = 'Version:'
+        for line in output.splitlines():
+            if line.find(name_flag) != -1:
+                name = line.replace(name_flag,"").strip()
+            elif line.find(ver_flag) != -1:
+                version = line.replace(ver_flag,"").strip()
+        python_package = PythonPackage(**{'Name':name,'Version':version})
+        return python_package
+
+    def DumpPackages(self):
+        packages = {}
+        for name in self._packages:
+            package = self._packages[name]
+            attrs = dir(package)
+            dct = {}
+            for attr in attrs:
+                if attr == '__module__' or attr == "__init__" or attr == "__doc__":
+                    continue
+                dct[attr] = getattr(package,attr)
+            packages[name] = dct
+        return packages
+        
+    def LoaPackagesFromDict(self,package_dct):
+        packages = {}
+        for package_name in package_dct:
+            dct = package_dct[package_name]
+            #to git the old packages structure
+            if isinstance(dct,basestring):
+                dct = {'Name':package_name,'Version':dct}
+            python_package = PythonPackage(**dct)
+            packages[package_name] = python_package
+        return packages
+                

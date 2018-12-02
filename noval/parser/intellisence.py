@@ -270,11 +270,11 @@ class IntellisenceDataLoader(object):
                      member_list=os.path.join(data_path,name +".$memberlist"))
             self.module_dicts[name] = d
 
-    def Load(self,interpreter):
-        t = threading.Thread(target=self.LoadInterperterData,args=(interpreter,))
+    def Load(self,interpreter,share_user_data=False):
+        t = threading.Thread(target=self.LoadInterperterData,args=(interpreter,share_user_data))
         t.start()
         
-    def LoadInterperterData(self,interpreter):
+    def LoadInterperterData(self,interpreter,share_user_data):
         utils.UpdateStatusBar(_("Loading intellisence database"))
         self.module_dicts.clear()
         #should copy builtin list to import_list,otherwise it will change
@@ -290,6 +290,8 @@ class IntellisenceDataLoader(object):
         self.LoadImportList()
         self.LoadBuiltinModule(interpreter)
         utils.UpdateStatusBar(_("Finish load Intellisence database"))
+        if share_user_data:
+            self._manager.ShareUserData()
         
     def LoadImportList(self):
         for key in self.module_dicts.keys():
@@ -423,7 +425,7 @@ class IntellisenceManager(object):
             return
         if not self.IsInterpreterNeedUpdateDatabase(current_interpreter):
             utils.GetLogger().info("interpreter %s is no need to update database" % current_interpreter.Name)
-            self.load_intellisence_data(current_interpreter)
+            self.load_intellisence_data(current_interpreter,True)
             return
         try:
             self.generate_intellisence_data(current_interpreter,load_data_end=True)
@@ -432,8 +434,8 @@ class IntellisenceManager(object):
                                     current_interpreter.Path,current_interpreter.Version,\
                                         os.path.join(self.data_root_path,str(current_interpreter.Id)),e)
         
-    def load_intellisence_data(self,interpreter):
-        self._loader.Load(interpreter)
+    def load_intellisence_data(self,interpreter,share_user_data=False):
+        self._loader.Load(interpreter,share_user_data)
         
     def GetImportList(self):
         return self._loader.ImportList

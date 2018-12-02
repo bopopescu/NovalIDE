@@ -425,7 +425,7 @@ class OutlineService(Service.Service):
     #----------------------------------------------------------------------------
 
     def __init__(self, serviceName, embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM):
-        Service.Service.__init__(self, serviceName, embeddedWindowLocation)
+        Service.Service.__init__(self, serviceName, embeddedWindowLocation,icon_path="outline.ico")
         self._validViewTypes = []
 
 

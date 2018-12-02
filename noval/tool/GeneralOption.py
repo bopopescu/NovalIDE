@@ -5,11 +5,8 @@ import noval.util.sysutils as sysutilslib
 import glob
 import wx.combo
 import os
-import sys
-import codecs
 import consts
 from Validator import NumValidator
-import noval.util.utils as utils
 
 _ = wx.GetTranslation
 
@@ -100,59 +97,6 @@ class LangListCombo(wx.combo.BitmapComboBox):
 
         if default:
             self.SetValue(default)
-            
-def GetEncodings():
-    """Get a list of possible encodings to try from the locale information
-    @return: list of strings
-
-    """
-    encodings = list()
-    try:
-        encodings.append(locale.getpreferredencoding())
-    except:
-        pass
-    encodings.append('ascii')
-    encodings.append('utf-8')
-
-    try:
-        if hasattr(locale, 'nl_langinfo'):
-            encodings.append(locale.nl_langinfo(locale.CODESET))
-    except:
-        pass
-    try:
-        encodings.append(locale.getlocale()[1])
-    except:
-        pass
-    try:
-        encodings.append(locale.getdefaultlocale()[1])
-    except:
-        pass
-    encodings.append(sys.getfilesystemencoding())
-    encodings.append('utf-16')
-    encodings.append('utf-16-le') # for files without BOM...
-    encodings.append('latin-1')
-    encodings.append('gbk')
-    encodings.append('gb18030')
-    encodings.append('gb2312')
-    encodings.append('big5')
-
-    # Normalize all names
-    normlist = [ enc for enc in encodings if enc]
-    # Clean the list for duplicates and None values
-    rlist = list()
-    codec_list = list()
-    for enc in normlist:
-        if enc is not None and len(enc):
-            enc = enc.lower()
-            if enc not in rlist:
-                try:
-                    ctmp = codecs.lookup(enc)
-                    if ctmp.name not in codec_list:
-                        codec_list.append(ctmp.name)
-                        rlist.append(enc)
-                except LookupError:
-                    pass
-    return rlist
 
 class GeneralOptionsPanel(wx.Panel):
     """
@@ -177,42 +121,9 @@ class GeneralOptionsPanel(wx.Panel):
         self._chkUpdateCheckBox = wx.CheckBox(self, -1, _("Check update at start up"))
         self._chkUpdateCheckBox.SetValue(config.ReadInt(consts.CHECK_UPDATE_ATSTARTUP_KEY, True))
         
-        if self._AllowModeChanges():
-            supportedModes = self.GetParent().GetService().GetSupportedModes()
-            choices = []
-            self._sdiChoice = _("Show each document in its own window")
-            self._mdiChoice = _("Show all documents in a single window with tabs")
-            self._winMdiChoice = _("Show all documents in a single window with child windows")
-            if supportedModes & wx.lib.docview.DOC_SDI:
-                choices.append(self._sdiChoice)
-            choices.append(self._mdiChoice)
-            if wx.Platform == "__WXMSW__":
-                choices.append(self._winMdiChoice)
-            self._documentRadioBox = wx.RadioBox(self, -1, _("Document Display Style"),size=(-1,-1),
-                                          choices = choices,
-                                          majorDimension=1,
-                                          )
-            if config.ReadInt("UseWinMDI", False):
-                self._documentRadioBox.SetStringSelection(self._winMdiChoice)
-            elif config.ReadInt("UseMDI", True):
-                self._documentRadioBox.SetStringSelection(self._mdiChoice)
-            else:
-                self._documentRadioBox.SetStringSelection(self._sdiChoice)
-            def OnDocumentInterfaceSelect(event):
-                if not self._documentInterfaceMessageShown:
-                    msgTitle = wx.GetApp().GetAppName()
-                    if not msgTitle:
-                        msgTitle = _("Document Options")
-                    wx.MessageBox(_("Document interface changes will not appear until the application is restarted."),
-                                  msgTitle,
-                                  wx.OK | wx.ICON_INFORMATION,
-                                  self.GetParent())
-                    self._documentInterfaceMessageShown = True
-            wx.EVT_RADIOBOX(self, self._documentRadioBox.GetId(), OnDocumentInterfaceSelect)
         optionsBorderSizer = wx.BoxSizer(wx.VERTICAL)
         optionsSizer = wx.BoxSizer(wx.VERTICAL)
-        if self._AllowModeChanges():
-            optionsSizer.Add(self._documentRadioBox, 0, wx.LEFT|wx.EXPAND, HALF_SPACE)
+
         optionsSizer.Add(self._showTipsCheckBox, 0, wx.ALL, HALF_SPACE)
         optionsSizer.Add(self._chkUpdateCheckBox, 0, wx.ALL, HALF_SPACE)
 
@@ -240,61 +151,14 @@ class GeneralOptionsPanel(wx.Panel):
                          0, wx.ALIGN_CENTER_VERTICAL)])
         optionsSizer.Add(lsizer, 0, wx.ALL, HALF_SPACE)
         
-        lsizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.encodings_combo = wx.ComboBox(self, -1,choices = GetEncodings(),value=config.Read(consts.DEFAULT_FILE_ENCODING_KEY,""), \
-                            style = wx.CB_READONLY)
-        lsizer.AddMany([(wx.StaticText(self, label=_("File Default Encoding") + u": "),
-                         0, wx.ALIGN_CENTER_VERTICAL), ((5, 5), 0),
-                        (self.encodings_combo,
-                         0, wx.ALIGN_CENTER_VERTICAL)])
-        optionsSizer.Add(lsizer, 0, wx.ALL, HALF_SPACE)
-        
-
-        self._chkEOLCheckBox = wx.CheckBox(self, -1, _("Warn when mixed eol characters are detected"))
-        self._chkEOLCheckBox.SetValue(config.ReadInt(consts.CHECK_EOL_KEY, True))
-        optionsSizer.Add(self._chkEOLCheckBox, 0, wx.ALL, HALF_SPACE)
-        
-        self._remberCheckBox = wx.CheckBox(self, -1, _("Remember File Position"))
-        self._remberCheckBox.SetValue(config.ReadInt(consts.REMBER_FILE_KEY, True))
-        optionsSizer.Add(self._remberCheckBox, 0, wx.ALL, HALF_SPACE)
-        
-        lsizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.document_types_combox = wx.ComboBox(self, -1,choices=[],style= wx.CB_READONLY)
-        lsizer.AddMany([(wx.StaticText(self, label=_("Default New Document Type") + u": "),
-                         0, wx.ALIGN_CENTER_VERTICAL), ((5, 5), 0),
-                        (self.document_types_combox,
-                         0, wx.ALIGN_CENTER_VERTICAL)])
-        self.InitDocumentTypes()
-
-        optionsSizer.Add(lsizer, 0, wx.ALL, HALF_SPACE)
-
         optionsBorderSizer.Add(optionsSizer, 0, wx.ALL|wx.EXPAND, SPACE)
         self.SetSizer(optionsBorderSizer)
         self.Layout()
-        self._documentInterfaceMessageShown = False
         self.checkEnableMRU(None)
-        
-    def InitDocumentTypes(self):
-        document_type_name = utils.ProfileGet("DefaultDocumentType",consts.DEFAULT_DOCUMENT_TYPE_NAME)
-        templates = []
-        for temp in wx.GetApp().GetDocumentManager().GetTemplates():
-            #filter image document and any file document
-            if temp.IsVisible() and temp.IsNewable():
-                templates.append(temp)
-        for temp in templates:
-            i = self.document_types_combox.Append(_(temp.GetDescription()))
-            if document_type_name == temp.GetDocumentName():
-                self.document_types_combox.SetSelection(i)
-            self.document_types_combox.SetClientData(i,temp)
 
     def checkEnableMRU(self,event):
         enableMRU = self._enableMRUCheckBox.GetValue()
         self._mru_ctrl.Enable(enableMRU)
-
-    def _AllowModeChanges(self):
-        supportedModes = self.GetParent().GetService().GetSupportedModes()
-        return supportedModes & wx.lib.docview.DOC_SDI and supportedModes & wx.lib.docview.DOC_MDI or wx.Platform == "__WXMSW__" and supportedModes & wx.lib.docview.DOC_MDI  # More than one mode is supported, allow selection
-
 
     def OnOK(self, optionsDialog):
         """
@@ -303,7 +167,6 @@ class GeneralOptionsPanel(wx.Panel):
         config = wx.ConfigBase_Get()
         config.WriteInt("ShowTipAtStartup", self._showTipsCheckBox.GetValue())
         config.WriteInt(consts.CHECK_UPDATE_ATSTARTUP_KEY, self._chkUpdateCheckBox.GetValue())
-        config.WriteInt(consts.CHECK_EOL_KEY, self._chkEOLCheckBox.GetValue())
         if self.language_combox.GetValue() != config.Read("Language",""):
             wx.MessageBox(_("Language changes will not appear until the application is restarted."),
               _("Language Options"),
@@ -312,15 +175,7 @@ class GeneralOptionsPanel(wx.Panel):
         config.Write("Language",self.language_combox.GetValue())
         config.Write("MRULength",self._mru_ctrl.GetValue())
         config.WriteInt("EnableMRU",self._enableMRUCheckBox.GetValue())
-        config.Write(consts.DEFAULT_FILE_ENCODING_KEY,self.encodings_combo.GetValue())
-        config.WriteInt(consts.REMBER_FILE_KEY, self._remberCheckBox.GetValue())
-        sel = self.document_types_combox.GetSelection()
-        if sel != -1:
-            template = self.document_types_combox.GetClientData(sel)
-            config.Write("DefaultDocumentType",template.GetDocumentName())
-        if self._AllowModeChanges():
-            config.WriteInt("UseMDI", (self._documentRadioBox.GetStringSelection() == self._mdiChoice))
-            config.WriteInt("UseWinMDI", (self._documentRadioBox.GetStringSelection() == self._winMdiChoice))
+        
         return True
 
 

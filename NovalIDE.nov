@@ -264,5 +264,13 @@
   <noval:file filePath="./noval/tool/service/logs/__init__.py" logicalFolder="noval/tool/service/logs" isStartup="false"/>
   <noval:file filePath="./noval/tool/service/logs/LogHandler.py" logicalFolder="noval/tool/service/logs" isStartup="false"/>
   <noval:file filePath="./noval/tool/service/logs/LogService.py" logicalFolder="noval/tool/service/logs" isStartup="false"/>
+  <noval:file filePath="./noval/tool/aui/__init__.py" logicalFolder="noval/tool/aui" isStartup="false"/>
+  <noval:file filePath="./noval/tool/aui/Manager.py" logicalFolder="noval/tool/aui" isStartup="false"/>
+  <noval:file filePath="./noval/tool/aui/Notebook.py" logicalFolder="noval/tool/aui" isStartup="false"/>
+  <noval:file filePath="./noval/tool/aui/Pane.py" logicalFolder="noval/tool/aui" isStartup="false"/>
+  <noval:file filePath="./noval/tool/aui/TabCtrl.py" logicalFolder="noval/tool/aui" isStartup="false"/>
+  <noval:file filePath="./noval/tool/FullScreenDialog.py" logicalFolder="noval/tool" isStartup="false"/>
+  <noval:file filePath="./noval/tool/DocumentOption.py" logicalFolder="noval/tool" isStartup="false"/>
+  <noval:file filePath="./noval/tool/service/WindowService.py" logicalFolder="noval/tool/service" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>

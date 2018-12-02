@@ -138,7 +138,7 @@ class InterpreterManager(Singleton):
                 interpreter.SetInterpreter(**data)
                 interpreter.HelpPath = l.get('help_path','')
                 interpreter.Environ.SetEnviron(l.get('environ',{}))
-                interpreter.Packages = l.get('packages',{})
+                interpreter.Packages = interpreter.LoaPackagesFromDict(l.get('packages',{}))
                 self.interpreters.append(interpreter)
                 app_debugLogger.info('load python interpreter from app config success,name is %s,path is %s,version is %s,is builtin %s',\
                                      interpreter.Name,interpreter.Path,interpreter.Version,interpreter.IsBuiltIn)
@@ -163,7 +163,7 @@ class InterpreterManager(Singleton):
                 interpreter = Interpreter.PythonInterpreter(name,path,id,True)
                 interpreter.Default = is_default
                 interpreter.Environ.SetEnviron(environ)
-                interpreter.Packages = packages
+                interpreter.Packages = interpreter.LoaPackagesFromDict(packages)
                 if interpreter.Default:
                     self.SetDefaultInterpreter(interpreter)
                 data = {
@@ -185,7 +185,7 @@ class InterpreterManager(Singleton):
             d = dict(id=interpreter.Id,name=interpreter.Name,version=interpreter.Version,path=interpreter.Path,\
                         default=interpreter.Default,sys_path_list=interpreter.SysPathList,python_path_list=interpreter.PythonPathList,\
                         builtins=interpreter.Builtins,help_path=interpreter.HelpPath,\
-                        environ=interpreter.Environ.environ,packages=interpreter.Packages,is_builtin=interpreter.IsBuiltIn)
+                        environ=interpreter.Environ.environ,packages=interpreter.DumpPackages(),is_builtin=interpreter.IsBuiltIn)
             lst.append(d)
         return lst
         
@@ -210,7 +210,7 @@ class InterpreterManager(Singleton):
                 config.Write("%s/%d/PythonPathList"%(prefix,kl.Id),os.pathsep.join(kl.PythonPathList))
                 config.Write("%s/%d/Builtins"%(prefix,kl.Id),os.pathsep.join(kl.Builtins))
                 config.Write("%s/%d/Environ"%(prefix,kl.Id),json.dumps(kl.Environ.environ))
-                config.Write("%s/%d/Packages"%(prefix,kl.Id),json.dumps(kl.Packages))
+                config.Write("%s/%d/Packages"%(prefix,kl.Id),json.dumps(kl.DumpPackages()))
         
     def RemovePythonInterpreter(self,interpreter):
         #if current interpreter has been removed,choose default interpreter as current interpreter 

@@ -164,9 +164,12 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import ColorFont
         import project.Property as Property
         import service.logs.LogService as LogService
+        import DocumentOption
+        import service.WindowService as WindowService
                             
         _EDIT_LAYOUTS = True
-        self._open_project_path = None                        
+        self._open_project_path = None
+        self.frame = None                        
 
         # This creates some pens and brushes that the OGL library uses.
         # It should be called after the app object has been created, but
@@ -268,26 +271,33 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         messageService          = self.InstallService(MessageService.MessageService("Search Results", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
     ##    outputService          = self.InstallService(OutputService.OutputService("Output", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
         debuggerService         = self.InstallService(DebuggerService.DebuggerService("Debugger", embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM))
-        extensionService        = self.InstallService(ExtensionService.ExtensionService())
-        optionsService          = self.InstallService(OptionService.OptionsService())
+        
+        
         aboutService            = self.InstallService(wx.lib.pydocview.AboutService(AboutDialog.AboutDialog))
      ###   svnService              = self.InstallService(SVNService.SVNService())
         if not ACTIVEGRID_BASE_IDE:
             helpPath = os.path.join(sysutilslib.mainModuleDir, "activegrid", "tool", "data", "AGDeveloperGuideWebHelp", "AGDeveloperGuideWebHelp.hhp")
             helpService             = self.InstallService(HelpService.HelpService(helpPath))
         if self.GetUseTabbedMDI():
-            windowService       = self.InstallService(wx.lib.pydocview.WindowMenuService())
+            windowService       = self.InstallService(WindowService.WindowMenuService())
         if wx.GetApp().GetDebug():
             loggingService          = self.InstallService(LogService.LogService())
+        #ExtensionService should install after WindowMenuService
+        extensionService        = self.InstallService(ExtensionService.ExtensionService())
+        #OptionsService should install after ExtensionService
+        optionsService          = self.InstallService(OptionService.OptionsService())
         
         # order of these added determines display order of Options Panels
         optionsService.AddOptionsPanel(OptionService.ENVIRONMENT_OPTION_NAME,OptionService.PROJECT_ITEM_NAME,ProjectEditor.ProjectOptionsPanel)
        ## optionsService.AddOptionsPanel(DebuggerService.DebuggerOptionsPanel)
         optionsService.AddOptionsPanel(OptionService.ENVIRONMENT_OPTION_NAME,OptionService.TEXT_ITEM_NAME,STCTextEditor.TextOptionsPanel)
+        optionsService.AddOptionsPanel(OptionService.ENVIRONMENT_OPTION_NAME,_("Document"),DocumentOption.DocumentOptionsPanel)
         optionsService.AddOptionsPanel(OptionService.ENVIRONMENT_OPTION_NAME,OptionService.FONTS_CORLORS_ITEM_NAME,ColorFont.ColorFontOptionsPanel)
         optionsService.AddOptionsPanel(OptionService.INTERPRETER_OPTION_NAME,OptionService.GENERAL_ITEM_NAME,generalconfiguration.InterpreterGeneralConfigurationPanel)
         optionsService.AddOptionsPanel(OptionService.INTERPRETER_OPTION_NAME,OptionService.INTERPRETER_CONFIGURATIONS_ITEM_NAME,interpreterconfigruation.InterpreterConfigurationPanel)
   ##      optionsService.AddOptionsPanel(SVNService.SVNOptionsPanel)
+        if self.GetUseTabbedMDI():
+            optionsService.AddOptionsPanel(OptionService.OTHER_OPTION_NAME,_("Window"),WindowService.WindowsOptionsPanel)
         optionsService.AddOptionsPanel(OptionService.OTHER_OPTION_NAME,OptionService.EXTENSION_ITEM_NAME,ExtensionService.ExtensionOptionsPanel)
 
         filePropertiesService.AddCustomEventHandler(projectService)
@@ -303,14 +313,11 @@ class IDEApplication(wx.lib.pydocview.DocApp):
     
         iconPath = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "noval.ico")
         self.SetDefaultIcon(wx.Icon(iconPath, wx.BITMAP_TYPE_ICO))
-        if not ACTIVEGRID_BASE_IDE:
-            embeddedWindows = wx.lib.pydocview.EMBEDDED_WINDOW_TOPLEFT | wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOMLEFT |wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM | wx.lib.pydocview.EMBEDDED_WINDOW_RIGHT
-        else:
-            embeddedWindows = wx.lib.pydocview.EMBEDDED_WINDOW_LEFT | wx.lib.pydocview.EMBEDDED_WINDOW_RIGHT |wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM
         if self.GetUseTabbedMDI():
-            self.frame = TabbedFrame.IDEDocTabbedParentFrame(docManager, None, -1, wx.GetApp().GetAppName(), embeddedWindows=embeddedWindows, minSize=150)
+            #donot use tabbed mdi embeded sash window,use aui window,so set embeddedWindows location value to 0
+            self.frame = TabbedFrame.IDEDocTabbedParentFrame(docManager, None, -1, wx.GetApp().GetAppName(), embeddedWindows=0, minSize=150)
         else:
-            self.frame = TabbedFrame.IDEMDIParentFrame(docManager, None, -1, wx.GetApp().GetAppName(), embeddedWindows=embeddedWindows, minSize=150)
+            self.frame = TabbedFrame.IDEMDIParentFrame(docManager, None, -1, wx.GetApp().GetAppName(), embeddedWindows=0, minSize=150)
         self.frame.Show(True)
         self.toolbar = self.frame.GetToolBar()
         self.toolbar_combox = self.toolbar.FindControl(DebuggerService.DebuggerService.COMBO_INTERPRETERS_ID)
@@ -459,6 +466,22 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 self.GetDocumentManager().CreateDocument(os.path.normpath(arg), wx.lib.docview.DOC_SILENT)
                 if strutils.GetFileExt(arg) == PROJECT_SHORT_EXTENSION:
                     self._open_project_path = arg
+                    
+
+    def CreateTabbedDocumentFrame(self, doc, view, id=-1, title="", pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.DEFAULT_FRAME_STYLE):
+        """
+        Creates and returns an MDI Document Frame for a Tabbed MDI view
+        """
+        import TabbedFrame
+        frame = TabbedFrame.IDEDocTabbedChildFrame(doc, view, wx.GetApp().GetTopWindow(), id, title, pos, size, style)
+        return frame
+
+    def GetInstallService(self,serviceName):
+        import service
+        for service_obj in self.GetServices():
+            if isinstance(service_obj,service.Service.Service) and service_obj.GetServiceName() == serviceName:
+                return service_obj
+        return None
         
 
 class IDEDocManager(wx.lib.docview.DocManager):

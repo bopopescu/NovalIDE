@@ -54,6 +54,7 @@ from noval.util import utils
 import Property
 import noval.tool.project.RunConfiguration as RunConfiguration
 from noval.util.exceptions import PromptErrorException
+import noval.tool.aui as aui
 
 from noval.tool.IDE import ACTIVEGRID_BASE_IDE
 if not ACTIVEGRID_BASE_IDE:
@@ -1812,12 +1813,17 @@ class ProjectView(wx.lib.docview.View):
         if not self._projectChoice or self.GetMode() == ProjectView.RESOURCE_VIEW:
             return None
         return self._document
-##        selItem = self._projectChoice.GetSelection()
-##        if selItem == wx.NOT_FOUND:
-##            return None
-##
-##        document = self._projectChoice.GetClientData(selItem)
-##        return document
+
+    def GetFrame(self):
+        if self._viewFrame is None:
+            return None
+            
+        #the frame pane is not in manager panes,get the new pane info
+        if not self._service._frame._mgr.FindPane(self._viewFrame):
+            paneInfo = self._service._frame._mgr.GetPane(self._viewFrame.name)
+            self.SetFrame(paneInfo)
+                
+        return self._viewFrame.window
 
     def SetDocument(self,document):
         self._document = document
@@ -1831,13 +1837,14 @@ class ProjectView(wx.lib.docview.View):
             wx.lib.docview.View.Activate(self, activate = activate)
             if activate and self._treeCtrl:
                 self._treeCtrl.SetFocus()
-
+                
+    def GetControl(self):
+        return None
 
     def OnCreate(self, doc, flags):
         config = wx.ConfigBase_Get()
         if wx.GetApp().IsMDI():
-            self._embeddedWindow = wx.GetApp().GetTopWindow().GetEmbeddedWindow(wx.lib.pydocview.EMBEDDED_WINDOW_LEFT)
-            self.SetFrame(self._embeddedWindow)
+            self._embeddedWindow = self._service._frame
             frame = self._embeddedWindow
             #TODO: should disable resize event,it will prevent project view to change size
            ### wx.EVT_SIZE(frame, self.OnSize)
@@ -1865,9 +1872,6 @@ class ProjectView(wx.lib.docview.View):
         self.panel_sizer = wx.BoxSizer(wx.VERTICAL)
 
         butSizer = wx.BoxSizer(wx.HORIZONTAL)
-
-        #self._projectChoice = wx.Choice(panel, -1)
-        #panel.Bind(wx.EVT_CHOICE, self.OnProjectSelect, self._projectChoice)
         self._projectChoice = wx.combo.BitmapComboBox(panel, -1, "",choices=[], style=wx.CB_READONLY)
         panel.Bind(wx.EVT_COMBOBOX,self.OnProjectSelect,self._projectChoice)
         
@@ -1936,16 +1940,10 @@ class ProjectView(wx.lib.docview.View):
             self.panel_sizer.Add(self.dirSizer, 1, wx.EXPAND)
         panel.SetSizer(self.panel_sizer)
         
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        
-        if wx.GetApp().IsMDI():
-            sizer.Add(panel, 1, wx.EXPAND|wx.BOTTOM, 3) # wxBug: without bottom margin, can't resize embedded window
-        else:
-            sizer.Add(panel, 1, wx.EXPAND)
-            
-        frame.SetSizer(sizer)
-        frame.Layout()
         self.Activate()
+        pane_info = self._service.CreatePane(aui.AUI_DOCK_LEFT,control=panel)
+        frame = pane_info
+        self.SetFrame(frame)
 
         if wx.GetApp().IsMDI():
             wx.EVT_SET_FOCUS(self._treeCtrl, self.OnFocus)
@@ -2792,7 +2790,7 @@ class ProjectView(wx.lib.docview.View):
     def IsShown(self):
         if not self.GetFrame():
             return False
-        return self.GetFrame().IsShown()
+        return self._viewFrame.IsShown()
 
 
     def Hide(self):
@@ -2800,10 +2798,11 @@ class ProjectView(wx.lib.docview.View):
 
 
     def Show(self, show = True):
-        self.GetFrame().Show(show)
-        if wx.GetApp().IsMDI():
-            mdiParentFrame = wx.GetApp().GetTopWindow()
-            mdiParentFrame.ShowEmbeddedWindow(self.GetFrame(), show)
+        self._viewFrame.Show(show)
+        self._service._frame._mgr.Update()
+       # if wx.GetApp().IsMDI():
+        #    mdiParentFrame = wx.GetApp().GetTopWindow()
+        #    mdiParentFrame.ShowEmbeddedWindow(self.GetFrame(), show)
 
 
     #----------------------------------------------------------------------------
@@ -4595,7 +4594,7 @@ class ProjectService(Service.Service):
     #----------------------------------------------------------------------------
 
     def __init__(self, serviceName, embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_LEFT):
-        Service.Service.__init__(self, serviceName, embeddedWindowLocation)
+        Service.Service.__init__(self, serviceName, embeddedWindowLocation,icon_path="project/project_view.ico")
         self._runHandlers = []
         self._suppressOpenProjectMessages = False
         self._logicalViewDefaults = []

@@ -13,6 +13,10 @@ from wx.lib.pubsub import pub as Publisher
 import STCTextEditor
 import images
 import noval.tool.service.MessageService as MessageService
+import noval.tool.aui as aui
+import FullScreenDialog
+import DocumentOption
+import noval.util.utils as utils
 
 _ = wx.GetTranslation
 
@@ -38,33 +42,17 @@ class DocFrameBase():
             return None
         doc_view = active_book.GetView()
         return doc_view if isinstance(doc_view,STCTextEditor.TextView) else None
-        
-class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,DocFrameBase):
-    
-    # wxBug: Need this for linux. The status bar created in pydocview is
-    # replaced in IDE.py with the status bar for the code editor. On windows
-    # this works just fine, but on linux the pydocview status bar shows up near
-    # the top of the screen instead of disappearing. 
 
-    def __init__(self, docManager, frame, id, title, pos = wx.DefaultPosition, size = wx.DefaultSize, style = wx.DEFAULT_FRAME_STYLE, name = "DocTabbedParentFrame", embeddedWindows = 0, minSize=20):
-        wx.lib.pydocview.DocTabbedParentFrame.__init__(self,docManager,frame,id,title,pos,size,style,name,embeddedWindows,minSize)
-        wx.EVT_MENU_RANGE(self, consts.ID_MRU_FILE1, consts.ID_MRU_FILE20, self.OnMRUFile)
-        self.RegisterMsg()
-        self._current_document = None
-    
-    def CreateDefaultStatusBar(self):
-       pass
-       
-    def _InitFrame(self, embeddedWindows, minSize):
-       wx.lib.pydocview.DocMDIParentFrameMixIn._InitFrame(self, embeddedWindows, minSize)
-       #should check the bottom tag page count,if count is 0,then hiden the docker bottom embeddedWindow window
-       wx.GetApp().GetService(MessageService.MessageService).GetView().CheckNotebookPageCount()
-       
-    def CreateDefaultToolBar(self):
+    def CreateIDEDefaultToolBar(self):
         """
         Creates the default ToolBar.
         """
-        self._toolBar = self.CreateToolBar(wx.TB_HORIZONTAL | wx.NO_BORDER | wx.TB_FLAT)
+        if sysutilslib.isWindows():
+            #do not use default toolbar in windows,hide the default toolbar to show frame when mouse hover on Close,Maximize,Minimize button
+            self._toolBar = wx.ToolBar(self,style=wx.TB_HORIZONTAL | wx.NO_BORDER)
+        else:
+            self._toolBar = self.CreateToolBar(wx.TB_HORIZONTAL | wx.NO_BORDER | wx.TB_FLAT)
+            
         self._toolBar.AddSimpleTool(wx.ID_NEW, images.load("toolbar/new.png"), _("New"), _("Creates a new document"))
         self._toolBar.AddSimpleTool(wx.ID_OPEN, images.load("toolbar/open.png"), _("Open"), _("Opens an existing document"))
         self._toolBar.AddSimpleTool(wx.ID_SAVE, images.load("toolbar/save.png"), _("Save"), _("Saves the active document"))
@@ -82,7 +70,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,DocFrameBase
         self._toolBar.Show(wx.ConfigBase_Get().ReadInt("ViewToolBar", True))
         return self._toolBar
 
-    def CreateDefaultMenuBar(self, sdi=False):
+    def CreateIDEDefaultMenuBar(self, sdi=False):
         """
         Creates the default MenuBar.  Contains File, Edit, View, Tools, and Help menus.
         """
@@ -209,13 +197,150 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,DocFrameBase
             return menuBar
         else:
             return wx.lib.pydocview.DocTabbedParentFrame.CreateDefaultMenuBar(self)
+
+    def _InitFrame(self, embeddedWindows, minSize):
+        """
+        Initializes the frame and creates the default menubar, toolbar, and status bar.
+        """
+        if sysutilslib.isWindows():
+            self._embeddedWindows = []
+            self.SetDropTarget(wx.lib.pydocview._DocFrameFileDropTarget(self._docManager, self))
+
+            if wx.GetApp().GetDefaultIcon():
+                self.SetIcon(wx.GetApp().GetDefaultIcon())
+
+            wx.EVT_MENU(self, wx.ID_ABOUT, self.OnAbout)
+            wx.EVT_SIZE(self, self.OnSize)
+
+            self.InitializePrintData()
+
+            toolBar = self.CreateIDEDefaultToolBar()
+            #must add toobar to pane manager
+            self._mgr.AddPane(toolBar, aui.AuiPaneInfo().Name(consts.TOOLBAR_PANE_NAME).
+                              Top().Layer(1).CaptionVisible(False).CloseButton(False).PaneBorder(False))
+            menuBar = self.CreateIDEDefaultMenuBar()
+            statusBar = self.CreateDefaultStatusBar()
+
+            config = wx.ConfigBase_Get()
+            if config.ReadInt("MDIFrameMaximized", False):
+                # wxBug: On maximize, statusbar leaves a residual that needs to be refereshed, happens even when user does it
+                self.Maximize()
+
+            self.CreateEmbeddedWindows(embeddedWindows, minSize)
+            self._LayoutFrame()
+
+            if wx.Platform == '__WXMAC__':
+                self.SetMenuBar(menuBar)  # wxBug: Have to set the menubar at the very end or the automatic MDI "window" menu doesn't get put in the right place when the services add new menus to the menubar
+
+            wx.GetApp().SetTopWindow(self)  # Need to do this here in case the services are looking for wx.GetApp().GetTopWindow()
+            for service in wx.GetApp().GetServices():
+                service.InstallControls(self, menuBar = menuBar, toolBar = toolBar, statusBar = statusBar)
+                if hasattr(service, "ShowWindow"):
+                    service.ShowWindow()  # instantiate service windows for correct positioning, we'll hide/show them later based on user preference
+            
+            if wx.Platform != '__WXMAC__':
+                self.SetMenuBar(menuBar)  # wxBug: Have to set the menubar at the very end or the automatic MDI "window" menu doesn't get put in the right place when the services add new menus to the menubar
+
+        else:
+            wx.lib.pydocview.DocMDIParentFrameMixIn._InitFrame(self, embeddedWindows, minSize)
+            menuBar = self.GetMenuBar()
+            
+        #mdi parent window does not support fullscreen and load last perspective
+        if not wx.GetApp().GetUseTabbedMDI():
+            return
+        
+        #save default frame layout only once when startup first
+        if not utils.ProfileGet('DefaultPerspective',''):
+            default_perspective = self._mgr.SavePerspective()
+            utils.ProfileSet('DefaultPerspective',default_perspective)
+            
+        #load last frame layout every startup
+        last_perspective = utils.ProfileGet("LastPerspective","")
+        if last_perspective and utils.ProfileGetInt("LoadLastWindowLayout",True):
+            self._mgr.LoadPerspective(last_perspective)
+            
+        #show fullscreen
+        viewMenu = menuBar.GetMenu(menuBar.FindMenu(_("&View")))
+        item = wx.MenuItem(viewMenu,self.ID_SHOW_FULLSCREEN, _("Show FullScreen"), _("Show the window in fullscreen"),kind=wx.ITEM_NORMAL  )
+        item.SetBitmap(images.load("monitor.png"))
+        viewMenu.AppendItem(item)
+        wx.EVT_MENU(self, self.ID_SHOW_FULLSCREEN, self.ProcessEvent)
+        
+class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,DocFrameBase):
+    
+    # wxBug: Need this for linux. The status bar created in pydocview is
+    # replaced in IDE.py with the status bar for the code editor. On windows
+    # this works just fine, but on linux the pydocview status bar shows up near
+    # the top of the screen instead of disappearing. 
+    ID_SHOW_FULLSCREEN = wx.NewId()
+
+    def __init__(self, docManager, frame, id, title, pos = wx.DefaultPosition, size = wx.DefaultSize, style = wx.DEFAULT_FRAME_STYLE, name = "DocTabbedParentFrame", embeddedWindows = 0, minSize=20):
+        
+        self._notebook_style = aui.AUI_NB_DEFAULT_STYLE | aui.AUI_NB_TAB_EXTERNAL_MOVE | wx.NO_BORDER|aui.AUI_NB_WINDOWLIST_BUTTON
+        if utils.ProfileGetInt("TabsAlignment",consts.TabAlignTop) == consts.TabAlignBottom:
+            self._notebook_style |= aui.AUI_NB_BOTTOM
+        if not utils.ProfileGetInt("ShowCloseButton",True):
+            self._notebook_style &= ~(aui.AUI_NB_CLOSE_ON_ACTIVE_TAB)
+            self._notebook_style |= aui.AUI_NB_CLOSE_BUTTON
+        ###5 is chrome style
+        tab_index = utils.ProfileGetInt("TabStyle",DocumentOption.DocumentOptionsPanel.TabArts.index(aui.ChromeTabArt))
+        self._notebook_theme = tab_index
+        
+        wx.lib.pydocview.DocTabbedParentFrame.__init__(self,docManager,frame,id,title,pos,size,style,name,embeddedWindows,minSize)
+        wx.EVT_MENU_RANGE(self, consts.ID_MRU_FILE1, consts.ID_MRU_FILE20, self.OnMRUFile)
+        self.RegisterMsg()
+        self._current_document = None
+        self._perspective = None
+    
+    def CreateDefaultStatusBar(self):
+       pass
+       
+    def GetToolBar(self):
+        return self._toolBar
+        
+    def CreateDefaultToolBar(self):
+        return DocFrameBase.CreateIDEDefaultToolBar(self)
+        
+    def CreateDefaultMenuBar(self):
+        return DocFrameBase.CreateIDEDefaultMenuBar(self)
+        
+    def OnViewToolBar(self, event):
+        """
+        Toggles whether the ToolBar is visible.
+        """
+        if sysutilslib.isWindows():
+            self._mgr.GetPane(consts.TOOLBAR_PANE_NAME).Show(not self._toolBar.IsShown())
+            self._LayoutFrame()
+        else:
+            wx.lib.pydocview.DocFrameMixIn.OnViewToolBar(self,event)
+
+    def ProcessEvent(self, event):
+        if event.GetId() == self.ID_SHOW_FULLSCREEN:
+            if not self.IsFullScreen():
+                if utils.ProfileGetInt("HideMenubarFullScreen", False):
+                    self.ShowFullScreen(True)
+                else:
+                    self.ShowFullScreen(True,style = wx.FULLSCREEN_NOTOOLBAR|
+                                wx.FULLSCREEN_NOSTATUSBAR|wx.FULLSCREEN_NOBORDER|wx.FULLSCREEN_NOCAPTION)
+                FullScreenDialog.FullScreenDialog(self,self._mgr).Show()
+            else:
+                FullScreenDialog.FullScreenDialog(self,self._mgr).CloseDialog()
+            return True
+        else:
+            return wx.lib.pydocview.DocTabbedParentFrame.ProcessEvent(self,event)
+            
+    def _InitFrame(self, embeddedWindows, minSize):
+        DocFrameBase._InitFrame(self, embeddedWindows, minSize)
  
-    def AppendMenuItem(self,menu,name,callback,separator=False):
-       id = wx.NewId()
-       menu.Append(id,name)
-       wx.EVT_MENU(self, id, callback)       
-       if separator:
-           menu.AppendSeparator()
+    def AppendMenuItem(self,menu,name,callback,separator=False,bmp=None):
+        id = wx.NewId()
+        item = wx.MenuItem(menu,id,name,"", wx.ITEM_NORMAL)
+        if bmp:
+            item.SetBitmap(bmp)
+        wx.EVT_MENU(self, id, callback)
+        menu.AppendItem(item)   
+        if separator:
+            menu.AppendSeparator()
            
     def OnCloseDoc(self,event):
         self._current_document.DeleteAllViews()
@@ -268,16 +393,94 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,DocFrameBase
                 if doc != self._current_document or closeall:
                     if not self.GetDocumentManager().CloseDocument(doc, False):
                         break
+                        
+    def MaximizeEditorWindow(self,event):
+        
+        is_maximized = True
+        for pane in self._mgr.GetAllPanes():
+            if pane.name == consts.EDITOR_CONTENT_PANE_NAME or pane.name == consts.TOOLBAR_PANE_NAME or not pane.IsShown() or \
+                    pane.IsNotebookPage() or isinstance(pane.window,aui.auibar.AuiToolBar):
+                continue
+            if not pane.IsMinimized():
+                is_maximized = False
+                break
+        if not is_maximized:
+            self._perspective = self._mgr.SavePerspective()
+        all_panes = self._mgr.GetAllPanes()
+        for pane in all_panes:
+            if pane.name == consts.EDITOR_CONTENT_PANE_NAME or pane.IsMinimized() or pane.name == consts.TOOLBAR_PANE_NAME or \
+                    pane.IsNotebookPage() or not pane.IsShown() or isinstance(pane.window,aui.auibar.AuiToolBar):
+                continue
+            self._mgr.MinimizePane(pane)
+        
+    def RestoreEditorWindow(self,event):
+        if self._perspective is None:
+            return
+        self._mgr.LoadPerspective(self._perspective)
+        
+    def CreateNotebook(self):
+        # create the notebook off-window to avoid flicker
+        client_size = self.GetClientSize()
+        if wx.Platform != "__WXMAC__":
+            self._notebook = aui.IDEAuiNotebook(self, -1,wx.Point(client_size.x, client_size.y),
+                              wx.Size(430, 200),agwStyle=self._notebook_style)
+            arts = [aui.AuiDefaultTabArt, aui.AuiSimpleTabArt, aui.VC71TabArt, aui.FF2TabArt,
+                    aui.VC8TabArt, aui.ChromeTabArt]
 
-    def OnNotebookRightClick(self, event):
+            art = arts[self._notebook_theme]()
+            self._notebook.SetArtProvider(art)
+        else:
+            self._notebook = wx.Listbook(self, wx.NewId(), style=wx.LB_LEFT)
+        # self._notebook.SetSizer(wx.NotebookSizer(self._notebook))
+        if wx.Platform != "__WXMAC__":
+            wx.EVT_NOTEBOOK_PAGE_CHANGED(self, self._notebook.GetId(), self.OnNotebookPageChanged)
+        else:
+            wx.EVT_LISTBOOK_PAGE_CHANGED(self, self._notebook.GetId(), self.OnNotebookPageChanged)
+        self._notebook.SetBackgroundColour(wx.Colour(255,255,255))
+
+        templates = wx.GetApp().GetDocumentManager().GetTemplates()
+        iconList = wx.ImageList(16, 16, initialCount = len(templates))
+        self._iconIndexLookup = []
+        for template in templates:
+            icon = template.GetIcon()
+            if icon:
+                if icon.GetHeight() != 16 or icon.GetWidth() != 16:
+                    icon.SetHeight(16)
+                    icon.SetWidth(16)
+                    if wx.GetApp().GetDebug():
+                        print "Warning: icon for '%s' isn't 16x16, not crossplatform" % template._docTypeName
+                iconIndex = iconList.AddIcon(icon)
+                self._iconIndexLookup.append((template, iconIndex))
+
+        icon = wx.lib.pydocview.Blank.GetIcon()
+        if icon.GetHeight() != 16 or icon.GetWidth() != 16:
+            icon.SetHeight(16)
+            icon.SetWidth(16)
+            if wx.GetApp().GetDebug():
+                print "Warning: getBlankIcon isn't 16x16, not crossplatform"
+        self._blankIconIndex = iconList.AddIcon(icon)
+        self._notebook.AssignImageList(iconList)
+        
+        self._mgr = aui.IDEAuiManager(agwFlags=aui.AUI_MGR_DEFAULT |
+                                                 aui.AUI_MGR_TRANSPARENT_DRAG |
+                                                 aui.AUI_MGR_TRANSPARENT_HINT |
+                                                 aui.AUI_MGR_ALLOW_ACTIVE_PANE)
+        # tell AuiManager to manage this frame
+        self._mgr.SetManagedWindow(self)             
+        self._mgr.AddPane(self._notebook, aui.AuiPaneInfo().Name(consts.EDITOR_CONTENT_PANE_NAME).
+                          CenterPane().PaneBorder(True))
+        self._mgr.Update()
+        self.Bind(aui.EVT_AUI_PANE_CLOSE, self.OnPaneClose)
+        #close the notebook document page event
+        self.Bind(aui.EVT_AUINOTEBOOK_PAGE_CLOSE, self.OnNotebookPageClose)
+
+    def PopupTabMenu(self,index,x,y):
         """
         Handles right clicks for the notebook, enabling users to either close
         a tab or select from the available documents if the user clicks on the
         notebook's white space.
         """
-        index, type = self._notebook.HitTest(event.GetPosition())
         menu = wx.Menu()
-        x, y = event.GetX(), event.GetY()
         menuBar = self.GetMenuBar()
         if index > -1:
             view = self._notebook.GetPage(index).GetView()
@@ -312,6 +515,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,DocFrameBase
                 label += "\t" + accel.ToString()
                 ###caller must delete the pointer manually
                 del accel
+            #we should use a new close id,not use id wx.ID_CLOSE
             new_id = wx.NewId()
             item = wx.MenuItem(menu,new_id, label , kind = wx.ITEM_NORMAL)
             wx.EVT_MENU(self, new_id, self.OnCloseDoc)
@@ -334,6 +538,13 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,DocFrameBase
             self.AppendMenuItem(menu,_("Copy Name"),self.OnCopyFileName)
             if view.GetType() == consts.TEXT_VIEW and view.GetLangId() == lang.ID_LANG_PYTHON:
                 self.AppendMenuItem(menu,_("Copy Module Name"),self.OnCopyModuleName)
+                
+
+            if not self.IsFullScreen():
+                menu.AppendSeparator()
+                self.AppendMenuItem(menu,_("Maximize Editor Window"),self.MaximizeEditorWindow,bmp=images.load("maximize_editor.png"))
+                self.AppendMenuItem(menu,_("Restore Editor Window"),self.RestoreEditorWindow,bmp=images.load("restore_editor.png"))
+            
         else:
             y = y - 25  # wxBug: It is offsetting click events in the blank notebook area
             tabsMenu = menu
@@ -355,14 +566,57 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,DocFrameBase
         self._notebook.PopupMenu(menu, wx.Point(x, y))
         menu.Destroy()
 
-    def OnNotebookMouseOver(self, event):
-        index, type = self._notebook.HitTest(event.GetPosition())
+    def AddNotebookPage(self, panel, title,filename):
+        """
+        Adds a document page to the notebook.
+        """
+        #set the tooltip of documnent tabpage
+        self._notebook.AddPage(panel, title,tooltip=filename)
+        index = self._notebook.GetPageCount() - 1
+        self._notebook.SetSelection(index)
+
+        found = False  # Now set the icon
+        template = panel.GetDocument().GetDocumentTemplate()
+        if template:
+            for t, iconIndex in self._iconIndexLookup:
+                if t is template:
+                    self._notebook.SetPageImage(index, iconIndex)
+                    found = True
+                    break
+        if not found:
+            self._notebook.SetPageImage(index, self._blankIconIndex)
+
+        # wxBug: the wxListbook used on Mac needs its tabs list resized
+        # whenever a new tab is added, but the only way to do this is
+        # to resize the entire control
+        if wx.Platform == "__WXMAC__":
+            content_size = self._notebook.GetSize()
+            self._notebook.SetSize((content_size.x+2, -1))
+            self._notebook.SetSize((content_size.x, -1))
+
+        self._notebook.Layout()
+
+        windowMenuService = wx.GetApp().GetService(wx.lib.pydocview.WindowMenuService)
+        if windowMenuService:
+            windowMenuService.BuildWindowMenu(wx.GetApp().GetTopWindow())  # build file menu list when we open a file
+
+    def SetNotebookPageTitle(self, panel, title):
+        wx.lib.pydocview.DocTabbedParentFrame.SetNotebookPageTitle(self,panel,title)
+        index = self.GetNotebookPageIndex(panel)
+        
         if index > -1:
-            doc = self._notebook.GetPage(index).GetView().GetDocument()
-            self._notebook.SetToolTip(wx.ToolTip(doc.GetFilename()))
-        else:
-            self._notebook.SetToolTip(wx.ToolTip(""))
-        event.Skip()
+            #set the new document tooltip as document title
+            if panel.GetDocument().GetFilename().find(os.sep) == -1:
+                self._notebook.SetPageTooltip(index,title)
+            #save as document change the tooltip
+            elif self._notebook.GetPageTooltip(index) != panel.GetDocument().GetFilename():
+                self._notebook.SetPageTooltip(index,panel.GetDocument().GetFilename())
+
+    def OnNotebookPageClose(self,event):
+        ctrl = event.GetEventObject()
+        doc = ctrl.GetPage(event.GetSelection()).GetDocument()
+        doc.DeleteAllViews()
+        event.Veto()
 
     def OnMRUFile(self, event):
         """
@@ -383,12 +637,52 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,DocFrameBase
                               msgTitle,
                               wx.OK | wx.ICON_ERROR,
                               self)
-                              
 
     def OnCloseWindow(self, event):
-        wx.lib.pydocview.DocTabbedParentFrame.OnCloseWindow(self,event)
+        for service in wx.GetApp().GetServices():
+            if not service.OnCloseFrame(event):
+                return
+        if self._docManager.Clear(not event.CanVeto()):
+            self.Destroy()
+        else:
+            event.Veto()
+        if utils.ProfileGetInt("LoadLastWindowLayout",True):
+            utils.ProfileSet("LastPerspective",self._mgr.SavePerspective())
         NavigationService.NavigationService.DocMgr.WriteBook()
 
+    def _LayoutFrame(self):
+        """
+        Lays out the frame.
+        """
+        self.Layout()
+        self._mgr.Update()
+
+    def OnPaneClose(self,event):
+        pane = event.pane
+        if isinstance(event.pane.window,aui.auibook.AuiNotebook):
+            nb = event.pane.window
+            window = nb.GetPage(nb.GetSelection())
+            if hasattr(window, consts.DEBUGGER_PAGE_COMMON_METHOD):
+                if not window.StopAndRemoveUI(None):
+                    event.Veto()
+                    return
+            pane = self._mgr.GetPane(window)
+            self._mgr.ClosePane(pane)
+            self._mgr.Update()
+            event.Veto()
+        else:
+            window = pane.window
+            if hasattr(window, consts.DEBUGGER_PAGE_COMMON_METHOD):
+                if not window.StopAndRemoveUI(None):
+                    event.Veto()
+                    
+    def LoadDefaultPerspective(self):
+        default_perspective = utils.ProfileGet('DefaultPerspective','')
+        if default_perspective:
+            self._mgr.LoadPerspective(default_perspective)
+        else:
+            wx.MessageBox("Could not load default perspective")
+                    
 class IDEMDIParentFrame(wx.lib.pydocview.DocMDIParentFrame,DocFrameBase):
     
     # wxBug: Need this for linux. The status bar created in pydocview is
@@ -406,3 +700,64 @@ class IDEMDIParentFrame(wx.lib.pydocview.DocMDIParentFrame,DocFrameBase):
     def OnCloseWindow(self, event):
         NavigationService.NavigationService.DocMgr.WriteBook()
         wx.lib.pydocview.DocMDIParentFrame.OnCloseWindow(self,event)
+
+    def _InitFrame(self, embeddedWindows, minSize):
+        self._mgr = aui.IDEAuiManager(agwFlags=aui.AUI_MGR_DEFAULT |
+                                                 aui.AUI_MGR_TRANSPARENT_DRAG |
+                                                 aui.AUI_MGR_TRANSPARENT_HINT |
+                                                 aui.AUI_MGR_ALLOW_ACTIVE_PANE)
+        # tell AuiManager to manage this frame
+        self._mgr.SetManagedWindow(self)
+        ###wx.lib.pydocview.DocMDIParentFrame._InitFrame(self, embeddedWindows, minSize)
+        DocFrameBase._InitFrame(self, embeddedWindows, minSize)
+        
+    def GetToolBar(self):
+        return self._toolBar
+
+    def OnViewToolBar(self, event):
+        """
+        Toggles whether the ToolBar is visible.
+        """
+        if sysutilslib.isWindows():
+            self._mgr.GetPane(consts.TOOLBAR_PANE_NAME).Show(not self._toolBar.IsShown())
+            self._LayoutFrame()
+        else:
+            wx.lib.pydocview.DocFrameMixIn.OnViewToolBar(self,event)
+            
+    def _LayoutFrame(self):
+        """
+        Lays out the frame.
+        """
+        wx.LayoutAlgorithm().LayoutMDIFrame(self)
+        self.GetClientWindow().Refresh()
+        self._mgr.Update()
+
+class IDEDocTabbedChildFrame(wx.lib.pydocview.DocTabbedChildFrame):
+    
+
+    def __init__(self, doc, view, frame, id, title, pos=wx.DefaultPosition, size=wx.DefaultSize, style=wx.DEFAULT_FRAME_STYLE, name="frame"):
+        """
+        Constructor.  Note that the event table must be rebuilt for the
+        frame since the EvtHandler is not virtual.
+        """
+        wx.Panel.__init__(self, frame.GetNotebook(), id)
+        self._childDocument = doc
+        self._childView = view
+        frame.AddNotebookPage(self, doc.GetPrintableName(),doc.GetFilename())
+        if view:
+            view.SetFrame(self)
+    
+    def ProcessEvent(self,event):
+        """
+        Processes an event, searching event tables and calling zero or more
+        suitable event handler function(s).  Note that the ProcessEvent
+        method is called from the wxPython docview framework directly since
+        wxPython does not have a virtual ProcessEvent function.
+        """
+        if not self._childView or not self._childView.ProcessEvent(event):
+            if not isinstance(event, wx.CommandEvent) or not self.GetParent() or not self.GetParent().ProcessEvent(event):
+                return False
+            else:
+                return True
+        else:
+            return True

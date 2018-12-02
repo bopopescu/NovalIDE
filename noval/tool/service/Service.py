@@ -17,7 +17,9 @@ import noval.util.sysutils as sysutilslib
 import os
 import noval.tool.images as images
 import noval.util.utils as utils
-_ = wx.GetTranslation
+import noval.tool.aui as aui
+from noval.tool.consts import _,DEBUGGER_PAGE_COMMON_METHOD
+import copy
 
 
 FLOATING_MINIFRAME = -1
@@ -26,12 +28,6 @@ FLOATING_MINIFRAME = -1
 class ServiceView(wx.EvtHandler):
     """ Basic Service View.
     """
-    bottomTab = None
-    InterpreterIconIndex = -1
-    SearchIconIndex = -1
-    DebugRunIconIndex = -1
-    BreakDebugIconIndex = -1
-    
     #----------------------------------------------------------------------------
     # Overridden methods
     #----------------------------------------------------------------------------
@@ -49,8 +45,16 @@ class ServiceView(wx.EvtHandler):
 
 
     def GetFrame(self):
+        if self._viewFrame is not None:
+            if not self.AuiManager.FindPane(self._viewFrame):
+                paneInfo = self.AuiManager.GetPane(self._viewFrame.name)
+                self.SetFrame(paneInfo)
+            elif self._viewFrame.name != self._service.GetServiceName():
+                for paneInfo in self.AuiManager._panes:
+                    if paneInfo.name == self._service.GetServiceName():
+                        self.SetFrame(paneInfo)
+                        break
         return self._viewFrame
-
 
     def SetFrame(self, frame):
         self._viewFrame = frame
@@ -62,7 +66,10 @@ class ServiceView(wx.EvtHandler):
     
     def GetControl(self):
         return self._control
-
+        
+    @property
+    def AuiManager(self):
+        return self._service.AuiManager
 
     def SetControl(self, control):
         self._control = control
@@ -86,8 +93,7 @@ class ServiceView(wx.EvtHandler):
             frame = wx.MiniFrame(wx.GetApp().GetTopWindow(), -1, title, pos = pos, size = size, style = wx.CLOSE_BOX|wx.CAPTION|wx.SYSTEM_MENU)
             wx.EVT_CLOSE(frame, self.OnCloseWindow)
         elif wx.GetApp().IsMDI():
-            self._embeddedWindow = wx.GetApp().GetTopWindow().GetEmbeddedWindow(windowLoc)
-            frame = self._embeddedWindow
+            self._embeddedWindow = self._service._frame
         else:
             pos = config.ReadInt(self._service.GetServiceName() + "FrameXLoc", -1), config.ReadInt(self._service.GetServiceName() + "FrameYLoc", -1)
             # make sure frame is visible
@@ -105,111 +111,46 @@ class ServiceView(wx.EvtHandler):
             if config.ReadInt(self._service.GetServiceName() + "FrameMaximized", False):
                 frame.Maximize(True)
             wx.EVT_CLOSE(frame, self.OnCloseWindow)
-
-        self.SetFrame(frame)
-        sizer = wx.BoxSizer(wx.VERTICAL)
         
         windowLoc = self._service.GetEmbeddedWindowLocation()
         if self._embeddedWindow or windowLoc == FLOATING_MINIFRAME:
             if (self._service.GetEmbeddedWindowLocation() == wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM):
-                if ServiceView.bottomTab == None:
-
-                    iconList = wx.ImageList(16, 16, 3)
-                    interpreter_icon = images.load_icon("interpreter.ico")
-                    ServiceView.InterpreterIconIndex = iconList.AddIcon(interpreter_icon)
-                    search_icon = images.load_icon("search.ico")
-                    ServiceView.SearchIconIndex = iconList.AddIcon(search_icon)
-                    debug_icon = images.load_icon("debugger/debug.ico")
-                    ServiceView.DebugRunIconIndex = iconList.AddIcon(debug_icon)
-                    
-                    break_debug_icon = images.load_icon("debugger/debugger.png")
-                    ServiceView.BreakDebugIconIndex = iconList.AddIcon(break_debug_icon)
-
-                    ServiceView.bottomTab = wx.Notebook(frame, wx.NewId(), (0,0), (100,100), wx.LB_DEFAULT, "Bottom Tab")
-                    ServiceView.bottomTab.AssignImageList(iconList)
-                    wx.EVT_RIGHT_DOWN(ServiceView.bottomTab, self.OnNotebookRightClick)
-                    wx.EVT_MIDDLE_DOWN(ServiceView.bottomTab, self.OnNotebookMiddleClick)
-                    sizer.Add(ServiceView.bottomTab, 1, wx.TOP|wx.EXPAND, 4)
-                    def OnFrameResize(event):
-                        ServiceView.bottomTab.SetSize(ServiceView.bottomTab.GetParent().GetSize())
-                    frame.Bind(wx.EVT_SIZE, OnFrameResize)
-                # Factor this out.
-                self._control = self._CreateControl(ServiceView.bottomTab, wx.NewId())
-                if self._control != None:
-                    #read if service page is show,if not then not add to tag pag
-                    if utils.ProfileGetInt(self._service.GetServiceName() + "Shown", True):
-                        ServiceView.bottomTab.AddPage(self._control, self._service.GetMenuString())
-                        if self._service.GetIconIndex() != -1:
-                            index = ServiceView.bottomTab.GetPageCount() - 1
-                            ServiceView.bottomTab.SetPageImage(index,self._service.GetIconIndex())
-                    else:
-                        utils.GetLogger().debug("service %s tag page is hiden",self._service.GetServiceName())
-                        #hide the tab page control
-                        self._control.Show(False)
-                
-                    
-                ServiceView.bottomTab.Layout()
+                direction = aui.AUI_DOCK_BOTTOM
+                if self.AuiManager.GetAnyPane(direction) == None:
+                    self._control = self._CreateControl(self._embeddedWindow, wx.NewId())
+                    pane_info = self._service.CreatePane(direction)
+                    frame = pane_info
+                    self.SetFrame(frame)
+                else:
+                    # Factor this out.
+                    self._control = self._CreateControl(self._embeddedWindow, wx.NewId())
+                    if self._control != None:
+                        target = self._service.GetTargetPane(direction)
+                        pane_info = self._service.CreatePane(direction,target)
+                        frame = pane_info
+                        self.SetFrame(frame)
             else:
                 # Factor this out.
-                self._control = self._CreateControl(frame, wx.NewId())
-                sizer.Add(self._control)
+                self._control = self._CreateControl(self._embeddedWindow, wx.NewId())
+                pane_info = self._service.CreatePane(aui.AUI_DOCK_RIGHT)
+                frame = pane_info
+                self.SetFrame(frame)
         else:
             # Factor this out.
             self._control = self._CreateControl(frame, wx.NewId())
             sizer.Add(self._control, 1, wx.EXPAND, 0)
-        frame.SetSizer(sizer)
-        frame.Layout()
         self.Activate()
         return True
-
-
-    def OnNotebookMiddleClick(self, event):
-        index, type = ServiceView.bottomTab.HitTest(event.GetPosition())
-        # 0 tab is always message. This code assumes the rest are run/debug windows
-        if index > -1:
-            self.RemovePage(index)
-                
-    def RemovePage(self,index):
-        page = ServiceView.bottomTab.GetPage(index)
-        if hasattr(page, 'StopAndRemoveUI'):
-            page.StopAndRemoveUI(None)
-    
-    def CheckNotebookPageCount(self):
-        '''
-            if notebook page count is zero,then hide the parent docker bottom sash window
-        '''
-        if ServiceView.bottomTab.GetPageCount()  == 0:
-            self.ShowFrame(False)
             
-    def RemoveAllPages(self):
-        for i in range(ServiceView.bottomTab.GetPageCount() - 1, -1, -1): # Go from len-1 to 1
-            page = ServiceView.bottomTab.GetPage(i)
-            if hasattr(page, 'StopAndRemoveUI'):
-                ServiceView.bottomTab.SetSelection(i)
-                page.StopAndRemoveUI(None)
-        self.CheckNotebookPageCount()
-       
-    def OnNotebookRightClick(self, event):
-        index, type = ServiceView.bottomTab.HitTest(event.GetPosition())
-        if index < 0:
-            return
-        menu = wx.Menu()
-        x, y = event.GetX(), event.GetY()
-        page = ServiceView.bottomTab.GetPage(index)
-        # only run/debug panel has StopAndRemoveUI property. This code assumes the rest are run/debug windows
-        if hasattr(page, 'StopAndRemoveUI'):
-            id = wx.NewId()
-            menu.Append(id, _("Close"))
-            def OnRightMenuSelect(event):
-                self.RemovePage(index)
-            wx.EVT_MENU(ServiceView.bottomTab, id, OnRightMenuSelect)
-            id = wx.NewId()
-            menu.Append(id, _("Close All"))
-            def OnRightMenuSelect(event):
-                self.RemoveAllPages()
-            wx.EVT_MENU(ServiceView.bottomTab, id, OnRightMenuSelect)
-        ServiceView.bottomTab.PopupMenu(menu, wx.Point(x, y))
-        menu.Destroy()
+    @staticmethod
+    def RemoveAllPages():
+        panes = copy.copy(wx.GetApp().MainFrame._mgr.GetAllPanes())
+        for pane in panes:
+            window = pane.window
+            if hasattr(window, DEBUGGER_PAGE_COMMON_METHOD):
+                if not window.StopAndRemoveUI(None):
+                    return False
+        return True
         
     def OnCloseWindow(self, event):
         frame = self.GetFrame()
@@ -276,9 +217,23 @@ class ServiceView(wx.EvtHandler):
     def Show(self, show = True):
         if self.GetFrame():
             self.GetFrame().Show(show)
-            if self._embeddedWindow:
-                mdiParentFrame = wx.GetApp().GetTopWindow()
-                mdiParentFrame.ShowEmbeddedWindow(self.GetFrame(), show)
+            self._service._frame._mgr.Update()
+
+    def GetAuiNotebook(self):
+        pane = self.GetFrame()
+        print pane.IsNotebookPage(),pane.notebook_id
+        if pane.IsNotebookPage():
+            return self._service._frame._mgr.GetNotebookPaneId(pane.notebook_id)
+        return None
+        
+    def GetDockDirection(self):
+        windowLoc = self._service.GetEmbeddedWindowLocation()
+        if windowLoc == wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM:
+            return aui.AUI_DOCK_BOTTOM
+        elif windowLoc == wx.lib.pydocview.EMBEDDED_WINDOW_RIGHT:
+            return aui.AUI_DOCK_RIGHT
+        elif windowLoc == wx.lib.pydocview.EMBEDDED_WINDOW_LEFT:
+            return aui.AUI_DOCK_LEFT
 
 class TabbedServiceView(ServiceView):
     """ Service View for notebook.
@@ -293,54 +248,23 @@ class TabbedServiceView(ServiceView):
         ServiceView.__init__(self, service)
         
     def Show(self, show = True):
-        nb = ServiceView.bottomTab
-        initialCount = nb.GetPageCount()
-        index = -1
-        for i in range(nb.GetPageCount()):
-            if nb.GetPage(i) == self._control:
-                index = i
-                break
-        if show:
-            if index == -1:
-                index = 0
-                #if tab page is hidden,should show first
-                if not self._control.IsShown():
-                    self._control.Show(True)
-                    
-                nb.InsertPage(index, self._control, self._service.GetMenuString())
-                nb.SetPageImage(index,self._service.GetIconIndex())
-                nb.SetSelection(index)
+        pane = self.GetFrame()
+        dock_direction = self.GetDockDirection()
+        if self.IsShown():
+            pane.Show(False)
+            self.AuiManager.ClosePane(pane)
         else:
-            if index > -1:
-                nb.GetPage(index).Show(False)
-                nb.RemovePage(index)
-         
-        endCount = nb.GetPageCount()       
-        if endCount == 0:
-            self.ShowFrame(False)
-        elif initialCount == 0 and endCount == 1:
-            self.ShowFrame(True)
-        else:
-            self.ShowFrame(True)
+            target_pane = self._service.GetTargetPane(dock_direction)
+            pane.dock_direction_set(dock_direction)
+            pane.dock_layer = 1
+            pane.Show(True)
+            self.AuiManager.AddPane(self.GetControl(), pane, target=target_pane)
+        self.AuiManager.Update()
             
     def ShowFrame(self, show):
         if self.GetFrame():
             self.GetFrame().Show(show)
-            if self._embeddedWindow:
-                mdiParentFrame = wx.GetApp().GetTopWindow()
-                mdiParentFrame.ShowEmbeddedWindow(self.GetFrame(), show)
 
-    def IsShown(self):
-        #if sash frame is hidden,the service is also hidden
-        if not ServiceView.IsShown(self):
-            return False
-        nb = ServiceView.bottomTab
-        index = -1
-        for i in range(nb.GetPageCount()):
-            if nb.GetPage(i) == self._control:
-                index = i
-                break
-        return index > -1
         
 class BaseService(wx.lib.pydocview.DocService):
 
@@ -349,6 +273,8 @@ class BaseService(wx.lib.pydocview.DocService):
 
     @staticmethod
     def GetActiveView():
+        if None == wx.GetApp().MainFrame:
+            return None
         return wx.GetApp().MainFrame.GetActiveTextView()
 
 class Service(BaseService):
@@ -358,10 +284,12 @@ class Service(BaseService):
     #----------------------------------------------------------------------------
     SHOW_WINDOW = wx.NewId()  # keep this line for each subclass, need unique ID for each Service
 
-    def __init__(self, serviceName, embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_LEFT):
+    def __init__(self, serviceName, embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_LEFT,icon_path=None):
         self._serviceName = serviceName
         self._embeddedWindowLocation = embeddedWindowLocation
         self._view = None
+        self._frame = None
+        self._icon_path = icon_path
 
     def GetEmbeddedWindowLocation(self):
         return self._embeddedWindowLocation
@@ -370,6 +298,7 @@ class Service(BaseService):
         self._embeddedWindowLocation = embeddedWindowLocation
 
     def InstallControls(self, frame, menuBar = None, toolBar = None, statusBar = None, document = None):
+        self._frame = frame
         viewMenu = menuBar.GetMenu(menuBar.FindMenu(_("&View")))
         menuItemPos = self.GetMenuItemPos(viewMenu, viewMenu.FindItem(_("&Status Bar"))) + 1
 
@@ -431,12 +360,13 @@ class Service(BaseService):
                     self._view.Show()
             else:
                 view = self._CreateView()
-                view.OnCreate(None, flags = 0)
                 self.SetView(view)
+                view.OnCreate(None, flags = 0)
         else:
             if self._view:
                 if self._view.IsShown():
                     self._view.Hide()
+        self._frame._mgr.Update()
 
     def HideWindow(self):
         self.ShowWindow(False)
@@ -456,26 +386,87 @@ class Service(BaseService):
         elif self._view == event.GetEventObject().GetView():
             self.SetView(None)
         return True
-
-    def GetIconIndex(self):
-        return -1
         
-    def GetPageIndex(self):
-        nb = ServiceView.bottomTab
-        index = -1
-        for i in range(nb.GetPageCount()):
-            if nb.GetPage(i) == self.GetView()._control:
-                index = i
-                break
-        return index
-    
-    @staticmethod
-    def GetDebuggerPageIndex(page):
-        nb = ServiceView.bottomTab
-        index = -1
-        for i in range(nb.GetPageCount()):
-            if nb.GetPage(i) == page:
-                index = i
-                break
-        return index
+    def GetIcon(self):
+        if self._icon_path is None:
+            return None
+        return images.load(self._icon_path)
+        
+    def GetTargetPane(self,dock_direction):
+        nb_pane = self.AuiManager.GetNotebookPaneDirection(dock_direction)
+        if nb_pane is None:
+            #get any dock_direction pane as the target pane
+            return self.AuiManager.GetAnyPane(dock_direction)
+        nb = nb_pane.window
+        if 0 == nb._tabs.GetPageCount():
+            return None
+        window = nb.GetPage(0)
+        pane = self.AuiManager.GetPane(window)
+        return pane
+        
+    def CreatePane(self,dock_direction,target=None,control = None,caption='',name='',icon=None,minSize=80):
+        frameSize = self._frame.GetSize()   # TODO: GetClientWindow.GetSize is still returning 0,0 since the frame isn't fully constructed yet, so using full frame size
+        defaultHSize = max(minSize, int(frameSize[0] / 6))
+        defaultVSize = max(minSize, int(frameSize[1] / 7))
+        
+        if caption == '':
+            caption = self.GetMenuString()
+        if name == '':
+            name = self.GetServiceName()
+        if dock_direction == aui.AUI_DOCK_BOTTOM:
+            if None == target:
+                pane_info = aui.TabPaneFrame().Name(name).Caption(caption)\
+                        .BestSize(wx.Size(-1,defaultVSize)).MinSize(wx.Size(-1,minSize))\
+                        .Bottom().Layer(1).Position(1).MinimizeButton(True)
+            else:
+                pane_info = aui.TabPaneFrame().Name(name).Caption(caption).Bottom().\
+                                    MinSize(wx.Size(-1,minSize)).MinimizeButton(True)
+                                    
+        elif dock_direction == aui.AUI_DOCK_RIGHT:
+            pane_info = aui.TabPaneFrame().Name(name).Caption(caption)\
+                            .BestSize(wx.Size(defaultHSize,-1)).MinSize(wx.Size(minSize,-1))\
+                            .Right().MinimizeButton(True)
+        elif dock_direction == aui.AUI_DOCK_LEFT:
+            pane_info = aui.TabPaneFrame().Name(name).Caption(caption).Left().Layer(1)\
+                    .BestSize(wx.Size(defaultHSize,-1)).MinSize(wx.Size(minSize,-1))\
+                    .Position(1).MinimizeButton(True)
+        
+        view_control = self.GetView().GetControl()
+        if view_control == None:
+            view_control = control
+        assert(view_control != None)
+        if icon is None:
+            icon = self.GetIcon()
+        #shoud set pane icon before addpane
+        if icon != None:
+            pane_info.Icon(icon)
+        self.AuiManager.AddPane(view_control, pane_info, target=target)
+        return pane_info
+        
+    @property
+    def AuiManager(self):
+        return self._frame._mgr
 
+    @classmethod
+    def GetNoteBook(cls,dock_direction):
+        nb_pane = wx.GetApp().MainFrame._mgr.GetNotebookPaneDirection(dock_direction)
+        if nb_pane is None:
+            return None
+        nb = nb_pane.window
+        return nb
+
+    @classmethod
+    def GetBottomTab(cls):
+        nb = cls.GetNoteBook(aui.AUI_DOCK_BOTTOM)
+        if nb is None:
+            None
+        return nb
+        
+    def SwitchtoTabPage(self):
+        bottom_tab = self.GetBottomTab()
+        if bottom_tab is None:
+            return
+        for i in range(bottom_tab.GetPageCount()):
+            if bottom_tab.GetPage(i) == self.GetView()._control:
+                bottom_tab.SetSelection(i)
+                break

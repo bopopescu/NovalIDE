@@ -172,9 +172,9 @@ class MessageService(Service.Service):
     #----------------------------------------------------------------------------
     # Overridden methods
     #----------------------------------------------------------------------------
+    
+    def __init__(self, serviceName,embeddedWindowLocation = wx.lib.pydocview.EMBEDDED_WINDOW_BOTTOM):
+        Service.Service.__init__(self, serviceName, embeddedWindowLocation,icon_path="search.ico")
 
     def _CreateView(self):
         return MessageView(self)
-
-    def GetIconIndex(self):
-        return Service.ServiceView.SearchIconIndex
