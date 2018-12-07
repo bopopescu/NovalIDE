@@ -16,8 +16,9 @@ class ManagePackagesDialog(wx.Dialog):
     
     MANAGE_INSTALL_PACKAGE = 1
     MANAGE_UNINSTALL_PACKAGE = 2
-    def __init__(self,parent,dlg_id,title,manage_action,interpreter,package_name=''):
+    def __init__(self,parent,dlg_id,title,manage_action,interpreter,interpreters,package_name=''):
         self.interpreter = interpreter
+        self.interpreters = interpreters
         self._manage_action = manage_action
         wx.Dialog.__init__(self,parent,dlg_id,title,size=(-1,-1))
         box_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -35,8 +36,8 @@ class ManagePackagesDialog(wx.Dialog):
         else:
             lineSizer.Add(wx.StaticText(self, -1, _("We will uninstall it in the interpreter:")), 0, \
                           wx.ALIGN_CENTER | wx.LEFT, SPACE)
-        choices,default_selection = interpretermanager.InterpreterManager().GetChoices()
-        self._interpreterCombo = wx.ComboBox(self, -1,choices=choices,value=self.interpreter.Name, style = wx.CB_READONLY)
+        names = self.GetNames()
+        self._interpreterCombo = wx.ComboBox(self, -1,choices=names,value=self.interpreter.Name, style = wx.CB_READONLY)
         lineSizer.Add(self._interpreterCombo,0, wx.EXPAND|wx.LEFT, SPACE)
         box_sizer.Add(lineSizer, 0,wx.EXPAND| wx.RIGHT|wx.BOTTOM, SPACE)
         
@@ -188,8 +189,8 @@ class ManagePackagesDialog(wx.Dialog):
         if self.value_ctrl.GetValue().strip() == "":
             wx.MessageBox(_("package name is empty"))
             return
-        interpreter_name = self._interpreterCombo.GetStringSelection()
-        self.interpreter = interpretermanager.InterpreterManager().GetInterpreterByName(interpreter_name)
+        sel = self._interpreterCombo.GetSelection()
+        self.interpreter = self.interpreters[sel]
         if self.interpreter.IsBuiltIn or self.interpreter.GetPipPath() is None:
             wx.MessageBox(_("Could not find pip on the path"),style=wx.OK|wx.ICON_ERROR)
             return
@@ -199,6 +200,12 @@ class ManagePackagesDialog(wx.Dialog):
             self.InstallPackage(self.interpreter)
         else:
             self.UninstallPackage(self.interpreter)
+            
+    def GetNames(self):
+        names = []
+        for interpreter in self.interpreters:
+            names.append(interpreter.Name)
+        return names
         
 class PackagePanel(wx.Panel):
     def __init__(self,parent):
@@ -221,7 +228,7 @@ class PackagePanel(wx.Panel):
         self.interpreter = None
 
     def InstallPip(self,event):
-        dlg = ManagePackagesDialog(self,-1,_("Install Package"),ManagePackagesDialog.MANAGE_INSTALL_PACKAGE,self.interpreter)
+        dlg = ManagePackagesDialog(self,-1,_("Install Package"),ManagePackagesDialog.MANAGE_INSTALL_PACKAGE,self.interpreter,self.GetParent().GetParent()._interpreters)
         dlg.CenterOnParent()
         status = dlg.ShowModal()
         if status == wx.ID_OK:
@@ -233,7 +240,7 @@ class PackagePanel(wx.Panel):
         package_name = ""
         if index != wx.NOT_FOUND:
             package_name = self.dvlc.GetTextValue(index,0)
-        dlg = ManagePackagesDialog(self,-1,_("Uninstall Package"),ManagePackagesDialog.MANAGE_UNINSTALL_PACKAGE,self.interpreter,package_name=package_name)
+        dlg = ManagePackagesDialog(self,-1,_("Uninstall Package"),ManagePackagesDialog.MANAGE_UNINSTALL_PACKAGE,self.interpreter,self.GetParent().GetParent()._interpreters,package_name=package_name)
         dlg.CenterOnParent()
         status = dlg.ShowModal()
         if status == wx.ID_OK:

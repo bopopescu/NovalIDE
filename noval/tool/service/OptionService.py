@@ -182,6 +182,9 @@ class OptionsDialog(wx.Dialog):
         if 1 >= len(names):
             return "",selection_name
         return names[0],names[1]
+        
+    def GetOptionPanel(self,category,option_name):
+        return self._optionsPanels[GetOptionName(category , option_name)]
 
 class OptionsService(wx.lib.pydocview.DocOptionsService):
     def __init__(self,showGeneralOptions=True, supportedModes=wx.lib.docview.DOC_SDI & wx.lib.docview.DOC_MDI):

@@ -693,13 +693,8 @@ class ProjectDocument(wx.lib.docview.Document):
                     openDoc.SetFilename(newFilePath, notifyViews = True)
                     openDoc.UpdateAllViews(hint = ("rename", self, oldFilePath, newFilePath))
                     openDoc.FileWatcher.StartWatchFile(openDoc)
-##                documents = self.GetDocumentManager().GetDocuments()
-##                for document in documents:
-##                    if os.path.normcase(document.GetFilename()) == os.path.normcase(oldFilePath):  # If the renamed document is open, update it
-##                        print document,document.GetFilename()
-##                        document.SetFilename(newFilePath, notifyViews = True)
-##                        document.UpdateAllViews(hint = ("rename", self, oldFilePath, newFilePath))
-##                        document.FileWatcher.StartWatchFile(document)
+                    openDoc.GetFirstView().DoLoadOutlineCallback(True)
+
             return True
         except OSError, (code, message):
             msgTitle = _("Rename File Error")
@@ -2810,6 +2805,10 @@ class ProjectView(wx.lib.docview.View):
     #----------------------------------------------------------------------------
 
     def SetProject(self, projectPath):
+        if self._service.IsLoadingProjects:
+            utils.GetLogger().info("application is loading projects at startup ,do not load project document %s at this time",projectPath)
+            return
+        utils.GetLogger().info("load project document %s",projectPath)
         curSel = self._projectChoice.GetSelection()
         for i in range(self._projectChoice.GetCount()):
             document = self._projectChoice.GetClientData(i)
@@ -4602,11 +4601,15 @@ class ProjectService(Service.Service):
         self._fileTypeDefaults = []
         self._nameDefaults = []
         self._mapToProject = dict()
+        self._is_loading_projects = False
+        
 
+    @property
+    def IsLoadingProjects(self):
+        return self._is_loading_projects
 
     def _CreateView(self):
         return ProjectView(self)
-
 
     def ShowWindow(self, show = True):
         """ Force showing of saved projects on opening, otherwise empty Project Window is disconcerting for user """
@@ -5227,6 +5230,7 @@ class ProjectService(Service.Service):
 
 
     def LoadSavedProjects(self):
+        self._is_loading_projects = True
         config = wx.ConfigBase_Get()
         openedDocs = False
         if config.ReadInt("ProjectSaveDocs", True):
@@ -5244,6 +5248,7 @@ class ProjectService(Service.Service):
                 self.GetView()._treeCtrl.Thaw()
                 if doc:
                     openedDocs = True
+        self._is_loading_projects = False
         return openedDocs
         
     def SetCurrentProject(self):

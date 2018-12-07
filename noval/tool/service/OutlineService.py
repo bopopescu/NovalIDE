@@ -18,15 +18,15 @@ import noval.util.sysutils as sysutilslib
 import os
 import noval.util.WxThreadSafe as WxThreadSafe
 import noval.parser.config as parserconfig
-_ = wx.GetTranslation
-
-
+from noval.tool.consts import _,SPACE,HALF_SPACE
+from noval.util import utils
 #----------------------------------------------------------------------------
 # Constants
 #----------------------------------------------------------------------------
 SORT_BY_NONE = 0
 SORT_BY_LINE = 1
 SORT_BY_NAME = 2
+SORT_BY_TYPE = 3
 
 class OutlineView(Service.ServiceView):
     """ Reusable Outline View for any document.
@@ -63,6 +63,7 @@ class OutlineView(Service.ServiceView):
 
         menu.AppendRadioItem(OutlineService.SORT_BY_NONE, _("Unsorted"), _("Display items in original order"))
         menu.AppendRadioItem(OutlineService.SORT_BY_LINE, _("Sort By Line"), _("Display items in line order"))
+        menu.AppendRadioItem(OutlineService.SORT_BY_TYPE, _("Sort By Type"), _("Display items in item type"))
         menu.AppendRadioItem(OutlineService.SORT_BY_NAME, _("Sort By Name(A-Z)"), _("Display items in name order"))
 
         config = wx.ConfigBase_Get()
@@ -73,6 +74,8 @@ class OutlineView(Service.ServiceView):
             menu.Check(OutlineService.SORT_BY_LINE, True)
         elif sort == SORT_BY_NAME:
             menu.Check(OutlineService.SORT_BY_NAME, True)
+        elif sort == SORT_BY_TYPE:
+            menu.Check(OutlineService.SORT_BY_TYPE, True)
 
         self.GetControl().PopupMenu(menu, event.GetPosition())
         menu.Destroy()
@@ -180,7 +183,11 @@ class OutlineTreeCtrl(wx.TreeCtrl):
     ORIG_ORDER = 0
     VIEW = 1
     CALLBACKDATA = 2
-
+    
+    DISPLAY_ITEM_NAME = 0
+    DISPLAY_ITEM_LINE = 1
+    DISPLAY_ITEM_CLASS_BASE = 2
+    DISPLAY_ITEM_FUNCTION_PARAMETER = 4
 
     #----------------------------------------------------------------------------
     # Overridden Methods
@@ -190,6 +197,15 @@ class OutlineTreeCtrl(wx.TreeCtrl):
         wx.TreeCtrl.__init__(self, parent, id, style = style)
         self._origOrderIndex = 0
         self._sortOrder = SORT_BY_NONE
+        self._display_item_flag = OutlineTreeCtrl.DISPLAY_ITEM_NAME
+        if utils.ProfileGetInt("OutlineShowLineNumber", True):
+            self._display_item_flag |= OutlineTreeCtrl.DISPLAY_ITEM_LINE
+            
+        if utils.ProfileGetInt("OutlineShowParameter", False):
+            self._display_item_flag |= OutlineTreeCtrl.DISPLAY_ITEM_FUNCTION_PARAMETER
+            
+        if utils.ProfileGetInt("OutlineShowBaseClass", False):
+            self._display_item_flag |= OutlineTreeCtrl.DISPLAY_ITEM_CLASS_BASE
         
         isz = (16,16)
         il = wx.ImageList(isz[0], isz[1])
@@ -245,6 +261,10 @@ class OutlineTreeCtrl(wx.TreeCtrl):
             return cmp(data_1.Line, data_2.Line)  # sort A-Z
         elif self._sortOrder == SORT_BY_NAME:
             return cmp(self.GetItemText(item1).lower(), self.GetItemText(item2).lower())  # sort Z-A
+        elif self._sortOrder == SORT_BY_TYPE:
+            data_1 = self.GetPyData(item1)[2]
+            data_2 = self.GetPyData(item2)[2]
+            return cmp(data_1.Type, data_2.Type)
         else:
             return (self.GetPyData(item1)[self.ORIG_ORDER] > self.GetPyData(item2)[self.ORIG_ORDER]) # unsorted
 
@@ -363,48 +383,71 @@ class OutlineTreeCtrl(wx.TreeCtrl):
             if lineNum >= 0:
                 outlineService.SyncToPosition(view,lineNum)
         module_analyzer.FinishAnalyzing()
+        outlineService.GetView().OnSort(wx.ConfigBase_Get().ReadInt("OutlineSort", SORT_BY_NONE))
         
     def TranverseItem(self,module_analyzer,node,parent):
         view = module_analyzer.View
         for child in node.Childs:
             if module_analyzer.IsAnalyzingStopped():
                 break
+            display_name = child.Name
             if child.Type == parserconfig.NODE_FUNCDEF_TYPE:
-                item = self.AppendItem(parent, child.Name)
+                if self._display_item_flag & self.DISPLAY_ITEM_FUNCTION_PARAMETER:
+                    arg_list = [arg.Name for arg in child.Args]
+                    arg_str = ",".join(arg_list)
+                    display_name = "%s(%s)" % (child.Name,arg_str)
+                    
+                if self._display_item_flag & self.DISPLAY_ITEM_LINE:
+                    display_name = "%s[%d]" % (display_name,child.Line)
+                
+                item = self.AppendItem(parent, display_name)
                 self.SetItemImage(item,self.FuncIdx,wx.TreeItemIcon_Normal)
                 self.SetDoSelectCallback(item, view, child)
             elif child.Type == parserconfig.NODE_CLASSDEF_TYPE:
-                item = self.AppendItem(parent, child.Name)
+                if self._display_item_flag & self.DISPLAY_ITEM_CLASS_BASE:
+                    if len(child.Bases) > 0:
+                        base_str = ",".join(child.Bases)
+                        display_name = "%s(%s)" % (child.Name,base_str)
+                    
+                if self._display_item_flag & self.DISPLAY_ITEM_LINE:
+                    display_name = "%s[%d]" % (display_name,child.Line)
+                    
+                item = self.AppendItem(parent, display_name)
                 self.SetItemImage(item,self.ClassIdx,wx.TreeItemIcon_Normal)
                 self.SetDoSelectCallback(item, view, child)
                 self.TranverseItem(module_analyzer,child,item)
-            elif child.Type == parserconfig.NODE_OBJECT_PROPERTY or \
-                        child.Type == parserconfig.NODE_ASSIGN_TYPE:
-                item = self.AppendItem(parent, child.Name)
-                self.SetItemImage(item,self.PropertyIdx,wx.TreeItemIcon_Normal)
-                self.SetDoSelectCallback(item, view, child)
-            elif child.Type == parserconfig.NODE_IMPORT_TYPE:
-                name = child.Name
-                if child.AsName is not None:
-                    name = child.AsName
-                item = self.AppendItem(parent,name)
-                self.SetItemImage(item,self.ImportIdx,wx.TreeItemIcon_Normal)
-                self.SetDoSelectCallback(item, view, child)
-            elif child.Type == parserconfig.NODE_FROMIMPORT_TYPE:
-                from_import_item = self.AppendItem(parent,child.Name)
-                self.SetItemImage(from_import_item,self.FromImportIdx,wx.TreeItemIcon_Normal)
-                self.SetDoSelectCallback(from_import_item, view, child)
-                for node_import in child.Childs:
-                    name = node_import.Name
-                    if node_import.AsName is not None:
-                        name = node_import.AsName
-                    import_item = self.AppendItem(from_import_item,name)
-                    self.SetItemImage(import_item,self.ImportIdx,wx.TreeItemIcon_Normal)
-                    self.SetDoSelectCallback(import_item, view, node_import)
-            elif child.Type == parserconfig.NODE_MAIN_FUNCTION_TYPE:
-                item = self.AppendItem(parent, child.Name)
-                self.SetItemImage(item,self.MainFunctionIdx,wx.TreeItemIcon_Normal)
-                self.SetDoSelectCallback(item, view, child)
+            else:
+                if self._display_item_flag & self.DISPLAY_ITEM_LINE:
+                    display_name = "%s[%d]" % (display_name,child.Line)
+                if child.Type == parserconfig.NODE_OBJECT_PROPERTY or \
+                            child.Type == parserconfig.NODE_ASSIGN_TYPE:
+                    item = self.AppendItem(parent, display_name)
+                    self.SetItemImage(item,self.PropertyIdx,wx.TreeItemIcon_Normal)
+                    self.SetDoSelectCallback(item, view, child)
+                elif child.Type == parserconfig.NODE_IMPORT_TYPE:
+                    display_name = child.Name
+                    if child.AsName is not None:
+                        display_name = child.AsName
+                    if self._display_item_flag & self.DISPLAY_ITEM_LINE:
+                        display_name = "%s[%d]" % (display_name,child.Line)
+                    item = self.AppendItem(parent,display_name)
+                    self.SetItemImage(item,self.ImportIdx,wx.TreeItemIcon_Normal)
+                    self.SetDoSelectCallback(item, view, child)
+                elif child.Type == parserconfig.NODE_FROMIMPORT_TYPE:
+                    from_import_item = self.AppendItem(parent,display_name)
+                    self.SetItemImage(from_import_item,self.FromImportIdx,wx.TreeItemIcon_Normal)
+                    self.SetDoSelectCallback(from_import_item, view, child)
+                    for node_import in child.Childs:
+                        name = node_import.Name
+                        if node_import.AsName is not None:
+                            name = node_import.AsName
+                        import_item = self.AppendItem(from_import_item,name)
+                        self.SetItemImage(import_item,self.ImportIdx,wx.TreeItemIcon_Normal)
+                        self.SetDoSelectCallback(import_item, view, node_import)
+                elif child.Type == parserconfig.NODE_MAIN_FUNCTION_TYPE:
+                    item = self.AppendItem(parent, display_name)
+                    self.SetItemImage(item,self.MainFunctionIdx,wx.TreeItemIcon_Normal)
+                    self.SetDoSelectCallback(item, view, child)
 
 
 class OutlineService(Service.Service):
@@ -418,6 +461,7 @@ class OutlineService(Service.Service):
     SORT_BY_LINE = wx.NewId()
     SORT_BY_NAME = wx.NewId()
     SORT_BY_NONE = wx.NewId()
+    SORT_BY_TYPE = wx.NewId()
 
 
     #----------------------------------------------------------------------------
@@ -442,6 +486,8 @@ class OutlineService(Service.Service):
         wx.EVT_UPDATE_UI(frame, OutlineService.SORT_BY_NAME, frame.ProcessUpdateUIEvent)
         wx.EVT_MENU(frame, OutlineService.SORT_BY_NONE, frame.ProcessEvent)
         wx.EVT_UPDATE_UI(frame, OutlineService.SORT_BY_NONE, frame.ProcessUpdateUIEvent)
+        wx.EVT_MENU(frame, OutlineService.SORT_BY_TYPE, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, OutlineService.SORT_BY_TYPE, frame.ProcessUpdateUIEvent)
 
 
         if wx.GetApp().GetDocumentManager().GetFlags() & wx.lib.docview.DOC_SDI:
@@ -451,6 +497,7 @@ class OutlineService(Service.Service):
         self._outlineSortMenu = wx.Menu()
         self._outlineSortMenu.AppendRadioItem(OutlineService.SORT_BY_NONE, _("Unsorted"), _("Display items in original order"))
         self._outlineSortMenu.AppendRadioItem(OutlineService.SORT_BY_LINE, _("Sort By Line"), _("Display items in line order"))
+        self._outlineSortMenu.AppendRadioItem(OutlineService.SORT_BY_TYPE, _("Sort By Type"), _("Display items in item type"))
         self._outlineSortMenu.AppendRadioItem(OutlineService.SORT_BY_NAME, _("Sort By Name(A-Z)"), _("Display items in name order"))
         viewMenu.AppendMenu(wx.NewId(), _("Outline Sort"), self._outlineSortMenu)
 
@@ -466,13 +513,7 @@ class OutlineService(Service.Service):
             return True
 
         id = event.GetId()
-        if id == OutlineService.SORT_BY_LINE:
-            self.OnSort(event)
-            return True
-        elif id == OutlineService.SORT_BY_NAME:
-            self.OnSort(event)
-            return True
-        elif id == OutlineService.SORT_BY_NONE:
+        if id in [OutlineService.SORT_BY_LINE,OutlineService.SORT_BY_NAME,OutlineService.SORT_BY_NONE,OutlineService.SORT_BY_TYPE]:
             self.OnSort(event)
             return True
         else:
@@ -517,25 +558,35 @@ class OutlineService(Service.Service):
                 self._outlineSortMenu.Check(OutlineService.SORT_BY_NONE, False)
 
             return True
+
+        elif id == OutlineService.SORT_BY_TYPE:
+            event.Enable(True)
+
+            config = wx.ConfigBase_Get()
+            sort = config.ReadInt("OutlineSort", SORT_BY_NONE)
+            if sort == SORT_BY_TYPE:
+                self._outlineSortMenu.Check(OutlineService.SORT_BY_TYPE, True)
+            else:
+                self._outlineSortMenu.Check(OutlineService.SORT_BY_TYPE, False)
+
+            return True
         else:
             return False
 
 
     def OnSort(self, event):
         id = event.GetId()
+        sort = SORT_BY_NONE
         if id == OutlineService.SORT_BY_LINE:
-            wx.ConfigBase_Get().WriteInt("OutlineSort", SORT_BY_LINE)
-            self.GetView().OnSort(SORT_BY_LINE)
-            return True
+            sort = SORT_BY_LINE
         elif id == OutlineService.SORT_BY_NAME:
-            wx.ConfigBase_Get().WriteInt("OutlineSort", SORT_BY_NAME)
-            self.GetView().OnSort(SORT_BY_NAME)
-            return True
+            sort = SORT_BY_NAME
         elif id == OutlineService.SORT_BY_NONE:
-            wx.ConfigBase_Get().WriteInt("OutlineSort", SORT_BY_NONE)
-            self.GetView().OnSort(SORT_BY_NONE)
-            return True
-
+            sort = SORT_BY_NONE
+        elif id == OutlineService.SORT_BY_TYPE:
+            sort = SORT_BY_TYPE
+        wx.ConfigBase_Get().WriteInt("OutlineSort", sort)
+        self.GetView().OnSort(sort)
 
     #----------------------------------------------------------------------------
     # Service specific methods
@@ -626,3 +677,52 @@ class OutlineService(Service.Service):
     def RemoveViewTypeForBackgroundHandler(self, viewType):
         self._validViewTypes.remove(viewType)
 
+
+class OutlineOptionsPanel(wx.Panel):
+    """
+    """
+    def __init__(self, parent, id,size):
+        wx.Panel.__init__(self, parent, id,size=size)
+        main_sizer = wx.BoxSizer(wx.VERTICAL)
+        optionsSizer = wx.BoxSizer(wx.VERTICAL)
+        config = wx.ConfigBase_Get()
+        self._showLineNumberCheckBox = wx.CheckBox(self, -1, _("Show Line Number"))
+        self._showLineNumberCheckBox.SetValue(config.ReadInt("OutlineShowLineNumber", True))
+        optionsSizer.Add(self._showLineNumberCheckBox, 0, wx.ALL, HALF_SPACE)
+
+        self._showParameterCheckBox = wx.CheckBox(self, -1, _("Show parameter of function"))
+        self._showParameterCheckBox.SetValue(config.ReadInt("OutlineShowParameter", False))
+        optionsSizer.Add(self._showParameterCheckBox, 0, wx.ALL, HALF_SPACE)
+        
+        self._showClassBaseCheckBox = wx.CheckBox(self, -1, _("Show base classes of class"))
+        self._showClassBaseCheckBox.SetValue(config.ReadInt("OutlineShowBaseClass", False))
+        optionsSizer.Add(self._showClassBaseCheckBox, 0, wx.ALL, HALF_SPACE)
+        
+        main_sizer.Add(optionsSizer, 0, wx.ALL|wx.EXPAND, SPACE)
+        self.SetSizer(main_sizer)
+        self.Layout()
+        
+    def OnOK(self, optionsDialog):
+        config = wx.ConfigBase_Get()
+        config.WriteInt("OutlineShowLineNumber", self._showLineNumberCheckBox.GetValue())
+        config.WriteInt("OutlineShowParameter", self._showParameterCheckBox.GetValue())
+        config.WriteInt("OutlineShowBaseClass", self._showClassBaseCheckBox.GetValue())
+        
+        display_item_flag = OutlineTreeCtrl.DISPLAY_ITEM_NAME
+        if self._showLineNumberCheckBox.GetValue():
+            display_item_flag |= OutlineTreeCtrl.DISPLAY_ITEM_LINE
+            
+        if self._showParameterCheckBox.GetValue():
+            display_item_flag |= OutlineTreeCtrl.DISPLAY_ITEM_FUNCTION_PARAMETER
+            
+        if self._showClassBaseCheckBox.GetValue():
+            display_item_flag |= OutlineTreeCtrl.DISPLAY_ITEM_CLASS_BASE
+        
+        outline_view = wx.GetApp().GetService(OutlineService).GetView()
+        if display_item_flag != outline_view.GetTreeCtrl()._display_item_flag:
+            outline_view.GetTreeCtrl()._display_item_flag = display_item_flag
+            active_text_view = Service.Service.GetActiveView()
+            if active_text_view != None and hasattr(active_text_view,"DoLoadOutlineCallback"):
+                active_text_view.DoLoadOutlineCallback(True)
+        return True
+        

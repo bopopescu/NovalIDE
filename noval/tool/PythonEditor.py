@@ -344,7 +344,6 @@ class PythonView(CodeEditor.CodeView):
 
         view = treeCtrl.GetCallbackView()
         newCheckSum = self.GenCheckSum()
-        force = self._checkSum != newCheckSum
         if not force:
             if view and view is self:
                 if self._checkSum == newCheckSum:

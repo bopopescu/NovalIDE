@@ -298,6 +298,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
   ##      optionsService.AddOptionsPanel(SVNService.SVNOptionsPanel)
         if self.GetUseTabbedMDI():
             optionsService.AddOptionsPanel(OptionService.OTHER_OPTION_NAME,_("Window"),WindowService.WindowsOptionsPanel)
+        optionsService.AddOptionsPanel(OptionService.OTHER_OPTION_NAME,_("Outline"),OutlineService.OutlineOptionsPanel)
         optionsService.AddOptionsPanel(OptionService.OTHER_OPTION_NAME,OptionService.EXTENSION_ITEM_NAME,ExtensionService.ExtensionOptionsPanel)
 
         filePropertiesService.AddCustomEventHandler(projectService)
@@ -345,7 +346,11 @@ class IDEApplication(wx.lib.pydocview.DocApp):
 
     def ShowTipfOfDay(self,must_display=False):
         docManager = self.GetDocumentManager()
-        tips_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "data", "tips.txt")
+        default_tips_filename = "tips.txt"
+        tips_filename = "tips_%s.txt" % (self.my_locale.GetCanonicalName())
+        tips_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "data",tips_filename)
+        if not os.path.exists(tips_path):
+            tips_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "data",default_tips_filename)
         # wxBug: On Mac, having the updates fire while the tip dialog is at front
         # for some reason messes up menu updates. This seems a low-level wxWidgets bug,
         # so until I track this down, turn off UI updates while the tip dialog is showing.
@@ -515,19 +520,21 @@ class IDEDocManager(wx.lib.docview.DocManager):
         dlg = wx.FileDialog(self.FindSuitableParent(),
                                _("Select a File"),
                                wildcard=descr,
-                               style=wx.OPEN|wx.FILE_MUST_EXIST|wx.CHANGE_DIR)
+                               style=wx.OPEN|wx.FILE_MUST_EXIST|wx.CHANGE_DIR|wx.MULTIPLE)
         # dlg.CenterOnParent()  # wxBug: caused crash with wx.FileDialog
         if dlg.ShowModal() == wx.ID_OK:
-            path = dlg.GetPath()
+            paths = dlg.GetPaths()
         else:
-            path = None
+            paths = []
         dlg.Destroy()
             
-        if path:  
-            theTemplate = self.FindTemplateForPath(path)
-            return (theTemplate, path)
+        path_templates = []
+        if paths:
+            for path in paths:
+                theTemplate = self.FindTemplateForPath(path)
+                path_templates.append((theTemplate, path),)
         
-        return (None, None)       
+        return path_templates      
 
     def OnFileSaveAs(self, event):
         doc = self.GetCurrentDocument()
@@ -655,6 +662,131 @@ class IDEDocManager(wx.lib.docview.DocManager):
                 return None
             self.AddFileToHistory(path)
         return doc
+        
+
+    def CreateDocument(self, path, flags=0):
+        """
+        Creates a new document in a manner determined by the flags parameter,
+        which can be:
+
+        wx.lib.docview.DOC_NEW Creates a fresh document.
+        wx.lib.docview.DOC_SILENT Silently loads the given document file.
+
+        If wx.lib.docview.DOC_NEW is present, a new document will be created and returned,
+        possibly after asking the user for a template to use if there is more
+        than one document template. If wx.lib.docview.DOC_SILENT is present, a new document
+        will be created and the given file loaded into it. If neither of these
+        flags is present, the user will be presented with a file selector for
+        the file to load, and the template to use will be determined by the
+        extension (Windows) or by popping up a template choice list (other
+        platforms).
+
+        If the maximum number of documents has been reached, this function
+        will delete the oldest currently loaded document before creating a new
+        one.
+
+        wxPython version supports the document manager's wx.lib.docview.DOC_OPEN_ONCE
+        and wx.lib.docview.DOC_NO_VIEW flag.
+        
+        if wx.lib.docview.DOC_OPEN_ONCE is present, trying to open the same file multiple 
+        times will just return the same document.
+        if wx.lib.docview.DOC_NO_VIEW is present, opening a file will generate the document,
+        but not generate a corresponding view.
+        """
+        templates = []
+        for temp in self._templates:
+            if temp.IsVisible():
+                templates.append(temp)
+        if len(templates) == 0:
+            return None
+
+        if len(self.GetDocuments()) >= self._maxDocsOpen:
+           doc = self.GetDocuments()[0]
+           if not self.CloseDocument(doc, False):
+               return None
+
+        if flags & wx.lib.docview.DOC_NEW:
+            for temp in templates[:]:
+                if not temp.IsNewable():
+                    templates.remove(temp)
+            if len(templates) == 1:
+                temp = templates[0]
+            else:
+                temp = self.SelectDocumentType(templates)
+            if temp:
+                newDoc = temp.CreateDocument(path, flags)
+                if newDoc:
+                    newDoc.SetDocumentName(temp.GetDocumentName())
+                    newDoc.SetDocumentTemplate(temp)
+                    newDoc.OnNewDocument()
+                return newDoc
+            else:
+                return None
+
+        if path and flags & wx.lib.docview.DOC_SILENT:
+            temp = self.FindTemplateForPath(path)
+            path_templates = [(temp,path),]
+        else:
+            ####temp, path = self.SelectDocumentPath(templates, path, flags)
+            path_templates = self.SelectDocumentPath(templates, path, flags)
+            
+        ret_doc = None
+
+        for temp, path in path_templates:
+            # Existing document
+            if path and self.GetFlags() & wx.lib.docview.DOC_OPEN_ONCE:
+                doc_exists = False
+                for document in self._docs:
+                    if document.GetFilename() and os.path.normcase(document.GetFilename()) == os.path.normcase(path):
+                        """ check for file modification outside of application """
+                        if not document.IsDocumentModificationDateCorrect():
+                            msgTitle = wx.GetApp().GetAppName()
+                            if not msgTitle:
+                                msgTitle = _("Warning")
+                            shortName = document.GetPrintableName()
+                            res = wx.MessageBox(_("'%s' has been modified outside of %s.  Reload '%s' from file system?") % (shortName, msgTitle, shortName),
+                                                msgTitle,
+                                                wx.YES_NO | wx.ICON_QUESTION,
+                                                self.FindSuitableParent())
+                            if res == wx.YES:
+                               if not self.CloseDocument(document, False):
+                                   wx.MessageBox(_("Couldn't reload '%s'.  Unable to close current '%s'.") % (shortName, shortName))
+                                   return None
+                               return self.CreateDocument(path, flags)
+                            elif res == wx.NO:  # don't ask again
+                                document.SetDocumentModificationDate()
+
+                        firstView = document.GetFirstView()
+                        if not firstView and not (flags & wx.lib.docview.DOC_NO_VIEW):
+                            document.GetDocumentTemplate().CreateView(document, flags)
+                            document.UpdateAllViews()
+                            firstView = document.GetFirstView()
+                            
+                        if firstView and firstView.GetFrame() and not (flags & wx.lib.docview.DOC_NO_VIEW):
+                            firstView.GetFrame().SetFocus()  # Not in wxWindows code but useful nonetheless
+                            if hasattr(firstView.GetFrame(), "IsIconized") and firstView.GetFrame().IsIconized():  # Not in wxWindows code but useful nonetheless
+                                firstView.GetFrame().Iconize(False)
+                        ###return None
+                        doc_exists = True
+                        ret_doc = document
+                        break
+
+            if temp and not doc_exists:
+                newDoc = temp.CreateDocument(path, flags)
+                if newDoc:
+                    newDoc.SetDocumentName(temp.GetDocumentName())
+                    newDoc.SetDocumentTemplate(temp)
+                    if not newDoc.OnOpenDocument(path):
+                        frame = newDoc.GetFirstView().GetFrame()
+                        newDoc.DeleteAllViews()  # Implicitly deleted by DeleteAllViews
+                        if frame:
+                            frame.Destroy() # DeleteAllViews doesn't get rid of the frame, so we'll explicitly destroy it.
+                        return None
+                    self.AddFileToHistory(path)
+                #the last open document is the return doc
+                ret_doc = newDoc
+
+        return ret_doc
 
 #----------------------------------------------------------------------
 

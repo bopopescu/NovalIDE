@@ -18,6 +18,14 @@
         <Name>Python类</Name>
         <Description>一个包含空类的Python脚本</Description>
         </Template>
+        <Template>
+        <Icon Large="noval/tool/bmp_source/template/python.bmp" Small="noval/tool/bmp_source/template/python-small.bmp"/>
+        <Ext>.py</Ext>
+        <Content> noval/tool/data/template/EmptyPythonModule.tar.bz2 </Content>
+        <DefaultName>module.py</DefaultName>
+        <Name>空模块</Name>
+        <Description>一个空的Python模块文件</Description>
+        </Template>
     </TemplateData>
     <TemplateData value="网络">
         <Template>
@@ -98,6 +106,16 @@
         <Name>Python class</Name>
         <Description>An .py file with an empty class</Description>
         </Template>
+
+        <Template>
+        <Icon Large="noval/tool/bmp_source/template/python.bmp" Small="noval/tool/bmp_source/template/python-small.bmp"/>
+        <Ext>.py</Ext>
+        <Content> noval/tool/data/template/EmptyPythonFile.tar.bz2 </Content>
+        <DefaultName>module.py</DefaultName>
+        <Name>Empty Python Module</Name>
+        <Description>An .py file with empty content</Description>
+        </Template>
+
     </TemplateData>
     <TemplateData value="Network">
         <Template>

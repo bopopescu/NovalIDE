@@ -429,14 +429,15 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,DocFrameBase
 
             art = arts[self._notebook_theme]()
             self._notebook.SetArtProvider(art)
+            #set the notebook background as white background
+            self._notebook.GetAuiManager().GetArtProvider()._background_brush = wx.WHITE_BRUSH
         else:
             self._notebook = wx.Listbook(self, wx.NewId(), style=wx.LB_LEFT)
-        # self._notebook.SetSizer(wx.NotebookSizer(self._notebook))
         if wx.Platform != "__WXMAC__":
             wx.EVT_NOTEBOOK_PAGE_CHANGED(self, self._notebook.GetId(), self.OnNotebookPageChanged)
         else:
             wx.EVT_LISTBOOK_PAGE_CHANGED(self, self._notebook.GetId(), self.OnNotebookPageChanged)
-        self._notebook.SetBackgroundColour(wx.Colour(255,255,255))
+        self._notebook.SetBackgroundColour(wx.WHITE_BRUSH.GetColour())
 
         templates = wx.GetApp().GetDocumentManager().GetTemplates()
         iconList = wx.ImageList(16, 16, initialCount = len(templates))

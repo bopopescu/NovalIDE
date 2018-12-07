@@ -44,7 +44,6 @@ import noval.util.sysutils as sysutilslib
 import subprocess
 import shutil
 import noval.tool.interpreter.Interpreter as Interpreter
-import locale
 import noval.tool.syntax.lang as lang
 import noval.util.WxThreadSafe as WxThreadSafe
 import DebugOutputCtrl
@@ -356,6 +355,7 @@ class RunCommandUI(wx.Panel):
     def __del__(self):
         # See comment on PythonDebuggerUI.StopExecution
         self._executor.DoStopExecution()
+        RunCommandUI.runners.remove(self)
 
     def Execute(self,onWebServer = False):
         try:
@@ -389,11 +389,15 @@ class RunCommandUI(wx.Panel):
         
     @WxThreadSafe.call_after
     def ExecutorFinished(self):
-        self._tb.EnableTool(self.KILL_PROCESS_ID, False)
-        self.UpdateFinishedPagePaneText()
-        self._stopped = True
-        self._textCtrl.SetReadOnly(True)
-        self.UpdateAllRunnerTerminateAllUI()
+        try:
+            self._tb.EnableTool(self.KILL_PROCESS_ID, False)
+            self.UpdateFinishedPagePaneText()
+            self._stopped = True
+            self._textCtrl.SetReadOnly(True)
+            self.UpdateAllRunnerTerminateAllUI()
+        except wx._core.PyDeadObjectError:
+            utils.GetLogger().warn("RunCommandUI object has been deleted, attribute access no longer allowed when finish executor")
+            return
         if self._restarted:
             wx.MilliSleep(250)
             wx.Yield()
@@ -728,13 +732,11 @@ class BaseDebuggerUI(wx.Panel):
         if _VERBOSE: print "In ExectorFinished"
         try:
             self.DisableAfterStop()
-        except wx._core.PyDeadObjectError:
-            pass
-        try:
             self.UpdatePagePaneText(_("Debugging"), _("Finished Debugging"))
-        except:
-            if _VERBOSE: print "In ExectorFinished, got exception"
-        self._tb.EnableTool(self.KILL_PROCESS_ID, False)
+            self._tb.EnableTool(self.KILL_PROCESS_ID, False)
+        except wx._core.PyDeadObjectError:
+            utils.GetLogger().warn("BaseDebuggerUI object has been deleted, attribute access no longer allowed when finish debug executor")
+            return
         wx.GetApp().GetService(DebuggerService).ShowHideDebuggerMenu(False)
         if self._restarted:
             wx.MilliSleep(250)
@@ -1728,6 +1730,10 @@ class DebuggerView(Service.ServiceView):
             if bottom_pane is None:
                 return None
             return bottom_pane.window
+            
+        if bottomTab.GetSelection() < 0 or 0 == bottomTab.GetPageCount():
+            utils.GetLogger().debug("current bottom current page count is %d,bottom tab is destroy",bottomTab.GetPageCount())
+            return None
         current_page = bottomTab.GetPage(bottomTab.GetSelection())
         return current_page
         
@@ -2831,7 +2837,7 @@ class DebuggerService(Service.Service):
             python_executable_path = interpreter.GetUnicodePath()
         else:
             python_executable_path = interpreter.Path
-        sys_encoding = locale.getdefaultlocale()[1]
+        sys_encoding = sysutilslib.GetDefaultLocaleEncoding()
         fileToRun = run_parameter.FilePath
         startIn,environment,initialArgs = run_parameter.StartupPath,run_parameter.Environment,run_parameter.Arg
         if not os.path.exists(startIn):

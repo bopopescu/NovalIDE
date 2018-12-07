@@ -17,6 +17,7 @@ import pyperclip
 import wx
 import psutil
 from ConfigParser import ConfigParser
+import locale
 
 # this will be set to true in IDE.py when we are running release builds.
 isRelease = False
@@ -63,10 +64,18 @@ def setServerMode(isServer):
 def isServer():
     global __isServer
     return __isServer
+
+def GetDefaultLocaleEncoding():
+    try:
+        return locale.getpreferredencoding()
+    except:
+        return locale.getdefaultlocale()[1]
     
 def _generateMainModuleDir():
     mainModuleDir = os.getenv(MAINMODULE_DIR)
     if mainModuleDir:  # if environment variable set, return it
+        if isWindows():
+            return mainModuleDir.decode(GetDefaultLocaleEncoding())
         return mainModuleDir
     
     # On Mac, the python executable sometimes has a capital "P" so we need to 
@@ -83,7 +92,8 @@ def _generateMainModuleDir():
         mainModuleDir = os.path.dirname(sys.executable)
         
     os.environ[MAINMODULE_DIR] = mainModuleDir  # pythonBug: os.putenv doesn't work, set environment variable
-    
+    if isWindows():
+        return mainModuleDir.decode(GetDefaultLocaleEncoding())
     return mainModuleDir
 
 mainModuleDir = _generateMainModuleDir()

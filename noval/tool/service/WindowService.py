@@ -23,6 +23,8 @@ class WindowMenuService(wx.lib.pydocview.WindowMenuService):
             windowMenu.Append(self.RESTORE_WINDOW_LAYOUT_ID,_("&Restore Default Layout"),_("Restore default layout of main frame"))
             wx.EVT_MENU(frame, self.RESTORE_WINDOW_LAYOUT_ID, frame.ProcessEvent)
             
+            wx.EVT_MENU(frame, self.SELECT_MORE_WINDOWS_ID, frame.ProcessEvent)
+            
 
     def ProcessEvent(self, event):
         """
@@ -41,6 +43,84 @@ class WindowMenuService(wx.lib.pydocview.WindowMenuService):
         else:
             return wx.lib.pydocview.WindowMenuService.ProcessEvent(self,event)
             
+
+    def BuildWindowMenu(self, currentFrame):
+        """
+        Builds the Window menu and adds menu items for all of the open documents in the DocManager.
+        """
+        if wx.GetApp().GetUseTabbedMDI():
+            currentFrame = wx.GetApp().GetTopWindow()
+
+        windowMenuIndex = currentFrame.GetMenuBar().FindMenu(_("&Window"))
+        windowMenu = currentFrame.GetMenuBar().GetMenu(windowMenuIndex)
+
+        if wx.GetApp().GetUseTabbedMDI():
+            notebook = wx.GetApp().GetTopWindow()._notebook
+            numPages = notebook.GetPageCount()
+
+            for id in self._selectWinIds:
+                item = windowMenu.FindItemById(id)
+                if item:
+                    windowMenu.DeleteItem(item)
+        
+            if windowMenu.FindItemById(self.SELECT_MORE_WINDOWS_ID):
+                windowMenu.Remove(self.SELECT_MORE_WINDOWS_ID)
+            if numPages == 0 and self._sep:
+                windowMenu.DeleteItem(self._sep)
+                self._sep = None
+
+            if numPages > len(self._selectWinIds):
+                for i in range(len(self._selectWinIds), numPages):
+                    self._selectWinIds.append(wx.NewId())
+                    wx.EVT_MENU(currentFrame, self._selectWinIds[i], self.OnCtrlKeySelect)
+                    
+            for i in range(0, min(numPages,wx.lib.pydocview.WINDOW_MENU_NUM_ITEMS)):
+                if i == 0 and not self._sep:
+                    self._sep = windowMenu.AppendSeparator()
+                if i < 9:
+                    menuLabel = "%s\tCtrl+%s" % (notebook.GetPageText(i), i+1)
+                else:
+                    menuLabel = notebook.GetPageText(i)
+                windowMenu.Append(self._selectWinIds[i], menuLabel)    
+                
+            if numPages > wx.lib.pydocview.WINDOW_MENU_NUM_ITEMS:  # Add the more items item
+                if not windowMenu.FindItemById(self.SELECT_MORE_WINDOWS_ID):
+                    windowMenu.Append(self.SELECT_MORE_WINDOWS_ID, _("&More Windows..."))
+  
+
+    def _GetWindowMenuFrameList(self, currentFrame=None):
+        """
+        Returns the Frame associated with each menu item in the Window menu.
+        """
+        frameList = []
+        # get list of windows for documents
+        for doc in self._docManager.GetDocuments():
+            for view in doc.GetViews():
+                if hasattr(view,"GetType"):
+                    frame = view.GetFrame()
+                    if frame not in frameList:
+                        if frame == currentFrame and len(frameList) >= WINDOW_MENU_NUM_ITEMS:
+                            frameList.insert(WINDOW_MENU_NUM_ITEMS - 1, frame)
+                        else:
+                            frameList.append(frame)
+        return frameList  
+
+    def OnSelectMoreWindows(self, event):
+        """
+        Called when the "Window/Select More Windows..." menu item is selected and enables user to
+        select from the Frames that do not in the Window list.  Useful when there are more than
+        10 open frames in the application.
+        """
+        frames = self._GetWindowMenuFrameList()  # TODO - make the current window the first one
+        strings = map(lambda frame: frame.GetTitle(), frames)
+        # Should preselect the current window, but not supported by wx.GetSingleChoice
+        res = wx.GetSingleChoiceIndex(_("Select a window to show:"),
+                                      _("Select Window"),
+                                      strings,
+                                      wx.GetApp().MainFrame)
+        if res == -1:
+            return
+        frames[res].SetFocus()
 
 
 class WindowsOptionsPanel(wx.Panel):

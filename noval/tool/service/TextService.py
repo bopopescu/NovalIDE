@@ -297,13 +297,13 @@ class TextService(Service.BaseService):
                     text_view.AddText(f.read())
             return True
         elif id == INSERT_DECLARE_ENCODING_ID:
-            self.InsertEncodingDeclare(text_view)
+            if text_view.GetLangId() == lang.ID_LANG_PYTHON:
+                self.InsertEncodingDeclare(text_view)
             return True
         elif id == ID_TAB_TO_SPACE or id == ID_SPACE_TO_TAB:
             self.ConvertWhitespace(text_view,id)
         else:
             return False
-            
 
     def InsertEncodingDeclare(self,text_view = None):
         if text_view is None:
@@ -354,8 +354,7 @@ class TextService(Service.BaseService):
                 or id == CONVERT_TO_LOWER_ID:
             event.Enable(text_view is not None and text_view.HasSelection())
             return True
-        elif id == INSERT_COMMENT_TEMPLATE_ID \
-                or id == INSERT_DECLARE_ENCODING_ID:
+        elif id == INSERT_COMMENT_TEMPLATE_ID:
             if text_view is not None:
                 langid = text_view.GetLangId()
                 lexer = syntax.LexerManager().GetLexer(langid)
@@ -364,6 +363,13 @@ class TextService(Service.BaseService):
                 enabled = False
             event.Enable(enabled )
             return True
+        elif id == INSERT_DECLARE_ENCODING_ID:
+            if text_view is not None:
+                langid = text_view.GetLangId()
+                enabled = (langid == lang.ID_LANG_PYTHON)
+            else:
+                enabled = False
+            event.Enable(enabled )
         else:
             return False
 

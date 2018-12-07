@@ -22,3 +22,14 @@ class PyShell(wx.py.shell.Shell):
             self.write(str(x))
             self.run("")
             #sys.exit
+            
+
+    def OnKeyDown(self, event):
+        key = event.GetKeyCode()
+        if key == wx.WXK_UP:
+            self.OnHistoryReplace(step=+1)
+        # Replace with the next command from the history buffer.
+        elif key == wx.WXK_DOWN:
+            self.OnHistoryReplace(step=-1)
+        else:
+            super(PyShell,self).OnKeyDown(event)
