@@ -55,6 +55,7 @@ if sys.platform == "win32":
                     ("noval/tool/debugger",glob.glob("noval/tool/debugger/DebuggerHarness.py")),
                     ("noval/tool/debugger",glob.glob("noval/tool/debugger/DebuggerHarness3.py")),
                     ("noval/tool/data",["noval/tool/data/tips.txt"]),
+                    ("noval/tool/data",["noval/tool/data/tips_zh_CN.txt"]),
                     ("noval/tool/data/template",glob.glob("noval/tool/data/template/*.tar.bz2")),
                     ("noval/tool/data/sample",glob.glob("noval/tool/data/sample/*.sample")),
                     ("noval/tool/data/styles",glob.glob("noval/tool/data/styles/*.ess")),
