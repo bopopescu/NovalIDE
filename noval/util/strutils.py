@@ -12,6 +12,7 @@
 import os
 import re
 import wx
+import txtutil
 
 _ = wx.GetTranslation
 
@@ -188,3 +189,25 @@ def HexToRGB(hex_str):
     
 def RGBToHex(clr):
     return "#%02x%02x%02x" % (clr.Red(),clr.Green(),clr.Blue())
+    
+
+def EncodeString(string, encoding=None):
+    """Try and encode a given unicode object to a string
+    with the provided encoding returning that string. The
+    default encoding will be used if None is given for the
+    encoding.
+    @param string: unicode object to encode into a string
+    @keyword encoding: encoding to use for conversion
+
+    """
+    if not encoding:
+        encoding = DEFAULT_ENCODING
+
+    if txtutil.IsUnicode(string):
+        try:
+            rtxt = string.encode(encoding)
+        except LookupError:
+            rtxt = string
+        return rtxt
+    else:
+        return string

@@ -85,7 +85,7 @@ DEFAULT_DOCUMENT_TYPE_NAME = "Python Document"
 
 #project or file property panel names
 RESOURCE_ITEM_NAME = "Resource"
-DEBUG_RUN_ITEM_NAME = "Debug/Run Settings"
+DEBUG_RUN_ITEM_NAME = "Debug/Run"
 INTERPRETER_ITEM_NAME = "Interpreter"
 PYTHONPATH_ITEM_NAME = "PythonPath"
 PROJECT_REFERENCE_ITEM_NAME = "Project References"

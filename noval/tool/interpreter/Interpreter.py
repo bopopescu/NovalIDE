@@ -468,9 +468,12 @@ class PythonInterpreter(BuiltinPythonInterpreter):
             pip_name = "pip"
             pip3_name = "pip3"
         python_location = os.path.dirname(self.Path)
-        pip_path_list = [os.path.join(python_location,"Scripts",pip_name),os.path.join(python_location,pip_name)]
-        #py3 may get pip3 as the pip tool
+        pip_path_list = []
+        #linux python3 pip tool name is pip3
+        if self.IsV2() or sysutils.isWindows():
+            pip_path_list = [os.path.join(python_location,"Scripts",pip_name),os.path.join(python_location,pip_name)]
         if self.IsV3():
+            #py3 may get pip3 as the pip tool
             pip_path_list.extend([os.path.join(python_location,"Scripts",pip3_name),os.path.join(python_location,pip3_name)])
         for pip_path in pip_path_list:
             if os.path.exists(pip_path):

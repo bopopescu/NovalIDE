@@ -169,7 +169,8 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                             
         _EDIT_LAYOUTS = True
         self._open_project_path = None
-        self.frame = None                        
+        self.frame = None           
+        self._pluginmgr = None             
 
         # This creates some pens and brushes that the OGL library uses.
         # It should be called after the app object has been created, but
@@ -311,7 +312,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
             outlineService.AddViewTypeForBackgroundHandler(ProcessModelEditor.ProcessModelView)
             outlineService.AddViewTypeForBackgroundHandler(PropertyService.PropertyView) # special case, don't clear outline if in property window
         outlineService.StartBackgroundTimer()
-    
+        
         iconPath = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "noval.ico")
         self.SetDefaultIcon(wx.Icon(iconPath, wx.BITMAP_TYPE_ICO))
         if self.GetUseTabbedMDI():
@@ -320,6 +321,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         else:
             self.frame = TabbedFrame.IDEMDIParentFrame(docManager, None, -1, wx.GetApp().GetAppName(), embeddedWindows=0, minSize=150)
         self.frame.Show(True)
+        
         self.toolbar = self.frame.GetToolBar()
         self.toolbar_combox = self.toolbar.FindControl(DebuggerService.DebuggerService.COMBO_INTERPRETERS_ID)
 
@@ -488,6 +490,16 @@ class IDEApplication(wx.lib.pydocview.DocApp):
                 return service_obj
         return None
         
+    def GetPluginManager(self):
+        """Returns the plugin manager used by this application
+        @return: Apps plugin manager
+        @see: L{plugin}
+
+        """
+        return self._pluginmgr
+        
+    def SetPluginManager(self,pluginmgr):
+        self._pluginmgr = pluginmgr
 
 class IDEDocManager(wx.lib.docview.DocManager):
 

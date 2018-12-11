@@ -10,13 +10,6 @@ import ProjectEditor
 import noval.util.utils as utils
 from pages import *
 
-##RESOURCE_ITEM_NAME = "Resource"
-##DEBUG_RUN_ITEM_NAME = "Debug/Run Settings"
-##INTERPRETER_ITEM_NAME = "Interpreter"
-##PYTHONPATH_ITEM_NAME = "PythonPath"
-##PROJECT_REFERENCE_ITEM_NAME = "Project References"
-
-
 class FilePropertiesService(wx.lib.pydocview.DocOptionsService):
     """
     Service that installs under the File menu to show the properties of the file associated

@@ -205,7 +205,7 @@ class DebugOutputCtrl(FindTextCtrl.FindTextCtrl):
         try:
             with open(filename,"wb") as f:
                 f.write(self.GetText())
-        except Exceptin as e:
+        except Exception as e:
             wx.MessageBox(str(e),style=wx.OK|wx.ICON_ERROR)
 
     def OnDoubleClick(self, event):

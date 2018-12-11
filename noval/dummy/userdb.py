@@ -1,4 +1,4 @@
-#coding:utf-8
+
 import os
 import sql
 import datetime
@@ -10,7 +10,6 @@ import getpass
 import noval.util.sysutils as sysutilslib
 import datetime
 import noval.parser.utils as parserutils
-import requests
 import json
 import noval.tool.consts as consts
 import noval.util.utils as utils
@@ -67,7 +66,6 @@ class UserDataDb(BaseDb):
     DB_VERSION = "1.0.1"
     ###HOST_SERVER_ADDR = 'http://127.0.0.1:8000'
     HOST_SERVER_ADDR = 'http://www.novalide.com'
-    #设置该类是单例
     __metaclass__ = Singleton.SingletonNew
 
     def __init__(self):
@@ -91,7 +89,6 @@ class UserDataDb(BaseDb):
 
     def init_data_db(self):
         table_already_exist_flag = 'already exists'
-        #创建user表，表存在时不抛异常
         try:
             self.create_table(sql.CREATE_USER_TABLE_SQL,"user")
         except sqlite3.OperationalError,e:
@@ -131,7 +128,7 @@ class UserDataDb(BaseDb):
         if result[1] == None:
             api_addr = '%s/member/getuser' % (self.HOST_SERVER_ADDR)
             sn = result[4]
-            data = self.RequestData(api_addr,arg = {'sn':sn})
+            data = utils.RequestData(api_addr,arg = {'sn':sn})
             if data is not None and data['code'] != 0:
                 api_addr = '%s/member/createuser' % (self.HOST_SERVER_ADDR)
                 sn = result[4]
@@ -141,7 +138,7 @@ class UserDataDb(BaseDb):
                     'os_name':result[5],
                     'user_name':result[2]
                 }
-                data = self.RequestData(api_addr,arg = args,method='post')
+                data = utils.RequestData(api_addr,arg = args,method='post')
             if data is not None and data['code'] == 0:
                 member_id = data['member_id']
                 update_sql = '''
@@ -191,7 +188,7 @@ class UserDataDb(BaseDb):
                     'end_time':result[5],
                     'app_version':result[2],
                 }
-                data = self.RequestData(api_addr,arg = args,method='post')
+                data = utils.RequestData(api_addr,arg = args,method='post')
                 if data is not None and data['code'] == 0:
                     update_sql = '''
                         update data set submited=1 where id=%d
@@ -202,25 +199,6 @@ class UserDataDb(BaseDb):
                 delete from data where id=%d
                 '''%result[0]
                 self.delete(delete_sql)
-
-    def RequestData(self,addr,arg,method='get',timeout = None):
-        '''
-            发送http api请求,并保存Cookies
-        '''
-        params = {}
-        try:
-            if timeout is not None:
-                params['timeout'] = timeout
-            req = None
-            if method == 'get':
-                params['params'] = arg
-                req = requests.get(addr,**params)
-            elif method == 'post':
-                req = requests.post(addr,data = arg,**params)
-            return req.json()
-        except Exception as e:
-            utils.GetLogger().error('open %s error:%s' ,addr,e)
-        return None
         
     def GetUserId(self):
         sql = "select * from user"

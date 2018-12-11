@@ -141,7 +141,7 @@ class InterpreterManager(Singleton):
                 interpreter.Packages = interpreter.LoaPackagesFromDict(l.get('packages',{}))
                 self.interpreters.append(interpreter)
                 app_debugLogger.info('load python interpreter from app config success,name is %s,path is %s,version is %s,is builtin %s',\
-                                     interpreter.Name,interpreter.Path,interpreter.Version,interpreter.IsBuiltIn)
+                                     interpreter.Name,interpreter.Path.decode(sysutils.GetDefaultLocaleEncoding()),interpreter.Version,interpreter.IsBuiltIn)
             if len(self.interpreters) > 1 or (len(self.interpreters) == 1 and not has_builtin_interpreter):
                 return True
         else:

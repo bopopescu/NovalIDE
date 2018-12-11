@@ -678,6 +678,9 @@ class InterpreterConfigurationPanel(wx.Panel):
                 self.OnOK(optionsDialog)
         return True
         
+    def NotifyConfigurationChange(self):
+        self._interprter_configuration_changed = True
+        
 class AnalyseProgressDialog(wx.ProgressDialog):
     
     def __init__(self,parent):

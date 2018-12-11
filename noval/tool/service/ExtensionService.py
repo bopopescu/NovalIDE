@@ -227,7 +227,7 @@ class ExtensionService(Service.BaseService):
         langId = GeneralOption.GetLangId(config.Read("Language",""))
         lang = wx.Locale.GetLanguageInfo(langId).CanonicalName
         app_version = sysutilslib.GetAppVersion()
-        data = UserDataDb.get_db().RequestData(api_addr,arg = {'app_version':app_version,'lang':lang})
+        data = utils.RequestData(api_addr,arg = {'app_version':app_version,'lang':lang})
         if data is None:
             if not ignore_error:
                 wx.MessageBox(_("could not connect to version server"),style=wx.OK|wx.ICON_ERROR)

@@ -17,6 +17,8 @@ import noval.tool.aui as aui
 import FullScreenDialog
 import DocumentOption
 import noval.util.utils as utils
+import noval.util.plugin as plugin
+import MainWindowAddOn
 
 _ = wx.GetTranslation
 
@@ -266,6 +268,23 @@ class DocFrameBase():
         viewMenu.AppendItem(item)
         wx.EVT_MENU(self, self.ID_SHOW_FULLSCREEN, self.ProcessEvent)
         
+    def InitPlugins(self):
+        # Setup Plugins after locale as they may have resource that need to be loaded.
+        plgmgr = plugin.PluginManager()
+        wx.GetApp().SetPluginManager(plgmgr)
+        addons = MainWindowAddOn.MainWindowAddOn(plgmgr)
+        addons.Init(self)
+        self._plugin_handlers['menu'].extend(addons.GetEventHandlers())
+        self._plugin_handlers['ui'].extend(addons.GetEventHandlers(ui_evt=True))
+        self.InitPluginMenus()
+
+    def InitPluginMenus(self):
+        for menu_item_command in self._plugin_handlers['menu']:
+            wx.EVT_MENU(self, menu_item_command[0], menu_item_command[1])
+            
+        for menu_update_item_command in self._plugin_handlers['ui']:
+            wx.EVT_UPDATE_UI(self, menu_update_item_command[0], menu_update_item_command[1])
+        
 class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,DocFrameBase):
     
     # wxBug: Need this for linux. The status bar created in pydocview is
@@ -291,6 +310,8 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,DocFrameBase
         self.RegisterMsg()
         self._current_document = None
         self._perspective = None
+        self._plugin_handlers = dict(menu=list(), ui=list())
+        self.InitPlugins()
     
     def CreateDefaultStatusBar(self):
        pass

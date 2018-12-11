@@ -2,6 +2,7 @@ import wx
 import wx.lib.pydocview
 from noval.tool.consts import _,SPACE,HALF_SPACE
 from noval.tool.Validator import NumValidator
+import noval.util.utils as utils
 
 MAX_WINDOW_MENU_NUM_ITEMS = 30
 
@@ -74,7 +75,7 @@ class WindowMenuService(wx.lib.pydocview.WindowMenuService):
                     self._selectWinIds.append(wx.NewId())
                     wx.EVT_MENU(currentFrame, self._selectWinIds[i], self.OnCtrlKeySelect)
                     
-            for i in range(0, min(numPages,wx.lib.pydocview.WINDOW_MENU_NUM_ITEMS)):
+            for i in range(0, min(numPages,utils.ProfileGetInt("WindowMenuDisplayNumber",wx.lib.pydocview.WINDOW_MENU_NUM_ITEMS))):
                 if i == 0 and not self._sep:
                     self._sep = windowMenu.AppendSeparator()
                 if i < 9:
@@ -136,7 +137,7 @@ class WindowsOptionsPanel(wx.Panel):
         optionsSizer.Add(self._loadLayoutCheckBox, 0, wx.ALL, HALF_SPACE)
         
         lsizer = wx.BoxSizer(wx.HORIZONTAL)
-        self._window_menu_display_number_ctrl = wx.TextCtrl(self, -1, config.Read("WindowMenuDisplayNumber",str(wx.lib.pydocview.WINDOW_MENU_NUM_ITEMS)), size=(30,-1),\
+        self._window_menu_display_number_ctrl = wx.TextCtrl(self, -1, str(config.ReadInt("WindowMenuDisplayNumber",wx.lib.pydocview.WINDOW_MENU_NUM_ITEMS)), size=(30,-1),\
                                 validator=NumValidator(_("Window Menu Display Number"),1,MAX_WINDOW_MENU_NUM_ITEMS))
         lsizer.AddMany([(wx.StaticText(self, label=_("Number of Window menus displayed") + "(%d-%d): " % \
                                                             (1,MAX_WINDOW_MENU_NUM_ITEMS)),
@@ -145,8 +146,6 @@ class WindowsOptionsPanel(wx.Panel):
                          0, wx.ALIGN_CENTER_VERTICAL)])
         optionsSizer.Add(lsizer, 0, wx.ALL, HALF_SPACE)
         
-
-
         self._hideMenubarCheckBox = wx.CheckBox(self, -1, _("Hide menubar When full screen display"))
         self._hideMenubarCheckBox.SetValue(config.ReadInt("HideMenubarFullScreen", False))
         optionsSizer.Add(self._hideMenubarCheckBox, 0, wx.ALL, HALF_SPACE)
@@ -165,6 +164,7 @@ class WindowsOptionsPanel(wx.Panel):
         config = wx.ConfigBase_Get()
         config.WriteInt("LoadLastWindowLayout", self._loadLayoutCheckBox.GetValue())
         config.WriteInt("HideMenubarFullScreen", self._hideMenubarCheckBox.GetValue())
+        config.WriteInt("WindowMenuDisplayNumber", int(self._window_menu_display_number_ctrl.GetValue()))
         return True
 
     def ClearWindowLayoutConfiguration(self,event):

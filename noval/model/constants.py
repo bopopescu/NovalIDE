@@ -13,7 +13,7 @@ _("Projects/Resources View")
 _("Configuration List")
 
 _("Resource")
-_("Debug/Run Settings")
+_("Debug/Run")
 _("Project References")
 
 _("Yes")

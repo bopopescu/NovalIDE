@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2018-12-07 19:53+中国标准时间\n"
+"POT-Creation-Date: 2018-12-11 19:44+中国标准时间\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,7 +32,7 @@ msgstr ""
 msgid "Search Results"
 msgstr ""
 
-#: D:\env\Noval\noval\model\constants.py:11 D:\env\Noval\noval\tool\IDE.py:301
+#: D:\env\Noval\noval\model\constants.py:11 D:\env\Noval\noval\tool\IDE.py:302
 msgid "Outline"
 msgstr ""
 
@@ -49,7 +49,7 @@ msgid "Resource"
 msgstr ""
 
 #: D:\env\Noval\noval\model\constants.py:16
-msgid "Debug/Run Settings"
+msgid "Debug/Run"
 msgstr ""
 
 #: D:\env\Noval\noval\model\constants.py:17
@@ -157,8 +157,8 @@ msgstr ""
 
 #: D:\env\Noval\noval\tool\CodeEditor.py:535
 #: D:\env\Noval\noval\tool\CodeEditor.py:638
-#: D:\env\Noval\noval\tool\TabbedFrame.py:183
-#: D:\env\Noval\noval\tool\TabbedFrame.py:263
+#: D:\env\Noval\noval\tool\TabbedFrame.py:185
+#: D:\env\Noval\noval\tool\TabbedFrame.py:265
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:4755
 #: D:\env\Noval\noval\tool\service\ExtensionService.py:141
 #: D:\env\Noval\noval\tool\service\OutlineService.py:496
@@ -685,63 +685,63 @@ msgstr ""
 msgid "Enter a full URL or local path"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:202 D:\env\Noval\noval\tool\IDE.py:516
-#: D:\env\Noval\noval\tool\IDE.py:518
+#: D:\env\Noval\noval\tool\IDE.py:203 D:\env\Noval\noval\tool\IDE.py:528
+#: D:\env\Noval\noval\tool\IDE.py:530
 #: D:\env\Noval\noval\tool\STCTextEditor.py:98
 #: D:\env\Noval\noval\tool\debugger\DebugOutputCtrl.py:192
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:3248
-#: D:\env\Noval\noval\util\strutils.py:165
+#: D:\env\Noval\noval\util\strutils.py:166
 msgid "All Files"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:207
+#: D:\env\Noval\noval\tool\IDE.py:208
 #: D:\env\Noval\noval\tool\syntax\lexer\_txt.py:45
 msgid "Text Editor"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:215
+#: D:\env\Noval\noval\tool\IDE.py:216
 msgid "WebView"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:220
+#: D:\env\Noval\noval\tool\IDE.py:221
 msgid "Internal Web Browser"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:228
+#: D:\env\Noval\noval\tool\IDE.py:229
 msgid "Image File"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:233
+#: D:\env\Noval\noval\tool\IDE.py:234
 msgid "Image Viewer"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:242
+#: D:\env\Noval\noval\tool\IDE.py:243
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:2549
 msgid "Project File"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:247
+#: D:\env\Noval\noval\tool\IDE.py:248
 msgid "Project Resolver"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:294
+#: D:\env\Noval\noval\tool\IDE.py:295
 #: D:\env\Noval\noval\tool\syntax\lexer\_yml.py:54
 msgid "Document"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:300
+#: D:\env\Noval\noval\tool\IDE.py:301
 msgid "Window"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:439 D:\env\Noval\noval\tool\UICommon.py:95
+#: D:\env\Noval\noval\tool\IDE.py:441 D:\env\Noval\noval\tool\UICommon.py:95
 msgid "Configuration"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:521
+#: D:\env\Noval\noval\tool\IDE.py:533
 msgid "Select a File"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:745
+#: D:\env\Noval\noval\tool\IDE.py:757
 #: D:\env\Noval\noval\tool\interpreter\Environment.py:124
 #: D:\env\Noval\noval\tool\interpreter\Interpreter.py:46
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:538
@@ -750,11 +750,11 @@ msgstr ""
 msgid "Warning"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:747
+#: D:\env\Noval\noval\tool\IDE.py:759
 msgid "'%s' has been modified outside of %s.  Reload '%s' from file system?"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\IDE.py:753
+#: D:\env\Noval\noval\tool\IDE.py:765
 msgid "Couldn't reload '%s'.  Unable to close current '%s'."
 msgstr ""
 
@@ -789,7 +789,7 @@ msgstr ""
 #: D:\env\Noval\noval\tool\interpreter\EnvironmentVariableDialog.py:22
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:90
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:176
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:79
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:119
 #: D:\env\Noval\noval\tool\project\NewFile.py:142
 #: D:\env\Noval\noval\tool\project\ProjectUI.py:84
 #: D:\env\Noval\noval\tool\project\ProjectUI.py:191
@@ -807,7 +807,7 @@ msgstr ""
 #: D:\env\Noval\noval\tool\interpreter\EnvironmentVariableDialog.py:27
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:96
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:179
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:85
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:125
 #: D:\env\Noval\noval\tool\project\ImportFiles.py:122
 #: D:\env\Noval\noval\tool\project\NewFile.py:146
 #: D:\env\Noval\noval\tool\project\NewFile.py:418
@@ -938,7 +938,7 @@ msgid "Open Command Prompt here..."
 msgstr ""
 
 #: D:\env\Noval\noval\tool\ResourceView.py:75
-#: D:\env\Noval\noval\tool\TabbedFrame.py:536
+#: D:\env\Noval\noval\tool\TabbedFrame.py:557
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:313
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:3448
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:3467
@@ -965,13 +965,14 @@ msgid "Open Directory Error"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\ResourceView.py:270
-#: D:\env\Noval\noval\tool\TabbedFrame.py:637
+#: D:\env\Noval\noval\tool\TabbedFrame.py:658
 #: D:\env\Noval\noval\tool\service\FindInDirService.py:716
 msgid "The file '%s' doesn't exist and couldn't be opened!"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\STCTextEditor.py:101
 #: D:\env\Noval\noval\tool\debugger\DebugOutputCtrl.py:193
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:443
 msgid "Save As"
 msgstr ""
 
@@ -981,7 +982,7 @@ msgstr ""
 
 #: D:\env\Noval\noval\tool\STCTextEditor.py:146
 #: D:\env\Noval\noval\tool\STCTextEditor.py:253
-#: D:\env\Noval\noval\tool\TabbedFrame.py:635
+#: D:\env\Noval\noval\tool\TabbedFrame.py:656
 #: D:\env\Noval\noval\tool\debugger\DebugOutputCtrl.py:238
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:483
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:501
@@ -1002,12 +1003,12 @@ msgid "Could not open '%s':  %s"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\STCTextEditor.py:583
-#: D:\env\Noval\noval\tool\TabbedFrame.py:133
+#: D:\env\Noval\noval\tool\TabbedFrame.py:135
 msgid "&Undo\tCtrl+Z"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\STCTextEditor.py:587
-#: D:\env\Noval\noval\tool\TabbedFrame.py:137
+#: D:\env\Noval\noval\tool\TabbedFrame.py:139
 msgid "&Redo\tCtrl+Y"
 msgstr ""
 
@@ -1092,214 +1093,214 @@ msgstr ""
 msgid " pt. "
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:56
-#: D:\env\Noval\noval\tool\TabbedFrame.py:81
+#: D:\env\Noval\noval\tool\TabbedFrame.py:58
+#: D:\env\Noval\noval\tool\TabbedFrame.py:83
 msgid "Creates a new document"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:56
+#: D:\env\Noval\noval\tool\TabbedFrame.py:58
 #: D:\env\Noval\noval\tool\project\NewFile.py:57
 #: D:\env\Noval\noval\tool\project\pages\DebugRun.py:510
 msgid "New"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:57
+#: D:\env\Noval\noval\tool\TabbedFrame.py:59
 msgid "Open"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:57
-#: D:\env\Noval\noval\tool\TabbedFrame.py:85
+#: D:\env\Noval\noval\tool\TabbedFrame.py:59
+#: D:\env\Noval\noval\tool\TabbedFrame.py:87
 msgid "Opens an existing document"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:58
+#: D:\env\Noval\noval\tool\TabbedFrame.py:60
 msgid "Save"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:58
-#: D:\env\Noval\noval\tool\TabbedFrame.py:94
+#: D:\env\Noval\noval\tool\TabbedFrame.py:60
+#: D:\env\Noval\noval\tool\TabbedFrame.py:96
 msgid "Saves the active document"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:59
+#: D:\env\Noval\noval\tool\TabbedFrame.py:61
 msgid "Save All"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:59
+#: D:\env\Noval\noval\tool\TabbedFrame.py:61
 msgid "Saves all the active documents"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:61
+#: D:\env\Noval\noval\tool\TabbedFrame.py:63
 msgid "Print"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:61
-#: D:\env\Noval\noval\tool\TabbedFrame.py:112
+#: D:\env\Noval\noval\tool\TabbedFrame.py:63
+#: D:\env\Noval\noval\tool\TabbedFrame.py:114
 msgid "Displays full pages"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:62
+#: D:\env\Noval\noval\tool\TabbedFrame.py:64
 msgid "Print Preview"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:62
-#: D:\env\Noval\noval\tool\TabbedFrame.py:108
+#: D:\env\Noval\noval\tool\TabbedFrame.py:64
+#: D:\env\Noval\noval\tool\TabbedFrame.py:110
 msgid "Prints the active document"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:64
+#: D:\env\Noval\noval\tool\TabbedFrame.py:66
 msgid "Cut"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:64
-#: D:\env\Noval\noval\tool\TabbedFrame.py:144
+#: D:\env\Noval\noval\tool\TabbedFrame.py:66
+#: D:\env\Noval\noval\tool\TabbedFrame.py:146
 msgid "Cuts the selection and puts it on the Clipboard"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:65
-#: D:\env\Noval\noval\tool\TabbedFrame.py:150
+#: D:\env\Noval\noval\tool\TabbedFrame.py:67
+#: D:\env\Noval\noval\tool\TabbedFrame.py:152
 msgid "Copies the selection and puts it on the Clipboard"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:65
+#: D:\env\Noval\noval\tool\TabbedFrame.py:67
 #: D:\env\Noval\noval\tool\project\pages\DebugRun.py:522
 msgid "Copy"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:66
+#: D:\env\Noval\noval\tool\TabbedFrame.py:68
 msgid "Paste"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:66
-#: D:\env\Noval\noval\tool\TabbedFrame.py:156
+#: D:\env\Noval\noval\tool\TabbedFrame.py:68
+#: D:\env\Noval\noval\tool\TabbedFrame.py:158
 msgid "Inserts Clipboard contents"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:67
+#: D:\env\Noval\noval\tool\TabbedFrame.py:69
 msgid "Undo"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:67
-#: D:\env\Noval\noval\tool\TabbedFrame.py:133
+#: D:\env\Noval\noval\tool\TabbedFrame.py:69
+#: D:\env\Noval\noval\tool\TabbedFrame.py:135
 msgid "Reverses the last action"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:68
+#: D:\env\Noval\noval\tool\TabbedFrame.py:70
 msgid "Redo"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:68
-#: D:\env\Noval\noval\tool\TabbedFrame.py:137
+#: D:\env\Noval\noval\tool\TabbedFrame.py:70
+#: D:\env\Noval\noval\tool\TabbedFrame.py:139
 msgid "Reverses the last undo"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:81
+#: D:\env\Noval\noval\tool\TabbedFrame.py:83
 msgid "&New...\tCtrl+N"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:85
+#: D:\env\Noval\noval\tool\TabbedFrame.py:87
 msgid "&Open...\tCtrl+O"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:89
+#: D:\env\Noval\noval\tool\TabbedFrame.py:91
 msgid "&Close\tCtrl+W"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:89
+#: D:\env\Noval\noval\tool\TabbedFrame.py:91
 msgid "Closes the active document"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:91
+#: D:\env\Noval\noval\tool\TabbedFrame.py:93
 msgid "Close A&ll"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:91
+#: D:\env\Noval\noval\tool\TabbedFrame.py:93
 msgid "Closes all open documents"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:94
+#: D:\env\Noval\noval\tool\TabbedFrame.py:96
 msgid "&Save\tCtrl+S"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:98
+#: D:\env\Noval\noval\tool\TabbedFrame.py:100
 msgid "Save &As..."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:98
+#: D:\env\Noval\noval\tool\TabbedFrame.py:100
 msgid "Saves the active document with a new name"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:100
+#: D:\env\Noval\noval\tool\TabbedFrame.py:102
 msgid "Save All\tCtrl+Shift+A"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:100
+#: D:\env\Noval\noval\tool\TabbedFrame.py:102
 msgid "Saves the all active documents"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:108
+#: D:\env\Noval\noval\tool\TabbedFrame.py:110
 msgid "&Print\tCtrl+P"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:112
+#: D:\env\Noval\noval\tool\TabbedFrame.py:114
 msgid "Print Pre&view"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:116
+#: D:\env\Noval\noval\tool\TabbedFrame.py:118
 msgid "Changes page layout settings"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:116
+#: D:\env\Noval\noval\tool\TabbedFrame.py:118
 msgid "Page Set&up"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:122
+#: D:\env\Noval\noval\tool\TabbedFrame.py:124
 msgid "&Quit"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:122
 #: D:\env\Noval\noval\tool\TabbedFrame.py:124
+#: D:\env\Noval\noval\tool\TabbedFrame.py:126
 msgid "Closes this program"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:124
+#: D:\env\Noval\noval\tool\TabbedFrame.py:126
 msgid "E&xit"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:130
-#: D:\env\Noval\noval\tool\project\Property.py:49
+#: D:\env\Noval\noval\tool\TabbedFrame.py:132
+#: D:\env\Noval\noval\tool\project\Property.py:42
 msgid "&File"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:144
+#: D:\env\Noval\noval\tool\TabbedFrame.py:146
 msgid "Cu&t\tCtrl+X"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:150
+#: D:\env\Noval\noval\tool\TabbedFrame.py:152
 msgid "&Copy\tCtrl+C"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:156
+#: D:\env\Noval\noval\tool\TabbedFrame.py:158
 msgid "&Paste\tCtrl+V"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:162
+#: D:\env\Noval\noval\tool\TabbedFrame.py:164
 msgid "&Delete"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:162
+#: D:\env\Noval\noval\tool\TabbedFrame.py:164
 msgid "Erases the selection"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:168
+#: D:\env\Noval\noval\tool\TabbedFrame.py:170
 msgid "Select A&ll\tCtrl+A"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:168
+#: D:\env\Noval\noval\tool\TabbedFrame.py:170
 msgid "Selects all available data"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:171
+#: D:\env\Noval\noval\tool\TabbedFrame.py:173
 #: D:\env\Noval\noval\tool\project\NewFile.py:408
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:4757
 #: D:\env\Noval\noval\tool\service\CompletionService.py:67
@@ -1310,79 +1311,79 @@ msgstr ""
 msgid "&Edit"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:177
+#: D:\env\Noval\noval\tool\TabbedFrame.py:179
 msgid "&Toolbar"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:177
+#: D:\env\Noval\noval\tool\TabbedFrame.py:179
 msgid "Shows or hides the toolbar"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:180
+#: D:\env\Noval\noval\tool\TabbedFrame.py:182
 msgid "Shows or hides the status bar"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:180
+#: D:\env\Noval\noval\tool\TabbedFrame.py:182
 #: D:\env\Noval\noval\tool\service\Service.py:303
 msgid "&Status Bar"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:186
+#: D:\env\Noval\noval\tool\TabbedFrame.py:188
 msgid "Displays program information, version number, and copyright"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:189
+#: D:\env\Noval\noval\tool\TabbedFrame.py:191
 #: D:\env\Noval\noval\tool\service\ExtensionService.py:165
 msgid "&Help"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:264
+#: D:\env\Noval\noval\tool\TabbedFrame.py:266
 msgid "Show FullScreen"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:264
+#: D:\env\Noval\noval\tool\TabbedFrame.py:266
 msgid "Show the window in fullscreen"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:491
+#: D:\env\Noval\noval\tool\TabbedFrame.py:512
 msgid "Creates a new python module"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:491
+#: D:\env\Noval\noval\tool\TabbedFrame.py:512
 msgid "New Module"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:531
+#: D:\env\Noval\noval\tool\TabbedFrame.py:552
 msgid "Close All but \"%s\""
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:534
+#: D:\env\Noval\noval\tool\TabbedFrame.py:555
 msgid "Select Tab"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:537
+#: D:\env\Noval\noval\tool\TabbedFrame.py:558
 msgid "Open Path in Terminator"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:538
+#: D:\env\Noval\noval\tool\TabbedFrame.py:559
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:297
 msgid "Copy Path"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:539
+#: D:\env\Noval\noval\tool\TabbedFrame.py:560
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:289
 msgid "Copy Name"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:541
+#: D:\env\Noval\noval\tool\TabbedFrame.py:562
 msgid "Copy Module Name"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:546
+#: D:\env\Noval\noval\tool\TabbedFrame.py:567
 msgid "Maximize Editor Window"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\TabbedFrame.py:547
+#: D:\env\Noval\noval\tool\TabbedFrame.py:568
 msgid "Restore Editor Window"
 msgstr ""
 
@@ -1400,7 +1401,7 @@ msgstr ""
 #: D:\env\Noval\noval\tool\UICommon.py:311
 #: D:\env\Noval\noval\tool\debugger\DebuggerService.py:3299
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:163
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:49
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:89
 #: D:\env\Noval\noval\tool\project\ImportFiles.py:52
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:3219
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:4438
@@ -2343,7 +2344,7 @@ msgstr ""
 
 #: D:\env\Noval\noval\tool\debugger\Watchs.py:192
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:212
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:215
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:338
 #: D:\env\Noval\noval\tool\project\NewFile.py:39
 #: D:\env\Noval\noval\tool\project\PythonVariables.py:74
 msgid "Name"
@@ -2606,7 +2607,7 @@ msgid "Python interpreters(eg.:such as python.exe, pythonw.exe). Double or right
 msgstr ""
 
 #: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:213
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:216
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:339
 msgid "Version"
 msgstr ""
 
@@ -2698,11 +2699,11 @@ msgstr ""
 msgid "Save interpreter configuration"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:684
+#: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:687
 msgid "Interpreter Smart Analyse"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:685
+#: D:\env\Noval\noval\tool\interpreter\InterpreterConfigruation.py:688
 msgid "Please wait a minute for end analysing"
 msgstr ""
 
@@ -2747,90 +2748,142 @@ msgstr ""
 msgid "interpreter have already exist"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:27
-msgid "Type the name of package to install"
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:40
+msgid "Default Source"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:29
-msgid "Type the name of package to uninstall"
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:41
+msgid "Tsinghua"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:34
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:42
+msgid "Aliyun"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:43
+msgid "USTC"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:44
+msgid "HUST"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:45
+msgid "SDUT"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:46
+msgid "Douban"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:54
+msgid "We will use the pip source:"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:60
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:328
+msgid "Check the best source"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:68
 msgid "We will download and install it in the interpreter:"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:37
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:71
 msgid "We will uninstall it in the interpreter:"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:56
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:80
+msgid "Type the name of package to install:"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:82
+msgid "Type the name of package to uninstall:"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:96
 msgid ""
 "To install the specific version,type \"xxx==1.0.1\"\n"
 "To install more packages,please specific the path of requirements.txt"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:60
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:100
 msgid "To uninstall more packages,please specific the path of requirements.txt"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:72
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:95
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:112
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:142
 msgid "Show Details"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:100
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:147
 msgid "Hide Details"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:106
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:153
 msgid "Text File (*.txt)|*.txt"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:107
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:154
 msgid "Choose requirements.txt"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:135
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:185
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:193
 msgid "Install Success"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:138
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:189
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:197
 msgid "Uninstall Success"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:142
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:203
 msgid "Install Fail"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:144
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:205
 msgid "Uninstall Fail"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:190
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:260
 msgid "package name is empty"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:195
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:265
 msgid "Could not find pip on the path"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:220
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:309
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:315
+msgid "The Best Source"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:330
+msgid "Checking the best source"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:343
 msgid "Install with pip"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:224
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:347
 msgid "Uninstall with pip"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:231
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:351
+msgid "Freeze"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:359
 msgid "Install Package"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:243
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:372
 msgid "Uninstall Package"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:263
+#: D:\env\Noval\noval\tool\interpreter\PythonPackages.py:394
 msgid "Loading Package List....."
 msgstr ""
 
@@ -3282,7 +3335,7 @@ msgid "Add Directory Files to Project"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\project\ProjectEditor.py:3245
-#: D:\env\Noval\noval\util\strutils.py:163
+#: D:\env\Noval\noval\util\strutils.py:164
 msgid "|"
 msgstr ""
 
@@ -3752,23 +3805,23 @@ msgstr ""
 msgid "Please choose one editor"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\Property.py:52
+#: D:\env\Noval\noval\tool\project\Property.py:45
 msgid "&Properties"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\Property.py:52
+#: D:\env\Noval\noval\tool\project\Property.py:45
 msgid "Show file properties"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\Property.py:106
+#: D:\env\Noval\noval\tool\project\Property.py:99
 msgid "Project Property"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\Property.py:113
+#: D:\env\Noval\noval\tool\project\Property.py:106
 msgid "File Property"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\project\Property.py:116
+#: D:\env\Noval\noval\tool\project\Property.py:109
 msgid "Folder Property"
 msgstr ""
 
@@ -5051,60 +5104,60 @@ msgstr ""
 msgid "The Python Document have already declare coding,Do you want to overwrite it?"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\WindowService.py:17
-#: D:\env\Noval\noval\tool\service\WindowService.py:54
+#: D:\env\Noval\noval\tool\service\WindowService.py:18
+#: D:\env\Noval\noval\tool\service\WindowService.py:55
 msgid "&Window"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\WindowService.py:19
+#: D:\env\Noval\noval\tool\service\WindowService.py:20
 msgid "Close All"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\WindowService.py:19
+#: D:\env\Noval\noval\tool\service\WindowService.py:20
 msgid "Close all open documents"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\WindowService.py:23
+#: D:\env\Noval\noval\tool\service\WindowService.py:24
 msgid "&Restore Default Layout"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\WindowService.py:23
+#: D:\env\Noval\noval\tool\service\WindowService.py:24
 msgid "Restore default layout of main frame"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\WindowService.py:35
+#: D:\env\Noval\noval\tool\service\WindowService.py:36
 msgid "Are you sure want to restore the default window layout?"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\WindowService.py:88
+#: D:\env\Noval\noval\tool\service\WindowService.py:89
 msgid "&More Windows..."
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\WindowService.py:117
+#: D:\env\Noval\noval\tool\service\WindowService.py:118
 msgid "Select a window to show:"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\WindowService.py:118
+#: D:\env\Noval\noval\tool\service\WindowService.py:119
 msgid "Select Window"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\WindowService.py:134
+#: D:\env\Noval\noval\tool\service\WindowService.py:135
 msgid "Load the last window layout at start up"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\WindowService.py:140
+#: D:\env\Noval\noval\tool\service\WindowService.py:141
 msgid "Window Menu Display Number"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\WindowService.py:141
+#: D:\env\Noval\noval\tool\service\WindowService.py:142
 msgid "Number of Window menus displayed"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\WindowService.py:150
+#: D:\env\Noval\noval\tool\service\WindowService.py:149
 msgid "Hide menubar When full screen display"
 msgstr ""
 
-#: D:\env\Noval\noval\tool\service\WindowService.py:155
+#: D:\env\Noval\noval\tool\service\WindowService.py:154
 msgid "Clear Window layout configuration information"
 msgstr ""
 
@@ -5958,6 +6011,14 @@ msgstr ""
 
 #: D:\env\Noval\noval\util\fileutils.py:325
 msgid "No files to zip, nothing to do!"
+msgstr ""
+
+#: D:\env\Noval\noval\util\plugin.py:708
+msgid "No Description Available"
+msgstr ""
+
+#: D:\env\Noval\noval\util\plugin.py:709
+msgid "Unknown"
 msgstr ""
 
 #: D:\env\Noval\noval\util\sysutils.py:183
