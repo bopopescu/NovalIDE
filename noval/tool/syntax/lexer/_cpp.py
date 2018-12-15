@@ -177,10 +177,7 @@ class SyntaxLexer(syndata.BaseLexer):
         """Returns a list of characters used to comment a block of code
 
         """
-        if self.LangId in [ synglob.ID_LANG_CPP,
-                            synglob.ID_LANG_CSHARP,
-                            synglob.ID_LANG_OBJC,
-                            synglob.ID_LANG_VALA ]:
+        if self.LangId in [ lang.ID_LANG_CPP,lang.ID_LANG_H]:
             return [u'//']
         else:
             return [u'/*', u'*/']

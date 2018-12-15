@@ -4,6 +4,7 @@ import noval.tool.service.FindService as FindService
 import noval.util.sysutils as sysutilslib
 import noval.tool.STCTextEditor as STCTextEditor
 import os
+import noval.util.constants as constants
 _ = wx.GetTranslation
 
 class DebugOutputCtrl(FindTextCtrl.FindTextCtrl):
@@ -13,7 +14,7 @@ class DebugOutputCtrl(FindTextCtrl.FindTextCtrl):
     EXPORT_TEXT_ID = wx.NewId()
     ERROR_COLOR_STYLE = 2
     INPUT_COLOR_STYLE = 1
-    ItemIDs = [wx.ID_UNDO, wx.ID_REDO,None,wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, wx.ID_CLEAR,None, wx.ID_SELECTALL,TEXT_WRAP_ID,FindService.FindService.FIND_ID,EXPORT_TEXT_ID]
+    ItemIDs = [constants.ID_UNDO, constants.ID_REDO,None,constants.ID_CUT, constants.ID_COPY, constants.ID_PASTE, constants.ID_CLEAR,None, constants.ID_SELECTALL,TEXT_WRAP_ID,FindService.FindService.FIND_ID,EXPORT_TEXT_ID]
     
     def __init__(self, parent, id=-1, style = wx.NO_FULL_REPAINT_ON_RESIZE,is_debug=False):
         FindTextCtrl.FindTextCtrl.__init__(self, parent, id, style=style)
@@ -92,25 +93,25 @@ class DebugOutputCtrl(FindTextCtrl.FindTextCtrl):
         
     def ProcessEvent(self, event):
         id = event.GetId()
-        if id == wx.ID_UNDO:
+        if id == constants.ID_UNDO:
             self.Undo()
             return True
-        elif id == wx.ID_REDO:
+        elif id == constants.ID_REDO:
             self.Redo()
             return True
-        elif id == wx.ID_CUT:
+        elif id == constants.ID_CUT:
             self.Cut()
             return True
-        elif id == wx.ID_COPY:
+        elif id == constants.ID_COPY:
             self.Copy()
             return True
-        elif id == wx.ID_PASTE:
+        elif id == constants.ID_PASTE:
             self.OnPaste()
             return True
-        elif id == wx.ID_CLEAR:
+        elif id == constants.ID_CLEAR:
             self.ClearOutput()
             return True
-        elif id == wx.ID_SELECTALL:
+        elif id == constants.ID_SELECTALL:
             self.SelectAll()
             return True
         elif id == self.TEXT_WRAP_ID:
@@ -132,22 +133,22 @@ class DebugOutputCtrl(FindTextCtrl.FindTextCtrl):
             
     def ProcessUpdateUIEvent(self, event):
         id = event.GetId()
-        if id == wx.ID_UNDO:
+        if id == constants.ID_UNDO:
             event.Enable(self.CanUndo())
             return True
-        elif id == wx.ID_REDO:
+        elif id == constants.ID_REDO:
             event.Enable(self.CanRedo())
             return True
-        elif id == wx.ID_CUT or id == wx.ID_PASTE:
+        elif id == constants.ID_CUT or id == constants.ID_PASTE:
             event.Enable(False)
             return True
-        elif id == wx.ID_COPY:
+        elif id == constants.ID_COPY:
             event.Enable(self.HasSelection())
             return True
-        elif id == wx.ID_CLEAR:
+        elif id == constants.ID_CLEAR:
             event.Enable(True)  # wxBug: should be stcControl.CanCut()) but disabling clear item means del key doesn't work in control as expected
             return True
-        elif id == wx.ID_SELECTALL or id == FindService.FindService.FIND_ID or id == self.EXPORT_TEXT_ID:
+        elif id == constants.ID_SELECTALL or id == FindService.FindService.FIND_ID or id == self.EXPORT_TEXT_ID:
             hasText = self.GetTextLength() > 0
             event.Enable(hasText)
             return True

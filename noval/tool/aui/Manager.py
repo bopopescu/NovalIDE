@@ -263,7 +263,10 @@ class IDEAuiManager(aui.AuiManager):
                 pane = self.GetPane(page)
                 service = wx.GetApp().GetInstallService(pane.name)
                 if service is not None:
-                    service_icon = service.GetIcon()
+                    if hasattr(page,"OnSingleStep"):
+                        service_icon = service.GetBreakDebugIcon()
+                    else:
+                        service_icon = service.GetIcon()
                     if service_icon is not None:
                         notebook.SetPageBitmap(idx, service_icon)
                 else:

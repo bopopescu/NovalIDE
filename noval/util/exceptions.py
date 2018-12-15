@@ -19,3 +19,9 @@ class StartupPathNotExistError(PromptErrorException):
     def __init__(self,startup_path):
         msg = _("Startup path \"%s\" is not exist") % startup_path
         super(StartupPathNotExistError,self).__init__(msg)
+        
+class MenuBarMenuNotExistError(PromptErrorException):
+    
+    def __init__(self,menu_name):
+        msg = _("Could not find menu '%s' at menubar") % menu_name
+        super(MenuBarMenuNotExistError,self).__init__(msg)

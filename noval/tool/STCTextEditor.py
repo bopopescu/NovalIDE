@@ -38,6 +38,7 @@ import noval.util.strutils as strutils
 import json
 import noval.util.utils as utils
 import EOLFormat
+import noval.util.constants as constants
 
 _ = wx.GetTranslation
 
@@ -494,25 +495,25 @@ class TextView(wx.lib.docview.View):
 
     def ProcessEvent(self, event):        
         id = event.GetId()
-        if id == wx.ID_UNDO:
+        if id == constants.ID_UNDO:
             self.GetCtrl().Undo()
             return True
-        elif id == wx.ID_REDO:
+        elif id == constants.ID_REDO:
             self.GetCtrl().Redo()
             return True
-        elif id == wx.ID_CUT:
+        elif id == constants.ID_CUT:
             self.GetCtrl().Cut()
             return True
-        elif id == wx.ID_COPY:
+        elif id == constants.ID_COPY:
             self.GetCtrl().Copy()
             return True
-        elif id == wx.ID_PASTE:
+        elif id == constants.ID_PASTE:
             self.GetCtrl().OnPaste()
             return True
-        elif id == wx.ID_CLEAR:
+        elif id == constants.ID_CLEAR:
             self.GetCtrl().OnClear()
             return True
-        elif id == wx.ID_SELECTALL:
+        elif id == constants.ID_SELECTALL:
             self.GetCtrl().SelectAll()
             return True
         elif id == TextService.VIEW_WHITESPACE_ID:
@@ -578,23 +579,23 @@ class TextView(wx.lib.docview.View):
             return False
 
         id = event.GetId()
-        if id == wx.ID_UNDO:
+        if id == constants.ID_UNDO:
             event.Enable(self.GetCtrl().CanUndo())
             event.SetText(_("&Undo\tCtrl+Z"))  # replace menu string
             return True
-        elif id == wx.ID_REDO:
+        elif id == constants.ID_REDO:
             event.Enable(self.GetCtrl().CanRedo())
             event.SetText(_("&Redo\tCtrl+Y"))  # replace menu string
             return True
-        elif (id == wx.ID_CUT
-        or id == wx.ID_COPY
-        or id == wx.ID_CLEAR):
+        elif (id == constants.ID_CUT
+        or id == constants.ID_COPY
+        or id == constants.ID_CLEAR):
             event.Enable(self.HasSelection())
             return True
-        elif id == wx.ID_PASTE:
+        elif id == constants.ID_PASTE:
             event.Enable(self.GetCtrl().CanPaste())
             return True
-        elif id == wx.ID_SELECTALL:
+        elif id == constants.ID_SELECTALL:
             hasText = self.GetCtrl().GetTextLength() > 0
             event.Enable(hasText)
             return True

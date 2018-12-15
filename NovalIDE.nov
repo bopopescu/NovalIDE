@@ -61,7 +61,6 @@
   <noval:file filePath="./noval/tool/ResourceView.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/Singleton.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/STCTextEditor.py" logicalFolder="noval/tool" isStartup="false"/>
-  <noval:file filePath="./noval/tool/TabbedFrame.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/UICommon.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/UnitTestDialog.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/which.py" logicalFolder="noval/tool" isStartup="false"/>
@@ -272,10 +271,13 @@
   <noval:file filePath="./noval/tool/FullScreenDialog.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/DocumentOption.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/service/WindowService.py" logicalFolder="noval/tool/service" isStartup="false"/>
-  <noval:file filePath="./noval/util/itemid.py" logicalFolder="noval/util" isStartup="false"/>
   <noval:file filePath="./noval/util/plugin.py" logicalFolder="noval/util" isStartup="false"/>
   <noval:file filePath="./noval/util/iface.py" logicalFolder="noval/util" isStartup="false"/>
   <noval:file filePath="./noval/util/txtutil.py" logicalFolder="noval/util" isStartup="false"/>
   <noval:file filePath="./noval/tool/MainWindowAddOn.py" logicalFolder="noval/tool" isStartup="false"/>
+  <noval:file filePath="./noval/util/constants.py" logicalFolder="noval/util" isStartup="false"/>
+  <noval:file filePath="./noval/util/popupmenu.py" logicalFolder="noval/util" isStartup="false"/>
+  <noval:file filePath="./noval/tool/MenuBar.py" logicalFolder="noval/tool" isStartup="false"/>
+  <noval:file filePath="./noval/tool/MainFrame.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>

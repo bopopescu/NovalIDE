@@ -2808,12 +2808,12 @@ class ProjectView(wx.lib.docview.View):
         if self._service.IsLoadingProjects:
             utils.GetLogger().info("application is loading projects at startup ,do not load project document %s at this time",projectPath)
             return
-        utils.GetLogger().info("load project document %s",projectPath)
         curSel = self._projectChoice.GetSelection()
         for i in range(self._projectChoice.GetCount()):
             document = self._projectChoice.GetClientData(i)
             if document.GetFilename() == projectPath:
                 if curSel != i:  # don't reload if already loaded
+                    utils.GetLogger().info("switch to and load project document %s",projectPath)
                     self._projectChoice.SetSelection(i)
                     self.SetDocument(document)
                     self.LoadProject(document)

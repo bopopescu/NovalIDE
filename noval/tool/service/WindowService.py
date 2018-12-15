@@ -3,6 +3,7 @@ import wx.lib.pydocview
 from noval.tool.consts import _,SPACE,HALF_SPACE
 from noval.tool.Validator import NumValidator
 import noval.util.utils as utils
+import noval.util.constants as constants
 
 MAX_WINDOW_MENU_NUM_ITEMS = 30
 
@@ -17,8 +18,8 @@ class WindowMenuService(wx.lib.pydocview.WindowMenuService):
 
         windowMenuIndex = menuBar.FindMenu(_("&Window"))
         windowMenu = menuBar.GetMenu(windowMenuIndex)
-        windowMenu.Append(wx.ID_CLOSE_ALL,_("Close All"),_("Close all open documents"))
-        wx.EVT_MENU(frame, wx.ID_CLOSE_ALL, frame.ProcessEvent)
+        windowMenu.Append(constants.ID_CLOSE_ALL,_("Close All"),_("Close all open documents"))
+        wx.EVT_MENU(frame, constants.ID_CLOSE_ALL, frame.ProcessEvent)
         
         if wx.GetApp().GetUseTabbedMDI():
             windowMenu.Append(self.RESTORE_WINDOW_LAYOUT_ID,_("&Restore Default Layout"),_("Restore default layout of main frame"))

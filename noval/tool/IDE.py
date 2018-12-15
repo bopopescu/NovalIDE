@@ -158,7 +158,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         import GeneralOption
         import service.OptionService as OptionService
         import service.navigation.NavigationService as NavigationService
-        import TabbedFrame
+        import MainFrame
         import interpreter.InterpreterConfigruation as interpreterconfigruation
         import interpreter.GeneralConfiguration as generalconfiguration
         import ColorFont
@@ -317,9 +317,9 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         self.SetDefaultIcon(wx.Icon(iconPath, wx.BITMAP_TYPE_ICO))
         if self.GetUseTabbedMDI():
             #donot use tabbed mdi embeded sash window,use aui window,so set embeddedWindows location value to 0
-            self.frame = TabbedFrame.IDEDocTabbedParentFrame(docManager, None, -1, wx.GetApp().GetAppName(), embeddedWindows=0, minSize=150)
+            self.frame = MainFrame.IDEDocTabbedParentFrame(docManager, None, -1, wx.GetApp().GetAppName(), embeddedWindows=0, minSize=150)
         else:
-            self.frame = TabbedFrame.IDEMDIParentFrame(docManager, None, -1, wx.GetApp().GetAppName(), embeddedWindows=0, minSize=150)
+            self.frame = MainFrame.IDEMDIParentFrame(docManager, None, -1, wx.GetApp().GetAppName(), embeddedWindows=0, minSize=150)
         self.frame.Show(True)
         
         self.toolbar = self.frame.GetToolBar()
@@ -479,14 +479,15 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         """
         Creates and returns an MDI Document Frame for a Tabbed MDI view
         """
-        import TabbedFrame
-        frame = TabbedFrame.IDEDocTabbedChildFrame(doc, view, wx.GetApp().GetTopWindow(), id, title, pos, size, style)
+        import MainFrame
+        frame = MainFrame.IDEDocTabbedChildFrame(doc, view, wx.GetApp().GetTopWindow(), id, title, pos, size, style)
         return frame
 
     def GetInstallService(self,serviceName):
         import service
         for service_obj in self.GetServices():
-            if isinstance(service_obj,service.Service.Service) and service_obj.GetServiceName() == serviceName:
+            if isinstance(service_obj,service.Service.Service) and \
+                    (service_obj.GetServiceName() == serviceName or serviceName.startswith(service_obj.GetServiceName())):
                 return service_obj
         return None
         

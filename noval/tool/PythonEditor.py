@@ -357,6 +357,28 @@ class PythonView(CodeEditor.CodeView):
         
     def IsUnitTestEnable(self):
         return True
+        
+
+    def OnCommentLines(self):
+        newText = ""
+        for lineNo in self._GetSelectedLineNumbers():
+            lineText = self.GetCtrl().GetLine(lineNo)
+            if (len(lineText) > 1 and lineText[0] == '#') or (len(lineText) > 2 and lineText[:2] == '##'):
+                newText = newText + lineText
+            else:
+                newText = newText + "##" + lineText
+        self._ReplaceSelectedLines(newText)
+
+    def OnUncommentLines(self):
+        newText = ""
+        for lineNo in self._GetSelectedLineNumbers():
+            lineText = self.GetCtrl().GetLine(lineNo)
+            if len(lineText) >= 2 and lineText[:2] == "##":
+                lineText = lineText[2:]
+            elif len(lineText) >= 1 and lineText[:1] == "#":
+                lineText = lineText[1:]
+            newText = newText + lineText
+        self._ReplaceSelectedLines(newText)
 
 class PythonInterpreterView(Service.TabbedServiceView):
 

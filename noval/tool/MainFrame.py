@@ -19,8 +19,11 @@ import DocumentOption
 import noval.util.utils as utils
 import noval.util.plugin as plugin
 import MainWindowAddOn
+import noval.util.constants as constants
+from MenuBar import MainMenuBar
+from noval.util.popupmenu import PopupMenu
 
-_ = wx.GetTranslation
+_ = consts._
 
 
 class DocFrameBase():
@@ -55,19 +58,19 @@ class DocFrameBase():
         else:
             self._toolBar = self.CreateToolBar(wx.TB_HORIZONTAL | wx.NO_BORDER | wx.TB_FLAT)
             
-        self._toolBar.AddSimpleTool(wx.ID_NEW, images.load("toolbar/new.png"), _("New"), _("Creates a new document"))
-        self._toolBar.AddSimpleTool(wx.ID_OPEN, images.load("toolbar/open.png"), _("Open"), _("Opens an existing document"))
-        self._toolBar.AddSimpleTool(wx.ID_SAVE, images.load("toolbar/save.png"), _("Save"), _("Saves the active document"))
-        self._toolBar.AddSimpleTool(wx.lib.pydocview.SAVEALL_ID, images.load("toolbar/saveall.png"), _("Save All"), _("Saves all the active documents"))
+        self._toolBar.AddSimpleTool(constants.ID_NEW, images.load("toolbar/new.png"), _("New"), _("Creates a new document"))
+        self._toolBar.AddSimpleTool(constants.ID_OPEN, images.load("toolbar/open.png"), _("Open"), _("Opens an existing document"))
+        self._toolBar.AddSimpleTool(constants.ID_SAVE, images.load("toolbar/save.png"), _("Save"), _("Saves the active document"))
+        self._toolBar.AddSimpleTool(constants.ID_SAVEALL, images.load("toolbar/saveall.png"), _("Save All"), _("Saves all the active documents"))
         self._toolBar.AddSeparator()
-        self._toolBar.AddSimpleTool(wx.ID_PRINT, images.load("toolbar/print.png"), _("Print"), _("Displays full pages"))
-        self._toolBar.AddSimpleTool(wx.ID_PREVIEW, images.load("toolbar/preview.png"), _("Print Preview"), _("Prints the active document"))
+        self._toolBar.AddSimpleTool(constants.ID_PRINT, images.load("toolbar/print.png"), _("Print"), _("Displays full pages"))
+        self._toolBar.AddSimpleTool(constants.ID_PRINT_PREVIEW, images.load("toolbar/preview.png"), _("Print Preview"), _("Prints the active document"))
         self._toolBar.AddSeparator()
-        self._toolBar.AddSimpleTool(wx.ID_CUT, images.load("toolbar/cut.png"), _("Cut"), _("Cuts the selection and puts it on the Clipboard"))
-        self._toolBar.AddSimpleTool(wx.ID_COPY, images.load("toolbar/copy.png"), _("Copy"), _("Copies the selection and puts it on the Clipboard"))
-        self._toolBar.AddSimpleTool(wx.ID_PASTE, images.load("toolbar/paste.png"), _("Paste"), _("Inserts Clipboard contents"))
-        self._toolBar.AddSimpleTool(wx.ID_UNDO, images.load("toolbar/undo.png"), _("Undo"), _("Reverses the last action"))
-        self._toolBar.AddSimpleTool(wx.ID_REDO, images.load("toolbar/redo.png"), _("Redo"), _("Reverses the last undo"))
+        self._toolBar.AddSimpleTool(constants.ID_CUT, images.load("toolbar/cut.png"), _("Cut"), _("Cuts the selection and puts it on the Clipboard"))
+        self._toolBar.AddSimpleTool(constants.ID_COPY, images.load("toolbar/copy.png"), _("Copy"), _("Copies the selection and puts it on the Clipboard"))
+        self._toolBar.AddSimpleTool(constants.ID_PASTE, images.load("toolbar/paste.png"), _("Paste"), _("Inserts Clipboard contents"))
+        self._toolBar.AddSimpleTool(constants.ID_UNDO, images.load("toolbar/undo.png"), _("Undo"), _("Reverses the last action"))
+        self._toolBar.AddSimpleTool(constants.ID_REDO, images.load("toolbar/redo.png"), _("Redo"), _("Reverses the last undo"))
         self._toolBar.Realize()
         self._toolBar.Show(wx.ConfigBase_Get().ReadInt("ViewToolBar", True))
         return self._toolBar
@@ -76,129 +79,124 @@ class DocFrameBase():
         """
         Creates the default MenuBar.  Contains File, Edit, View, Tools, and Help menus.
         """
-        if sysutilslib.isWindows():
-            menuBar = wx.MenuBar()
+  
+        menuBar = MainMenuBar()
 
-            fileMenu = wx.Menu()
-            item = wx.MenuItem(fileMenu,wx.ID_NEW,_("&New...\tCtrl+N"), _("Creates a new document"), wx.ITEM_NORMAL)
-            item.SetBitmap(self._toolBar.FindById(wx.ID_NEW).GetBitmap())
-            fileMenu.AppendItem(item)
-            
-            item = wx.MenuItem(fileMenu,wx.ID_OPEN, _("&Open...\tCtrl+O"), _("Opens an existing document"))
-            item.SetBitmap(self._toolBar.FindById(wx.ID_OPEN).GetBitmap())
-            fileMenu.AppendItem(item)
-            
-            fileMenu.Append(wx.ID_CLOSE, _("&Close\tCtrl+W"), _("Closes the active document"))
-            if not sdi:
-                fileMenu.Append(wx.ID_CLOSE_ALL, _("Close A&ll"), _("Closes all open documents"))
-            fileMenu.AppendSeparator()
-            
-            item = wx.MenuItem(fileMenu,wx.ID_SAVE, _("&Save\tCtrl+S"), _("Saves the active document"))
-            item.SetBitmap(self._toolBar.FindById(wx.ID_SAVE).GetBitmap())
-            fileMenu.AppendItem(item)
-            
-            fileMenu.Append(wx.ID_SAVEAS, _("Save &As..."), _("Saves the active document with a new name"))
-            
-            item = wx.MenuItem(fileMenu,wx.lib.pydocview.SAVEALL_ID, _("Save All\tCtrl+Shift+A"), _("Saves the all active documents"))
-            item.SetBitmap(self._toolBar.FindById(wx.lib.pydocview.SAVEALL_ID).GetBitmap())
-            fileMenu.AppendItem(item)
-            
-            wx.EVT_MENU(self, wx.lib.pydocview.SAVEALL_ID, self.ProcessEvent)
-            wx.EVT_UPDATE_UI(self, wx.lib.pydocview.SAVEALL_ID, self.ProcessUpdateUIEvent)
-            fileMenu.AppendSeparator()
-            
-            item = wx.MenuItem(fileMenu,wx.ID_PRINT, _("&Print\tCtrl+P"), _("Prints the active document"))
-            item.SetBitmap(self._toolBar.FindById(wx.ID_PRINT).GetBitmap())
-            fileMenu.AppendItem(item)
-            
-            item = wx.MenuItem(fileMenu,wx.ID_PREVIEW, _("Print Pre&view"), _("Displays full pages"))
-            item.SetBitmap(self._toolBar.FindById(wx.ID_PREVIEW).GetBitmap())
-            fileMenu.AppendItem(item)
-            
-            item = wx.MenuItem(fileMenu,wx.ID_PRINT_SETUP, _("Page Set&up"), _("Changes page layout settings"))
-            item.SetBitmap(images.load("page.png"))
-            fileMenu.AppendItem(item)
-            
-            fileMenu.AppendSeparator()
-            if wx.Platform == '__WXMAC__':
-                item = wx.MenuItem(fileMenu,wx.ID_EXIT, _("&Quit"), _("Closes this program"))
-            else:
-                item = wx.MenuItem(fileMenu,wx.ID_EXIT, _("E&xit"), _("Closes this program"))
-            item.SetBitmap(images.load("exit.png"))
-            fileMenu.AppendItem(item)
-            
-            self._docManager.FileHistoryUseMenu(fileMenu)
-            self._docManager.FileHistoryAddFilesToMenu()
-            menuBar.Append(fileMenu, _("&File"));
-
-            editMenu = wx.Menu()
-            item = wx.MenuItem(editMenu,wx.ID_UNDO, _("&Undo\tCtrl+Z"), _("Reverses the last action"))
-            item.SetBitmap(self._toolBar.FindById(wx.ID_UNDO).GetBitmap())
-            editMenu.AppendItem(item)
-            
-            item = wx.MenuItem(editMenu,wx.ID_REDO, _("&Redo\tCtrl+Y"), _("Reverses the last undo"))
-            item.SetBitmap(self._toolBar.FindById(wx.ID_REDO).GetBitmap())
-            editMenu.AppendItem(item)
-            editMenu.AppendSeparator()
-            #item = wxMenuItem(self.editMenu, wxID_CUT, _("Cu&t\tCtrl+X"), _("Cuts the selection and puts it on the Clipboard"))
-            #item.SetBitmap(getCutBitmap())
-            #editMenu.AppendItem(item)
-            item = wx.MenuItem(editMenu,wx.ID_CUT, _("Cu&t\tCtrl+X"), _("Cuts the selection and puts it on the Clipboard"))
-            item.SetBitmap(self._toolBar.FindById(wx.ID_CUT).GetBitmap())
-            editMenu.AppendItem(item)
-            
-            wx.EVT_MENU(self, wx.ID_CUT, self.ProcessEvent)
-            wx.EVT_UPDATE_UI(self, wx.ID_CUT, self.ProcessUpdateUIEvent)
-            item = wx.MenuItem(editMenu,wx.ID_COPY, _("&Copy\tCtrl+C"), _("Copies the selection and puts it on the Clipboard"))
-            item.SetBitmap(self._toolBar.FindById(wx.ID_COPY).GetBitmap())
-            editMenu.AppendItem(item)
-            
-            wx.EVT_MENU(self, wx.ID_COPY, self.ProcessEvent)
-            wx.EVT_UPDATE_UI(self, wx.ID_COPY, self.ProcessUpdateUIEvent)
-            item = wx.MenuItem(editMenu,wx.ID_PASTE, _("&Paste\tCtrl+V"), _("Inserts Clipboard contents"))
-            item.SetBitmap(self._toolBar.FindById(wx.ID_PASTE).GetBitmap())
-            editMenu.AppendItem(item)
-            
-            wx.EVT_MENU(self, wx.ID_PASTE, self.ProcessEvent)
-            wx.EVT_UPDATE_UI(self, wx.ID_PASTE, self.ProcessUpdateUIEvent)
-            item = wx.MenuItem(editMenu,wx.ID_CLEAR, _("&Delete"), _("Erases the selection"))
-            item.SetBitmap(images.load("delete.png"))
-            editMenu.AppendItem(item)
-            wx.EVT_MENU(self, wx.ID_CLEAR, self.ProcessEvent)
-            wx.EVT_UPDATE_UI(self, wx.ID_CLEAR, self.ProcessUpdateUIEvent)
-            editMenu.AppendSeparator()
-            editMenu.Append(wx.ID_SELECTALL, _("Select A&ll\tCtrl+A"), _("Selects all available data"))
-            wx.EVT_MENU(self, wx.ID_SELECTALL, self.ProcessEvent)
-            wx.EVT_UPDATE_UI(self, wx.ID_SELECTALL, self.ProcessUpdateUIEvent)
-            menuBar.Append(editMenu, _("&Edit"))
-            if sdi:
-                if self.GetDocument() and self.GetDocument().GetCommandProcessor():
-                    self.GetDocument().GetCommandProcessor().SetEditMenu(editMenu)
-
-            viewMenu = wx.Menu()
-            viewMenu.AppendCheckItem(wx.lib.pydocview.VIEW_TOOLBAR_ID, _("&Toolbar"), _("Shows or hides the toolbar"))
-            wx.EVT_MENU(self, wx.lib.pydocview.VIEW_TOOLBAR_ID, self.OnViewToolBar)
-            wx.EVT_UPDATE_UI(self, wx.lib.pydocview.VIEW_TOOLBAR_ID, self.OnUpdateViewToolBar)
-            viewMenu.AppendCheckItem(wx.lib.pydocview.VIEW_STATUSBAR_ID, _("&Status Bar"), _("Shows or hides the status bar"))
-            wx.EVT_MENU(self, wx.lib.pydocview.VIEW_STATUSBAR_ID, self.OnViewStatusBar)
-            wx.EVT_UPDATE_UI(self, wx.lib.pydocview.VIEW_STATUSBAR_ID, self.OnUpdateViewStatusBar)
-            menuBar.Append(viewMenu, _("&View"))
-
-            helpMenu = wx.Menu()
-            item = wx.MenuItem(helpMenu,wx.ID_ABOUT, _(_("About %s") % wx.GetApp().GetAppName()), _("Displays program information, version number, and copyright"))
-            item.SetBitmap(images.load("about.png"))
-            helpMenu.AppendItem(item)
-            menuBar.Append(helpMenu, _("&Help"))
-
-            wx.EVT_MENU(self, wx.ID_ABOUT, self.OnAbout)
-            wx.EVT_UPDATE_UI(self, wx.ID_ABOUT, self.ProcessUpdateUIEvent)  # Using ID_ABOUT to update the window menu, the window menu items are not triggering
-
-            if sdi:  # TODO: Is this really needed?
-                wx.EVT_COMMAND_FIND_CLOSE(self, -1, self.ProcessEvent)
-                
-            return menuBar
+        fileMenu = PopupMenu(toolbar=self._toolBar)
+        item = wx.MenuItem(fileMenu,constants.ID_NEW,_("&New...\tCtrl+N"), _("Creates a new document"), wx.ITEM_NORMAL)
+        item.SetBitmap(self._toolBar.FindById(constants.ID_NEW).GetBitmap())
+        fileMenu.AppendItem(item)
+        
+        item = wx.MenuItem(fileMenu,constants.ID_OPEN, _("&Open...\tCtrl+O"), _("Opens an existing document"))
+        #item.SetBitmap(self._toolBar.FindById(constants.ID_OPEN).GetBitmap())
+        fileMenu.AppendItem(item)
+        
+        fileMenu.Append(constants.ID_CLOSE, _("&Close\tCtrl+W"), _("Closes the active document"))
+        if not sdi:
+            fileMenu.Append(constants.ID_CLOSE_ALL, _("Close A&ll"), _("Closes all open documents"))
+        fileMenu.AppendSeparator()
+        
+        item = wx.MenuItem(fileMenu,constants.ID_SAVE, _("&Save\tCtrl+S"), _("Saves the active document"))
+        #item.SetBitmap(self._toolBar.FindById(constants.ID_SAVE).GetBitmap())
+        fileMenu.AppendItem(item)
+        
+        fileMenu.Append(constants.ID_SAVEAS, _("Save &As..."), _("Saves the active document with a new name"))
+        
+        item = wx.MenuItem(fileMenu,constants.ID_SAVEALL, _("Save All\tCtrl+Shift+A"), _("Saves the all active documents"))
+        #item.SetBitmap(self._toolBar.FindById(constants.ID_SAVEALL).GetBitmap())
+        fileMenu.AppendItem(item)
+        
+        wx.EVT_MENU(self, constants.ID_SAVEALL, self.ProcessEvent)
+        wx.EVT_UPDATE_UI(self, constants.ID_SAVEALL, self.ProcessUpdateUIEvent)
+        fileMenu.AppendSeparator()
+        
+        item = wx.MenuItem(fileMenu,constants.ID_PRINT, _("&Print\tCtrl+P"), _("Prints the active document"))
+        #item.SetBitmap(self._toolBar.FindById(constants.ID_PRINT).GetBitmap())
+        fileMenu.AppendItem(item)
+        
+        item = wx.MenuItem(fileMenu,constants.ID_PRINT_PREVIEW, _("Print Pre&view"), _("Displays full pages"))
+        #item.SetBitmap(self._toolBar.FindById(constants.ID_PRINT_PREVIEW).GetBitmap())
+        fileMenu.AppendItem(item)
+        
+        item = wx.MenuItem(fileMenu,constants.ID_PRINT_SETUP, _("Page Set&up"), _("Changes page layout settings"))
+        #item.SetBitmap(images.load("page.png"))
+        fileMenu.AppendItem(item)
+        
+        fileMenu.AppendSeparator()
+        if wx.Platform == '__WXMAC__':
+            item = wx.MenuItem(fileMenu,constants.ID_EXIT, _("&Quit"), _("Closes this program"))
         else:
-            return wx.lib.pydocview.DocTabbedParentFrame.CreateDefaultMenuBar(self)
+            item = wx.MenuItem(fileMenu,constants.ID_EXIT, _("E&xit"), _("Closes this program"))
+        item.SetBitmap(images.load("exit.png"))
+        fileMenu.AppendItem(item)
+        
+        self._docManager.FileHistoryUseMenu(fileMenu)
+        self._docManager.FileHistoryAddFilesToMenu()
+        menuBar.Append(fileMenu, _("&File"))
+
+        editMenu = PopupMenu(toolbar=self._toolBar)
+        item = wx.MenuItem(editMenu,constants.ID_UNDO, _("&Undo\tCtrl+Z"), _("Reverses the last action"))
+        #item.SetBitmap(self._toolBar.FindById(constants.ID_UNDO).GetBitmap())
+        editMenu.AppendItem(item)
+        
+        item = wx.MenuItem(editMenu,constants.ID_REDO, _("&Redo\tCtrl+Y"), _("Reverses the last undo"))
+        #item.SetBitmap(self._toolBar.FindById(constants.ID_REDO).GetBitmap())
+        editMenu.AppendItem(item)
+        editMenu.AppendSeparator()
+        item = wx.MenuItem(editMenu,constants.ID_CUT, _("Cu&t\tCtrl+X"), _("Cuts the selection and puts it on the Clipboard"))
+        #item.SetBitmap(self._toolBar.FindById(constants.ID_CUT).GetBitmap())
+        editMenu.AppendItem(item)
+        
+        wx.EVT_MENU(self, constants.ID_CUT, self.ProcessEvent)
+        wx.EVT_UPDATE_UI(self, constants.ID_CUT, self.ProcessUpdateUIEvent)
+        item = wx.MenuItem(editMenu,constants.ID_COPY, _("&Copy\tCtrl+C"), _("Copies the selection and puts it on the Clipboard"))
+        #item.SetBitmap(self._toolBar.FindById(constants.ID_COPY).GetBitmap())
+        editMenu.AppendItem(item)
+        
+        wx.EVT_MENU(self, constants.ID_COPY, self.ProcessEvent)
+        wx.EVT_UPDATE_UI(self, constants.ID_COPY, self.ProcessUpdateUIEvent)
+        item = wx.MenuItem(editMenu,constants.ID_PASTE, _("&Paste\tCtrl+V"), _("Inserts Clipboard contents"))
+        #item.SetBitmap(self._toolBar.FindById(constants.ID_PASTE).GetBitmap())
+        editMenu.AppendItem(item)
+        
+        wx.EVT_MENU(self, constants.ID_PASTE, self.ProcessEvent)
+        wx.EVT_UPDATE_UI(self, constants.ID_PASTE, self.ProcessUpdateUIEvent)
+        item = wx.MenuItem(editMenu,constants.ID_CLEAR, _("&Delete"), _("Erases the selection"))
+        item.SetBitmap(images.load("delete.png"))
+        editMenu.AppendItem(item)
+        wx.EVT_MENU(self, constants.ID_CLEAR, self.ProcessEvent)
+        wx.EVT_UPDATE_UI(self, constants.ID_CLEAR, self.ProcessUpdateUIEvent)
+        editMenu.AppendSeparator()
+        editMenu.Append(constants.ID_SELECTALL, _("Select A&ll\tCtrl+A"), _("Selects all available data"))
+        wx.EVT_MENU(self, constants.ID_SELECTALL, self.ProcessEvent)
+        wx.EVT_UPDATE_UI(self, constants.ID_SELECTALL, self.ProcessUpdateUIEvent)
+        menuBar.Append(editMenu, _("&Edit"))
+        if sdi:
+            if self.GetDocument() and self.GetDocument().GetCommandProcessor():
+                self.GetDocument().GetCommandProcessor().SetEditMenu(editMenu)
+
+        viewMenu = PopupMenu(toolbar=self._toolBar)
+        viewMenu.AppendCheckItem(constants.ID_VIEW_TOOLBAR, _("&Toolbar"), _("Shows or hides the toolbar"))
+        wx.EVT_MENU(self, constants.ID_VIEW_TOOLBAR, self.OnViewToolBar)
+        wx.EVT_UPDATE_UI(self, constants.ID_VIEW_TOOLBAR, self.OnUpdateViewToolBar)
+        viewMenu.AppendCheckItem(constants.ID_VIEW_STATUSBAR, _("&Status Bar"), _("Shows or hides the status bar"))
+        wx.EVT_MENU(self, constants.ID_VIEW_STATUSBAR, self.OnViewStatusBar)
+        wx.EVT_UPDATE_UI(self, constants.ID_VIEW_STATUSBAR, self.OnUpdateViewStatusBar)
+        menuBar.Append(viewMenu, _(consts.VIEW_MENU_ORIG_NAME))
+
+        helpMenu = PopupMenu(toolbar=self._toolBar)
+        item = wx.MenuItem(helpMenu,constants.ID_ABOUT, _(_("About %s") % wx.GetApp().GetAppName()), _("Displays program information, version number, and copyright"))
+        item.SetBitmap(images.load("about.png"))
+        helpMenu.AppendItem(item)
+        menuBar.Append(helpMenu, _("&Help"))
+
+        wx.EVT_MENU(self, constants.ID_ABOUT, self.OnAbout)
+        wx.EVT_UPDATE_UI(self, constants.ID_ABOUT, self.ProcessUpdateUIEvent)  # Using ID_ABOUT to update the window menu, the window menu items are not triggering
+
+        if sdi:  # TODO: Is this really needed?
+            wx.EVT_COMMAND_FIND_CLOSE(self, -1, self.ProcessEvent)
+            
+        return menuBar
 
     def _InitFrame(self, embeddedWindows, minSize):
         """
@@ -211,7 +209,7 @@ class DocFrameBase():
             if wx.GetApp().GetDefaultIcon():
                 self.SetIcon(wx.GetApp().GetDefaultIcon())
 
-            wx.EVT_MENU(self, wx.ID_ABOUT, self.OnAbout)
+            wx.EVT_MENU(self, constants.ID_ABOUT, self.OnAbout)
             wx.EVT_SIZE(self, self.OnSize)
 
             self.InitializePrintData()
@@ -262,11 +260,11 @@ class DocFrameBase():
             self._mgr.LoadPerspective(last_perspective)
             
         #show fullscreen
-        viewMenu = menuBar.GetMenu(menuBar.FindMenu(_("&View")))
-        item = wx.MenuItem(viewMenu,self.ID_SHOW_FULLSCREEN, _("Show FullScreen"), _("Show the window in fullscreen"),kind=wx.ITEM_NORMAL  )
+        viewMenu = menuBar.GetViewMenu()
+        item = wx.MenuItem(viewMenu,constants.ID_SHOW_FULLSCREEN, _("Show FullScreen"), _("Show the window in fullscreen"),kind=wx.ITEM_NORMAL  )
         item.SetBitmap(images.load("monitor.png"))
         viewMenu.AppendItem(item)
-        wx.EVT_MENU(self, self.ID_SHOW_FULLSCREEN, self.ProcessEvent)
+        wx.EVT_MENU(self, constants.ID_SHOW_FULLSCREEN, self.ProcessEvent)
         
     def InitPlugins(self):
         # Setup Plugins after locale as they may have resource that need to be loaded.
@@ -291,7 +289,6 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,DocFrameBase
     # replaced in IDE.py with the status bar for the code editor. On windows
     # this works just fine, but on linux the pydocview status bar shows up near
     # the top of the screen instead of disappearing. 
-    ID_SHOW_FULLSCREEN = wx.NewId()
 
     def __init__(self, docManager, frame, id, title, pos = wx.DefaultPosition, size = wx.DefaultSize, style = wx.DEFAULT_FRAME_STYLE, name = "DocTabbedParentFrame", embeddedWindows = 0, minSize=20):
         
@@ -336,7 +333,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,DocFrameBase
             wx.lib.pydocview.DocFrameMixIn.OnViewToolBar(self,event)
 
     def ProcessEvent(self, event):
-        if event.GetId() == self.ID_SHOW_FULLSCREEN:
+        if event.GetId() == constants.ID_SHOW_FULLSCREEN:
             if not self.IsFullScreen():
                 if utils.ProfileGetInt("HideMenubarFullScreen", False):
                     self.ShowFullScreen(True)
@@ -353,8 +350,7 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,DocFrameBase
     def _InitFrame(self, embeddedWindows, minSize):
         DocFrameBase._InitFrame(self, embeddedWindows, minSize)
  
-    def AppendMenuItem(self,menu,name,callback,separator=False,bmp=None):
-        id = wx.NewId()
+    def AppendMenuItem(self,id,menu,name,callback,separator=False,bmp=None):
         item = wx.MenuItem(menu,id,name,"", wx.ITEM_NORMAL)
         if bmp:
             item.SetBitmap(bmp)
@@ -508,29 +504,26 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,DocFrameBase
             view = self._notebook.GetPage(index).GetView()
             self._current_document = view.GetDocument()
             if view.GetType() == consts.TEXT_VIEW:
-                new_id = wx.NewId()
-                item = wx.MenuItem(menu,new_id,_("New Module"), _("Creates a new python module"), wx.ITEM_NORMAL)
+                item = wx.MenuItem(menu,constants.ID_NEW_MODULE,_("New Module"), _("Creates a new python module"), wx.ITEM_NORMAL)
                 item.SetBitmap(images.load("new.png"))
-                wx.EVT_MENU(self, new_id, self.OnNewModule)
+                wx.EVT_MENU(self, constants.ID_NEW_MODULE, self.OnNewModule)
                 menu.AppendItem(item)
                 
-                menu_item = menuBar.FindItemById(wx.ID_SAVE)
+                menu_item = menuBar.FindItemById(constants.ID_SAVE)
                 accel = menu_item.GetAccel()
-                new_id = wx.NewId()
-                item = wx.MenuItem(menu,new_id,menu_item.GetLabel() + "\t" + accel.ToString(), kind = wx.ITEM_NORMAL)
+                item = wx.MenuItem(menu,constants.ID_SAVE_DOCUMENT,menu_item.GetLabel() + "\t" + accel.ToString(), kind = wx.ITEM_NORMAL)
                 ###caller must delete the pointer manually
                 del accel
                 item.SetBitmap(menu_item.GetBitmap())
-                wx.EVT_MENU(self, new_id, self.OnSaveFileDocument)
+                wx.EVT_MENU(self, constants.ID_SAVE_DOCUMENT, self.OnSaveFileDocument)
                 menu.AppendItem(item)
                 
-                menu_item = menuBar.FindItemById(wx.ID_SAVEAS)
-                new_id = wx.NewId()
-                item = wx.MenuItem(menu,new_id,menu_item.GetLabel(), kind = wx.ITEM_NORMAL)
-                wx.EVT_MENU(self, new_id, self.OnSaveFileAsDocument)
+                menu_item = menuBar.FindItemById(constants.ID_SAVEAS)
+                item = wx.MenuItem(menu,constants.ID_SAVE_AS_DOCUMENT,menu_item.GetLabel(), kind = wx.ITEM_NORMAL)
+                wx.EVT_MENU(self, constants.ID_SAVE_AS_DOCUMENT, self.OnSaveFileAsDocument)
                 menu.AppendItem(item)
             
-            menu_item = menuBar.FindItemById(wx.ID_CLOSE)
+            menu_item = menuBar.FindItemById(constants.ID_CLOSE)
             accel = menu_item.GetAccel()
             label = menu_item.GetLabel()
             if accel is not None:
@@ -538,34 +531,33 @@ class IDEDocTabbedParentFrame(wx.lib.pydocview.DocTabbedParentFrame,DocFrameBase
                 ###caller must delete the pointer manually
                 del accel
             #we should use a new close id,not use id wx.ID_CLOSE
-            new_id = wx.NewId()
-            item = wx.MenuItem(menu,new_id, label , kind = wx.ITEM_NORMAL)
-            wx.EVT_MENU(self, new_id, self.OnCloseDoc)
+            item = wx.MenuItem(menu,constants.ID_CLOSE_DOCUMENT, label , kind = wx.ITEM_NORMAL)
+            wx.EVT_MENU(self, constants.ID_CLOSE_DOCUMENT, self.OnCloseDoc)
             menu.AppendItem(item)
             
-            menu_item = menuBar.FindItemById(wx.ID_CLOSE_ALL)
-            item = wx.MenuItem(menu,wx.ID_CLOSE_ALL,menu_item.GetLabel(), kind = wx.ITEM_NORMAL)
-            wx.EVT_MENU(self, wx.ID_CLOSE_ALL, self.OnCloseAllDocs)
+            menu_item = menuBar.FindItemById(constants.ID_CLOSE_ALL)
+            item = wx.MenuItem(menu,constants.ID_CLOSE_ALL,menu_item.GetLabel(), kind = wx.ITEM_NORMAL)
+            wx.EVT_MENU(self, constants.ID_CLOSE_ALL, self.OnCloseAllDocs)
             menu.AppendItem(item)
 
             if self._notebook.GetPageCount() > 1:
                 item_name = _("Close All but \"%s\"") % self._current_document.GetPrintableName()
-                self.AppendMenuItem(menu,item_name,self.OnCloseAllWithoutDoc,True)
+                self.AppendMenuItem(constants.ID_CLOSE_ALL_WITHOUT,menu,item_name,self.OnCloseAllWithoutDoc,True)
                 tabsMenu = wx.Menu()
                 menu.AppendMenu(wx.NewId(), _("Select Tab"), tabsMenu)
             if view.GetType() == consts.TEXT_VIEW or view.GetType() == consts.IMAGE_VIEW:
-                self.AppendMenuItem(menu,_("Open Path in Explorer"),self.OnOpenPathInExplorer)
-                self.AppendMenuItem(menu,_("Open Path in Terminator"),self.OnOpenPathInTerminator)
-            self.AppendMenuItem(menu,_("Copy Path"),self.OnCopyFilePath)
-            self.AppendMenuItem(menu,_("Copy Name"),self.OnCopyFileName)
+                self.AppendMenuItem(constants.ID_OPEN_DOCUMENT_DIRECTORY,menu,_("Open Path in Explorer"),self.OnOpenPathInExplorer)
+                self.AppendMenuItem(constants.ID_OPEN_TERMINAL_DIRECTORY,menu,_("Open Path in Terminator"),self.OnOpenPathInTerminator)
+            self.AppendMenuItem(constants.ID_COPY_DOCUMENT_PATH,menu,_("Copy Path"),self.OnCopyFilePath)
+            self.AppendMenuItem(constants.ID_COPY_DOCUMENT_NAME,menu,_("Copy Name"),self.OnCopyFileName)
             if view.GetType() == consts.TEXT_VIEW and view.GetLangId() == lang.ID_LANG_PYTHON:
-                self.AppendMenuItem(menu,_("Copy Module Name"),self.OnCopyModuleName)
+                self.AppendMenuItem(constants.ID_COPY_MODULE_NAME,menu,_("Copy Module Name"),self.OnCopyModuleName)
                 
 
             if not self.IsFullScreen():
                 menu.AppendSeparator()
-                self.AppendMenuItem(menu,_("Maximize Editor Window"),self.MaximizeEditorWindow,bmp=images.load("maximize_editor.png"))
-                self.AppendMenuItem(menu,_("Restore Editor Window"),self.RestoreEditorWindow,bmp=images.load("restore_editor.png"))
+                self.AppendMenuItem(constants.ID_MAXIMIZE_EDITOR_WINDOW,menu,_("Maximize Editor Window"),self.MaximizeEditorWindow,bmp=images.load("maximize_editor.png"))
+                self.AppendMenuItem(constants.ID_RESTORE_EDITOR_WINDOW,menu,_("Restore Editor Window"),self.RestoreEditorWindow,bmp=images.load("restore_editor.png"))
             
         else:
             y = y - 25  # wxBug: It is offsetting click events in the blank notebook area
