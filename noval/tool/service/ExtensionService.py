@@ -35,7 +35,9 @@ import noval.util.fileutils as fileutils
 import noval.tool.which as whichpath
 import noval.tool.images as images
 import noval.util.utils as utils
-_ = wx.GetTranslation
+import noval.util.constants as constants
+import noval.tool.consts as consts
+_ = constants._
 
 
 #----------------------------------------------------------------------------
@@ -123,7 +125,7 @@ class ExtensionService(Service.BaseService):
 
 
     def InstallControls(self, frame, menuBar = None, toolBar = None, statusBar = None, document = None):
-        toolsMenuIndex = menuBar.FindMenu(_("&Tools"))
+        toolsMenuIndex = menuBar.FindMenu(_(consts.TOOLS_MENU_ORIG_NAME))
         if toolsMenuIndex > -1:
             toolsMenu = menuBar.GetMenu(toolsMenuIndex)
         else:
@@ -132,65 +134,55 @@ class ExtensionService(Service.BaseService):
         app_image_path = appdirs.GetAppImageDirLocation()
 
         if toolsMenuIndex == -1:
-            index = menuBar.FindMenu(_("&Run"))
+            index = menuBar.FindMenu(_(consts.RUN_MENU_ORIG_NAME))
             if index == -1:
-                index = menuBar.FindMenu(_("&Project"))
+                index = menuBar.FindMenu(_(consts.PROJECT_MENU_ORIG_NAME))
             if index == -1:
-                index = menuBar.FindMenu(_("&Format"))
+                index = menuBar.FindMenu(_(consts.FPRMAT_MENU_ORIG_NAME))
             if index == -1:
-                index = menuBar.FindMenu(_("&View"))
-            menuBar.Insert(index + 1, toolsMenu, _("&Tools"))
-            id = wx.NewId()
-            item = wx.MenuItem(toolsMenu,id,_("&Terminator"))
+                index = menuBar.FindMenu(_(consts.VIEW_MENU_ORIG_NAME))
+            menuBar.Insert(index + 1, toolsMenu, _(consts.TOOLS_MENU_ORIG_NAME))
+            item = wx.MenuItem(toolsMenu,constants.ID_OPEN_TERMINAL,_("&Terminator"))
             item.SetBitmap(wx.BitmapFromImage(wx.Image(os.path.join(app_image_path,"cmd.png"),wx.BITMAP_TYPE_ANY)))
             toolsMenu.AppendItem(item)
-            wx.EVT_MENU(frame, id, self.OpenTerminator)  
+            wx.EVT_MENU(frame, constants.ID_OPEN_TERMINAL, self.OpenTerminator)  
 
-            id = wx.NewId()
-            toolsMenu.Append(id,_("&UnitTest"))
-            wx.EVT_MENU(frame, id, self.RunUnitTest)
+            toolsMenu.Append(constants.ID_UNITTEST,_("&UnitTest"))
+            wx.EVT_MENU(frame, constants.ID_UNITTEST, self.RunUnitTest)
 
-            id = wx.NewId()
-            item = wx.MenuItem(toolsMenu,id,_("&Interpreter"))
+            item = wx.MenuItem(toolsMenu,constants.ID_OPEN_INTERPRETER,_("&Interpreter"))
             item.SetBitmap(wx.BitmapFromImage(wx.Image(os.path.join(app_image_path,"interpreter.png"),wx.BITMAP_TYPE_ANY)))
             toolsMenu.AppendItem(item)
-            wx.EVT_MENU(frame, id, self.OpenInterpreter)
+            wx.EVT_MENU(frame, constants.ID_OPEN_INTERPRETER, self.OpenInterpreter)
 
-            id = wx.NewId()
-            item = wx.MenuItem(toolsMenu,id,_("&Web Browser"))
+            item = wx.MenuItem(toolsMenu,constants.ID_OPEN_BROWSER,_("&Web Browser"))
             item.SetBitmap(images.load("web.png"))
             toolsMenu.AppendItem(item)
-            wx.EVT_MENU(frame, id, self.GotoDefaultWebView)
+            wx.EVT_MENU(frame, constants.ID_OPEN_BROWSER, self.GotoDefaultWebView)
         
-        helpMenuIndex = menuBar.FindMenu(_("&Help"))
-        helpMenu = menuBar.GetMenu(helpMenuIndex)
+        helpMenu = menuBar.GetHelpMenu()
         start_index = 0
         if sysutilslib.isWindows():
-            id = wx.NewId()
-            item = wx.MenuItem(toolsMenu,id,_("&Python Help Document"),_("Open the help document of Python"))
+            item = wx.MenuItem(toolsMenu,constants.ID_OPEN_PYTHON_HELP,_("&Python Help Document"),_("Open the help document of Python"))
             item.SetBitmap(wx.BitmapFromImage(wx.Image(os.path.join(app_image_path,"pydoc.png"),wx.BITMAP_TYPE_ANY)))
             helpMenu.InsertItem(0,item)
-            wx.EVT_MENU(frame, id, self.OpenPythonHelpDocument)
+            wx.EVT_MENU(frame, constants.ID_OPEN_PYTHON_HELP, self.OpenPythonHelpDocument)
             start_index += 1
 
-        id = wx.NewId()
-        helpMenu.Insert(start_index,id,_("&Tips of Day"),_("Display tips of day"))
-        wx.EVT_MENU(frame, id, self.ShowTipsOfDay)
+        helpMenu.Insert(start_index,constants.ID_TIPS_DAY,_("&Tips of Day"),_("Display tips of day"))
+        wx.EVT_MENU(frame, constants.ID_TIPS_DAY, self.ShowTipsOfDay)
         start_index += 1
         
-        id = wx.NewId()
-        helpMenu.Insert(start_index,id,_("&Check for Updates"),_("Check program update information"))
-        wx.EVT_MENU(frame, id, self.CheckforUpdate)
+        helpMenu.Insert(start_index,constants.ID_CHECK_UPDATE,_("&Check for Updates"),_("Check program update information"))
+        wx.EVT_MENU(frame, constants.ID_CHECK_UPDATE, self.CheckforUpdate)
         start_index += 1
         
-        id = wx.NewId()
-        helpMenu.Insert(start_index,id,_("&Visit NovalIDE Website"),_("Goto official website of NovalIDE"))
-        wx.EVT_MENU(frame, id, self.GotoWebsite)
+        helpMenu.Insert(start_index,constants.ID_GOTO_OFFICIAL_WEB,_("&Visit NovalIDE Website"),_("Goto official website of NovalIDE"))
+        wx.EVT_MENU(frame, constants.ID_GOTO_OFFICIAL_WEB, self.GotoWebsite)
         start_index += 1
         
-        id = wx.NewId()
-        helpMenu.Insert(start_index,id,_("&Python Website"),_("Goto official website of Python"))
-        wx.EVT_MENU(frame, id, self.GotoPythonWebsite)
+        helpMenu.Insert(start_index,constants.ID_GOTO_PYTHON_WEB,_("&Python Website"),_("Goto official website of Python"))
+        wx.EVT_MENU(frame, constants.ID_GOTO_PYTHON_WEB, self.GotoPythonWebsite)
         start_index += 1
 
         if self._extensions:

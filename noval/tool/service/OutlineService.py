@@ -20,6 +20,7 @@ import noval.util.WxThreadSafe as WxThreadSafe
 import noval.parser.config as parserconfig
 from noval.tool.consts import _,SPACE,HALF_SPACE
 from noval.util import utils
+import noval.util.constants as constants
 #----------------------------------------------------------------------------
 # Constants
 #----------------------------------------------------------------------------
@@ -61,21 +62,21 @@ class OutlineView(Service.ServiceView):
     def OnRightClick(self, event):
         menu = wx.Menu()
 
-        menu.AppendRadioItem(OutlineService.SORT_BY_NONE, _("Unsorted"), _("Display items in original order"))
-        menu.AppendRadioItem(OutlineService.SORT_BY_LINE, _("Sort By Line"), _("Display items in line order"))
-        menu.AppendRadioItem(OutlineService.SORT_BY_TYPE, _("Sort By Type"), _("Display items in item type"))
-        menu.AppendRadioItem(OutlineService.SORT_BY_NAME, _("Sort By Name(A-Z)"), _("Display items in name order"))
+        menu.AppendRadioItem(constants.ID_SORT_BY_NONE, _("Unsorted"), _("Display items in original order"))
+        menu.AppendRadioItem(constants.ID_SORT_BY_LINE, _("Sort By Line"), _("Display items in line order"))
+        menu.AppendRadioItem(constants.ID_SORT_BY_TYPE, _("Sort By Type"), _("Display items in item type"))
+        menu.AppendRadioItem(constants.ID_SORT_BY_NAME, _("Sort By Name(A-Z)"), _("Display items in name order"))
 
         config = wx.ConfigBase_Get()
         sort = config.ReadInt("OutlineSort", SORT_BY_NONE)
         if sort == SORT_BY_NONE:
-            menu.Check(OutlineService.SORT_BY_NONE, True)
+            menu.Check(constants.ID_SORT_BY_NONE, True)
         elif sort == SORT_BY_LINE:
-            menu.Check(OutlineService.SORT_BY_LINE, True)
+            menu.Check(constants.ID_SORT_BY_LINE, True)
         elif sort == SORT_BY_NAME:
-            menu.Check(OutlineService.SORT_BY_NAME, True)
+            menu.Check(constants.ID_SORT_BY_NAME, True)
         elif sort == SORT_BY_TYPE:
-            menu.Check(OutlineService.SORT_BY_TYPE, True)
+            menu.Check(constants.ID_SORT_BY_TYPE, True)
 
         self.GetControl().PopupMenu(menu, event.GetPosition())
         menu.Destroy()
@@ -452,17 +453,10 @@ class OutlineTreeCtrl(wx.TreeCtrl):
 
 class OutlineService(Service.Service):
 
-
     #----------------------------------------------------------------------------
     # Constants
     #----------------------------------------------------------------------------
     SHOW_WINDOW = wx.NewId()  # keep this line for each subclass, need unique ID for each Service
-    SORT = wx.NewId()
-    SORT_BY_LINE = wx.NewId()
-    SORT_BY_NAME = wx.NewId()
-    SORT_BY_NONE = wx.NewId()
-    SORT_BY_TYPE = wx.NewId()
-
 
     #----------------------------------------------------------------------------
     # Overridden methods
@@ -480,26 +474,26 @@ class OutlineService(Service.Service):
     def InstallControls(self, frame, menuBar = None, toolBar = None, statusBar = None, document = None):
         Service.Service.InstallControls(self, frame, menuBar, toolBar, statusBar, document)
 
-        wx.EVT_MENU(frame, OutlineService.SORT_BY_LINE, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, OutlineService.SORT_BY_LINE, frame.ProcessUpdateUIEvent)
-        wx.EVT_MENU(frame, OutlineService.SORT_BY_NAME, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, OutlineService.SORT_BY_NAME, frame.ProcessUpdateUIEvent)
-        wx.EVT_MENU(frame, OutlineService.SORT_BY_NONE, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, OutlineService.SORT_BY_NONE, frame.ProcessUpdateUIEvent)
-        wx.EVT_MENU(frame, OutlineService.SORT_BY_TYPE, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, OutlineService.SORT_BY_TYPE, frame.ProcessUpdateUIEvent)
+        wx.EVT_MENU(frame, constants.ID_SORT_BY_LINE, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_SORT_BY_LINE, frame.ProcessUpdateUIEvent)
+        wx.EVT_MENU(frame, constants.ID_SORT_BY_NAME, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_SORT_BY_NAME, frame.ProcessUpdateUIEvent)
+        wx.EVT_MENU(frame, constants.ID_SORT_BY_NONE, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_SORT_BY_NONE, frame.ProcessUpdateUIEvent)
+        wx.EVT_MENU(frame, constants.ID_SORT_BY_TYPE, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_SORT_BY_TYPE, frame.ProcessUpdateUIEvent)
 
 
         if wx.GetApp().GetDocumentManager().GetFlags() & wx.lib.docview.DOC_SDI:
             return True
 
-        viewMenu = menuBar.GetMenu(menuBar.FindMenu(_("&View")))
+        viewMenu = menuBar.GetViewMenu()
         self._outlineSortMenu = wx.Menu()
-        self._outlineSortMenu.AppendRadioItem(OutlineService.SORT_BY_NONE, _("Unsorted"), _("Display items in original order"))
-        self._outlineSortMenu.AppendRadioItem(OutlineService.SORT_BY_LINE, _("Sort By Line"), _("Display items in line order"))
-        self._outlineSortMenu.AppendRadioItem(OutlineService.SORT_BY_TYPE, _("Sort By Type"), _("Display items in item type"))
-        self._outlineSortMenu.AppendRadioItem(OutlineService.SORT_BY_NAME, _("Sort By Name(A-Z)"), _("Display items in name order"))
-        viewMenu.AppendMenu(wx.NewId(), _("Outline Sort"), self._outlineSortMenu)
+        self._outlineSortMenu.AppendRadioItem(constants.ID_SORT_BY_NONE, _("Unsorted"), _("Display items in original order"))
+        self._outlineSortMenu.AppendRadioItem(constants.ID_SORT_BY_LINE, _("Sort By Line"), _("Display items in line order"))
+        self._outlineSortMenu.AppendRadioItem(constants.ID_SORT_BY_TYPE, _("Sort By Type"), _("Display items in item type"))
+        self._outlineSortMenu.AppendRadioItem(constants.ID_SORT_BY_NAME, _("Sort By Name(A-Z)"), _("Display items in name order"))
+        viewMenu.AppendMenu(constants.ID_SORT, _("Outline Sort"), self._outlineSortMenu)
 
         return True
 
@@ -513,7 +507,7 @@ class OutlineService(Service.Service):
             return True
 
         id = event.GetId()
-        if id in [OutlineService.SORT_BY_LINE,OutlineService.SORT_BY_NAME,OutlineService.SORT_BY_NONE,OutlineService.SORT_BY_TYPE]:
+        if id in [constants.ID_SORT_BY_LINE,constants.ID_SORT_BY_NAME,constants.ID_SORT_BY_NONE,constants.ID_SORT_BY_TYPE]:
             self.OnSort(event)
             return True
         else:
@@ -525,49 +519,49 @@ class OutlineService(Service.Service):
             return True
 
         id = event.GetId()
-        if id == OutlineService.SORT_BY_LINE:
+        if id == constants.ID_SORT_BY_LINE:
             event.Enable(True)
 
             config = wx.ConfigBase_Get()
             sort = config.ReadInt("OutlineSort", SORT_BY_NONE)
             if sort == SORT_BY_LINE:
-                self._outlineSortMenu.Check(OutlineService.SORT_BY_LINE, True)
+                self._outlineSortMenu.Check(constants.ID_SORT_BY_LINE, True)
             else:
-                self._outlineSortMenu.Check(OutlineService.SORT_BY_LINE, False)
+                self._outlineSortMenu.Check(constants.ID_SORT_BY_LINE, False)
 
             return True
-        elif id == OutlineService.SORT_BY_NAME:
+        elif id == constants.ID_SORT_BY_NAME:
             event.Enable(True)
 
             config = wx.ConfigBase_Get()
             sort = config.ReadInt("OutlineSort", SORT_BY_NONE)
             if sort == SORT_BY_NAME:
-                self._outlineSortMenu.Check(OutlineService.SORT_BY_NAME, True)
+                self._outlineSortMenu.Check(constants.ID_SORT_BY_NAME, True)
             else:
-                self._outlineSortMenu.Check(OutlineService.SORT_BY_NAME, False)
+                self._outlineSortMenu.Check(constants.ID_SORT_BY_NAME, False)
 
             return True
-        elif id == OutlineService.SORT_BY_NONE:
+        elif id == constants.ID_SORT_BY_NONE:
             event.Enable(True)
 
             config = wx.ConfigBase_Get()
             sort = config.ReadInt("OutlineSort", SORT_BY_NONE)
             if sort == SORT_BY_NONE:
-                self._outlineSortMenu.Check(OutlineService.SORT_BY_NONE, True)
+                self._outlineSortMenu.Check(constants.ID_SORT_BY_NONE, True)
             else:
-                self._outlineSortMenu.Check(OutlineService.SORT_BY_NONE, False)
+                self._outlineSortMenu.Check(constants.ID_SORT_BY_NONE, False)
 
             return True
 
-        elif id == OutlineService.SORT_BY_TYPE:
+        elif id == constants.ID_SORT_BY_TYPE:
             event.Enable(True)
 
             config = wx.ConfigBase_Get()
             sort = config.ReadInt("OutlineSort", SORT_BY_NONE)
             if sort == SORT_BY_TYPE:
-                self._outlineSortMenu.Check(OutlineService.SORT_BY_TYPE, True)
+                self._outlineSortMenu.Check(constants.ID_SORT_BY_TYPE, True)
             else:
-                self._outlineSortMenu.Check(OutlineService.SORT_BY_TYPE, False)
+                self._outlineSortMenu.Check(constants.ID_SORT_BY_TYPE, False)
 
             return True
         else:
@@ -577,13 +571,13 @@ class OutlineService(Service.Service):
     def OnSort(self, event):
         id = event.GetId()
         sort = SORT_BY_NONE
-        if id == OutlineService.SORT_BY_LINE:
+        if id == constants.ID_SORT_BY_LINE:
             sort = SORT_BY_LINE
-        elif id == OutlineService.SORT_BY_NAME:
+        elif id == constants.ID_SORT_BY_NAME:
             sort = SORT_BY_NAME
-        elif id == OutlineService.SORT_BY_NONE:
+        elif id == constants.ID_SORT_BY_NONE:
             sort = SORT_BY_NONE
-        elif id == OutlineService.SORT_BY_TYPE:
+        elif id == constants.ID_SORT_BY_TYPE:
             sort = SORT_BY_TYPE
         wx.ConfigBase_Get().WriteInt("OutlineSort", sort)
         self.GetView().OnSort(sort)

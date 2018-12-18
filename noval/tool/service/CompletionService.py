@@ -16,7 +16,8 @@ import wx.lib.docview
 import wx.lib.pydocview
 import Service
 import noval.tool.consts as consts
-_ = wx.GetTranslation
+import noval.util.constants as constants
+_ = constants._
 
 SPACE = 10
 HALF_SPACE = 5
@@ -50,11 +51,6 @@ class MutipleDefinitionDialog(wx.Dialog):
         wx.GetApp().GotoView(definition.Path,definition.Line)
 
 class CompletionService(Service.BaseService):
-    GO_TO_DEFINITION = wx.NewId()
-    COMPLETE_WORD_LIST = wx.NewId()
-    AUTO_COMPLETE_ID = wx.NewId()
-    LIST_CURRENT_MEMBERS = wx.NewId()
-
     def __init__(self):
         pass
 
@@ -66,31 +62,31 @@ class CompletionService(Service.BaseService):
 
         editMenu = menuBar.GetMenu(menuBar.FindMenu(_("&Edit")))
         editMenu.AppendSeparator()
-        editMenu.Append(CompletionService.GO_TO_DEFINITION, _("Goto Definition\tF12"), _("Goto Definition of current statement"))
-        wx.EVT_MENU(frame, CompletionService.GO_TO_DEFINITION, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, CompletionService.GO_TO_DEFINITION, frame.ProcessUpdateUIEvent)
-        editMenu.Append(CompletionService.COMPLETE_WORD_LIST, _("Completion Word List\tCtrl+Shit+K"), _("List All Completion Word of suggestions"))
-        wx.EVT_MENU(frame, CompletionService.COMPLETE_WORD_LIST, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, CompletionService.COMPLETE_WORD_LIST, frame.ProcessUpdateUIEvent)
-        editMenu.Append(CompletionService.AUTO_COMPLETE_ID, _("&Auto Complete\tCtrl+Shift+Space"), _("Provides suggestions on how to complete the current statement"))
-        wx.EVT_MENU(frame, CompletionService.AUTO_COMPLETE_ID, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, CompletionService.AUTO_COMPLETE_ID, frame.ProcessUpdateUIEvent)
-        editMenu.Append(CompletionService.LIST_CURRENT_MEMBERS, _("List Members\tCtrl+J"), _("List Members of Current statement"))
-        wx.EVT_MENU(frame, CompletionService.LIST_CURRENT_MEMBERS, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, CompletionService.LIST_CURRENT_MEMBERS, frame.ProcessUpdateUIEvent)
+        editMenu.Append(constants.ID_GOTO_DEFINITION, _("Goto Definition\tF12"), _("Goto Definition of current statement"))
+        wx.EVT_MENU(frame, constants.ID_GOTO_DEFINITION, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_GOTO_DEFINITION, frame.ProcessUpdateUIEvent)
+        editMenu.Append(constants.ID_WORD_LIST, _("Completion Word List\tCtrl+Shit+K"), _("List All Completion Word of suggestions"))
+        wx.EVT_MENU(frame, constants.ID_WORD_LIST, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_WORD_LIST, frame.ProcessUpdateUIEvent)
+        editMenu.Append(constants.ID_AUTO_COMPLETE, _("&Auto Complete\tCtrl+Shift+Space"), _("Provides suggestions on how to complete the current statement"))
+        wx.EVT_MENU(frame, constants.ID_AUTO_COMPLETE, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_AUTO_COMPLETE, frame.ProcessUpdateUIEvent)
+        editMenu.Append(constants.ID_LIST_MEMBERS, _("List Members\tCtrl+J"), _("List Members of Current statement"))
+        wx.EVT_MENU(frame, constants.ID_LIST_MEMBERS, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_LIST_MEMBERS, frame.ProcessUpdateUIEvent)
 
     def ProcessEvent(self, event):
         text_view = self.GetActiveView()
         id = event.GetId()
-        if id == CompletionService.GO_TO_DEFINITION:
+        if id == constants.ID_GOTO_DEFINITION:
             text_view.GetCtrl().GotoDefinition()
             return True
-        elif id == CompletionService.COMPLETE_WORD_LIST:
+        elif id == constants.ID_WORD_LIST:
             return True
-        elif id == CompletionService.AUTO_COMPLETE_ID:
+        elif id == constants.ID_AUTO_COMPLETE:
             text_view.OnAutoComplete()
             return True
-        elif id == CompletionService.LIST_CURRENT_MEMBERS:
+        elif id == constants.ID_LIST_MEMBERS:
             text_view.GetCtrl().ListMembers(text_view.GetCtrl().GetCurrentPos()-1)
             return True
         else:
@@ -98,8 +94,8 @@ class CompletionService(Service.BaseService):
 
     def ProcessUpdateUIEvent(self, event):
         id = event.GetId()
-        if id == CompletionService.GO_TO_DEFINITION or id == CompletionService.COMPLETE_WORD_LIST\
-                or id == CompletionService.AUTO_COMPLETE_ID or id == CompletionService.LIST_CURRENT_MEMBERS:
+        if id == constants.ID_GOTO_DEFINITION or id == constants.ID_WORD_LIST\
+                or id == constants.ID_AUTO_COMPLETE or id == constants.ID_LIST_MEMBERS:
             event.Enable(False)
             return True
         else:

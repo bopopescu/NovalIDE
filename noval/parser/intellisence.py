@@ -1,3 +1,4 @@
+import wx
 import noval.util.appdirs as appdirs
 import noval.tool.interpreter.Interpreter as Interpreter
 import noval.tool.interpreter.InterpreterManager as interpretermanager
@@ -394,6 +395,8 @@ class IntellisenceManager(object):
             utils.GetLogger().debug("smart intellisence analyse has been stopped by user")
     
     def ShareUserData(self):
+        if wx.GetApp().GetDebug():
+            return 
         UserDataDb.get_db().ShareUserData()
         UserDataDb.get_db().RecordStart()
         
@@ -494,6 +497,8 @@ class IntellisenceManager(object):
         return module.FindDefinitionWithName(child_name)
 
     def GetBuiltinModuleMembers(self):
+        if self.GetBuiltinModule() is None:
+            return
         utils.GetLogger().debug('get builtin module name is:%s',self.GetBuiltinModule().Name)
         return self.GetModuleMembers(self.GetBuiltinModule().Name,"")
 

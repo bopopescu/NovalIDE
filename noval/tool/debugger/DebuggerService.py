@@ -68,6 +68,7 @@ import Watchs
 import noval.tool.service.MessageService as MessageService
 import noval.tool.aui as aui
 import uuid
+import noval.util.constants as constants
 
 import sys
 reload(sys)
@@ -592,21 +593,21 @@ class BaseDebuggerUI(wx.Panel):
         tb.AddSeparator()
         
         continue_bmp = getContinueBitmap()
-        tb.AddSimpleTool( DebuggerService.STEP_CONTINUE_ID, continue_bmp, _("Continue Execution"))
-        wx.EVT_TOOL(self, DebuggerService.STEP_CONTINUE_ID, self.OnContinue)
+        tb.AddSimpleTool( constants.ID_STEP_CONTINUE, continue_bmp, _("Continue Execution"))
+        wx.EVT_TOOL(self, constants.ID_STEP_CONTINUE, self.OnContinue)
         self.Bind(EVT_DEBUG_INTERNAL, self.OnContinue)
         
         break_bmp = getBreakBitmap()
-        tb.AddSimpleTool( DebuggerService.BREAK_INTO_DEBUGGER_ID, break_bmp, _("Break into Debugger"))
-        wx.EVT_TOOL(self, DebuggerService.BREAK_INTO_DEBUGGER_ID, self.BreakExecution)
+        tb.AddSimpleTool( constants.ID_BREAK_INTO_DEBUGGER, break_bmp, _("Break into Debugger"))
+        wx.EVT_TOOL(self, constants.ID_BREAK_INTO_DEBUGGER, self.BreakExecution)
         
         stop_bmp = getStopBitmap()
         tb.AddSimpleTool( self.KILL_PROCESS_ID, stop_bmp, _("Stop Debugging"))
         wx.EVT_TOOL(self, self.KILL_PROCESS_ID, self.StopExecution)
         
         restart_bmp = getRestartDebuggerBitmap()
-        tb.AddSimpleTool( DebuggerService.RESTART_DEBUGGER_ID, restart_bmp, _("Restart Debugging"))
-        wx.EVT_TOOL(self, DebuggerService.RESTART_DEBUGGER_ID, self.RestartDebugger)
+        tb.AddSimpleTool( constants.ID_RESTART_DEBUGGER, restart_bmp, _("Restart Debugging"))
+        wx.EVT_TOOL(self, constants.ID_RESTART_DEBUGGER, self.RestartDebugger)
 
         tb.AddSeparator()
         next_bmp = getNextBitmap()
@@ -618,19 +619,19 @@ class BaseDebuggerUI(wx.Panel):
         wx.EVT_TOOL(self, self.STEP_INTO_ID, self.OnSingleStep)
 
         stepOut_bmp = getStepReturnBitmap()
-        tb.AddSimpleTool(DebuggerService.STEP_OUT_ID, stepOut_bmp, _("Stop at function return"))
-        wx.EVT_TOOL(self, DebuggerService.STEP_OUT_ID, self.OnStepOut)
+        tb.AddSimpleTool(constants.ID_STEP_OUT, stepOut_bmp, _("Stop at function return"))
+        wx.EVT_TOOL(self, constants.ID_STEP_OUT, self.OnStepOut)
 
         tb.AddSeparator()
         if _WATCHES_ON:
             
             quick_watch_bmp = Watchs.getQuickAddWatchBitmap()
-            tb.AddSimpleTool(DebuggerService.QUICK_ADD_WATCH_ID, quick_watch_bmp, _("Quick Add a Watch"))
-            wx.EVT_TOOL(self, DebuggerService.QUICK_ADD_WATCH_ID, self.OnQuickAddWatch)
+            tb.AddSimpleTool(constants.ID_QUICK_ADD_WATCH, quick_watch_bmp, _("Quick Add a Watch"))
+            wx.EVT_TOOL(self, constants.ID_QUICK_ADD_WATCH, self.OnQuickAddWatch)
             
             watch_bmp = Watchs.getAddWatchBitmap()
-            tb.AddSimpleTool(DebuggerService.ADD_WATCH_ID, watch_bmp, _("Add a Watch"))
-            wx.EVT_TOOL(self, DebuggerService.ADD_WATCH_ID, self.OnAddWatch)
+            tb.AddSimpleTool(constants.ID_ADD_WATCH, watch_bmp, _("Add a Watch"))
+            wx.EVT_TOOL(self, constants.ID_ADD_WATCH, self.OnAddWatch)
             tb.AddSeparator()
 
         clear_bmp = getClearOutputBitmap()
@@ -674,20 +675,20 @@ class BaseDebuggerUI(wx.Panel):
     def DisableWhileDebuggerRunning(self):
         if self._toolEnabled:
             self._tb.EnableTool(self.STEP_INTO_ID, False)
-            self._tb.EnableTool(DebuggerService.STEP_CONTINUE_ID, False)
-            if self.run_menu.FindItemById(DebuggerService.STEP_CONTINUE_ID):
-                self.run_menu.Enable(DebuggerService.STEP_CONTINUE_ID,False)
-            self._tb.EnableTool(DebuggerService.STEP_OUT_ID, False)
-            if self.run_menu.FindItemById(DebuggerService.STEP_OUT_ID):
-                self.run_menu.Enable(DebuggerService.STEP_OUT_ID,False)
+            self._tb.EnableTool(constants.ID_STEP_CONTINUE, False)
+            if self.run_menu.FindItemById(constants.ID_STEP_CONTINUE):
+                self.run_menu.Enable(constants.ID_STEP_CONTINUE,False)
+            self._tb.EnableTool(constants.ID_STEP_OUT, False)
+            if self.run_menu.FindItemById(constants.ID_STEP_OUT):
+                self.run_menu.Enable(constants.ID_STEP_OUT,False)
             self._tb.EnableTool(self.STEP_NEXT_ID, False)
-            self._tb.EnableTool(DebuggerService.BREAK_INTO_DEBUGGER_ID, True)
-            if self.run_menu.FindItemById(DebuggerService.BREAK_INTO_DEBUGGER_ID):
-                self.run_menu.Enable(DebuggerService.BREAK_INTO_DEBUGGER_ID,True)
+            self._tb.EnableTool(constants.ID_BREAK_INTO_DEBUGGER, True)
+            if self.run_menu.FindItemById(constants.ID_BREAK_INTO_DEBUGGER):
+                self.run_menu.Enable(constants.ID_BREAK_INTO_DEBUGGER,True)
     
             if _WATCHES_ON:
-                self._tb.EnableTool(DebuggerService.ADD_WATCH_ID, False)
-                self._tb.EnableTool(DebuggerService.QUICK_ADD_WATCH_ID, False)
+                self._tb.EnableTool(constants.ID_ADD_WATCH, False)
+                self._tb.EnableTool(constants.ID_QUICK_ADD_WATCH, False)
     
             self.DeleteCurrentLineMarkers()
     
@@ -698,35 +699,35 @@ class BaseDebuggerUI(wx.Panel):
 
     def EnableWhileDebuggerStopped(self):
         self._tb.EnableTool(self.STEP_INTO_ID, True)
-        self._tb.EnableTool(DebuggerService.STEP_CONTINUE_ID, True)
-        if self.run_menu.FindItemById(DebuggerService.STEP_CONTINUE_ID):
-            self.run_menu.Enable(DebuggerService.STEP_CONTINUE_ID,True)
-        self._tb.EnableTool(DebuggerService.STEP_OUT_ID, True)
-        if self.run_menu.FindItemById(DebuggerService.STEP_OUT_ID):
-            self.run_menu.Enable(DebuggerService.STEP_OUT_ID,True)
+        self._tb.EnableTool(constants.ID_STEP_CONTINUE, True)
+        if self.run_menu.FindItemById(constants.ID_STEP_CONTINUE):
+            self.run_menu.Enable(constants.ID_STEP_CONTINUE,True)
+        self._tb.EnableTool(constants.ID_STEP_OUT, True)
+        if self.run_menu.FindItemById(constants.ID_STEP_OUT):
+            self.run_menu.Enable(constants.ID_STEP_OUT,True)
         self._tb.EnableTool(self.STEP_NEXT_ID, True)
-        self._tb.EnableTool(DebuggerService.BREAK_INTO_DEBUGGER_ID, False)
-        if self.run_menu.FindItemById(DebuggerService.BREAK_INTO_DEBUGGER_ID):
-            self.run_menu.Enable(DebuggerService.BREAK_INTO_DEBUGGER_ID,False)
+        self._tb.EnableTool(constants.ID_BREAK_INTO_DEBUGGER, False)
+        if self.run_menu.FindItemById(constants.ID_BREAK_INTO_DEBUGGER):
+            self.run_menu.Enable(constants.ID_BREAK_INTO_DEBUGGER,False)
         self._tb.EnableTool(self.KILL_PROCESS_ID, True)
-        if self.run_menu.FindItemById(DebuggerService.TERMINATE_DEBUGGER_ID):
-            self.run_menu.Enable(DebuggerService.TERMINATE_DEBUGGER_ID,True)
+        if self.run_menu.FindItemById(constants.ID_TERMINATE_DEBUGGER):
+            self.run_menu.Enable(constants.ID_TERMINATE_DEBUGGER,True)
 
         if _WATCHES_ON:
-            self._tb.EnableTool(DebuggerService.ADD_WATCH_ID, True)
-            self._tb.EnableTool(DebuggerService.QUICK_ADD_WATCH_ID, True)
+            self._tb.EnableTool(constants.ID_ADD_WATCH, True)
+            self._tb.EnableTool(constants.ID_QUICK_ADD_WATCH, True)
 
         self._toolEnabled = True
 
     def DisableAfterStop(self):
         if self._toolEnabled:
             self.DisableWhileDebuggerRunning()
-            self._tb.EnableTool(DebuggerService.BREAK_INTO_DEBUGGER_ID, False)
-            if self.run_menu.FindItemById(DebuggerService.BREAK_INTO_DEBUGGER_ID):
-                self.run_menu.Enable(DebuggerService.BREAK_INTO_DEBUGGER_ID,False)
+            self._tb.EnableTool(constants.ID_BREAK_INTO_DEBUGGER, False)
+            if self.run_menu.FindItemById(constants.ID_BREAK_INTO_DEBUGGER):
+                self.run_menu.Enable(constants.ID_BREAK_INTO_DEBUGGER,False)
             self._tb.EnableTool(self.KILL_PROCESS_ID, False)
-            if self.run_menu.FindItemById(DebuggerService.TERMINATE_DEBUGGER_ID):
-                self.run_menu.Enable(DebuggerService.TERMINATE_DEBUGGER_ID,False)
+            if self.run_menu.FindItemById(constants.ID_TERMINATE_DEBUGGER):
+                self.run_menu.Enable(constants.ID_TERMINATE_DEBUGGER,False)
     @WxThreadSafe.call_after
     def ExecutorFinished(self):
         if _VERBOSE: print "In ExectorFinished"
@@ -2051,7 +2052,7 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
         self._timer.Stop()
         dbgService = wx.GetApp().GetService(DebuggerService)
         evt = DebugInternalWebServer()
-        evt.SetId(DebuggerService.STEP_CONTINUE_ID)
+        evt.SetId(constants.ID_STEP_CONTINUE)
         wx.PostEvent(self._debuggerUI, evt)
         if _VERBOSE: print "Event Continue posted"
 
@@ -2086,31 +2087,10 @@ class DebuggerService(Service.Service):
     #----------------------------------------------------------------------------
     # Constants
     #----------------------------------------------------------------------------
-    TOGGLE_BREAKPOINT_ID = wx.NewId()
-    CLEAR_ALL_BREAKPOINTS = wx.NewId()
-    START_RUN_ID = wx.NewId()
-    START_DEBUG_ID = wx.NewId()
-    START_WITHOUT_DEBUG = wx.NewId()
-    SET_EXCEPTION_BREAKPOINT = wx.NewId()
-    STEP_INTO_ID = wx.NewId()
-    STEP_CONTINUE_ID = wx.NewId()
-    STEP_OUT_ID = wx.NewId()
-    STEP_NEXT_ID = wx.NewId()
-    BREAK_INTO_DEBUGGER_ID = wx.NewId()
-    RESTART_DEBUGGER_ID = wx.NewId()
-    QUICK_ADD_WATCH_ID = wx.NewId()
-    ADD_WATCH_ID = wx.NewId()
-    ADD_TO_WATCH_ID = wx.NewId()
-    TERMINATE_DEBUGGER_ID = wx.NewId()
-    CHECK_ID = wx.NewId()
-    SET_PARAMETER_ENVIRONMENT_ID = wx.NewId()
-    RUN_LAST_ID = wx.NewId()
-    DEBUG_LAST_ID = wx.NewId()
     DEBUG_WEBSERVER_ID = wx.NewId()
     RUN_WEBSERVER_ID = wx.NewId()
     DEBUG_WEBSERVER_CONTINUE_ID = wx.NewId()
     DEBUG_WEBSERVER_NOW_RUN_PROJECT_ID = wx.NewId()
-    COMBO_INTERPRETERS_ID = wx.NewId()
     RUN_PARAMETERS = []
     
     def AppendRunParameter(self,run_paramteter):
@@ -2196,61 +2176,61 @@ class DebuggerService(Service.Service):
         config = wx.ConfigBase_Get()
 
         debuggerMenu = wx.Menu()
-        if not menuBar.FindItemById(DebuggerService.CLEAR_ALL_BREAKPOINTS):
+        if not menuBar.FindItemById(constants.ID_CLEAR_ALL_BREAKPOINTS):
 
-            item = wx.MenuItem(debuggerMenu,DebuggerService.START_RUN_ID, _("&Start Running\tF5"), _("Start Running a file"))
+            item = wx.MenuItem(debuggerMenu,constants.ID_RUN, _("&Start Running\tF5"), _("Start Running a file"))
             item.SetBitmap(getRunningManBitmap())
             debuggerMenu.AppendItem(item)
-            wx.EVT_MENU(frame, DebuggerService.START_RUN_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, DebuggerService.START_RUN_ID, frame.ProcessUpdateUIEvent)
+            wx.EVT_MENU(frame, constants.ID_RUN, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_RUN, frame.ProcessUpdateUIEvent)
 
-            item = wx.MenuItem(debuggerMenu,DebuggerService.START_DEBUG_ID, _("&Start Debugging\tCtrl+F5"), _("Start Debugging a file"))
+            item = wx.MenuItem(debuggerMenu,constants.ID_DEBUG, _("&Start Debugging\tCtrl+F5"), _("Start Debugging a file"))
             item.SetBitmap(getDebuggingManBitmap())
             debuggerMenu.AppendItem(item)
-            wx.EVT_MENU(frame, DebuggerService.START_DEBUG_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, DebuggerService.START_DEBUG_ID, frame.ProcessUpdateUIEvent)
+            wx.EVT_MENU(frame, constants.ID_DEBUG, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_DEBUG, frame.ProcessUpdateUIEvent)
             
-            item = wx.MenuItem(debuggerMenu,DebuggerService.START_WITHOUT_DEBUG, _("&Start Without Debugging"), _("Start execute a file Without Debugging"))
+            item = wx.MenuItem(debuggerMenu,constants.ID_START_WITHOUT_DEBUG, _("&Start Without Debugging"), _("Start execute a file Without Debugging"))
             debuggerMenu.AppendItem(item)
-            wx.EVT_MENU(frame, DebuggerService.START_WITHOUT_DEBUG, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, DebuggerService.START_WITHOUT_DEBUG, frame.ProcessUpdateUIEvent)
+            wx.EVT_MENU(frame, constants.ID_START_WITHOUT_DEBUG, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_START_WITHOUT_DEBUG, frame.ProcessUpdateUIEvent)
             
-            item = wx.MenuItem(debuggerMenu,DebuggerService.SET_EXCEPTION_BREAKPOINT, _("&Exceptions..."), _("Set the exception breakpoint"))
+            item = wx.MenuItem(debuggerMenu,constants.ID_SET_EXCEPTION_BREAKPOINT, _("&Exceptions..."), _("Set the exception breakpoint"))
             debuggerMenu.AppendItem(item)
-            wx.EVT_MENU(frame, DebuggerService.SET_EXCEPTION_BREAKPOINT, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, DebuggerService.SET_EXCEPTION_BREAKPOINT, frame.ProcessUpdateUIEvent)
+            wx.EVT_MENU(frame, constants.ID_SET_EXCEPTION_BREAKPOINT, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_SET_EXCEPTION_BREAKPOINT, frame.ProcessUpdateUIEvent)
             debuggerMenu.AppendSeparator()
             
-            item = wx.MenuItem(debuggerMenu,DebuggerService.STEP_INTO_ID, _("&Step Into\tF11"), _("step into function"))
+            item = wx.MenuItem(debuggerMenu,constants.ID_STEP_INTO, _("&Step Into\tF11"), _("step into function"))
             item.SetBitmap(getStepInBitmap())
             debuggerMenu.AppendItem(item)
-            wx.EVT_MENU(frame, DebuggerService.STEP_INTO_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, DebuggerService.STEP_INTO_ID, frame.ProcessUpdateUIEvent)
+            wx.EVT_MENU(frame, constants.ID_STEP_INTO, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_STEP_INTO, frame.ProcessUpdateUIEvent)
             
-            item = wx.MenuItem(debuggerMenu,DebuggerService.STEP_NEXT_ID, _("&Step Over\tF10"), _("step into next"))
+            item = wx.MenuItem(debuggerMenu,constants.ID_STEP_NEXT, _("&Step Over\tF10"), _("step into next"))
             item.SetBitmap(getNextBitmap())
             debuggerMenu.AppendItem(item)
-            wx.EVT_MENU(frame, DebuggerService.STEP_NEXT_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, DebuggerService.STEP_NEXT_ID, frame.ProcessUpdateUIEvent)
+            wx.EVT_MENU(frame, constants.ID_STEP_NEXT, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_STEP_NEXT, frame.ProcessUpdateUIEvent)
             debuggerMenu.AppendSeparator()
             
-            debuggerMenu.Append(DebuggerService.CHECK_ID, _("&Check Syntax...\tCtrl+F3"), _("Check syntax of file"))
-            wx.EVT_MENU(frame, DebuggerService.CHECK_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, DebuggerService.CHECK_ID, frame.ProcessUpdateUIEvent)
+            debuggerMenu.Append(constants.ID_CHECK_SYNTAX, _("&Check Syntax...\tCtrl+F3"), _("Check syntax of file"))
+            wx.EVT_MENU(frame, constants.ID_CHECK_SYNTAX, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_CHECK_SYNTAX, frame.ProcessUpdateUIEvent)
 
-            item = wx.MenuItem(debuggerMenu,DebuggerService.SET_PARAMETER_ENVIRONMENT_ID, _("&Set Parameter And Environment"), _("Set Parameter and Environment of Python Script"))
+            item = wx.MenuItem(debuggerMenu,constants.ID_SET_PARAMETER_ENVIRONMENT, _("&Set Parameter And Environment"), _("Set Parameter and Environment of Python Script"))
             item.SetBitmap(images.load("debugger/runconfig.png"))
             debuggerMenu.AppendItem(item)
-            wx.EVT_MENU(frame, DebuggerService.SET_PARAMETER_ENVIRONMENT_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, DebuggerService.SET_PARAMETER_ENVIRONMENT_ID, frame.ProcessUpdateUIEvent)
+            wx.EVT_MENU(frame, constants.ID_SET_PARAMETER_ENVIRONMENT, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_SET_PARAMETER_ENVIRONMENT, frame.ProcessUpdateUIEvent)
 
-            debuggerMenu.Append(DebuggerService.RUN_LAST_ID, _("&Run Using Last Settings\tCtrl+R"), _("Run a file using previous settings"))
-            wx.EVT_MENU(frame, DebuggerService.RUN_LAST_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, DebuggerService.RUN_LAST_ID, frame.ProcessUpdateUIEvent)
+            debuggerMenu.Append(constants.ID_RUN_LAST, _("&Run Using Last Settings\tCtrl+R"), _("Run a file using previous settings"))
+            wx.EVT_MENU(frame, constants.ID_RUN_LAST, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_RUN_LAST, frame.ProcessUpdateUIEvent)
 
-            debuggerMenu.Append(DebuggerService.DEBUG_LAST_ID, _("&Debug Using Last Settings\tCtrl+D"), _("Debug a file using previous settings"))
-            wx.EVT_MENU(frame, DebuggerService.DEBUG_LAST_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, DebuggerService.DEBUG_LAST_ID, frame.ProcessUpdateUIEvent)
+            debuggerMenu.Append(constants.ID_DEBUG_LAST, _("&Debug Using Last Settings\tCtrl+D"), _("Debug a file using previous settings"))
+            wx.EVT_MENU(frame, constants.ID_DEBUG_LAST, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_DEBUG_LAST, frame.ProcessUpdateUIEvent)
 
             if not ACTIVEGRID_BASE_IDE:
                 debuggerMenu.AppendSeparator()
@@ -2264,26 +2244,26 @@ class DebuggerService(Service.Service):
                 frame.Bind(EVT_DEBUG_INTERNAL, frame.ProcessEvent)
             debuggerMenu.AppendSeparator()
             
-            item = wx.MenuItem(debuggerMenu,DebuggerService.TOGGLE_BREAKPOINT_ID, _("&Toggle Breakpoint\tCtrl+B"), _("Toggle a breakpoint"))
+            item = wx.MenuItem(debuggerMenu,constants.ID_TOGGLE_BREAKPOINT, _("&Toggle Breakpoint\tCtrl+B"), _("Toggle a breakpoint"))
             item.SetBitmap(getBreakPointBitmap())
             debuggerMenu.AppendItem(item)
-            wx.EVT_MENU(frame, DebuggerService.TOGGLE_BREAKPOINT_ID, self.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, DebuggerService.TOGGLE_BREAKPOINT_ID, self.ProcessUpdateUIEvent)
+            wx.EVT_MENU(frame, constants.ID_TOGGLE_BREAKPOINT, self.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_TOGGLE_BREAKPOINT, self.ProcessUpdateUIEvent)
 
-            debuggerMenu.Append(DebuggerService.CLEAR_ALL_BREAKPOINTS, _("&Clear All Breakpoints"), _("Clear All Breakpoints"))
-            wx.EVT_MENU(frame, DebuggerService.CLEAR_ALL_BREAKPOINTS, self.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, DebuggerService.CLEAR_ALL_BREAKPOINTS, self.ProcessUpdateUIEvent)
+            debuggerMenu.Append(constants.ID_CLEAR_ALL_BREAKPOINTS, _("&Clear All Breakpoints"), _("Clear All Breakpoints"))
+            wx.EVT_MENU(frame, constants.ID_CLEAR_ALL_BREAKPOINTS, self.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_CLEAR_ALL_BREAKPOINTS, self.ProcessUpdateUIEvent)
 
 
         viewMenuIndex = menuBar.FindMenu(_("&Project"))
         menuBar.Insert(viewMenuIndex + 1, debuggerMenu, _("&Run"))
 
         toolBar.AddSeparator()
-        toolBar.AddTool(DebuggerService.START_RUN_ID, getRunningManBitmap(), shortHelpString = _("Start Running"), longHelpString = _("Run a file in command teminator"))
-        toolBar.AddTool(DebuggerService.START_DEBUG_ID, getDebuggingManBitmap(), shortHelpString = _("Start Debuging"), longHelpString = _("Debugging a file in Editor"))
-        toolBar.AddControl(wx.ComboBox(toolBar, DebuggerService.COMBO_INTERPRETERS_ID, "", \
+        toolBar.AddTool(constants.ID_RUN, getRunningManBitmap(), shortHelpString = _("Start Running"), longHelpString = _("Run a file in command teminator"))
+        toolBar.AddTool(constants.ID_DEBUG, getDebuggingManBitmap(), shortHelpString = _("Start Debuging"), longHelpString = _("Debugging a file in Editor"))
+        toolBar.AddControl(wx.ComboBox(toolBar, constants.ID_COMBO_INTERPRETERS, "", \
                                        choices=[],size=(150,-1), style=wx.CB_READONLY))
-        wx.EVT_COMBOBOX(frame,DebuggerService.COMBO_INTERPRETERS_ID,self.OnCombo)
+        wx.EVT_COMBOBOX(frame,constants.ID_COMBO_INTERPRETERS,self.OnCombo)
         toolBar.Realize()
         return True
 
@@ -2299,66 +2279,66 @@ class DebuggerService(Service.Service):
                 self._watch_separater = runMenu.InsertSeparator(8)
             else:
                 runMenu.InsertItem(8,self._watch_separater)
-            if not menuBar.FindItemById(DebuggerService.ADD_WATCH_ID):
-                item = wx.MenuItem(runMenu,DebuggerService.ADD_WATCH_ID, _("&Add Watch"), _("Add a Watch"))
+            if not menuBar.FindItemById(constants.ID_ADD_WATCH):
+                item = wx.MenuItem(runMenu,constants.ID_ADD_WATCH, _("&Add Watch"), _("Add a Watch"))
                 item.SetBitmap(Watchs.getAddWatchBitmap())
                 runMenu.InsertItem(8,item)
-                wx.EVT_MENU(self._frame, DebuggerService.ADD_WATCH_ID, self.ProcessEvent)
+                wx.EVT_MENU(self._frame, constants.ID_ADD_WATCH, self.ProcessEvent)
             
-            if not menuBar.FindItemById(DebuggerService.QUICK_ADD_WATCH_ID):
-                item = wx.MenuItem(runMenu,DebuggerService.QUICK_ADD_WATCH_ID, _("&Quick add Watch"), _("Quick add a Watch"))
+            if not menuBar.FindItemById(constants.ID_QUICK_ADD_WATCH):
+                item = wx.MenuItem(runMenu,constants.ID_QUICK_ADD_WATCH, _("&Quick add Watch"), _("Quick add a Watch"))
                 item.SetBitmap(Watchs.getQuickAddWatchBitmap())
                 runMenu.InsertItem(8,item)
-                wx.EVT_MENU(self._frame, DebuggerService.QUICK_ADD_WATCH_ID, self.ProcessEvent)
+                wx.EVT_MENU(self._frame, constants.ID_QUICK_ADD_WATCH, self.ProcessEvent)
                 
-            if not menuBar.FindItemById(DebuggerService.STEP_OUT_ID):
-                item = wx.MenuItem(runMenu,DebuggerService.STEP_OUT_ID, _("&Step Out\tShift+F11"), _("Step out the function"))
+            if not menuBar.FindItemById(constants.ID_STEP_OUT):
+                item = wx.MenuItem(runMenu,constants.ID_STEP_OUT, _("&Step Out\tShift+F11"), _("Step out the function"))
                 item.SetBitmap(getStepReturnBitmap())
                 runMenu.InsertItem(7,item)
-                wx.EVT_MENU(self._frame, DebuggerService.STEP_OUT_ID, self.ProcessEvent)
+                wx.EVT_MENU(self._frame, constants.ID_STEP_OUT, self.ProcessEvent)
 
-            if not menuBar.FindItemById(DebuggerService.RESTART_DEBUGGER_ID):
-                item = wx.MenuItem(runMenu,DebuggerService.RESTART_DEBUGGER_ID, _("&Restart"), _("Restart Debugging"))
+            if not menuBar.FindItemById(constants.ID_RESTART_DEBUGGER):
+                item = wx.MenuItem(runMenu,constants.ID_RESTART_DEBUGGER, _("&Restart"), _("Restart Debugging"))
                 item.SetBitmap(getRestartDebuggerBitmap())
                 runMenu.InsertItem(menu_index,item)
-                wx.EVT_MENU(self._frame, DebuggerService.RESTART_DEBUGGER_ID, self.ProcessEvent)
+                wx.EVT_MENU(self._frame, constants.ID_RESTART_DEBUGGER, self.ProcessEvent)
                 
 
-            if not menuBar.FindItemById(DebuggerService.TERMINATE_DEBUGGER_ID):
-                item = wx.MenuItem(runMenu,DebuggerService.TERMINATE_DEBUGGER_ID, _("&Stop Debugging"), _("Stop the debugger"))
+            if not menuBar.FindItemById(constants.ID_TERMINATE_DEBUGGER):
+                item = wx.MenuItem(runMenu,constants.ID_TERMINATE_DEBUGGER, _("&Stop Debugging"), _("Stop the debugger"))
                 item.SetBitmap(getStopBitmap())
                 runMenu.InsertItem(menu_index,item)
-                wx.EVT_MENU(self._frame, DebuggerService.TERMINATE_DEBUGGER_ID, self.ProcessEvent)
+                wx.EVT_MENU(self._frame, constants.ID_TERMINATE_DEBUGGER, self.ProcessEvent)
                 
-            if not menuBar.FindItemById(DebuggerService.BREAK_INTO_DEBUGGER_ID):
-                item = wx.MenuItem(runMenu,DebuggerService.BREAK_INTO_DEBUGGER_ID, _("&Break"), _("Break into the debugger"))
+            if not menuBar.FindItemById(constants.ID_BREAK_INTO_DEBUGGER):
+                item = wx.MenuItem(runMenu,constants.ID_BREAK_INTO_DEBUGGER, _("&Break"), _("Break into the debugger"))
                 item.SetBitmap(getBreakBitmap())
                 runMenu.InsertItem(menu_index,item)
-                wx.EVT_MENU(self._frame, DebuggerService.BREAK_INTO_DEBUGGER_ID, self.ProcessEvent)
+                wx.EVT_MENU(self._frame, constants.ID_BREAK_INTO_DEBUGGER, self.ProcessEvent)
                 
-            if not menuBar.FindItemById(DebuggerService.STEP_CONTINUE_ID):
-                item = wx.MenuItem(runMenu,DebuggerService.STEP_CONTINUE_ID, _("&Continue"), _("Continue the debugger"))
+            if not menuBar.FindItemById(constants.ID_STEP_CONTINUE):
+                item = wx.MenuItem(runMenu,constants.ID_STEP_CONTINUE, _("&Continue"), _("Continue the debugger"))
                 item.SetBitmap(getContinueBitmap())
                 runMenu.InsertItem(menu_index,item)
-                wx.EVT_MENU(self._frame, DebuggerService.STEP_CONTINUE_ID, self.ProcessEvent)
+                wx.EVT_MENU(self._frame, constants.ID_STEP_CONTINUE, self.ProcessEvent)
         else:
             ###TODO:Removes the menu item from the menu but doesn't delete the associated C++ object.
             ###we should use destroy to delete the menu permanently 
-            if menuBar.FindItemById(DebuggerService.STEP_OUT_ID):
-                runMenu.Remove(DebuggerService.STEP_OUT_ID)
-            if menuBar.FindItemById(DebuggerService.TERMINATE_DEBUGGER_ID):
-                runMenu.Remove(DebuggerService.TERMINATE_DEBUGGER_ID)
-            if menuBar.FindItemById(DebuggerService.STEP_CONTINUE_ID):
-                runMenu.Remove(DebuggerService.STEP_CONTINUE_ID)
-            if menuBar.FindItemById(DebuggerService.BREAK_INTO_DEBUGGER_ID):
-                runMenu.Remove(DebuggerService.BREAK_INTO_DEBUGGER_ID)
-            if menuBar.FindItemById(DebuggerService.RESTART_DEBUGGER_ID):
-                runMenu.Remove(DebuggerService.RESTART_DEBUGGER_ID)
+            if menuBar.FindItemById(constants.ID_STEP_OUT):
+                runMenu.Remove(constants.ID_STEP_OUT)
+            if menuBar.FindItemById(constants.ID_TERMINATE_DEBUGGER):
+                runMenu.Remove(constants.ID_TERMINATE_DEBUGGER)
+            if menuBar.FindItemById(constants.ID_STEP_CONTINUE):
+                runMenu.Remove(constants.ID_STEP_CONTINUE)
+            if menuBar.FindItemById(constants.ID_BREAK_INTO_DEBUGGER):
+                runMenu.Remove(constants.ID_BREAK_INTO_DEBUGGER)
+            if menuBar.FindItemById(constants.ID_RESTART_DEBUGGER):
+                runMenu.Remove(constants.ID_RESTART_DEBUGGER)
 
-            if menuBar.FindItemById(DebuggerService.ADD_WATCH_ID):
-                runMenu.Remove(DebuggerService.ADD_WATCH_ID)
-            if menuBar.FindItemById(DebuggerService.QUICK_ADD_WATCH_ID):
-                runMenu.Remove(DebuggerService.QUICK_ADD_WATCH_ID)
+            if menuBar.FindItemById(constants.ID_ADD_WATCH):
+                runMenu.Remove(constants.ID_ADD_WATCH)
+            if menuBar.FindItemById(constants.ID_QUICK_ADD_WATCH):
+                runMenu.Remove(constants.ID_QUICK_ADD_WATCH)
                 runMenu.RemoveItem(self._watch_separater)
     #----------------------------------------------------------------------------
     # Event Processing Methods
@@ -2397,34 +2377,34 @@ class DebuggerService(Service.Service):
             return True
 
         an_id = event.GetId()
-        if an_id == DebuggerService.TOGGLE_BREAKPOINT_ID:
+        if an_id == constants.ID_TOGGLE_BREAKPOINT:
             self.OnToggleBreakpoint(event)
             return True
-        elif an_id == DebuggerService.CLEAR_ALL_BREAKPOINTS:
+        elif an_id == constants.ID_CLEAR_ALL_BREAKPOINTS:
             self.ClearAllBreakpoints()
             return True
-        elif an_id == DebuggerService.START_RUN_ID:
+        elif an_id == constants.ID_RUN:
             self.OnRun(event)
             return True
-        elif an_id == DebuggerService.START_DEBUG_ID:
+        elif an_id == constants.ID_DEBUG:
             self.OnDebugRun(event)
             return True
-        elif an_id == DebuggerService.BREAK_INTO_DEBUGGER_ID:
+        elif an_id == constants.ID_BREAK_INTO_DEBUGGER:
             self.OnBreakDebugger()
             return True
-        elif an_id == DebuggerService.START_WITHOUT_DEBUG:
+        elif an_id == constants.ID_START_WITHOUT_DEBUG:
             self.OnRunWithoutDebug(event)
             return True
-        elif an_id == DebuggerService.SET_EXCEPTION_BREAKPOINT:
+        elif an_id == constants.ID_SET_EXCEPTION_BREAKPOINT:
             self.SetExceptionBreakPoint()
             return True
-        elif an_id == DebuggerService.CHECK_ID:
+        elif an_id == constants.ID_CHECK_SYNTAX:
             self.CheckScript(event)
             return True
-        elif an_id == DebuggerService.RUN_LAST_ID:
+        elif an_id == constants.ID_RUN_LAST:
             self.RunLast(event)
             return True
-        elif an_id == DebuggerService.DEBUG_LAST_ID:
+        elif an_id == constants.ID_DEBUG_LAST:
             self.DebugRunLast(event)
             return True
         elif an_id == DebuggerService.DEBUG_WEBSERVER_ID:
@@ -2439,26 +2419,26 @@ class DebuggerService(Service.Service):
         elif an_id == DebuggerService.RUN_WEBSERVER_ID:
             self.OnRunWebServer(event)
             return True
-        elif an_id == DebuggerService.SET_PARAMETER_ENVIRONMENT_ID:
+        elif an_id == constants.ID_SET_PARAMETER_ENVIRONMENT:
             self.SetParameterAndEnvironment()
             return True
-        elif an_id == DebuggerService.TERMINATE_DEBUGGER_ID:
+        elif an_id == constants.ID_TERMINATE_DEBUGGER:
             self._debugger_ui.StopExecution(None)
             return True
-        elif an_id == DebuggerService.STEP_INTO_ID:
+        elif an_id == constants.ID_STEP_INTO:
             self.OnStepInto()
             return True
-        elif an_id == DebuggerService.STEP_NEXT_ID:
+        elif an_id == constants.ID_STEP_NEXT:
             self.OnStepNext()
             return True
-        elif an_id == DebuggerService.STEP_OUT_ID:
+        elif an_id == constants.ID_STEP_OUT:
             self._debugger_ui.OnStepOut(None)
             return True
-        elif an_id == DebuggerService.STEP_CONTINUE_ID:
+        elif an_id == constants.ID_STEP_CONTINUE:
             self._debugger_ui.OnContinue(None)
             return True
 
-        elif an_id == DebuggerService.QUICK_ADD_WATCH_ID:
+        elif an_id == constants.ID_QUICK_ADD_WATCH:
             active_text_view = self.GetActiveView()
             if active_text_view is not None:
                 active_text_view.GetCtrl().QuickAddWatch(None)
@@ -2466,7 +2446,7 @@ class DebuggerService(Service.Service):
                 self.AddWatch(None,True)
             return True
 
-        elif an_id == DebuggerService.ADD_WATCH_ID:
+        elif an_id == constants.ID_ADD_WATCH:
             active_text_view = self.GetActiveView()
             if active_text_view is not None:
                 active_text_view.GetCtrl().AddWatch(None)
@@ -2474,7 +2454,7 @@ class DebuggerService(Service.Service):
                 self.AddWatch(None,False)
             return True
 
-        elif an_id == DebuggerService.RESTART_DEBUGGER_ID:
+        elif an_id == constants.ID_RESTART_DEBUGGER:
             self._debugger_ui.RestartDebugger(None)
             return True
         return False
@@ -2508,36 +2488,36 @@ class DebuggerService(Service.Service):
             return True
 
         an_id = event.GetId()
-        if an_id == DebuggerService.TOGGLE_BREAKPOINT_ID:
+        if an_id == constants.ID_TOGGLE_BREAKPOINT:
             currentView = self.GetDocumentManager().GetCurrentView()
             event.Enable(isinstance(currentView, PythonEditor.PythonView))
             return True
-        elif an_id == DebuggerService.CLEAR_ALL_BREAKPOINTS:
+        elif an_id == constants.ID_CLEAR_ALL_BREAKPOINTS:
             event.Enable(self.HasBreakpointsSet())
             return True
-        elif an_id == DebuggerService.RUN_LAST_ID:
+        elif an_id == constants.ID_RUN_LAST:
             interpreter = wx.GetApp().GetCurrentInterpreter()
             if interpreter and interpreter.IsBuiltIn:
                 event.Enable(False)
             else:
                 event.Enable(True)
             return True
-        elif (an_id == DebuggerService.START_RUN_ID
-        or an_id == DebuggerService.SET_EXCEPTION_BREAKPOINT):
+        elif (an_id == constants.ID_RUN
+        or an_id == constants.ID_SET_EXCEPTION_BREAKPOINT):
             event.Enable(self.IsRunFileEnable())
             return True
-        elif (an_id == DebuggerService.START_DEBUG_ID
-        or an_id == DebuggerService.START_WITHOUT_DEBUG
-        or an_id == DebuggerService.CHECK_ID
-        or an_id == DebuggerService.SET_PARAMETER_ENVIRONMENT_ID):
+        elif (an_id == constants.ID_DEBUG
+        or an_id == constants.ID_START_WITHOUT_DEBUG
+        or an_id == constants.ID_CHECK_SYNTAX
+        or an_id == constants.ID_SET_PARAMETER_ENVIRONMENT):
             if wx.GetApp().GetService(project.ProjectEditor.ProjectService).GetView().GetDocument() is None:
                 event.Enable(self.HasAnyFiles() and \
                         self.GetActiveView().GetLangId() == lang.ID_LANG_PYTHON)
             else:
                 event.Enable(True)
             return True
-        elif (an_id == DebuggerService.STEP_NEXT_ID
-        or an_id == DebuggerService.STEP_INTO_ID):
+        elif (an_id == constants.ID_STEP_NEXT
+        or an_id == constants.ID_STEP_INTO):
             if not self.IsRunFileEnable():
                 event.Enable(False)
             elif self._debugger_ui is None or not BaseDebuggerUI.DebuggerRunning():

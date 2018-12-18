@@ -4,14 +4,12 @@ import doctools
 import os
 import noval.util.sysutils as sysutilslib
 from wx.lib.pubsub import pub as Publisher
+import noval.util.constants as constants
 
-_ = wx.GetTranslation
+_ = constants._
 
 
 NOVAL_MSG_UI_STC_POS_JUMPED = 'noval.msg.file.jump'
-
-ID_NEXT_POS = wx.NewId()
-ID_PRE_POS = wx.NewId()
 
 #record previous and current caret postion
 def jumpaction(func):
@@ -86,25 +84,25 @@ class NavigationService(Service.BaseService):
         viewMenu = menuBar.GetMenu(menuBar.FindMenu(_("&View")))
         
         viewMenu.AppendSeparator()
-        item = wx.MenuItem(viewMenu,ID_NEXT_POS, _("Next Position"), _("Goto next position in history."))
+        item = wx.MenuItem(viewMenu,constants.ID_NEXT_POS, _("Next Position"), _("Goto next position in history."))
         forward_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "forward.png")
         item.SetBitmap(wx.BitmapFromImage(wx.Image(forward_image_path,wx.BITMAP_TYPE_ANY)))
         viewMenu.AppendItem(item)
-        item = wx.MenuItem(viewMenu,ID_PRE_POS, _("Previous Position"), _("Goto previous position in history."))
+        item = wx.MenuItem(viewMenu,constants.ID_PRE_POS, _("Previous Position"), _("Goto previous position in history."))
         backward_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "backward.png")
         item.SetBitmap(wx.BitmapFromImage(wx.Image(backward_image_path,wx.BITMAP_TYPE_ANY)))
         viewMenu.AppendItem(item)
-        wx.EVT_MENU(frame, ID_NEXT_POS, frame.ProcessEvent)
-        wx.EVT_MENU(frame, ID_PRE_POS, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, ID_NEXT_POS, frame.ProcessUpdateUIEvent)
-        wx.EVT_UPDATE_UI(frame, ID_PRE_POS, frame.ProcessUpdateUIEvent)
+        wx.EVT_MENU(frame, constants.ID_NEXT_POS, frame.ProcessEvent)
+        wx.EVT_MENU(frame, constants.ID_PRE_POS, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_NEXT_POS, frame.ProcessUpdateUIEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_PRE_POS, frame.ProcessUpdateUIEvent)
 
         forward_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "forward.png")
         forward_bmp = wx.Bitmap(forward_bmp_path, wx.BITMAP_TYPE_PNG)
         backward_bmp_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "backward.png")
         backward_bmp = wx.Bitmap(backward_bmp_path, wx.BITMAP_TYPE_PNG)
-        toolBar.AddTool(ID_PRE_POS, backward_bmp, shortHelpString = _("Previous Position"), longHelpString = _("Goto previous position in history."))
-        toolBar.AddTool(ID_NEXT_POS, forward_bmp, shortHelpString = _("Next Position"), longHelpString = _("Goto next position in history."))
+        toolBar.AddTool(constants.ID_PRE_POS, backward_bmp, shortHelpString = _("Previous Position"), longHelpString = _("Goto previous position in history."))
+        toolBar.AddTool(constants.ID_NEXT_POS, forward_bmp, shortHelpString = _("Next Position"), longHelpString = _("Goto next position in history."))
       
     def ProcessEvent(self, event):
         return self.OnNavigateToPos(event)
@@ -122,7 +120,7 @@ class NavigationService(Service.BaseService):
         cname = text_view.GetDocument().GetFilename()
         cpos = text_view.GetCtrl().GetCurrentPos()
         #when go to next position,current cache pos is current caret pos
-        if e_id == ID_NEXT_POS:
+        if e_id == constants.ID_NEXT_POS:
             if self.DocMgr.CanNavigateNext():
                 fname, pos = self.DocMgr.GetNextNaviPos()
                 if (fname, pos) == (cname, cpos):
@@ -131,7 +129,7 @@ class NavigationService(Service.BaseService):
                     if tmp is not None:
                         fname, pos = tmp
         #while go to previous position,current cache pos is previous caret pos
-        elif e_id == ID_PRE_POS:
+        elif e_id == constants.ID_PRE_POS:
             if self.DocMgr.CanNavigatePrev():
                 fname, pos = self.DocMgr.GetPreviousNaviPos()
                 if (fname, pos) == (cname, cpos):
@@ -148,10 +146,10 @@ class NavigationService(Service.BaseService):
     def OnUpdateNaviUI(self, evt):
         """UpdateUI handler for position navigator"""
         e_id = evt.Id
-        if e_id == ID_NEXT_POS:
+        if e_id == constants.ID_NEXT_POS:
             evt.Enable(self.DocMgr.CanNavigateNext())
             return True
-        elif e_id == ID_PRE_POS:
+        elif e_id == constants.ID_PRE_POS:
             evt.Enable(self.DocMgr.CanNavigatePrev())
             return True
         else:

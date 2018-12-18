@@ -37,33 +37,16 @@ import noval.util.appdirs as appdirs
 import images
 import noval.util.utils as utils
 import EOLFormat
-_ = wx.GetTranslation
+import noval.util.constants as constants
 
-ENABLE_FOLD_ID = wx.NewId()
-EXPAND_TEXT_ID = wx.NewId()
-COLLAPSE_TEXT_ID = wx.NewId()
-EXPAND_TOP_ID = wx.NewId()
-COLLAPSE_TOP_ID = wx.NewId()
-EXPAND_ALL_ID = wx.NewId()
-COLLAPSE_ALL_ID = wx.NewId()
+_ = constants._
+
 CHECK_CODE_ID = wx.NewId()
-CLEAN_WHITESPACE = wx.NewId()
-COMMENT_LINES_ID = wx.NewId()
-UNCOMMENT_LINES_ID = wx.NewId()
-INDENT_LINES_ID = wx.NewId()
-DEDENT_LINES_ID = wx.NewId()
-USE_TABS_ID = wx.NewId()
-SET_INDENT_WIDTH_ID = wx.NewId()
-FOLDING_ID = wx.NewId()
-ID_EOL_MODE      = wx.NewId()
-ID_EOL_MAC       = wx.NewId()
-ID_EOL_UNIX      = wx.NewId()
-ID_EOL_WIN       = wx.NewId()
 
 MODE_MAP = { 
-    ID_EOL_MAC  : wx.stc.STC_EOL_CR,
-    ID_EOL_UNIX : wx.stc.STC_EOL_LF,
-    ID_EOL_WIN  : wx.stc.STC_EOL_CRLF
+    constants.ID_EOL_MAC  : wx.stc.STC_EOL_CR,
+    constants.ID_EOL_UNIX : wx.stc.STC_EOL_LF,
+    constants.ID_EOL_WIN  : wx.stc.STC_EOL_CRLF
 }
 
 
@@ -100,55 +83,55 @@ class CodeView(STCTextEditor.TextView):
             if isinstance(focus_ctrl,debugger.DebugOutputCtrl.DebugOutputCtrl) and id in debugger.DebugOutputCtrl.DebugOutputCtrl.ItemIDs:
                 return focus_ctrl.DSProcessEvent(event)
             return wx.lib.docview.View.ProcessEvent(self,event)
-        if id == EXPAND_TEXT_ID:
+        if id == constants.ID_FOLD_EXPAND:
             self.GetCtrl().ToggleFold(self.GetCtrl().GetCurrentLine())
             return True
-        elif id == COLLAPSE_TEXT_ID:
+        elif id == constants.ID_FOLD_COLLAPSE:
             self.GetCtrl().ToggleFold(self.GetCtrl().GetCurrentLine())
             return True
-        elif id == EXPAND_TOP_ID:
+        elif id == constants.ID_EXPAND_TOP:
             self.GetCtrl().ToggleFoldAll(expand = True, topLevelOnly = True)
             return True
-        elif id == COLLAPSE_TOP_ID:
+        elif id == constants.ID_COLLAPSE_TOP:
             self.GetCtrl().ToggleFoldAll(expand = False, topLevelOnly = True)
             return True
-        elif id == EXPAND_ALL_ID:
+        elif id == constants.ID_EXPAND_ALL:
             self.GetCtrl().ToggleFoldAll(expand = True)
             return True
-        elif id == COLLAPSE_ALL_ID:
+        elif id == constants.ID_COLLAPSE_ALL:
             self.GetCtrl().ToggleFoldAll(expand = False)
             return True
         elif id == CHECK_CODE_ID:
             self.OnCheckCode()
             return True
-        elif id == CompletionService.CompletionService.AUTO_COMPLETE_ID:
+        elif id == constants.ID_AUTO_COMPLETE:
             self.OnAutoComplete()
             return True
-        elif id == CLEAN_WHITESPACE:
+        elif id == constants.ID_CLEAN_WHITESPACE:
             self.OnCleanWhiteSpace()
             return True
-        elif id == SET_INDENT_WIDTH_ID:
+        elif id == constants.ID_SET_INDENT_WIDTH:
             self.OnSetIndentWidth()
             return True
-        elif id == USE_TABS_ID:
+        elif id == constants.ID_USE_TABS:
             self.GetCtrl().SetUseTabs(not self.GetCtrl().GetUseTabs())
             return True
-        elif id == INDENT_LINES_ID:
+        elif id == constants.ID_INDENT_LINES:
             self.GetCtrl().CmdKeyExecute(wx.stc.STC_CMD_TAB)
             return True
-        elif id == DEDENT_LINES_ID:
+        elif id == constants.ID_DEDENT_LINES:
             self.GetCtrl().CmdKeyExecute(wx.stc.STC_CMD_BACKTAB)
             return True
-        elif id == COMMENT_LINES_ID:
+        elif id == constants.ID_COMMENT_LINES:
             self.OnCommentLines()
             return True
-        elif id == UNCOMMENT_LINES_ID:
+        elif id == constants.ID_UNCOMMENT_LINES:
             self.OnUncommentLines()
             return True
-        elif id == ENABLE_FOLD_ID:
+        elif id == constants.ID_ENABLE_FOLD:
             self.GetCtrl().SetViewFolding(not self.GetCtrl().GetViewFolding())
             return True
-        elif id == ID_EOL_MAC or id == ID_EOL_UNIX or id == ID_EOL_WIN:
+        elif id == constants.ID_EOL_MAC or id == constants.ID_EOL_UNIX or id == constants.ID_EOL_WIN:
             self.GetCtrl().ConvertLineMode(id)
             return True
         else:
@@ -167,56 +150,56 @@ class CodeView(STCTextEditor.TextView):
             return False
         if not self.GetCtrl():
            return False                
-        if id == EXPAND_TEXT_ID:
+        if id == constants.ID_FOLD_EXPAND:
             if self.GetCtrl().GetViewFolding():
                 event.Enable(self.GetCtrl().CanLineExpand(self.GetCtrl().GetCurrentLine()))
             else:
                 event.Enable(False)
             return True
-        elif id == COLLAPSE_TEXT_ID:
+        elif id == constants.ID_FOLD_COLLAPSE:
             if self.GetCtrl().GetViewFolding():
                 event.Enable(self.GetCtrl().CanLineCollapse(self.GetCtrl().GetCurrentLine()))
             else:
                 event.Enable(False)
             return True
-        elif (id == EXPAND_TOP_ID
-        or id == COLLAPSE_TOP_ID
-        or id == EXPAND_ALL_ID
-        or id == COLLAPSE_ALL_ID):
+        elif (id == constants.ID_EXPAND_TOP
+        or id == constants.ID_COLLAPSE_TOP
+        or id == constants.ID_EXPAND_ALL
+        or id == constants.ID_COLLAPSE_ALL):
             if self.GetCtrl().GetViewFolding():
                 event.Enable(self.GetCtrl().GetTextLength() > 0)
             else:
                 event.Enable(False)
             return True            
-        elif (id == CompletionService.CompletionService.AUTO_COMPLETE_ID
-        or id == CLEAN_WHITESPACE
-        or id == INDENT_LINES_ID
-        or id == DEDENT_LINES_ID
-        or id == COMMENT_LINES_ID
-        or id == UNCOMMENT_LINES_ID):
+        elif (id == constants.ID_AUTO_COMPLETE
+        or id == constants.ID_CLEAN_WHITESPACE
+        or id == constants.ID_INDENT_LINES
+        or id == constants.ID_DEDENT_LINES
+        or id == constants.ID_COMMENT_LINES
+        or id == constants.ID_UNCOMMENT_LINES):
             event.Enable(self.GetCtrl().GetTextLength() > 0)
             return True
         elif id == CHECK_CODE_ID:
             event.Enable(False)
             return True
-        elif id == SET_INDENT_WIDTH_ID:
+        elif id == constants.ID_SET_INDENT_WIDTH:
             event.Enable(True)
             return True
-        elif id == FOLDING_ID:
+        elif id == constants.ID_FOLD:
             event.Enable(True)
             return True
-        elif id == USE_TABS_ID:
+        elif id == constants.ID_USE_TABS:
             event.Enable(True)
             event.Check(self.GetCtrl().GetUseTabs())
             return True
-        elif id == ENABLE_FOLD_ID:
+        elif id == constants.ID_ENABLE_FOLD:
             event.Enable(True)
             event.Check(self.GetCtrl().GetViewFolding())
             return True
-        elif id == ID_EOL_MODE:
+        elif id == constants.ID_EOL_MODE:
             event.Enable(True)
             return True
-        elif id == ID_EOL_MAC or id == ID_EOL_UNIX or id == ID_EOL_WIN:
+        elif id == constants.ID_EOL_MAC or id == constants.ID_EOL_UNIX or id == constants.ID_EOL_WIN:
             event.Enable(True)
             event.Check(self.GetCtrl().IsEOLModeId(id))
             return True
@@ -449,31 +432,80 @@ class CodeView(STCTextEditor.TextView):
                 
 
     def OnCommentLines(self):
+        lexer = self.GetCtrl().GetLangLexer()
+        comment_pattern_list = lexer.GetCommentPattern()
+        if 0 == len(comment_pattern_list):
+            return
         newText = ""
-        for lineNo in self._GetSelectedLineNumbers():
-            lineText = self.GetCtrl().GetLine(lineNo)
-            if (len(lineText) > 1 and lineText[0] == '#') or (len(lineText) > 2 and lineText[:2] == '##'):
-                newText = newText + lineText
-            else:
-                newText = newText + "##" + lineText
+        comment_block = False
+        if len(comment_pattern_list) > 1:
+            comment_block = True
+        if not comment_block:
+            for lineNo in self._GetSelectedLineNumbers():
+                lineText = self.GetCtrl().GetLine(lineNo)
+                if len(lineText) > 1 and lineText.startswith(comment_pattern_list[0]):
+                    newText = newText + lineText
+                else:
+                    newText = newText + comment_pattern_list[0] + lineText
+        else:
+            selected_line_nums = self._GetSelectedLineNumbers()
+            for i,lineNo in enumerate(selected_line_nums):
+                lineText = self.GetCtrl().GetLine(lineNo)
+                if i == 0:
+                    newText = newText + comment_pattern_list[0] + lineText
+                elif i == len(selected_line_nums) - 1:
+                    if lineText.endswith(consts.CR_LF_EOL_CHAR):
+                        lineText = lineText[0:len(lineText)  - len(consts.CR_LF_EOL_CHAR)] + comment_pattern_list[1] + consts.CR_LF_EOL_CHAR
+                        
+                    elif lineText.endswith(consts.CR_EOL_CHAR) or lineText.endswith(consts.LF_EOL_CHAR):
+                        lineText = lineText[0:len(lineText)  - 1] + comment_pattern_list[1] + lineText[-1]
+                    else:
+                        lineText = lineText + comment_pattern_list[1]
+                    newText = newText + lineText
+                else:
+                    newText = newText + lineText
         self._ReplaceSelectedLines(newText)
 
 
     def OnUncommentLines(self):
+        lexer = self.GetCtrl().GetLangLexer()
+        comment_pattern_list = lexer.GetCommentPattern()
+        if 0 == len(comment_pattern_list):
+            return
+            
+        comment_block = False
+        if len(comment_pattern_list) > 1:
+            comment_block = True
+            
         newText = ""
-        for lineNo in self._GetSelectedLineNumbers():
-            lineText = self.GetCtrl().GetLine(lineNo)
-            if len(lineText) >= 2 and lineText[:2] == "##":
-                lineText = lineText[2:]
-            elif len(lineText) >= 1 and lineText[:1] == "#":
-                lineText = lineText[1:]
-            newText = newText + lineText
+        if not comment_block:
+            for lineNo in self._GetSelectedLineNumbers():
+                lineText = self.GetCtrl().GetLine(lineNo)
+                if len(lineText) > 1 and lineText.startswith(comment_pattern_list[0]):
+                    lineText = lineText[len(comment_pattern_list[0]):]
+                newText = newText + lineText
+        else:
+            selected_line_nums = self._GetSelectedLineNumbers()
+            for i,lineNo in enumerate(selected_line_nums):
+                lineText = self.GetCtrl().GetLine(lineNo)
+                if i == 0 and lineText.startswith(comment_pattern_list[0]):
+                    lineText = lineText[len(comment_pattern_list[0]):]
+                elif i == len(selected_line_nums) - 1 and lineText.strip().endswith(comment_pattern_list[1]):
+                    if lineText.endswith(consts.CR_LF_EOL_CHAR):
+                        lineText = lineText[0:len(lineText) - len(comment_pattern_list[1])-len(consts.CR_LF_EOL_CHAR)] + consts.CR_LF_EOL_CHAR
+                    elif lineText.endswith(consts.CR_EOL_CHAR) or lineText.endswith(consts.LF_EOL_CHAR):
+                        lineText = lineText[0:len(lineText) - len(comment_pattern_list[1])-len(consts.LF_EOL_CHAR)] + lineText[-1]
+                    else:
+                        lineText = lineText[0:len(lineText) - len(comment_pattern_list[1])]
+                newText = newText + lineText
         self._ReplaceSelectedLines(newText)
-
-
+        
     def _GetSelectedLineNumbers(self):
-        selStart, selEnd = self._GetPositionsBoundingSelectedLines()
-        return range(self.GetCtrl().LineFromPosition(selStart), self.GetCtrl().LineFromPosition(selEnd))
+        selStart, selEnd,is_last_line = self._GetPositionsBoundingSelectedLines()
+        endLine = self.GetCtrl().LineFromPosition(selEnd)
+        if is_last_line:
+            endLine += 1
+        return range(self.GetCtrl().LineFromPosition(selStart), endLine)
 
 
     def _GetPositionsBoundingSelectedLines(self):
@@ -486,14 +518,16 @@ class CodeView(STCTextEditor.TextView):
         if endPos == self.GetCtrl().PositionFromLine(self.GetCtrl().LineFromPosition(endPos)):
             endPos = endPos - 1  # If it's at the very beginning of a line, use the line above it as the ending line
         selStart = self.GetCtrl().PositionFromLine(self.GetCtrl().LineFromPosition(startPos))
-        selEnd = self.GetCtrl().PositionFromLine(self.GetCtrl().LineFromPosition(endPos) + 1)
-        return selStart, selEnd
+        line_num = self.GetCtrl().LineFromPosition(endPos)
+        selEnd = self.GetCtrl().PositionFromLine(line_num + 1)
+        
+        return selStart, selEnd,line_num == self.GetCtrl().LineFromPosition(selEnd)
 
 
     def _ReplaceSelectedLines(self, text):
         if len(text) == 0:
             return
-        selStart, selEnd = self._GetPositionsBoundingSelectedLines()
+        selStart, selEnd,_is_last_line = self._GetPositionsBoundingSelectedLines()
         self.GetCtrl().SetSelection(selStart, selEnd)
         self.GetCtrl().ReplaceSelection(text)
         self.GetCtrl().SetSelection(selStart + len(text), selStart)
@@ -535,56 +569,56 @@ class CodeService(TextService.TextService):
         viewMenu = menuBar.GetMenu(menuBar.FindMenu(_("&View")))
       ###  isWindows = (wx.Platform == '__WXMSW__')
 
-        if not menuBar.FindItemById(EXPAND_TEXT_ID):  # check if below menu items have been already been installed
+        if not menuBar.FindItemById(constants.ID_FOLD_EXPAND):  # check if below menu items have been already been installed
             foldingMenu = wx.Menu()
-            foldingMenu.AppendCheckItem(ENABLE_FOLD_ID, _("&Use Fold Style"), _("Show or hide fold index"))
-            wx.EVT_MENU(frame, ENABLE_FOLD_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, ENABLE_FOLD_ID, frame.ProcessUpdateUIEvent)
+            foldingMenu.AppendCheckItem(constants.ID_ENABLE_FOLD, _("&Use Fold Style"), _("Show or hide fold index"))
+            wx.EVT_MENU(frame, constants.ID_ENABLE_FOLD, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_ENABLE_FOLD, frame.ProcessUpdateUIEvent)
             if sysutilslib.isWindows():
-                foldingMenu.Append(EXPAND_TEXT_ID, _("&Expand\tNumpad-Plus"), _("Expands a collapsed block of text"))
+                foldingMenu.Append(constants.ID_FOLD_EXPAND, _("&Expand\tNumpad-Plus"), _("Expands a collapsed block of text"))
             else:
-                foldingMenu.Append(EXPAND_TEXT_ID, _("&Expand"), _("Expands a collapsed block of text"))
+                foldingMenu.Append(constants.ID_FOLD_EXPAND, _("&Expand"), _("Expands a collapsed block of text"))
 
-            wx.EVT_MENU(frame, EXPAND_TEXT_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, EXPAND_TEXT_ID, frame.ProcessUpdateUIEvent)
+            wx.EVT_MENU(frame, constants.ID_FOLD_EXPAND, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_FOLD_EXPAND, frame.ProcessUpdateUIEvent)
             
             if sysutilslib.isWindows():
-                foldingMenu.Append(COLLAPSE_TEXT_ID, _("&Collapse\tNumpad+Minus"), _("Collapse a block of text"))
+                foldingMenu.Append(constants.ID_FOLD_COLLAPSE, _("&Collapse\tNumpad+Minus"), _("Collapse a block of text"))
             else:
-                foldingMenu.Append(COLLAPSE_TEXT_ID, _("&Collapse"), _("Collapse a block of text"))
-            wx.EVT_MENU(frame, COLLAPSE_TEXT_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, COLLAPSE_TEXT_ID, frame.ProcessUpdateUIEvent)
+                foldingMenu.Append(constants.ID_FOLD_COLLAPSE, _("&Collapse"), _("Collapse a block of text"))
+            wx.EVT_MENU(frame, constants.ID_FOLD_COLLAPSE, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_FOLD_COLLAPSE, frame.ProcessUpdateUIEvent)
             
             if sysutilslib.isWindows():
-                foldingMenu.Append(EXPAND_TOP_ID, _("Expand &Top Level\tCtrl+Numpad+Plus"), _("Expands the top fold levels in the document"))
+                foldingMenu.Append(constants.ID_EXPAND_TOP, _("Expand &Top Level\tCtrl+Numpad+Plus"), _("Expands the top fold levels in the document"))
             else:
-                foldingMenu.Append(EXPAND_TOP_ID, _("Expand &Top Level"), _("Expands the top fold levels in the document"))
-            wx.EVT_MENU(frame, EXPAND_TOP_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, EXPAND_TOP_ID, frame.ProcessUpdateUIEvent)
+                foldingMenu.Append(constants.ID_EXPAND_TOP, _("Expand &Top Level"), _("Expands the top fold levels in the document"))
+            wx.EVT_MENU(frame, constants.ID_EXPAND_TOP, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_EXPAND_TOP, frame.ProcessUpdateUIEvent)
             
             if sysutilslib.isWindows():
-                foldingMenu.Append(COLLAPSE_TOP_ID, _("Collapse Top &Level\tCtrl+Numpad+Minus"), _("Collapses the top fold levels in the document"))
+                foldingMenu.Append(constants.ID_COLLAPSE_TOP, _("Collapse Top &Level\tCtrl+Numpad+Minus"), _("Collapses the top fold levels in the document"))
             else:
-                foldingMenu.Append(COLLAPSE_TOP_ID, _("Collapse Top &Level"), _("Collapses the top fold levels in the document"))
-            wx.EVT_MENU(frame, COLLAPSE_TOP_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, COLLAPSE_TOP_ID, frame.ProcessUpdateUIEvent)
+                foldingMenu.Append(constants.ID_COLLAPSE_TOP, _("Collapse Top &Level"), _("Collapses the top fold levels in the document"))
+            wx.EVT_MENU(frame, constants.ID_COLLAPSE_TOP, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_COLLAPSE_TOP, frame.ProcessUpdateUIEvent)
             
             if sysutilslib.isWindows():
-                foldingMenu.Append(EXPAND_ALL_ID, _("Expand &All\tShift+Numpad+Plus"), _("Expands all of the fold levels in the document"))
+                foldingMenu.Append(constants.ID_EXPAND_ALL, _("Expand &All\tShift+Numpad+Plus"), _("Expands all of the fold levels in the document"))
             else:
-                foldingMenu.Append(EXPAND_ALL_ID, _("Expand &All"), _("Expands all of the fold levels in the document"))
-            wx.EVT_MENU(frame, EXPAND_ALL_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, EXPAND_ALL_ID, frame.ProcessUpdateUIEvent)
+                foldingMenu.Append(constants.ID_EXPAND_ALL, _("Expand &All"), _("Expands all of the fold levels in the document"))
+            wx.EVT_MENU(frame, constants.ID_EXPAND_ALL, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_EXPAND_ALL, frame.ProcessUpdateUIEvent)
             
             if sysutilslib.isWindows():
-                foldingMenu.Append(COLLAPSE_ALL_ID, _("Colla&pse All\tShift+Numpad+Minus"), _("Collapses all of the fold levels in the document"))
+                foldingMenu.Append(constants.ID_COLLAPSE_ALL, _("Colla&pse All\tShift+Numpad+Minus"), _("Collapses all of the fold levels in the document"))
             else:
-                foldingMenu.Append(COLLAPSE_ALL_ID, _("Colla&pse All"), _("Collapses all of the fold levels in the document"))
-            wx.EVT_MENU(frame, COLLAPSE_ALL_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, COLLAPSE_ALL_ID, frame.ProcessUpdateUIEvent)
+                foldingMenu.Append(constants.ID_COLLAPSE_ALL, _("Colla&pse All"), _("Collapses all of the fold levels in the document"))
+            wx.EVT_MENU(frame, constants.ID_COLLAPSE_ALL, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_COLLAPSE_ALL, frame.ProcessUpdateUIEvent)
             
-            viewMenu.AppendMenu(FOLDING_ID, _("&Folding"), foldingMenu)
-            wx.EVT_UPDATE_UI(frame, FOLDING_ID, frame.ProcessUpdateUIEvent)
+            viewMenu.AppendMenu(constants.ID_FOLD, _("&Folding"), foldingMenu)
+            wx.EVT_UPDATE_UI(frame, constants.ID_FOLD, frame.ProcessUpdateUIEvent)
 
         formatMenuIndex = menuBar.FindMenu(_("&Format"))
         if formatMenuIndex > -1:
@@ -596,99 +630,92 @@ class CodeService(TextService.TextService):
             formatMenu.Append(CHECK_CODE_ID, _("&Check Code"), _("Checks the document for syntax and indentation errors"))
             wx.EVT_MENU(frame, CHECK_CODE_ID, frame.ProcessEvent)
             wx.EVT_UPDATE_UI(frame, CHECK_CODE_ID, frame.ProcessUpdateUIEvent)
-            formatMenu.Append(CompletionService.CompletionService.AUTO_COMPLETE_ID, _("&Auto Complete\tCtrl+Shift+Space"), _("Provides suggestions on how to complete the current statement"))
-            wx.EVT_MENU(frame, CompletionService.CompletionService.AUTO_COMPLETE_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, CompletionService.CompletionService.AUTO_COMPLETE_ID, frame.ProcessUpdateUIEvent)
-            formatMenu.Append(CLEAN_WHITESPACE, _("Clean &Whitespace"), _("Converts leading spaces to tabs or vice versa per 'use tabs' and clears trailing spaces"))
-            wx.EVT_MENU(frame, CLEAN_WHITESPACE, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, CLEAN_WHITESPACE, frame.ProcessUpdateUIEvent)
+            formatMenu.Append(constants.ID_AUTO_COMPLETE, _("&Auto Complete\tCtrl+Shift+Space"), _("Provides suggestions on how to complete the current statement"))
+            wx.EVT_MENU(frame, constants.ID_AUTO_COMPLETE, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_AUTO_COMPLETE, frame.ProcessUpdateUIEvent)
+            formatMenu.Append(constants.ID_CLEAN_WHITESPACE, _("Clean &Whitespace"), _("Converts leading spaces to tabs or vice versa per 'use tabs' and clears trailing spaces"))
+            wx.EVT_MENU(frame, constants.ID_CLEAN_WHITESPACE, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_CLEAN_WHITESPACE, frame.ProcessUpdateUIEvent)
             formatMenu.AppendSeparator()
-            item = wx.MenuItem(formatMenu,INDENT_LINES_ID, _("&Indent Lines\tTab"), _("Indents the selected lines one indent width"))
+            item = wx.MenuItem(formatMenu,constants.ID_INDENT_LINES, _("&Indent Lines\tTab"), _("Indents the selected lines one indent width"))
             indent_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "indent.png")
             item.SetBitmap(wx.BitmapFromImage(wx.Image(indent_image_path,wx.BITMAP_TYPE_ANY)))
             formatMenu.AppendItem(item)
-            wx.EVT_MENU(frame, INDENT_LINES_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, INDENT_LINES_ID, frame.ProcessUpdateUIEvent)
-            item = wx.MenuItem(formatMenu,DEDENT_LINES_ID, _("&Dedent Lines\tShift+Tab"), _("Dedents the selected lines one indent width"))
+            wx.EVT_MENU(frame, constants.ID_INDENT_LINES, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_INDENT_LINES, frame.ProcessUpdateUIEvent)
+            item = wx.MenuItem(formatMenu,constants.ID_DEDENT_LINES, _("&Dedent Lines\tShift+Tab"), _("Dedents the selected lines one indent width"))
             dedent_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "dedent.png")
             item.SetBitmap(wx.BitmapFromImage(wx.Image(dedent_image_path,wx.BITMAP_TYPE_ANY)))
             formatMenu.AppendItem(item)
-            wx.EVT_MENU(frame, DEDENT_LINES_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, DEDENT_LINES_ID, frame.ProcessUpdateUIEvent)
-            item = wx.MenuItem(formatMenu,COMMENT_LINES_ID, _("Comment &Lines\tCtrl+Q"), _("Comments out the selected lines be prefixing each one with a comment indicator"))
+            wx.EVT_MENU(frame, constants.ID_DEDENT_LINES, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_DEDENT_LINES, frame.ProcessUpdateUIEvent)
+            item = wx.MenuItem(formatMenu,constants.ID_COMMENT_LINES, _("Comment &Lines\tCtrl+Q"), _("Comments out the selected lines be prefixing each one with a comment indicator"))
             comment_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "comment.png")
             item.SetBitmap(wx.BitmapFromImage(wx.Image(comment_image_path,wx.BITMAP_TYPE_ANY)))
             formatMenu.AppendItem(item)
-            wx.EVT_MENU(frame, COMMENT_LINES_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, COMMENT_LINES_ID, frame.ProcessUpdateUIEvent)
-            item = wx.MenuItem(formatMenu,UNCOMMENT_LINES_ID, _("&Uncomment Lines\tCtrl+Shift+Q"), _("Removes comment prefixes from each of the selected lines"))
+            wx.EVT_MENU(frame, constants.ID_COMMENT_LINES, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_COMMENT_LINES, frame.ProcessUpdateUIEvent)
+            item = wx.MenuItem(formatMenu,constants.ID_UNCOMMENT_LINES, _("&Uncomment Lines\tCtrl+Shift+Q"), _("Removes comment prefixes from each of the selected lines"))
             uncomment_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "uncomment.png")
             item.SetBitmap(wx.BitmapFromImage(wx.Image(uncomment_image_path,wx.BITMAP_TYPE_ANY)))
             formatMenu.AppendItem(item)
-            wx.EVT_MENU(frame, UNCOMMENT_LINES_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, UNCOMMENT_LINES_ID, frame.ProcessUpdateUIEvent)
+            wx.EVT_MENU(frame, constants.ID_UNCOMMENT_LINES, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_UNCOMMENT_LINES, frame.ProcessUpdateUIEvent)
             formatMenu.AppendSeparator()
-            formatMenu.AppendCheckItem(USE_TABS_ID, _("Use &Tabs"), _("Toggles use of tabs or whitespaces for indents"))
-            wx.EVT_MENU(frame, USE_TABS_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, USE_TABS_ID, frame.ProcessUpdateUIEvent)
-            formatMenu.Append(SET_INDENT_WIDTH_ID, _("&Set Indent Width..."), _("Sets the indent width"))
-            wx.EVT_MENU(frame, SET_INDENT_WIDTH_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, SET_INDENT_WIDTH_ID, frame.ProcessUpdateUIEvent)
+            formatMenu.AppendCheckItem(constants.ID_USE_TABS, _("Use &Tabs"), _("Toggles use of tabs or whitespaces for indents"))
+            wx.EVT_MENU(frame, constants.ID_USE_TABS, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_USE_TABS, frame.ProcessUpdateUIEvent)
+            formatMenu.Append(constants.ID_SET_INDENT_WIDTH, _("&Set Indent Width..."), _("Sets the indent width"))
+            wx.EVT_MENU(frame, constants.ID_SET_INDENT_WIDTH, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_SET_INDENT_WIDTH, frame.ProcessUpdateUIEvent)
         if formatMenuIndex == -1:
             viewMenuIndex = menuBar.FindMenu(_("&View"))
             menuBar.Insert(viewMenuIndex + 1, formatMenu, _("&Format"))
 
-##        accelTable = wx.AcceleratorTable([
-##            (wx.ACCEL_NORMAL, wx.WXK_TAB, INDENT_LINES_ID),
-##            (wx.ACCEL_SHIFT, wx.WXK_TAB, DEDENT_LINES_ID),
-##            eval(_("wx.ACCEL_CTRL, ord('Q'), COMMENT_LINES_ID")),
-##            eval(_("wx.ACCEL_CTRL | wx.ACCEL_SHIFT, ord('Q'), UNCOMMENT_LINES_ID"))
-##            ])
-##        frame.SetAcceleratorTable(accelTable)
-        if not menuBar.FindItemById(ID_EOL_MODE):
+        if not menuBar.FindItemById(constants.ID_EOL_MODE):
             lineformat_menu = wx.Menu()
-            lineformat_menu.AppendCheckItem(ID_EOL_MAC, _("Old Machintosh (\\r)"),
+            lineformat_menu.AppendCheckItem(constants.ID_EOL_MAC, _("Old Machintosh (\\r)"),
                               _("Format all EOL characters to %s Mode") % \
                               _(u"Old Machintosh (\\r)"))
-            wx.EVT_MENU(frame, ID_EOL_MAC, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, ID_EOL_MAC, frame.ProcessUpdateUIEvent)
-            lineformat_menu.AppendCheckItem(ID_EOL_UNIX, _("Unix (\\n)"),
+            wx.EVT_MENU(frame, constants.ID_EOL_MAC, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_EOL_MAC, frame.ProcessUpdateUIEvent)
+            lineformat_menu.AppendCheckItem(constants.ID_EOL_UNIX, _("Unix (\\n)"),
                               _("Format all EOL characters to %s Mode") % \
                               _(u"Unix (\\n)"))
-            wx.EVT_MENU(frame, ID_EOL_UNIX, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, ID_EOL_UNIX, frame.ProcessUpdateUIEvent)
-            lineformat_menu.AppendCheckItem(ID_EOL_WIN, _("Windows (\\r\\n)"),
+            wx.EVT_MENU(frame, constants.ID_EOL_UNIX, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_EOL_UNIX, frame.ProcessUpdateUIEvent)
+            lineformat_menu.AppendCheckItem(constants.ID_EOL_WIN, _("Windows (\\r\\n)"),
                               _("Format all EOL characters to %s Mode") % \
                               _("Windows (\\r\\n)"))
-            wx.EVT_MENU(frame, ID_EOL_WIN, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, ID_EOL_WIN, frame.ProcessUpdateUIEvent)
-            formatMenu.AppendMenu(ID_EOL_MODE, _("EOL Mode"), lineformat_menu)
-            wx.EVT_MENU(frame, ID_EOL_MODE, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, ID_EOL_MODE, frame.ProcessUpdateUIEvent)
+            wx.EVT_MENU(frame, constants.ID_EOL_WIN, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_EOL_WIN, frame.ProcessUpdateUIEvent)
+            formatMenu.AppendMenu(constants.ID_EOL_MODE, _("EOL Mode"), lineformat_menu)
+            wx.EVT_MENU(frame, constants.ID_EOL_MODE, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_EOL_MODE, frame.ProcessUpdateUIEvent)
 
     def ProcessUpdateUIEvent(self, event):
         id = event.GetId()
-        if (id == EXPAND_TEXT_ID
-        or id == COLLAPSE_TEXT_ID
-        or id == EXPAND_TOP_ID
-        or id == COLLAPSE_TOP_ID
-        or id == EXPAND_ALL_ID
-        or id == COLLAPSE_ALL_ID
+        if (id == constants.ID_FOLD_EXPAND
+        or id == constants.ID_FOLD_COLLAPSE
+        or id == constants.ID_EXPAND_TOP
+        or id == constants.ID_COLLAPSE_TOP
+        or id == constants.ID_EXPAND_ALL
+        or id == constants.ID_COLLAPSE_ALL
         or id == CHECK_CODE_ID
-        or id == CompletionService.CompletionService.AUTO_COMPLETE_ID
-        or id == CLEAN_WHITESPACE
-        or id == SET_INDENT_WIDTH_ID
-        or id == USE_TABS_ID
-        or id == INDENT_LINES_ID
-        or id == DEDENT_LINES_ID
-        or id == COMMENT_LINES_ID
-        or id == UNCOMMENT_LINES_ID
-        or id == FOLDING_ID
-        or id == ENABLE_FOLD_ID
-        or id == ID_EOL_UNIX
-        or id == ID_EOL_MAC
-        or id == ID_EOL_WIN
-        or id == ID_EOL_MODE):
+        or id == constants.ID_AUTO_COMPLETE
+        or id == constants.ID_CLEAN_WHITESPACE
+        or id == constants.ID_SET_INDENT_WIDTH
+        or id == constants.ID_USE_TABS
+        or id == constants.ID_INDENT_LINES
+        or id == constants.ID_DEDENT_LINES
+        or id == constants.ID_COMMENT_LINES
+        or id == constants.ID_UNCOMMENT_LINES
+        or id == constants.ID_FOLD
+        or id == constants.ID_ENABLE_FOLD
+        or id == constants.ID_EOL_UNIX
+        or id == constants.ID_EOL_MAC
+        or id == constants.ID_EOL_WIN
+        or id == constants.ID_EOL_MODE):
             event.Enable(False)
             return True
         else:
@@ -780,8 +807,8 @@ class CodeCtrl(STCTextEditor.TextCtrl):
 
     def CreatePopupMenu(self):
         menu = wx.Menu()
-        itemIDs = [wx.ID_UNDO, wx.ID_REDO, None,
-                   wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, wx.ID_CLEAR, None, wx.ID_SELECTALL]
+        itemIDs = [constants.ID_UNDO, constants.ID_REDO, None,
+                   constants.ID_CUT, constants.ID_COPY, constants.ID_PASTE, constants.ID_CLEAR, None, constants.ID_SELECTALL]
         menuBar = wx.GetApp().GetTopWindow().GetMenuBar()
         for itemID in itemIDs:
             if not itemID:
@@ -803,13 +830,13 @@ class CodeCtrl(STCTextEditor.TextCtrl):
                     wx.EVT_MENU(self, itemID, self.DSProcessEvent)  # wxHack: for customized right mouse menu doesn't work with new DynamicSashWindow
                     wx.EVT_UPDATE_UI(self, itemID, self.DSProcessUpdateUIEvent)  # wxHack: for customized right mouse menu doesn't work with new DynamicSashWindow
         
-        self.Bind(wx.EVT_MENU, self.OnPopToggleBP, id=debugger.DebuggerService.DebuggerService.TOGGLE_BREAKPOINT_ID)
-        item = wx.MenuItem(menu, debugger.DebuggerService.DebuggerService.TOGGLE_BREAKPOINT_ID, _("Toggle Breakpoint"))
+        self.Bind(wx.EVT_MENU, self.OnPopToggleBP, id=constants.ID_TOGGLE_BREAKPOINT)
+        item = wx.MenuItem(menu, constants.ID_TOGGLE_BREAKPOINT, _("Toggle Breakpoint"))
         item.SetBitmap(debugger.DebuggerService.getBreakPointBitmap())
         menu.AppendItem(item)
-        self.Bind(wx.EVT_MENU, self.OnPopToggleMarker, id=MarkerService.MarkerService.MARKERTOGGLE_ID)
-        menu_item = menuBar.FindItemById(MarkerService.MarkerService.MARKERTOGGLE_ID)
-        item = wx.MenuItem(menu, MarkerService.MarkerService.MARKERTOGGLE_ID, _("Toggle Bookmark"))
+        self.Bind(wx.EVT_MENU, self.OnPopToggleMarker, id=constants.ID_TOGGLE_MARKER)
+        menu_item = menuBar.FindItemById(constants.ID_TOGGLE_MARKER)
+        item = wx.MenuItem(menu, constants.ID_TOGGLE_MARKER, _("Toggle Bookmark"))
         item.SetBitmap(menu_item.GetBitmap())
         menu.AppendItem(item)
         return menu
@@ -1098,14 +1125,14 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         @todo: Is showing line endings the best way to show mixed?
         """
         mixed = diff = False
-        eol_map = {u"\n" : wx.stc.STC_EOL_LF,
-                   u"\r\n" : wx.stc.STC_EOL_CRLF,
-                   u"\r" : wx.stc.STC_EOL_CR}
+        eol_map = {consts.LF_EOL_CHAR : wx.stc.STC_EOL_LF,
+                   consts.CR_LF_EOL_CHAR  : wx.stc.STC_EOL_CRLF,
+                   consts.CR_EOL_CHAR : wx.stc.STC_EOL_CR}
 
         eol = unichr(self.GetCharAt(self.GetLineEndPosition(0)))
-        if eol == u"\r":
+        if eol == consts.CR_EOL_CHAR:
             tmp = unichr(self.GetCharAt(self.GetLineEndPosition(0) + 1))
-            if tmp == u"\n":
+            if tmp == consts.LF_EOL_CHAR:
                 eol += tmp
 
         # Is the eol used in the document the same as what is currently set.
@@ -1118,9 +1145,9 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         for line in range(self.GetLineCount() - 1):
             end = LEPFunct(line)
             tmp = unichr(GCAFunct(end))
-            if tmp == u"\r":
+            if tmp == consts.CR_EOL_CHAR:
                 tmp2 = unichr(GCAFunct(LEPFunct(0) + 1))
-                if tmp2 == u"\n":
+                if tmp2 == consts.LF_EOL_CHAR:
                     tmp += tmp2
             if tmp != eol:
                 mixed = True
@@ -1165,11 +1192,11 @@ class CodeCtrl(STCTextEditor.TextCtrl):
         """
         m_id = self.GetEOLMode()
         if m_id == wx.stc.STC_EOL_CR:
-            return u'\r'
+            return consts.CR_EOL_CHAR
         elif m_id == wx.stc.STC_EOL_CRLF:
-            return u'\r\n'
+            return consts.CR_LF_EOL_CHAR
         else:
-            return u'\n'
+            return consts.LF_EOL_CHAR
             
     def GetLangLexer(self):
         document = self._dynSash._view.GetDocument()

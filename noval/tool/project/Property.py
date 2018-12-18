@@ -17,7 +17,6 @@ class FilePropertiesService(wx.lib.pydocview.DocOptionsService):
     """
 
     PROPERTIES_ID = wx.NewId()
-   #### PROJECT_PROPERTIES_ID = wx.NewId()
 
     def __init__(self):
         """

@@ -146,11 +146,41 @@ cd NovalIDE-x.x.x
 - 新建工程
 ![NewProject](noval/tool/bmp_source/images/project.png)
 
+- 导入项目文件
+![ImportFile](noval/tool/bmp_source/images/importfile.png)
+
+- 项目运行配置
+![NewProjectConfiguration](noval/tool/bmp_source/images/configuration.png)
+
 - 自动加载解释器
 ![LoadInterpreter](noval/tool/bmp_source/images/interpreter.png)
+
+- 运行
+![Run1](noval/tool/bmp_source/images/run1.png)
+![Run2](noval/tool/bmp_source/images/run2.png)
+
+- 断点调试
+![Debugger1](noval/tool/bmp_source/images/debugger1.png)
+![Debugger2](noval/tool/bmp_source/images/debugger2.png)
+![Debugger3](noval/tool/bmp_source/images/debugger3.png)
+![Debugger4](noval/tool/bmp_source/images/debugger4.png)
+
+- 监视断点
+![Watch1](noval/tool/bmp_source/images/watch1.png)
+![Watch2](noval/tool/bmp_source/images/watch2.png)
 
 特别感谢
 ----------------------------------
 
 - 感谢欢夏女士帮助制作官网特效
 - 感谢回想之后同学提供官网域名以及参与制作官网页面
+
+
+捐赠
+----------------------------------
+
+- 支付宝
+![Alipay](noval/tool/bmp_source/images/alipay.jpg)
+
+- 微信支付
+![WeChatPay](noval/tool/bmp_source/images/wechatpay.jpg)

@@ -24,7 +24,8 @@ import time
 import threading
 from wx.lib.pubsub import pub as Publisher
 import noval.util.fileutils as fileutils
-_ = wx.GetTranslation
+import noval.util.constants as constants
+_ = constants._
 
 
 #----------------------------------------------------------------------------
@@ -73,9 +74,6 @@ class FindInDirService(FindService.FindService):
     #----------------------------------------------------------------------------
     # Constants
     #----------------------------------------------------------------------------
-    FINDFILE_ID = wx.NewId()        # for bringing up Find in File dialog box
-    FINDALL_ID = wx.NewId()         # for bringing up Find All dialog box
-    FINDDIR_ID = wx.NewId()         # for bringing up Find Dir dialog box
     LINE_PREFIX = "Line "
 
 
@@ -83,34 +81,34 @@ class FindInDirService(FindService.FindService):
         FindService.FindService.InstallControls(self, frame, menuBar, toolBar, statusBar, document)
 
         editMenu = menuBar.GetMenu(menuBar.FindMenu(_("&Edit")))
-        wx.EVT_MENU(frame, FindInDirService.FINDFILE_ID, self.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, FindInDirService.FINDFILE_ID, self.ProcessUpdateUIEvent)
-        editMenu.Append(FindInDirService.FINDFILE_ID, _("Find in File...\tCtrl+Shift+F"), _("Searches for the specified text in the current file"))
-        wx.EVT_MENU(frame, FindInDirService.FINDALL_ID, self.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, FindInDirService.FINDALL_ID, self.ProcessUpdateUIEvent)
-        editMenu.Append(FindInDirService.FINDALL_ID, _("Find in Project...\tCtrl+Shift+P"), _("Searches for the specified text in all the files in the project"))
-        wx.EVT_MENU(frame, FindInDirService.FINDDIR_ID, self.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, FindInDirService.FINDDIR_ID, self.ProcessUpdateUIEvent)
-        editMenu.Append(FindInDirService.FINDDIR_ID, _("Find in Directory...\tCtrl+Shift+D"), _("Searches for the specified text in all the files in the directory"))
+        wx.EVT_MENU(frame, constants.ID_FINDFILE, self.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_FINDFILE, self.ProcessUpdateUIEvent)
+        editMenu.Append(constants.ID_FINDFILE, _("Find in File...\tCtrl+Shift+F"), _("Searches for the specified text in the current file"))
+        wx.EVT_MENU(frame, constants.ID_FINDALL, self.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_FINDALL, self.ProcessUpdateUIEvent)
+        editMenu.Append(constants.ID_FINDALL, _("Find in Project...\tCtrl+Shift+P"), _("Searches for the specified text in all the files in the project"))
+        wx.EVT_MENU(frame, constants.ID_FINDDIR, self.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_FINDDIR, self.ProcessUpdateUIEvent)
+        editMenu.Append(constants.ID_FINDDIR, _("Find in Directory...\tCtrl+Shift+D"), _("Searches for the specified text in all the files in the directory"))
 
 
     def ProcessEvent(self, event):
         id = event.GetId()
-        if id == FindInDirService.FINDFILE_ID:
+        if id == constants.ID_FINDFILE:
             view = wx.GetApp().GetDocumentManager().GetCurrentView()
             if hasattr(view, "GetCtrl") and view.GetCtrl() and hasattr(view.GetCtrl(), "GetSelectedText"):
                 self.ShowFindInFileDialog(view.GetCtrl().GetSelectedText())
             else:
                 self.ShowFindInFileDialog()
             return True
-        elif id == FindInDirService.FINDALL_ID:
+        elif id == constants.ID_FINDALL:
             view = wx.GetApp().GetDocumentManager().GetCurrentView()
             if hasattr(view, "GetCtrl") and view.GetCtrl() and hasattr(view.GetCtrl(), "GetSelectedText"):
                 self.ShowFindInProjectDialog(view.GetCtrl().GetSelectedText())
             else:
                 self.ShowFindInProjectDialog()
             return True
-        elif id == FindInDirService.FINDDIR_ID:
+        elif id == constants.ID_FINDDIR:
             view = wx.GetApp().GetDocumentManager().GetCurrentView()
             if hasattr(view, "GetCtrl") and view.GetCtrl() and hasattr(view.GetCtrl(), "GetSelectedText"):
                 self.ShowFindInDirDialog(view.GetCtrl().GetSelectedText())
@@ -123,21 +121,21 @@ class FindInDirService(FindService.FindService):
 
     def ProcessUpdateUIEvent(self, event):
         id = event.GetId()
-        if id == FindInDirService.FINDFILE_ID:
+        if id == constants.ID_FINDFILE:
             view = self.GetActiveView()
             if view:  # don't search project model
                 event.Enable(True)
             else:
                 event.Enable(False)
             return True
-        elif id == FindInDirService.FINDALL_ID:
+        elif id == constants.ID_FINDALL:
             projectService = wx.GetApp().GetService(ProjectEditor.ProjectService)
             if projectService.GetFilesFromCurrentProject():
                 event.Enable(True)
             else:
                 event.Enable(False)
             return True
-        elif id == FindInDirService.FINDDIR_ID:
+        elif id == constants.ID_FINDDIR:
             event.Enable(True)
         else:
             return FindService.FindService.ProcessUpdateUIEvent(self, event)

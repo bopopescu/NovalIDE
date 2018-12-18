@@ -47,13 +47,14 @@ import noval.tool.project as project
 from noval.model import configuration
 from noval.util import utils
 import ModuleAnalyzer
+import noval.util.constants as constants
 try:
     import checker # for pychecker
     _CHECKER_INSTALLED = True
 except ImportError:
     _CHECKER_INSTALLED = False
 import os.path # for pychecker
-_ = wx.GetTranslation
+_ = constants._
 
 VIEW_PYTHON_INTERPRETER_ID = wx.NewId()
 
@@ -555,48 +556,47 @@ class PythonCtrl(CodeEditor.CodeCtrl):
         item = wx.MenuItem(menu, SYNCTREE_ID, _("Find in Outline View"))
         menu.AppendItem(item)
         
-        self.Bind(wx.EVT_MENU, self.OnGotoDefinition, id=CompletionService.CompletionService.GO_TO_DEFINITION)
-        item = wx.MenuItem(menu, CompletionService.CompletionService.GO_TO_DEFINITION, \
-                            _("Goto Definition\tF12"))
-        wx.EVT_UPDATE_UI(self,CompletionService.CompletionService.GO_TO_DEFINITION, self.DSProcessUpdateUIEvent)
+        self.Bind(wx.EVT_MENU, self.OnGotoDefinition, id=constants.ID_GOTO_DEFINITION)
+        item = wx.MenuItem(menu, constants.ID_GOTO_DEFINITION, _("Goto Definition\tF12"))
+        wx.EVT_UPDATE_UI(self,constants.ID_GOTO_DEFINITION, self.DSProcessUpdateUIEvent)
         menu.AppendItem(item)
         
         menuBar = wx.GetApp().GetTopWindow().GetMenuBar()
-        menu_item = menuBar.FindItemById(debugger.DebuggerService.DebuggerService.START_RUN_ID)
-        item = wx.MenuItem(menu,debugger.DebuggerService.DebuggerService.START_RUN_ID,_("&Run"), kind = wx.ITEM_NORMAL)
+        menu_item = menuBar.FindItemById(constants.ID_RUN)
+        item = wx.MenuItem(menu,constants.ID_RUN,_("&Run"), kind = wx.ITEM_NORMAL)
         item.SetBitmap(menu_item.GetBitmap())
         menu.AppendItem(item)
-        wx.EVT_MENU(self, debugger.DebuggerService.DebuggerService.START_RUN_ID, self.RunScript)
+        wx.EVT_MENU(self, constants.ID_RUN, self.RunScript)
         
         debug_menu = wx.Menu()
         menu.AppendMenu(wx.NewId(), _("Debug"), debug_menu)
 
-        menu_item = menuBar.FindItemById(debugger.DebuggerService.DebuggerService.START_DEBUG_ID)
-        item = wx.MenuItem(menu,debugger.DebuggerService.DebuggerService.START_DEBUG_ID,_("&Debug"), kind = wx.ITEM_NORMAL)
+        menu_item = menuBar.FindItemById(constants.ID_DEBUG)
+        item = wx.MenuItem(menu,constants.ID_DEBUG,_("&Debug"), kind = wx.ITEM_NORMAL)
         item.SetBitmap(menu_item.GetBitmap())
         debug_menu.AppendItem(item)
-        wx.EVT_MENU(self, debugger.DebuggerService.DebuggerService.START_DEBUG_ID, self.DebugRunScript)
+        wx.EVT_MENU(self, constants.ID_DEBUG, self.DebugRunScript)
         
-        item = wx.MenuItem(menu,debugger.DebuggerService.DebuggerService.BREAK_INTO_DEBUGGER_ID,_("&Break into Debugger"), kind = wx.ITEM_NORMAL)
+        item = wx.MenuItem(menu,constants.ID_BREAK_INTO_DEBUGGER,_("&Break into Debugger"), kind = wx.ITEM_NORMAL)
         debug_menu.AppendItem(item)
-        wx.EVT_MENU(self, debugger.DebuggerService.DebuggerService.BREAK_INTO_DEBUGGER_ID, self.BreakintoDebugger)
+        wx.EVT_MENU(self, constants.ID_BREAK_INTO_DEBUGGER, self.BreakintoDebugger)
         
         if debugger.DebuggerService.BaseDebuggerUI.DebuggerRunning():
             
-            item = wx.MenuItem(menu,debugger.DebuggerService.DebuggerService.QUICK_ADD_WATCH_ID,_("&Quick add Watch"), kind = wx.ITEM_NORMAL)
+            item = wx.MenuItem(menu,constants.ID_QUICK_ADD_WATCH,_("&Quick add Watch"), kind = wx.ITEM_NORMAL)
             item.SetBitmap(debugger.Watchs.getQuickAddWatchBitmap())
             menu.AppendItem(item)
-            wx.EVT_MENU(self, debugger.DebuggerService.DebuggerService.QUICK_ADD_WATCH_ID, self.QuickAddWatch)
+            wx.EVT_MENU(self, constants.ID_QUICK_ADD_WATCH, self.QuickAddWatch)
             
-            item = wx.MenuItem(menu,debugger.DebuggerService.DebuggerService.ADD_WATCH_ID,_("&Add Watch"), kind = wx.ITEM_NORMAL)
+            item = wx.MenuItem(menu,constants.ID_ADD_WATCH,_("&Add Watch"), kind = wx.ITEM_NORMAL)
             item.SetBitmap(debugger.Watchs.getAddWatchBitmap())
             menu.AppendItem(item)
-            wx.EVT_MENU(self, debugger.DebuggerService.DebuggerService.ADD_WATCH_ID, self.AddWatch)
+            wx.EVT_MENU(self, constants.ID_ADD_WATCH, self.AddWatch)
             
-            item = wx.MenuItem(menu,debugger.DebuggerService.DebuggerService.ADD_TO_WATCH_ID,_("&Add to Watch"), kind = wx.ITEM_NORMAL)
+            item = wx.MenuItem(menu,constants.ID_ADD_TO_WATCH,_("&Add to Watch"), kind = wx.ITEM_NORMAL)
             item.SetBitmap(debugger.Watchs.getAddtoWatchBitmap())
             menu.AppendItem(item)
-            wx.EVT_MENU(self, debugger.DebuggerService.DebuggerService.ADD_TO_WATCH_ID, self.AddtoWatch)
+            wx.EVT_MENU(self, constants.ID_ADD_TO_WATCH, self.AddtoWatch)
             
         return menu
 

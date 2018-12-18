@@ -75,6 +75,7 @@ import wx
 import noval.util.strutils as strutils
 import noval.parser.utils as parserutils
 import utils
+import constants
 #from profiler import CalcVersionValue, Profile_Get, Profile_Set
 
 # Try to use the system version of pkg_resources if available else fall
@@ -724,6 +725,16 @@ class PluginManager(object):
                             self.LOG("[pluginmgr][info] Skip re-init of %s" % cls)
                     finally:
                         pass
+                        
+
+        # Activate all default plugins
+        for d_pi in constants.DEFAULT_PLUGINS:
+            obj = d_pi.split(".")
+            mod = ".".join(obj[:-1])
+            entry = __import__(mod, globals(), globals(), ['__name__'])
+            if hasattr(entry, obj[-1]) and entry not in self._defaults:
+                entry = getattr(entry, obj[-1])
+                self._defaults[entry] = entry(self)
 
         return True
 

@@ -1,5 +1,6 @@
 import noval.util.plugin as plugin
 import noval.util.iface as iface
+import noval.util.utils as utils
 
 class MainWindowAddOn(plugin.Plugin):
     """Plugin that Extends the L{MainWindowI}"""

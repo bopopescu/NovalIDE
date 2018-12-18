@@ -2,6 +2,7 @@ import wx
 from noval.tool.consts import SPACE,HALF_SPACE,_
 import os
 import noval.tool.images as images
+import noval.util.constants as constants
 
 class BreakpointExceptionDialog(wx.Dialog):
     EXCEPTIONS = ['ArithmeticError', 'AssertionError', 'AttributeError', 'BaseException', 'BufferError', \
@@ -155,7 +156,7 @@ class BreakpointsUI(wx.Panel):
         menu.AppendItem(item)
         item = wx.MenuItem(menu, self.syncLineID, _("Goto Source Line"))
         menu.AppendItem(item)
-        item = wx.MenuItem(menu, self._degugger_service.CLEAR_ALL_BREAKPOINTS, _("&Clear All Breakpoints"))
+        item = wx.MenuItem(menu, constants.ID_CLEAR_ALL_BREAKPOINTS, _("&Clear All Breakpoints"))
         menu.AppendItem(item)
         self.PopupMenu(menu, event.GetPosition())
         menu.Destroy()

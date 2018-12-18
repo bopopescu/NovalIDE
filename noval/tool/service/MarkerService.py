@@ -17,17 +17,11 @@ import wx.lib.pydocview
 import os
 import noval.util.sysutils as sysutilslib
 import noval.tool.consts as consts
-_ = wx.GetTranslation
+import noval.util.constants as constants
+_ = constants._
 
 
 class MarkerService(wx.lib.pydocview.DocService):
-    MARKERTOGGLE_ID = wx.NewId()
-    MARKERDELALL_ID = wx.NewId()
-    MARKERNEXT_ID = wx.NewId()
-    MARKERPREV_ID = wx.NewId()
-    BOOKMARKER_ID = wx.NewId()
-
-
     def __init__(self):
         pass
 
@@ -40,47 +34,47 @@ class MarkerService(wx.lib.pydocview.DocService):
         editMenu = menuBar.GetMenu(menuBar.FindMenu(_("&Edit")))
         editMenu.AppendSeparator()
         bookMenu = wx.Menu()
-        item = wx.MenuItem(bookMenu,MarkerService.MARKERTOGGLE_ID, _("Toggle &Bookmark\tCtrl+M"), _("Toggles a bookmark at text line"))
+        item = wx.MenuItem(bookMenu,constants.ID_TOGGLE_MARKER, _("Toggle &Bookmark\tCtrl+M"), _("Toggles a bookmark at text line"))
         tooglebk_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "tooglebk.png")
         item.SetBitmap(wx.BitmapFromImage(wx.Image(tooglebk_image_path,wx.BITMAP_TYPE_ANY)))
         bookMenu.AppendItem(item)
-        wx.EVT_MENU(frame, MarkerService.MARKERTOGGLE_ID, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, MarkerService.MARKERTOGGLE_ID, frame.ProcessUpdateUIEvent)
-        item = wx.MenuItem(bookMenu,MarkerService.MARKERDELALL_ID, _("Clear Bookmarks"), _("Removes all jump bookmarks from selected file"))
+        wx.EVT_MENU(frame, constants.ID_TOGGLE_MARKER, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_TOGGLE_MARKER, frame.ProcessUpdateUIEvent)
+        item = wx.MenuItem(bookMenu,constants.ID_DELALL_MARKER, _("Clear Bookmarks"), _("Removes all jump bookmarks from selected file"))
         clearbk_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "clearbk.png")
         item.SetBitmap(wx.BitmapFromImage(wx.Image(clearbk_image_path,wx.BITMAP_TYPE_ANY)))
         bookMenu.AppendItem(item)
-        wx.EVT_MENU(frame, MarkerService.MARKERDELALL_ID, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, MarkerService.MARKERDELALL_ID, frame.ProcessUpdateUIEvent)
-        item = wx.MenuItem(bookMenu,MarkerService.MARKERNEXT_ID, _("Bookmark Next\tF4"), _("Moves to next bookmark in selected file"))
+        wx.EVT_MENU(frame, constants.ID_DELALL_MARKER, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_DELALL_MARKER, frame.ProcessUpdateUIEvent)
+        item = wx.MenuItem(bookMenu,constants.ID_NEXT_MARKER, _("Bookmark Next\tF4"), _("Moves to next bookmark in selected file"))
         nextbk_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "nextbk.png")
         item.SetBitmap(wx.BitmapFromImage(wx.Image(nextbk_image_path,wx.BITMAP_TYPE_ANY)))
         bookMenu.AppendItem(item)
-        wx.EVT_MENU(frame, MarkerService.MARKERNEXT_ID, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, MarkerService.MARKERNEXT_ID, frame.ProcessUpdateUIEvent)
-        item = wx.MenuItem(bookMenu,MarkerService.MARKERPREV_ID, _("Bookmark Previous\tShift+F4"), _("Moves to previous bookmark in selected file"))
+        wx.EVT_MENU(frame, constants.ID_NEXT_MARKER, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_NEXT_MARKER, frame.ProcessUpdateUIEvent)
+        item = wx.MenuItem(bookMenu,constants.ID_PREV_MARKER, _("Bookmark Previous\tShift+F4"), _("Moves to previous bookmark in selected file"))
         prevbk_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "prevbk.png")
         item.SetBitmap(wx.BitmapFromImage(wx.Image(prevbk_image_path,wx.BITMAP_TYPE_ANY)))
         bookMenu.AppendItem(item)
-        wx.EVT_MENU(frame, MarkerService.MARKERPREV_ID, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, MarkerService.MARKERPREV_ID, frame.ProcessUpdateUIEvent)
+        wx.EVT_MENU(frame, constants.ID_PREV_MARKER, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_PREV_MARKER, frame.ProcessUpdateUIEvent)
 
-        editMenu.AppendMenu(MarkerService.BOOKMARKER_ID, _("&BookMark"), bookMenu)
-        wx.EVT_UPDATE_UI(frame, MarkerService.BOOKMARKER_ID, frame.ProcessUpdateUIEvent)
+        editMenu.AppendMenu(constants.ID_BOOKMARKER, _("&BookMark"), bookMenu)
+        wx.EVT_UPDATE_UI(frame, constants.ID_BOOKMARKER, frame.ProcessUpdateUIEvent)
 
 
     def ProcessEvent(self, event):
         id = event.GetId()
-        if id == MarkerService.MARKERTOGGLE_ID:
+        if id == constants.ID_TOGGLE_MARKER:
             wx.GetApp().GetDocumentManager().GetCurrentView().MarkerToggle()
             return True
-        elif id == MarkerService.MARKERDELALL_ID:
+        elif id == constants.ID_DELALL_MARKER:
             wx.GetApp().GetDocumentManager().GetCurrentView().MarkerDeleteAll()
             return True
-        elif id == MarkerService.MARKERNEXT_ID:
+        elif id == constants.ID_NEXT_MARKER:
             wx.GetApp().GetDocumentManager().GetCurrentView().MarkerNext()
             return True
-        elif id == MarkerService.MARKERPREV_ID:
+        elif id == constants.ID_PREV_MARKER:
             wx.GetApp().GetDocumentManager().GetCurrentView().MarkerPrevious()
             return True
         else:
@@ -89,23 +83,23 @@ class MarkerService(wx.lib.pydocview.DocService):
 
     def ProcessUpdateUIEvent(self, event):
         id = event.GetId()
-        if id == MarkerService.MARKERTOGGLE_ID:
+        if id == constants.ID_TOGGLE_MARKER:
             view = wx.GetApp().GetDocumentManager().GetCurrentView()
             event.Enable(hasattr(view, "MarkerToggle"))
             return True
-        elif id == MarkerService.MARKERDELALL_ID:
+        elif id == constants.ID_DELALL_MARKER:
             view = wx.GetApp().GetDocumentManager().GetCurrentView()
             event.Enable(hasattr(view, "MarkerDeleteAll") and view.GetMarkerCount())
             return True
-        elif id == MarkerService.MARKERNEXT_ID:
+        elif id == constants.ID_NEXT_MARKER:
             view = wx.GetApp().GetDocumentManager().GetCurrentView()
             event.Enable(hasattr(view, "MarkerNext") and view.GetMarkerCount())
             return True
-        elif id == MarkerService.MARKERPREV_ID:
+        elif id == constants.ID_PREV_MARKER:
             view = wx.GetApp().GetDocumentManager().GetCurrentView()
             event.Enable(hasattr(view, "MarkerPrevious") and view.GetMarkerCount())
             return True
-        elif (id == MarkerService.BOOKMARKER_ID):
+        elif (id == constants.ID_BOOKMARKER):
             event.Enable(False)
             return True
         else:

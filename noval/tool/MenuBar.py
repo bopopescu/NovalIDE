@@ -1,5 +1,5 @@
 import wx
-from noval.tool.consts import _,VIEW_MENU_ORIG_NAME
+from noval.tool.consts import _,VIEW_MENU_ORIG_NAME,HELP_MENU_ORIG_NAME,WINDOWS_MENU_ORIG_NAME
 from noval.util.exceptions import MenuBarMenuNotExistError
 
 class KeyBinder(object):
@@ -300,7 +300,7 @@ class MainMenuBar(wx.MenuBar):
         pass
         
     def GetWindowsMenu(self):
-        pass
+        return self.GetMenuByName(_(WINDOWS_MENU_ORIG_NAME))
 
     def GetHelpMenu(self):
-        pass
+        return self.GetMenuByName(_(HELP_MENU_ORIG_NAME))

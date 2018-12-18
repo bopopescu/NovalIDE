@@ -9,35 +9,15 @@ import noval.util.strutils as strutils
 import noval.util.sysutils as sysutilslib
 import noval.tool.consts as consts
 from noval.tool.syntax import syntax
-_ = wx.GetTranslation
+import noval.util.constants as constants
+_ = constants._
 
 #----------------------------------------------------------------------------
 # Constants
 #----------------------------------------------------------------------------
-
-TEXT_ID = wx.NewId()
-VIEW_WHITESPACE_ID = wx.NewId()
-VIEW_EOL_ID = wx.NewId()
-VIEW_INDENTATION_GUIDES_ID = wx.NewId()
-VIEW_RIGHT_EDGE_ID = wx.NewId()
-VIEW_LINE_NUMBERS_ID = wx.NewId()
-ZOOM_ID = wx.NewId()
-ZOOM_NORMAL_ID = wx.NewId()
-ZOOM_IN_ID = wx.NewId()
-ZOOM_OUT_ID = wx.NewId()
 CHOOSE_FONT_ID = wx.NewId()
 WORD_WRAP_ID = wx.NewId()
 TEXT_STATUS_BAR_ID = wx.NewId()
-ADVANCE_EDIT_ID = wx.NewId()
-INSERT_TEXT_ID = wx.NewId()
-CONVERT_TO_UPPERCASE_ID = wx.NewId()
-CONVERT_TO_LOWER_ID = wx.NewId()
-INSERT_DATETIME_ID = wx.NewId()
-INSERT_COMMENT_TEMPLATE_ID = wx.NewId()
-INSERT_FILE_CONTENT_ID = wx.NewId()
-INSERT_DECLARE_ENCODING_ID = wx.NewId()
-ID_TAB_TO_SPACE =  wx.NewId()
-ID_SPACE_TO_TAB =  wx.NewId()
 
 SPACE = 10
 HALF_SPACE = 5
@@ -151,50 +131,50 @@ class TextService(Service.BaseService):
 
         viewMenu.AppendSeparator()
         textMenu = wx.Menu()
-        textMenu.AppendCheckItem(VIEW_WHITESPACE_ID, _("&View Whitespace"), _("Shows or hides whitespace"))
-        wx.EVT_MENU(frame, VIEW_WHITESPACE_ID, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, VIEW_WHITESPACE_ID, frame.ProcessUpdateUIEvent)
-        textMenu.AppendCheckItem(VIEW_EOL_ID, _("&View End of Line Markers"), _("Shows or hides indicators at the end of each line"))
-        wx.EVT_MENU(frame, VIEW_EOL_ID, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, VIEW_EOL_ID, frame.ProcessUpdateUIEvent)
-        textMenu.AppendCheckItem(VIEW_INDENTATION_GUIDES_ID, _("&View Indentation Guides"), _("Shows or hides indentations"))
-        wx.EVT_MENU(frame, VIEW_INDENTATION_GUIDES_ID, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, VIEW_INDENTATION_GUIDES_ID, frame.ProcessUpdateUIEvent)
-        textMenu.AppendCheckItem(VIEW_RIGHT_EDGE_ID, _("&View Right Edge"), _("Shows or hides the right edge marker"))
-        wx.EVT_MENU(frame, VIEW_RIGHT_EDGE_ID, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, VIEW_RIGHT_EDGE_ID, frame.ProcessUpdateUIEvent)
-        textMenu.AppendCheckItem(VIEW_LINE_NUMBERS_ID, _("&View Line Numbers"), _("Shows or hides the line numbers"))
-        wx.EVT_MENU(frame, VIEW_LINE_NUMBERS_ID, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, VIEW_LINE_NUMBERS_ID, frame.ProcessUpdateUIEvent)
+        textMenu.AppendCheckItem(constants.ID_VIEW_WHITESPACE, _("&View Whitespace"), _("Shows or hides whitespace"))
+        wx.EVT_MENU(frame, constants.ID_VIEW_WHITESPACE, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_VIEW_WHITESPACE, frame.ProcessUpdateUIEvent)
+        textMenu.AppendCheckItem(constants.ID_VIEW_EOL, _("&View End of Line Markers"), _("Shows or hides indicators at the end of each line"))
+        wx.EVT_MENU(frame, constants.ID_VIEW_EOL, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_VIEW_EOL, frame.ProcessUpdateUIEvent)
+        textMenu.AppendCheckItem(constants.ID_VIEW_INDENTATION_GUIDES, _("&View Indentation Guides"), _("Shows or hides indentations"))
+        wx.EVT_MENU(frame, constants.ID_VIEW_INDENTATION_GUIDES, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_VIEW_INDENTATION_GUIDES, frame.ProcessUpdateUIEvent)
+        textMenu.AppendCheckItem(constants.ID_VIEW_RIGHT_EDGE, _("&View Right Edge"), _("Shows or hides the right edge marker"))
+        wx.EVT_MENU(frame, constants.ID_VIEW_RIGHT_EDGE, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_VIEW_RIGHT_EDGE, frame.ProcessUpdateUIEvent)
+        textMenu.AppendCheckItem(constants.ID_VIEW_LINE_NUMBERS, _("&View Line Numbers"), _("Shows or hides the line numbers"))
+        wx.EVT_MENU(frame, constants.ID_VIEW_LINE_NUMBERS, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_VIEW_LINE_NUMBERS, frame.ProcessUpdateUIEvent)
         
-        viewMenu.AppendMenu(TEXT_ID, _("&Text"), textMenu)
-        wx.EVT_UPDATE_UI(frame, TEXT_ID, frame.ProcessUpdateUIEvent)
+        viewMenu.AppendMenu(constants.ID_TEXT, _("&Text"), textMenu)
+        wx.EVT_UPDATE_UI(frame, constants.ID_TEXT, frame.ProcessUpdateUIEvent)
         
         isWindows = (wx.Platform == '__WXMSW__')
 
         zoomMenu = wx.Menu()
-        zoomMenu.Append(ZOOM_NORMAL_ID, _("Normal Size"), _("Sets the document to its normal size"))
-        wx.EVT_MENU(frame, ZOOM_NORMAL_ID, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, ZOOM_NORMAL_ID, frame.ProcessUpdateUIEvent)
+        zoomMenu.Append(constants.ID_ZOOM_NORMAL, _("Normal Size"), _("Sets the document to its normal size"))
+        wx.EVT_MENU(frame, constants.ID_ZOOM_NORMAL, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_ZOOM_NORMAL, frame.ProcessUpdateUIEvent)
         if isWindows:
-            item = wx.MenuItem(zoomMenu,ZOOM_IN_ID, _("Zoom In\tCtrl+Page Up"), _("Zooms the document to a larger size"))
+            item = wx.MenuItem(zoomMenu,constants.ID_ZOOM_IN, _("Zoom In\tCtrl+Page Up"), _("Zooms the document to a larger size"))
         else:
-            item = wx.MenuItem(zoomMenu,ZOOM_IN_ID, _("Zoom In"), _("Zooms the document to a larger size"))
+            item = wx.MenuItem(zoomMenu,constants.ID_ZOOM_IN, _("Zoom In"), _("Zooms the document to a larger size"))
         item.SetBitmap(getZoomInBitmap())
         zoomMenu.AppendItem(item)
-        wx.EVT_MENU(frame, ZOOM_IN_ID, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, ZOOM_IN_ID, frame.ProcessUpdateUIEvent)
+        wx.EVT_MENU(frame, constants.ID_ZOOM_IN, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_ZOOM_IN, frame.ProcessUpdateUIEvent)
         if isWindows:
-            item = wx.MenuItem(zoomMenu,ZOOM_OUT_ID, _("Zoom Out\tCtrl+Page Down"), _("Zooms the document to a smaller size"))
+            item = wx.MenuItem(zoomMenu,constants.ID_ZOOM_OUT, _("Zoom Out\tCtrl+Page Down"), _("Zooms the document to a smaller size"))
         else:
-            item = wx.MenuItem(zoomMenu,ZOOM_OUT_ID, _("Zoom Out"), _("Zooms the document to a smaller size"))
+            item = wx.MenuItem(zoomMenu,constants.ID_ZOOM_OUT, _("Zoom Out"), _("Zooms the document to a smaller size"))
         item.SetBitmap(getZoomOutBitmap())
         zoomMenu.AppendItem(item)
-        wx.EVT_MENU(frame, ZOOM_OUT_ID, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, ZOOM_OUT_ID, frame.ProcessUpdateUIEvent)
+        wx.EVT_MENU(frame, constants.ID_ZOOM_OUT, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_ZOOM_OUT, frame.ProcessUpdateUIEvent)
         
-        viewMenu.AppendMenu(ZOOM_ID, _("&Zoom"), zoomMenu)
-        wx.EVT_UPDATE_UI(frame, ZOOM_ID, frame.ProcessUpdateUIEvent)
+        viewMenu.AppendMenu(constants.ID_ZOOM, _("&Zoom"), zoomMenu)
+        wx.EVT_UPDATE_UI(frame, constants.ID_ZOOM, frame.ProcessUpdateUIEvent)
 
         formatMenuIndex = menuBar.FindMenu(_("&Format"))
         if formatMenuIndex > -1:
@@ -216,68 +196,68 @@ class TextService(Service.BaseService):
         editMenu = menuBar.GetMenu(menuBar.FindMenu(_("&Edit")))
 
         insertMenu = wx.Menu()
-        insertMenu.Append(INSERT_DATETIME_ID, _("Insert Datetime"), _("Insert Datetime to Current Document"))
-        wx.EVT_MENU(frame, INSERT_DATETIME_ID, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, INSERT_DATETIME_ID, frame.ProcessUpdateUIEvent)
-        insertMenu.Append(INSERT_COMMENT_TEMPLATE_ID, _("Insert Comment Template"), _("Insert Comment Template to Current Document"))
-        wx.EVT_MENU(frame, INSERT_COMMENT_TEMPLATE_ID, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, INSERT_COMMENT_TEMPLATE_ID, frame.ProcessUpdateUIEvent)
+        insertMenu.Append(constants.ID_INSERT_DATETIME, _("Insert Datetime"), _("Insert Datetime to Current Document"))
+        wx.EVT_MENU(frame, constants.ID_INSERT_DATETIME, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_INSERT_DATETIME, frame.ProcessUpdateUIEvent)
+        insertMenu.Append(constants.ID_INSERT_COMMENT_TEMPLATE, _("Insert Comment Template"), _("Insert Comment Template to Current Document"))
+        wx.EVT_MENU(frame, constants.ID_INSERT_COMMENT_TEMPLATE, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_INSERT_COMMENT_TEMPLATE, frame.ProcessUpdateUIEvent)
 
-        insertMenu.Append(INSERT_FILE_CONTENT_ID, _("Insert File Content"), _("Insert File Content to Current Document"))
-        wx.EVT_MENU(frame, INSERT_FILE_CONTENT_ID, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, INSERT_FILE_CONTENT_ID, frame.ProcessUpdateUIEvent)
+        insertMenu.Append(constants.ID_INSERT_FILE_CONTENT, _("Insert File Content"), _("Insert File Content to Current Document"))
+        wx.EVT_MENU(frame, constants.ID_INSERT_FILE_CONTENT, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_INSERT_FILE_CONTENT, frame.ProcessUpdateUIEvent)
 
-        insertMenu.Append(INSERT_DECLARE_ENCODING_ID, _("Insert Encoding Declare"), _("Insert Encoding Declare to Current Document"))
-        wx.EVT_MENU(frame, INSERT_DECLARE_ENCODING_ID, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, INSERT_DECLARE_ENCODING_ID, frame.ProcessUpdateUIEvent)
-        editMenu.AppendMenu(INSERT_TEXT_ID, _("&Insert"), insertMenu)
-        wx.EVT_UPDATE_UI(frame, INSERT_TEXT_ID, frame.ProcessUpdateUIEvent)
+        insertMenu.Append(constants.ID_INSERT_DECLARE_ENCODING, _("Insert Encoding Declare"), _("Insert Encoding Declare to Current Document"))
+        wx.EVT_MENU(frame, constants.ID_INSERT_DECLARE_ENCODING, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_INSERT_DECLARE_ENCODING, frame.ProcessUpdateUIEvent)
+        editMenu.AppendMenu(constants.ID_INSERT_TEXT, _("&Insert"), insertMenu)
+        wx.EVT_UPDATE_UI(frame, constants.ID_INSERT_TEXT, frame.ProcessUpdateUIEvent)
 
         advanceMenu = wx.Menu()
-        item = wx.MenuItem(advanceMenu,CONVERT_TO_UPPERCASE_ID, _("Conert To UPPERCASE\tCtrl+Shift+U"), _("Convert Upper Word to Lower Word"))
+        item = wx.MenuItem(advanceMenu,constants.ID_UPPERCASE, _("Conert To UPPERCASE\tCtrl+Shift+U"), _("Convert Upper Word to Lower Word"))
         uppercase_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "uppercase.png")
         item.SetBitmap(wx.BitmapFromImage(wx.Image(uppercase_image_path,wx.BITMAP_TYPE_ANY)))
         advanceMenu.AppendItem(item)
             
-        wx.EVT_MENU(frame, CONVERT_TO_UPPERCASE_ID, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, CONVERT_TO_UPPERCASE_ID, frame.ProcessUpdateUIEvent)
-        item = wx.MenuItem(advanceMenu,CONVERT_TO_LOWER_ID, _("Conert To lowercase\tCtrl+U"), _("Convert Lower Word to Upper Word"))
+        wx.EVT_MENU(frame, constants.ID_UPPERCASE, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_UPPERCASE, frame.ProcessUpdateUIEvent)
+        item = wx.MenuItem(advanceMenu,constants.ID_LOWERCASE, _("Conert To lowercase\tCtrl+U"), _("Convert Lower Word to Upper Word"))
         lowercase_image_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "bmp_source", "lowercase.png")
         item.SetBitmap(wx.BitmapFromImage(wx.Image(lowercase_image_path,wx.BITMAP_TYPE_ANY)))
         advanceMenu.AppendItem(item)
         
-        wx.EVT_MENU(frame, CONVERT_TO_LOWER_ID, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, CONVERT_TO_LOWER_ID, frame.ProcessUpdateUIEvent)
+        wx.EVT_MENU(frame, constants.ID_LOWERCASE, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_LOWERCASE, frame.ProcessUpdateUIEvent)
 
-        advanceMenu.Append(ID_TAB_TO_SPACE, _("Tabs To Spaces"), _("Convert tabs to spaces in selected/all text"))
-        wx.EVT_MENU(frame, ID_TAB_TO_SPACE, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, ID_TAB_TO_SPACE, frame.ProcessUpdateUIEvent)
-        advanceMenu.Append(ID_SPACE_TO_TAB, _("Spaces To Tabs"), _("Convert spaces to tabs in selected/all text"))
-        wx.EVT_MENU(frame, ID_SPACE_TO_TAB, frame.ProcessEvent)
-        wx.EVT_UPDATE_UI(frame, ID_SPACE_TO_TAB, frame.ProcessUpdateUIEvent)
+        advanceMenu.Append(constants.ID_TAB_SPACE, _("Tabs To Spaces"), _("Convert tabs to spaces in selected/all text"))
+        wx.EVT_MENU(frame, constants.ID_TAB_SPACE, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_TAB_SPACE, frame.ProcessUpdateUIEvent)
+        advanceMenu.Append(constants.ID_SPACE_TAB, _("Spaces To Tabs"), _("Convert spaces to tabs in selected/all text"))
+        wx.EVT_MENU(frame, constants.ID_SPACE_TAB, frame.ProcessEvent)
+        wx.EVT_UPDATE_UI(frame, constants.ID_SPACE_TAB, frame.ProcessUpdateUIEvent)
 
-        editMenu.AppendMenu(ADVANCE_EDIT_ID, _("&Advance"), advanceMenu)
-        wx.EVT_UPDATE_UI(frame, ADVANCE_EDIT_ID, frame.ProcessUpdateUIEvent)
+        editMenu.AppendMenu(constants.ID_EDIT_ADVANCE, _("&Advance"), advanceMenu)
+        wx.EVT_UPDATE_UI(frame, constants.ID_EDIT_ADVANCE, frame.ProcessUpdateUIEvent)
 
         # wxBug: wxToolBar::GetToolPos doesn't exist, need it to find cut tool and then insert find in front of it.
         toolBar.AddSeparator()
-        toolBar.AddTool(ZOOM_IN_ID, getZoomInBitmap(), shortHelpString = _("Zoom In"), longHelpString = _("Zooms the document to a larger size"))
-        toolBar.AddTool(ZOOM_OUT_ID, getZoomOutBitmap(), shortHelpString = _("Zoom Out"), longHelpString = _("Zooms the document to a smaller size"))
+        toolBar.AddTool(constants.ID_ZOOM_IN, getZoomInBitmap(), shortHelpString = _("Zoom In"), longHelpString = _("Zooms the document to a larger size"))
+        toolBar.AddTool(constants.ID_ZOOM_OUT, getZoomOutBitmap(), shortHelpString = _("Zoom Out"), longHelpString = _("Zooms the document to a smaller size"))
         toolBar.Realize()
 
     def ProcessEvent(self, event):
         id = event.GetId()
         text_view = self.GetActiveView()
-        if id == CONVERT_TO_UPPERCASE_ID:
+        if id == constants.ID_UPPERCASE:
             text_view.GetCtrl().UpperCase()
             return True
-        elif id == CONVERT_TO_LOWER_ID:
+        elif id == constants.ID_LOWERCASE:
             text_view.GetCtrl().LowerCase()
             return True
-        elif id == INSERT_DATETIME_ID:
+        elif id == constants.ID_INSERT_DATETIME:
             text_view.AddText(str(datetime.datetime.now().date()))
             return True
-        elif id == INSERT_COMMENT_TEMPLATE_ID:
+        elif id == constants.ID_INSERT_COMMENT_TEMPLATE:
             file_name = os.path.basename(text_view.GetDocument().GetFilename())
             now_time = datetime.datetime.now()
             langid = text_view.GetLangId()
@@ -288,7 +268,7 @@ class TextService(Service.BaseService):
                 text_view.GetCtrl().GotoPos(0)
                 text_view.AddText(comment_template_content)
             return True
-        elif id == INSERT_FILE_CONTENT_ID:
+        elif id == constants.ID_INSERT_FILE_CONTENT:
             dlg = wx.FileDialog(wx.GetApp().GetTopWindow(),_("Select File Path"),
                                 wildcard="All|*.*",style=wx.OPEN|wx.FILE_MUST_EXIST|wx.CHANGE_DIR)
             if dlg.ShowModal() == wx.ID_OK:
@@ -296,11 +276,11 @@ class TextService(Service.BaseService):
                 with open(path) as f:
                     text_view.AddText(f.read())
             return True
-        elif id == INSERT_DECLARE_ENCODING_ID:
+        elif id == constants.ID_INSERT_DECLARE_ENCODING:
             if text_view.GetLangId() == lang.ID_LANG_PYTHON:
                 self.InsertEncodingDeclare(text_view)
             return True
-        elif id == ID_TAB_TO_SPACE or id == ID_SPACE_TO_TAB:
+        elif id == constants.ID_TAB_SPACE or id == constants.ID_SPACE_TAB:
             self.ConvertWhitespace(text_view,id)
         else:
             return False
@@ -334,27 +314,27 @@ class TextService(Service.BaseService):
        #     event.Enable(False)
         #    return True
         id = event.GetId()
-        if (id == TEXT_ID
-        or id == VIEW_WHITESPACE_ID
-        or id == VIEW_EOL_ID
-        or id == VIEW_INDENTATION_GUIDES_ID
-        or id == VIEW_RIGHT_EDGE_ID
-        or id == VIEW_LINE_NUMBERS_ID
-        or id == ZOOM_ID
-        or id == ZOOM_NORMAL_ID
-        or id == ZOOM_IN_ID
-        or id == ZOOM_OUT_ID
+        if (id == constants.ID_TEXT
+        or id == constants.ID_VIEW_WHITESPACE
+        or id == constants.ID_VIEW_EOL
+        or id == constants.ID_VIEW_INDENTATION_GUIDES
+        or id == constants.ID_VIEW_RIGHT_EDGE
+        or id == constants.ID_VIEW_LINE_NUMBERS
+        or id == constants.ID_ZOOM
+        or id == constants.ID_ZOOM_NORMAL
+        or id == constants.ID_ZOOM_IN
+        or id == constants.ID_ZOOM_OUT
         or id == CHOOSE_FONT_ID
         or id == WORD_WRAP_ID
-        or id == INSERT_TEXT_ID
-        or id == ADVANCE_EDIT_ID):
+        or id == constants.ID_INSERT_TEXT
+        or id == constants.ID_EDIT_ADVANCE):
             event.Enable(False)
             return True
-        elif id == CONVERT_TO_UPPERCASE_ID \
-                or id == CONVERT_TO_LOWER_ID:
+        elif id == constants.ID_UPPERCASE \
+                or id == constants.ID_LOWERCASE:
             event.Enable(text_view is not None and text_view.HasSelection())
             return True
-        elif id == INSERT_COMMENT_TEMPLATE_ID:
+        elif id == constants.ID_INSERT_COMMENT_TEMPLATE:
             if text_view is not None:
                 langid = text_view.GetLangId()
                 lexer = syntax.LexerManager().GetLexer(langid)
@@ -363,7 +343,7 @@ class TextService(Service.BaseService):
                 enabled = False
             event.Enable(enabled )
             return True
-        elif id == INSERT_DECLARE_ENCODING_ID:
+        elif id == constants.ID_INSERT_DECLARE_ENCODING:
             if text_view is not None:
                 langid = text_view.GetLangId()
                 enabled = (langid == lang.ID_LANG_PYTHON)
@@ -379,14 +359,14 @@ class TextService(Service.BaseService):
         @param mode_id: id of conversion mode
 
         """
-        if mode_id not in (ID_TAB_TO_SPACE, ID_SPACE_TO_TAB):
+        if mode_id not in (constants.ID_TAB_SPACE, constants.ID_SPACE_TAB):
             return
 
         text_ctrl = text_view.GetCtrl()
         tabw = text_ctrl.GetIndent()
         pos = text_ctrl.GetCurrentPos()
         sel = text_ctrl.GetSelectedText()
-        if mode_id == ID_TAB_TO_SPACE:
+        if mode_id == constants.ID_TAB_SPACE:
             cmd = (u"\t", u" " * tabw)
             tabs = False
         else:

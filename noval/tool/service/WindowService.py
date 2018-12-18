@@ -8,38 +8,30 @@ import noval.util.constants as constants
 MAX_WINDOW_MENU_NUM_ITEMS = 30
 
 class WindowMenuService(wx.lib.pydocview.WindowMenuService):
-    
-
-    RESTORE_WINDOW_LAYOUT_ID = wx.NewId()
     """description of class"""
     def InstallControls(self, frame, menuBar=None, toolBar=None, statusBar=None, document=None):
         wx.lib.pydocview.WindowMenuService.InstallControls(self,frame,menuBar,toolBar,statusBar,document)
-        
-
-        windowMenuIndex = menuBar.FindMenu(_("&Window"))
-        windowMenu = menuBar.GetMenu(windowMenuIndex)
+        windowMenu = menuBar.GetWindowsMenu()
         windowMenu.Append(constants.ID_CLOSE_ALL,_("Close All"),_("Close all open documents"))
         wx.EVT_MENU(frame, constants.ID_CLOSE_ALL, frame.ProcessEvent)
         
         if wx.GetApp().GetUseTabbedMDI():
-            windowMenu.Append(self.RESTORE_WINDOW_LAYOUT_ID,_("&Restore Default Layout"),_("Restore default layout of main frame"))
-            wx.EVT_MENU(frame, self.RESTORE_WINDOW_LAYOUT_ID, frame.ProcessEvent)
-            
+            windowMenu.Append(constants.ID_RESTORE_WINDOW_LAYOUT,_("&Restore Default Layout"),_("Restore default layout of main frame"))
+            wx.EVT_MENU(frame, constants.ID_RESTORE_WINDOW_LAYOUT, frame.ProcessEvent)
             wx.EVT_MENU(frame, self.SELECT_MORE_WINDOWS_ID, frame.ProcessEvent)
             
-
     def ProcessEvent(self, event):
         """
         Processes a Window menu event.
         """
         id = event.GetId()
-        if id == self.RESTORE_WINDOW_LAYOUT_ID:
+        if id == constants.ID_RESTORE_WINDOW_LAYOUT:
             ret = wx.MessageBox(_("Are you sure want to restore the default window layout?"), wx.GetApp().GetAppName(),
                                wx.YES_NO  | wx.ICON_QUESTION,wx.GetApp().MainFrame)
             if ret == wx.YES:
                 wx.GetApp().MainFrame.LoadDefaultPerspective()
             return True
-        elif id == wx.ID_CLOSE_ALL:
+        elif id == constants.ID_CLOSE_ALL:
             wx.GetApp().MainFrame.OnCloseAllDocs(event)
             return True
         else:

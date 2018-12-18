@@ -516,28 +516,28 @@ class TextView(wx.lib.docview.View):
         elif id == constants.ID_SELECTALL:
             self.GetCtrl().SelectAll()
             return True
-        elif id == TextService.VIEW_WHITESPACE_ID:
+        elif id == constants.ID_VIEW_WHITESPACE:
             self.GetCtrl().SetViewWhiteSpace(not self.GetCtrl().GetViewWhiteSpace())
             return True
-        elif id == TextService.VIEW_EOL_ID:
+        elif id == constants.ID_VIEW_EOL:
             self.GetCtrl().SetViewEOL(not self.GetCtrl().GetViewEOL())
             return True
-        elif id == TextService.VIEW_INDENTATION_GUIDES_ID:
+        elif id == constants.ID_VIEW_INDENTATION_GUIDES:
             self.GetCtrl().SetIndentationGuides(not self.GetCtrl().GetIndentationGuides())
             return True
-        elif id == TextService.VIEW_RIGHT_EDGE_ID:
+        elif id == constants.ID_VIEW_INDENTATION_GUIDES:
             self.GetCtrl().SetViewRightEdge(not self.GetCtrl().GetViewRightEdge())
             return True
-        elif id == TextService.VIEW_LINE_NUMBERS_ID:
+        elif id == constants.ID_VIEW_LINE_NUMBERS:
             self.GetCtrl().SetViewLineNumbers(not self.GetCtrl().GetViewLineNumbers())
             return True
-        elif id == TextService.ZOOM_NORMAL_ID:
+        elif id == constants.ID_ZOOM_NORMAL:
             self.GetCtrl().SetZoom(0)
             return True
-        elif id == TextService.ZOOM_IN_ID:
+        elif id == constants.ID_ZOOM_IN:
             self.GetCtrl().CmdKeyExecute(wx.stc.STC_CMD_ZOOMIN)
             return True
-        elif id == TextService.ZOOM_OUT_ID:
+        elif id == constants.ID_ZOOM_OUT:
             self.GetCtrl().CmdKeyExecute(wx.stc.STC_CMD_ZOOMOUT)
             return True
         elif id == TextService.CHOOSE_FONT_ID:
@@ -546,16 +546,16 @@ class TextView(wx.lib.docview.View):
         elif id == TextService.WORD_WRAP_ID:
             self.GetCtrl().SetWordWrap(not self.GetCtrl().GetWordWrap())
             return True
-        elif id == FindService.FindService.FIND_ID:
+        elif id == constants.ID_FIND:
             self.OnFind()
             return True
-        elif id == FindService.FindService.FIND_PREVIOUS_ID:
+        elif id == constants.ID_FIND_PREVIOUS:
             self.DoFindText(forceFindPrevious = True)
             return True
-        elif id == FindService.FindService.FIND_NEXT_ID:
+        elif id == constants.ID_FIND_NEXT:
             self.DoFindText(forceFindNext = True)
             return True
-        elif id == FindService.FindService.REPLACE_ID:
+        elif id == constants.ID_REPLACE:
             self.OnFind(replace = True)
             return True
         elif id == FindService.FindService.FINDONE_ID:
@@ -567,7 +567,7 @@ class TextView(wx.lib.docview.View):
         elif id == FindService.FindService.REPLACEALL_ID:
             self.DoReplaceAll()
             return True
-        elif id == FindService.FindService.GOTO_LINE_ID:
+        elif id == constants.ID_GOTO_LINE:
             self.OnGotoLine(event)
             return True
         else:
@@ -599,82 +599,82 @@ class TextView(wx.lib.docview.View):
             hasText = self.GetCtrl().GetTextLength() > 0
             event.Enable(hasText)
             return True
-        elif id == TextService.TEXT_ID \
-                or id == MarkerService.MarkerService.BOOKMARKER_ID \
-                or id == TextService.INSERT_TEXT_ID \
-                or id == TextService.ADVANCE_EDIT_ID \
-                or id == TextService.ZOOM_ID \
+        elif id == constants.ID_TEXT \
+                or id == constants.ID_BOOKMARKER \
+                or id == constants.ID_INSERT_TEXT \
+                or id == constants.ID_EDIT_ADVANCE \
+                or id == constants.ID_ZOOM \
                 or id == TextService.CHOOSE_FONT_ID:
             event.Enable(True)
             return True
-        elif id == TextService.VIEW_WHITESPACE_ID:
+        elif id == constants.ID_VIEW_WHITESPACE:
             hasText = self.GetCtrl().GetTextLength() > 0
             event.Enable(hasText)
             event.Check(self.GetCtrl().GetViewWhiteSpace())
             return True
-        elif id == TextService.VIEW_EOL_ID:
+        elif id == constants.ID_VIEW_EOL:
             hasText = self.GetCtrl().GetTextLength() > 0
             event.Enable(hasText)
             event.Check(self.GetCtrl().GetViewEOL())
             return True
-        elif id == TextService.VIEW_INDENTATION_GUIDES_ID:
+        elif id == constants.ID_VIEW_INDENTATION_GUIDES:
             hasText = self.GetCtrl().GetTextLength() > 0
             event.Enable(hasText)
             event.Check(self.GetCtrl().GetIndentationGuides())
             return True
-        elif id == TextService.VIEW_RIGHT_EDGE_ID:
+        elif id == constants.ID_VIEW_RIGHT_EDGE:
             hasText = self.GetCtrl().GetTextLength() > 0
             event.Enable(hasText)
             event.Check(self.GetCtrl().GetViewRightEdge())
             return True
-        elif id == TextService.VIEW_LINE_NUMBERS_ID:
+        elif id == constants.ID_VIEW_LINE_NUMBERS:
             hasText = self.GetCtrl().GetTextLength() > 0
             event.Enable(hasText)
             event.Check(self.GetCtrl().GetViewLineNumbers())
             return True
-        elif id == TextService.ZOOM_NORMAL_ID:
+        elif id == constants.ID_ZOOM_NORMAL:
             event.Enable(self.GetCtrl().GetZoom() != 0)
             return True
-        elif id == TextService.ZOOM_IN_ID:
+        elif id == constants.ID_ZOOM_IN:
             event.Enable(self.GetCtrl().GetZoom() < 20)
             return True
-        elif id == TextService.ZOOM_OUT_ID:
+        elif id == constants.ID_ZOOM_OUT:
             event.Enable(self.GetCtrl().GetZoom() > -10)
             return True
         elif id == TextService.WORD_WRAP_ID:
             event.Enable(self.GetCtrl().CanWordWrap())
             event.Check(self.GetCtrl().CanWordWrap() and self.GetCtrl().GetWordWrap())
             return True
-        elif id == FindService.FindService.FIND_ID:
+        elif id == constants.ID_FIND:
             hasText = self.GetCtrl().GetTextLength() > 0
             event.Enable(hasText)
             return True
-        elif id == FindService.FindService.FIND_PREVIOUS_ID:
+        elif id == constants.ID_FIND_PREVIOUS:
             hasText = self.GetCtrl().GetTextLength() > 0
             event.Enable(hasText and
                          self._FindServiceHasString() and
                          self.GetCtrl().GetSelection()[0] > 0)
             return True
-        elif id == FindService.FindService.FIND_NEXT_ID:
+        elif id == constants.ID_FIND_NEXT:
             hasText = self.GetCtrl().GetTextLength() > 0
             event.Enable(hasText and
                          self._FindServiceHasString() and
                          self.GetCtrl().GetSelection()[0] < self.GetCtrl().GetLength())
             return True
-        elif id == FindService.FindService.REPLACE_ID:
+        elif id == constants.ID_REPLACE:
             hasText = self.GetCtrl().GetTextLength() > 0
             event.Enable(hasText)
             return True
-        elif id == FindService.FindService.GOTO_LINE_ID:
+        elif id == constants.ID_GOTO_LINE:
             event.Enable(True)
             return True
         elif id == TextService.TEXT_STATUS_BAR_ID:
             self.OnUpdateStatusBar(event)
             return True
-        elif id == CompletionService.CompletionService.GO_TO_DEFINITION:
+        elif id == constants.ID_GOTO_DEFINITION:
             event.Enable(self.GetCtrl().IsCaretLocateInWord())
             return True
-        elif id == CompletionService.CompletionService.LIST_CURRENT_MEMBERS:
+        elif id == constants.ID_LIST_MEMBERS:
             event.Enable(self.GetCtrl().IsListMemberFlag(self.GetCtrl().GetCurrentPos()-1))
             return True
         else:

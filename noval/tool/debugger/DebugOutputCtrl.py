@@ -14,13 +14,13 @@ class DebugOutputCtrl(FindTextCtrl.FindTextCtrl):
     EXPORT_TEXT_ID = wx.NewId()
     ERROR_COLOR_STYLE = 2
     INPUT_COLOR_STYLE = 1
-    ItemIDs = [constants.ID_UNDO, constants.ID_REDO,None,constants.ID_CUT, constants.ID_COPY, constants.ID_PASTE, constants.ID_CLEAR,None, constants.ID_SELECTALL,TEXT_WRAP_ID,FindService.FindService.FIND_ID,EXPORT_TEXT_ID]
+    ItemIDs = [constants.ID_UNDO, constants.ID_REDO,None,constants.ID_CUT, constants.ID_COPY, constants.ID_PASTE, constants.ID_CLEAR,None, constants.ID_SELECTALL,TEXT_WRAP_ID,constants.ID_FIND,EXPORT_TEXT_ID]
     
     def __init__(self, parent, id=-1, style = wx.NO_FULL_REPAINT_ON_RESIZE,is_debug=False):
         FindTextCtrl.FindTextCtrl.__init__(self, parent, id, style=style)
         self.Bind(wx.EVT_RIGHT_UP, self.OnRightUp)
         if sysutilslib.isLinux():
-            accelTbl = wx.AcceleratorTable([(wx.ACCEL_CTRL, ord('A'), wx.ID_SELECTALL),(wx.ACCEL_CTRL, ord('C'), wx.ID_COPY),(wx.ACCEL_CTRL, ord('V'), wx.ID_PASTE),(wx.ACCEL_CTRL, ord('F'), FindService.FindService.FIND_ID)])  
+            accelTbl = wx.AcceleratorTable([(wx.ACCEL_CTRL, ord('A'), wx.ID_SELECTALL),(wx.ACCEL_CTRL, ord('C'), wx.ID_COPY),(wx.ACCEL_CTRL, ord('V'), wx.ID_PASTE),(wx.ACCEL_CTRL, ord('F'), constants.ID_FIND)])  
             self.SetAcceleratorTable(accelTbl)
             
         if wx.Platform == '__WXMSW__':
@@ -118,7 +118,7 @@ class DebugOutputCtrl(FindTextCtrl.FindTextCtrl):
             self.SetWordWrap(not self.GetWordWrap())
             return True
             
-        elif id == FindService.FindService.FIND_ID:
+        elif id == constants.ID_FIND:
             findService = wx.GetApp().GetService(FindService.FindService)
             findService.ShowFindReplaceDialog(findString = self.GetSelectedText())
             return True
@@ -148,7 +148,7 @@ class DebugOutputCtrl(FindTextCtrl.FindTextCtrl):
         elif id == constants.ID_CLEAR:
             event.Enable(True)  # wxBug: should be stcControl.CanCut()) but disabling clear item means del key doesn't work in control as expected
             return True
-        elif id == constants.ID_SELECTALL or id == FindService.FindService.FIND_ID or id == self.EXPORT_TEXT_ID:
+        elif id == constants.ID_SELECTALL or id == constants.ID_FIND or id == self.EXPORT_TEXT_ID:
             hasText = self.GetTextLength() > 0
             event.Enable(hasText)
             return True

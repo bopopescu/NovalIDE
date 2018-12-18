@@ -279,5 +279,7 @@
   <noval:file filePath="./noval/util/popupmenu.py" logicalFolder="noval/util" isStartup="false"/>
   <noval:file filePath="./noval/tool/MenuBar.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:file filePath="./noval/tool/MainFrame.py" logicalFolder="noval/tool" isStartup="false"/>
+  <noval:file filePath="./noval/tool/Feedback.py" logicalFolder="noval/tool" isStartup="false"/>
+  <noval:file filePath="./noval/tool/Mail.py" logicalFolder="noval/tool" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>

@@ -33,6 +33,8 @@ from noval.tool.syntax import synglob
 import images
 from noval.util import utils
 import NewDocument
+import noval.util.constants as constants
+from pkg_resources import resource_filename
 
 # Required for Unicode support with python
 # site.py sets this, but Windows builds don't have site.py because of py2exe problems
@@ -184,16 +186,16 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         if not config.ReadInt("MDIEmbedRightVisible",True) and config.ReadInt("OutlineShown",True):
             config.WriteInt("MDIEmbedRightVisible", True)
 
-        ##my_locale must be set as app member property,otherwise it will only workable when app start up
+        ##locale must be set as app member property,otherwise it will only workable when app start up
         ##it will not workable after app start up,the translation also will not work
         lang_id = GeneralOption.GetLangId(config.Read("Language",sysutilslib.GetLangConfig()))
         if wx.Locale.IsAvailable(lang_id):
-            self.my_locale = wx.Locale(lang_id)
-            if self.my_locale.IsOk():
-                self.my_locale.AddCatalogLookupPathPrefix(os.path.join(sysutilslib.mainModuleDir,'noval','locale'))
-                ibRet = self.my_locale.AddCatalog(APPLICATION_NAME.lower())
-                ibRet = self.my_locale.AddCatalog("wxstd")
-                self.my_locale.AddCatalog("wxstock")
+            self.locale = wx.Locale(lang_id)
+            if self.locale.IsOk():
+                self.locale.AddCatalogLookupPathPrefix(os.path.join(sysutilslib.mainModuleDir,'noval','locale'))
+                ibRet = self.locale.AddCatalog(APPLICATION_NAME.lower())
+                ibRet = self.locale.AddCatalog("wxstd")
+                self.locale.AddCatalog("wxstock")
 
         docManager = IDEDocManager(flags = self.GetDefaultDocManagerFlags())
         self.SetDocumentManager(docManager)
@@ -323,7 +325,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         self.frame.Show(True)
         
         self.toolbar = self.frame.GetToolBar()
-        self.toolbar_combox = self.toolbar.FindControl(DebuggerService.DebuggerService.COMBO_INTERPRETERS_ID)
+        self.toolbar_combox = self.toolbar.FindControl(constants.ID_COMBO_INTERPRETERS)
 
         wx.lib.pydocview.DocApp.CloseSplash(self)
         self.OpenCommandLineArgs()
@@ -349,7 +351,7 @@ class IDEApplication(wx.lib.pydocview.DocApp):
     def ShowTipfOfDay(self,must_display=False):
         docManager = self.GetDocumentManager()
         default_tips_filename = "tips.txt"
-        tips_filename = "tips_%s.txt" % (self.my_locale.GetCanonicalName())
+        tips_filename = "tips_%s.txt" % (self.locale.GetCanonicalName())
         tips_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "data",tips_filename)
         if not os.path.exists(tips_path):
             tips_path = os.path.join(sysutilslib.mainModuleDir, "noval", "tool", "data",default_tips_filename)
@@ -501,6 +503,18 @@ class IDEApplication(wx.lib.pydocview.DocApp):
         
     def SetPluginManager(self,pluginmgr):
         self._pluginmgr = pluginmgr
+        
+
+    def AddMessageCatalog(self, name, path):
+        """Add a catalog lookup path to the app
+        @param name: name of catalog (i.e 'projects')
+        @param path: catalog lookup path
+
+        """
+        if self.locale is not None:
+            path = resource_filename(path, 'locale')
+            self.locale.AddCatalogLookupPathPrefix(path)
+            self.locale.AddCatalog(name)
 
 class IDEDocManager(wx.lib.docview.DocManager):
 

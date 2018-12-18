@@ -75,7 +75,7 @@ if not ACTIVEGRID_BASE_IDE:
     import WebBrowserService
 
 from noval.tool.service.SVNService import SVN_INSTALLED
-
+import noval.util.constants as constants
 
 if wx.Platform == '__WXMSW__':
     _WINDOWS = True
@@ -1894,18 +1894,17 @@ class ProjectView(wx.lib.docview.View):
         self.panel_sizer.Add(tb, 0, wx.EXPAND|wx.TOP, 2)
         
         #Only one of the following buttons is needed.
-        tb.AddSimpleTool(ProjectService.NEW_PROJECT_ID, images.load("project/new.png"), _('New Project'))
-        ####wx.EVT_TOOL(panel, self._logicalID, self.OnSelectMode)
+        tb.AddSimpleTool(constants.ID_NEW_PROJECT, images.load("project/new.png"), _('New Project'))
         
-        tb.AddSimpleTool(ProjectService.OPEN_PROJECT_ID, images.load("project/open.png"), _('Open Project'))
-        tb.AddSimpleTool(ProjectService.SAVE_PROJECT_ID, images.load("project/save.png"), _('Save Project'))
-        tb.AddSimpleTool(ProjectService.ARCHIVE_PROJECT_ID, images.load("project/archive.png"), _('Archive Project'))
+        tb.AddSimpleTool(constants.ID_OPEN_PROJECT, images.load("project/open.png"), _('Open Project'))
+        tb.AddSimpleTool(constants.ID_SAVE_PROJECT, images.load("project/save.png"), _('Save Project'))
+        tb.AddSimpleTool(constants.ID_ARCHIVE_PROJECT, images.load("project/archive.png"), _('Archive Project'))
         
         tb.AddSeparator()
-        tb.AddSimpleTool(ProjectService.IMPORT_FILES_ID, images.load("project/import.png"), _('Import Files...'))
-        tb.AddSimpleTool(ProjectService.ADD_NEW_FILE_ID, images.load("project/new_file.png"), _('New File'))
-        tb.AddSimpleTool(ProjectService.ADD_FOLDER_ID, images.load("project/folder.png"), _('New Folder'))
-        tb.AddSimpleTool(ProjectService.ADD_PACKAGE_FOLDER_ID, images.load("project/package.png"), _('New Package Folder'))
+        tb.AddSimpleTool(constants.ID_IMPORT_FILES, images.load("project/import.png"), _('Import Files...'))
+        tb.AddSimpleTool(constants.ID_ADD_NEW_FILE, images.load("project/new_file.png"), _('New File'))
+        tb.AddSimpleTool(constants.ID_ADD_FOLDER, images.load("project/folder.png"), _('New Folder'))
+        tb.AddSimpleTool(constants.ID_ADD_PACKAGE_FOLDER, images.load("project/package.png"), _('New Package Folder'))
         tb.AddSimpleTool(Property.FilePropertiesService.PROPERTIES_ID, images.load("project/properties.png"), _('Project/File Properties'))
         tb.Realize()
         
@@ -2401,24 +2400,24 @@ class ProjectView(wx.lib.docview.View):
                 self.AddProjectRoot(_("Projects"))
     def ProcessEvent(self, event):
         id = event.GetId()
-        if id == ProjectService.CLOSE_PROJECT_ID:
+        if id == constants.ID_CLOSE_PROJECT:
             self.CloseProject()
             return True
-        elif id == ProjectService.ADD_FILES_TO_PROJECT_ID:
+        elif id == constants.ID_ADD_FILES_TO_PROJECT:
             self.OnAddFileToProject(event)
             return True
-        elif id == ProjectService.ADD_DIR_FILES_TO_PROJECT_ID:
+        elif id == constants.ID_ADD_DIR_FILES_TO_PROJECT:
             self.OnAddDirToProject(event)
             return True
-        elif id == ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID:
+        elif id == constants.ID_ADD_CURRENT_FILE_TO_PROJECT:
             return False  # Implement this one in the service
-        elif id == ProjectService.ADD_NEW_FILE_ID:
+        elif id == constants.ID_ADD_NEW_FILE:
             self.OnAddNewFile(event)
             return True
-        elif id == ProjectService.ADD_FOLDER_ID:
+        elif id == constants.ID_ADD_FOLDER:
             self.OnAddFolder(event)
             return True
-        elif id == ProjectService.ADD_PACKAGE_FOLDER_ID:
+        elif id == constants.ID_ADD_PACKAGE_FOLDER:
             self.OnAddPackageFolder(event)
             return True
         elif id == ProjectService.RENAME_ID:
@@ -2427,7 +2426,7 @@ class ProjectView(wx.lib.docview.View):
         elif id == wx.ID_CLEAR:
             self.DeleteFromProject(event)
             return True
-        elif id == ProjectService.DELETE_PROJECT_ID:
+        elif id == constants.ID_DELETE_PROJECT:
             self.OnDeleteProject(event)
             return True
         elif id == wx.ID_CUT:
@@ -2440,61 +2439,61 @@ class ProjectView(wx.lib.docview.View):
             self.OnPaste(event)
             return True
         elif (id == wx.ID_CLEAR
-        or id == ProjectService.REMOVE_FROM_PROJECT):
+        or id == constants.ID_REMOVE_FROM_PROJECT):
             self.RemoveFromProject(event)
             return True
         elif id == wx.ID_SELECTALL:
             self.OnSelectAll(event)
             return True
-        elif id == ProjectService.OPEN_SELECTION_ID:
+        elif id == constants.ID_OPEN_SELECTION:
             self.OnOpenSelection(event)
             return True
         elif id == Property.FilePropertiesService.PROPERTIES_ID:
             self.OnProperties(event)
             return True
-        elif id == ProjectService.PROJECT_PROPERTIES_ID:
+        elif id == constants.ID_PROJECT_PROPERTIES:
             self.OnProjectProperties()
             return True
-        elif id == ProjectService.IMPORT_FILES_ID:
+        elif id == constants.ID_IMPORT_FILES:
             self.ImportFilesToProject(event)
             return True
-        elif id == ProjectService.OPEN_PROJECT_PATH_ID:
+        elif id == constants.ID_OPEN_PROJECT_PATH:
             self.OpenProjectPath(event)
             return True
-        elif id == ProjectService.NEW_PROJECT_ID:
+        elif id == constants.ID_NEW_PROJECT:
             self.NewProject(event)
             return True
-        elif id == ProjectService.OPEN_PROJECT_ID:
+        elif id == constants.ID_OPEN_PROJECT:
             self.OpenProject(event)
             return True
-        elif id == ProjectService.SAVE_PROJECT_ID:
+        elif id == constants.ID_SAVE_PROJECT:
             self.SaveProject(event)
             return True
-        elif id == ProjectService.SET_PROJECT_STARTUP_FILE_ID:
+        elif id == constants.ID_SET_PROJECT_STARTUP_FILE:
             self.SetProjectStartupFile()
             return True
-        elif id == ProjectService.START_RUN_ID:
+        elif id == constants.ID_START_RUN:
             self.RunFile()
             return True
-        elif id == ProjectService.START_DEBUG_ID:
+        elif id == constants.ID_START_DEBUG:
             self.DebugRunFile()
             return True
-        elif id == DebuggerService.DebuggerService.BREAK_INTO_DEBUGGER_ID:
+        elif id == constants.ID_BREAK_INTO_DEBUGGER:
             self.BreakintoDebugger()
             return True
-        elif id == ProjectService.OPEN_FOLDER_PATH_ID:
+        elif id == constants.ID_OPEN_FOLDER_PATH:
             self.OpenFolderPath(event)
             return True
-        elif id == ProjectService.OPEN_TERMINAL_PATH_ID:
+        elif id == constants.ID_OPEN_TERMINAL_PATH:
             self.OpenPromptPath(event)
             return True
-        elif id == ProjectService.COPY_PATH_ID:
+        elif id == constants.ID_COPY_PATH:
             self.CopyPath(event)
             return True
-        elif id == ProjectService.CLEAN_PROJECT_ID:
+        elif id == constants.ID_CLEAN_PROJECT:
             self.CleanProject()
             return True
-        elif id == ProjectService.ARCHIVE_PROJECT_ID:
+        elif id == constants.ID_ARCHIVE_PROJECT:
             self.ArchiveProject()
             return True
         else:
@@ -2724,28 +2723,28 @@ class ProjectView(wx.lib.docview.View):
                 return True
             else:
                 return False
-        elif (id == ProjectService.ADD_FILES_TO_PROJECT_ID
-        or id == ProjectService.ADD_DIR_FILES_TO_PROJECT_ID
-        or id == ProjectService.CLOSE_PROJECT_ID
-        or id == ProjectService.DELETE_PROJECT_ID
-        or id == ProjectService.SAVE_PROJECT_ID
-        or id == ProjectService.OPEN_PROJECT_PATH_ID
-        or id == ProjectService.IMPORT_FILES_ID
-        or id == ProjectService.CLEAN_PROJECT_ID
-        or id == ProjectService.ARCHIVE_PROJECT_ID):
+        elif (id == constants.ID_ADD_FILES_TO_PROJECT
+        or id == constants.ID_ADD_DIR_FILES_TO_PROJECT
+        or id == constants.ID_CLOSE_PROJECT
+        or id == constants.ID_DELETE_PROJECT
+        or id == constants.ID_SAVE_PROJECT
+        or id == constants.ID_OPEN_PROJECT_PATH
+        or id == constants.ID_IMPORT_FILES
+        or id == constants.ID_CLEAN_PROJECT
+        or id == constants.ID_ARCHIVE_PROJECT):
             event.Enable(self.GetDocument() != None)
             return True
-        elif id == ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID:
+        elif id == constants.ID_ADD_CURRENT_FILE_TO_PROJECT:
             event.Enable(False)  # Implement this one in the service
             return True
-        elif (id == ProjectService.ADD_FOLDER_ID
-            or id == ProjectService.ADD_PACKAGE_FOLDER_ID
-            or id == ProjectService.ADD_NEW_FILE_ID):
+        elif (id == constants.ID_ADD_FOLDER
+            or id == constants.ID_ADD_PACKAGE_FOLDER
+            or id == constants.ID_ADD_NEW_FILE):
             event.Enable((self.GetDocument() != None) and (self.GetMode() == ProjectView.PROJECT_VIEW))
             return True
         elif (id == wx.ID_CUT
         or id == wx.ID_COPY
-        or id == ProjectService.OPEN_SELECTION_ID):
+        or id == constants.ID_OPEN_SELECTION):
             event.Enable(self._HasFilesSelected())
             return True
         elif (id == wx.ID_CLEAR
@@ -3384,13 +3383,13 @@ class ProjectView(wx.lib.docview.View):
 
     def GetPopupFileMenu(self):
         menu = wx.Menu()
-        menu.Append(ProjectService.OPEN_SELECTION_ID, _("&Open"), _("Opens the selection"))
-        menu.Enable(ProjectService.OPEN_SELECTION_ID, True)
-        wx.EVT_MENU(self._GetParentFrame(), ProjectService.OPEN_SELECTION_ID, self.OnOpenSelection)
+        menu.Append(constants.ID_OPEN_SELECTION, _("&Open"), _("Opens the selection"))
+        menu.Enable(constants.ID_OPEN_SELECTION, True)
+        wx.EVT_MENU(self._GetParentFrame(), constants.ID_OPEN_SELECTION, self.OnOpenSelection)
         
-        menu.Append(ProjectService.OPEN_SELECTION_WITH_ID, _("&Open With..."), _("Opens the selection with specify editor"))
-        menu.Enable(ProjectService.OPEN_SELECTION_WITH_ID, True)
-        wx.EVT_MENU(self._GetParentFrame(), ProjectService.OPEN_SELECTION_WITH_ID, self.OnOpenSelectionWith)
+        menu.Append(constants.ID_OPEN_SELECTION_WITH, _("&Open With..."), _("Opens the selection with specify editor"))
+        menu.Enable(constants.ID_OPEN_SELECTION_WITH, True)
+        wx.EVT_MENU(self._GetParentFrame(), constants.ID_OPEN_SELECTION_WITH, self.OnOpenSelectionWith)
         
         extService = wx.GetApp().GetService(ExtensionService.ExtensionService)
         if extService and extService.GetExtensions():
@@ -3412,7 +3411,7 @@ class ProjectView(wx.lib.docview.View):
                 break
                 
         itemIDs.extend([wx.ID_UNDO, wx.ID_REDO, None, wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE,wx.ID_CLEAR,None, \
-                         wx.ID_SELECTALL,ProjectService.RENAME_ID , ProjectService.REMOVE_FROM_PROJECT, None])
+                         wx.ID_SELECTALL,ProjectService.RENAME_ID , constants.ID_REMOVE_FROM_PROJECT, None])
                          
         self.GetCommonItemsMenu(menu,itemIDs)
         tree_item = self._treeCtrl.GetSingleSelectItem()
@@ -3420,58 +3419,58 @@ class ProjectView(wx.lib.docview.View):
         itemIDs = []
         if self._IsItemFile(tree_item) and fileutils.is_python_file(filePath):
             menuBar = wx.GetApp().GetTopWindow().GetMenuBar()
-            menu_item = menuBar.FindItemById(DebuggerService.DebuggerService.START_RUN_ID)
-            item = wx.MenuItem(menu,ProjectService.START_RUN_ID,_("&Run"), kind = wx.ITEM_NORMAL)
+            menu_item = menuBar.FindItemById(constants.ID_RUN)
+            item = wx.MenuItem(menu,constants.ID_START_RUN,_("&Run"), kind = wx.ITEM_NORMAL)
             item.SetBitmap(menu_item.GetBitmap())
             menu.AppendItem(item)
-            wx.EVT_MENU(self._treeCtrl, ProjectService.START_RUN_ID, self.ProcessEvent)
+            wx.EVT_MENU(self._treeCtrl, constants.ID_START_RUN, self.ProcessEvent)
             
             debug_menu = wx.Menu()
             menu.AppendMenu(wx.NewId(), _("Debug"), debug_menu)
 
-            menu_item = menuBar.FindItemById(DebuggerService.DebuggerService.START_DEBUG_ID)
-            item = wx.MenuItem(menu,ProjectService.START_DEBUG_ID,_("&Debug"), kind = wx.ITEM_NORMAL)
+            menu_item = menuBar.FindItemById(constants.ID_DEBUG)
+            item = wx.MenuItem(menu,constants.ID_START_DEBUG,_("&Debug"), kind = wx.ITEM_NORMAL)
             item.SetBitmap(menu_item.GetBitmap())
             debug_menu.AppendItem(item)
-            wx.EVT_MENU(self._treeCtrl, ProjectService.START_DEBUG_ID, self.ProcessEvent)
+            wx.EVT_MENU(self._treeCtrl, constants.ID_START_DEBUG, self.ProcessEvent)
             
-            item = wx.MenuItem(menu,DebuggerService.DebuggerService.BREAK_INTO_DEBUGGER_ID,_("&Break into Debugger"), kind = wx.ITEM_NORMAL)
+            item = wx.MenuItem(menu,constants.ID_BREAK_INTO_DEBUGGER,_("&Break into Debugger"), kind = wx.ITEM_NORMAL)
             debug_menu.AppendItem(item)
-            wx.EVT_MENU(self._treeCtrl, DebuggerService.DebuggerService.BREAK_INTO_DEBUGGER_ID, self.ProcessEvent)
+            wx.EVT_MENU(self._treeCtrl, constants.ID_BREAK_INTO_DEBUGGER, self.ProcessEvent)
             if tree_item != self._bold_item:
-                menu.Append(ProjectService.SET_PROJECT_STARTUP_FILE_ID, _("Set as Startup File..."), _("Set the start script of project"))
-                wx.EVT_MENU(self._treeCtrl, ProjectService.SET_PROJECT_STARTUP_FILE_ID, self.ProcessEvent)
-                wx.EVT_UPDATE_UI(self._treeCtrl, ProjectService.SET_PROJECT_STARTUP_FILE_ID, self.ProcessUpdateUIEvent)
+                menu.Append(constants.ID_SET_PROJECT_STARTUP_FILE, _("Set as Startup File..."), _("Set the start script of project"))
+                wx.EVT_MENU(self._treeCtrl, constants.ID_SET_PROJECT_STARTUP_FILE, self.ProcessEvent)
+                wx.EVT_UPDATE_UI(self._treeCtrl, constants.ID_SET_PROJECT_STARTUP_FILE, self.ProcessUpdateUIEvent)
             itemIDs.append(None)
         itemIDs.append(Property.FilePropertiesService.PROPERTIES_ID)
         self.GetCommonItemsMenu(menu,itemIDs)
-        menu.Append(ProjectService.OPEN_FOLDER_PATH_ID, _("Open Path in Explorer"))
-        wx.EVT_MENU(self._treeCtrl, ProjectService.OPEN_FOLDER_PATH_ID, self.ProcessEvent)
+        menu.Append(constants.ID_OPEN_FOLDER_PATH, _("Open Path in Explorer"))
+        wx.EVT_MENU(self._treeCtrl, constants.ID_OPEN_FOLDER_PATH, self.ProcessEvent)
         
-        menu.Append(ProjectService.OPEN_TERMINAL_PATH_ID, _("Open Command Prompt here..."))
-        wx.EVT_MENU(self._treeCtrl, ProjectService.OPEN_TERMINAL_PATH_ID, self.ProcessEvent)
+        menu.Append(constants.ID_OPEN_TERMINAL_PATH, _("Open Command Prompt here..."))
+        wx.EVT_MENU(self._treeCtrl, constants.ID_OPEN_TERMINAL_PATH, self.ProcessEvent)
 
-        menu.Append(ProjectService.COPY_PATH_ID, _("Copy Full Path"))
-        wx.EVT_MENU(self._treeCtrl, ProjectService.COPY_PATH_ID, self.ProcessEvent)
+        menu.Append(constants.ID_COPY_PATH, _("Copy Full Path"))
+        wx.EVT_MENU(self._treeCtrl, constants.ID_COPY_PATH, self.ProcessEvent)
         
         return menu
 
     def GetPopupFolderMenu(self):
         menu = wx.Menu()
-        itemIDs = [ProjectService.IMPORT_FILES_ID,ProjectService.ADD_FILES_TO_PROJECT_ID, \
-                           ProjectService.ADD_DIR_FILES_TO_PROJECT_ID,ProjectService.ADD_NEW_FILE_ID,ProjectService.ADD_FOLDER_ID, ProjectService.ADD_PACKAGE_FOLDER_ID]
+        itemIDs = [constants.ID_IMPORT_FILES,constants.ID_ADD_FILES_TO_PROJECT, \
+                           constants.ID_ADD_DIR_FILES_TO_PROJECT,constants.ID_ADD_NEW_FILE,constants.ID_ADD_FOLDER, constants.ID_ADD_PACKAGE_FOLDER]
         itemIDs.extend([None,wx.ID_UNDO, wx.ID_REDO, None, wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, wx.ID_CLEAR,None, \
-                            wx.ID_SELECTALL,ProjectService.RENAME_ID , ProjectService.REMOVE_FROM_PROJECT, None, Property.FilePropertiesService.PROPERTIES_ID])
+                            wx.ID_SELECTALL,ProjectService.RENAME_ID , constants.ID_REMOVE_FROM_PROJECT, None, Property.FilePropertiesService.PROPERTIES_ID])
         self.GetCommonItemsMenu(menu,itemIDs)
         
-        menu.Append(ProjectService.OPEN_FOLDER_PATH_ID, _("Open Path in Explorer"))
-        wx.EVT_MENU(self._treeCtrl, ProjectService.OPEN_FOLDER_PATH_ID, self.ProcessEvent)
+        menu.Append(constants.ID_OPEN_FOLDER_PATH, _("Open Path in Explorer"))
+        wx.EVT_MENU(self._treeCtrl, constants.ID_OPEN_FOLDER_PATH, self.ProcessEvent)
         
-        menu.Append(ProjectService.OPEN_TERMINAL_PATH_ID, _("Open Command Prompt here..."))
-        wx.EVT_MENU(self._treeCtrl, ProjectService.OPEN_TERMINAL_PATH_ID, self.ProcessEvent)
+        menu.Append(constants.ID_OPEN_TERMINAL_PATH, _("Open Command Prompt here..."))
+        wx.EVT_MENU(self._treeCtrl, constants.ID_OPEN_TERMINAL_PATH, self.ProcessEvent)
 
-        menu.Append(ProjectService.COPY_PATH_ID, _("Copy Full Path"))
-        wx.EVT_MENU(self._treeCtrl, ProjectService.COPY_PATH_ID, self.ProcessEvent)
+        menu.Append(constants.ID_COPY_PATH, _("Copy Full Path"))
+        wx.EVT_MENU(self._treeCtrl, constants.ID_COPY_PATH, self.ProcessEvent)
         return menu
         
     def GetSVNItemIds(self,itemIDs):
@@ -3480,20 +3479,20 @@ class ProjectView(wx.lib.docview.View):
 
     def GetPopupProjectMenu(self):
         menu = wx.Menu()
-        itemIDs = [ProjectService.NEW_PROJECT_ID,ProjectService.OPEN_PROJECT_ID,ProjectService.CLOSE_PROJECT_ID,ProjectService.SAVE_PROJECT_ID, ProjectService.DELETE_PROJECT_ID,\
-                        ProjectService.CLEAN_PROJECT_ID,ProjectService.ARCHIVE_PROJECT_ID]
-        itemIDs.extend([None,ProjectService.IMPORT_FILES_ID,ProjectService.ADD_FILES_TO_PROJECT_ID, \
-                           ProjectService.ADD_DIR_FILES_TO_PROJECT_ID,None,ProjectService.ADD_NEW_FILE_ID,ProjectService.ADD_FOLDER_ID, ProjectService.ADD_PACKAGE_FOLDER_ID])
-        itemIDs.extend([None, ProjectService.PROJECT_PROPERTIES_ID])
+        itemIDs = [constants.ID_NEW_PROJECT,constants.ID_OPEN_PROJECT,constants.ID_CLOSE_PROJECT,constants.ID_SAVE_PROJECT, constants.ID_DELETE_PROJECT,\
+                        constants.ID_CLEAN_PROJECT,constants.ID_ARCHIVE_PROJECT]
+        itemIDs.extend([None,constants.ID_IMPORT_FILES,constants.ID_ADD_FILES_TO_PROJECT, \
+                           constants.ID_ADD_DIR_FILES_TO_PROJECT,None,constants.ID_ADD_NEW_FILE,constants.ID_ADD_FOLDER,constants.ID_ADD_PACKAGE_FOLDER])
+        itemIDs.extend([None, constants.ID_PROJECT_PROPERTIES])
         itemIDs.append(ProjectService.RENAME_ID)
-        itemIDs.append(ProjectService.OPEN_PROJECT_PATH_ID)
+        itemIDs.append(constants.ID_OPEN_PROJECT_PATH)
         self.GetCommonItemsMenu(menu,itemIDs)
 
-        menu.Append(ProjectService.OPEN_TERMINAL_PATH_ID, _("Open Command Prompt here..."))
-        wx.EVT_MENU(self._treeCtrl, ProjectService.OPEN_TERMINAL_PATH_ID, self.ProcessEvent)
+        menu.Append(constants.ID_OPEN_TERMINAL_PATH, _("Open Command Prompt here..."))
+        wx.EVT_MENU(self._treeCtrl, constants.ID_OPEN_TERMINAL_PATH, self.ProcessEvent)
 
-        menu.Append(ProjectService.COPY_PATH_ID, _("Copy Full Path"))
-        wx.EVT_MENU(self._treeCtrl, ProjectService.COPY_PATH_ID, self.ProcessEvent)
+        menu.Append(constants.ID_COPY_PATH, _("Copy Full Path"))
+        wx.EVT_MENU(self._treeCtrl, constants.ID_COPY_PATH, self.ProcessEvent)
 
         return menu
         
@@ -3528,10 +3527,10 @@ class ProjectView(wx.lib.docview.View):
                             menu.Append(ProjectService.RUN_SELECTED_PM_INTERNAL_WINDOW_ID, menuLabel)
                             wx.EVT_MENU(self._GetParentFrame(), ProjectService.RUN_SELECTED_PM_INTERNAL_WINDOW_ID, self.ProjectServiceProcessEvent)
                         
-                elif itemID == ProjectService.REMOVE_FROM_PROJECT:
-                    menu.Append(ProjectService.REMOVE_FROM_PROJECT, _("Remove from Project"))
-                    wx.EVT_MENU(self._GetParentFrame(), ProjectService.REMOVE_FROM_PROJECT, self.RemoveFromProject)
-                    wx.EVT_UPDATE_UI(self._GetParentFrame(), ProjectService.REMOVE_FROM_PROJECT, self._GetParentFrame().ProcessUpdateUIEvent)
+                elif itemID == constants.ID_REMOVE_FROM_PROJECT:
+                    menu.Append(constants.ID_REMOVE_FROM_PROJECT, _("Remove from Project"))
+                    wx.EVT_MENU(self._GetParentFrame(), constants.ID_REMOVE_FROM_PROJECT, self.RemoveFromProject)
+                    wx.EVT_UPDATE_UI(self._GetParentFrame(), constants.ID_REMOVE_FROM_PROJECT, self._GetParentFrame().ProcessUpdateUIEvent)
                 else:
                     item = menuBar.FindItemById(itemID)
                     if item:
@@ -4560,32 +4559,6 @@ class ProjectService(Service.Service):
     RUN_CURRENT_PM_INTERNAL_WINDOW_ID = wx.NewId()
     RUN_CURRENT_PM_EXTERNAL_BROWSER_ID = wx.NewId()
     RENAME_ID = wx.NewId()
-    START_DEBUG_ID = wx.NewId()
-    START_RUN_ID = wx.NewId()
-    OPEN_SELECTION_ID = wx.NewId()
-    OPEN_SELECTION_WITH_ID = wx.NewId()
-    REMOVE_FROM_PROJECT = wx.NewId()
-    ADD_FILES_TO_PROJECT_ID = wx.NewId()
-    ADD_CURRENT_FILE_TO_PROJECT_ID = wx.NewId()
-    ADD_DIR_FILES_TO_PROJECT_ID = wx.NewId()
-    CLOSE_PROJECT_ID = wx.NewId()
-    PROJECT_PROPERTIES_ID = wx.NewId()
-    ADD_FOLDER_ID = wx.NewId()
-    DELETE_PROJECT_ID = wx.NewId()
-    IMPORT_FILES_ID = wx.NewId()
-    NEW_PROJECT_ID = wx.NewId()
-    OPEN_PROJECT_PATH_ID = wx.NewId()
-    OPEN_PROJECT_ID = wx.NewId()
-    SAVE_PROJECT_ID = wx.NewId()
-    CLEAN_PROJECT_ID = wx.NewId()
-    ARCHIVE_PROJECT_ID = wx.NewId()
-    ADD_PACKAGE_FOLDER_ID = wx.NewId()
-    SET_PROJECT_STARTUP_FILE_ID = wx.NewId()
-    ADD_NEW_FILE_ID = wx.NewId()
-    
-    OPEN_FOLDER_PATH_ID = wx.NewId()
-    COPY_PATH_ID = wx.NewId()
-    OPEN_TERMINAL_PATH_ID = wx.NewId()
     
 
     #----------------------------------------------------------------------------
@@ -4656,100 +4629,98 @@ class ProjectService(Service.Service):
 ##            frame.SetAcceleratorTable(accelTable)
         isProjectDocument = document and document.GetDocumentTemplate().GetDocumentType() == ProjectDocument
         if wx.GetApp().IsMDI() or isProjectDocument:
-            item = wx.MenuItem(projectMenu,ProjectService.NEW_PROJECT_ID, _("New Project"), _("New one project"))
+            item = wx.MenuItem(projectMenu,constants.ID_NEW_PROJECT, _("New Project"), _("New one project"))
             item.SetBitmap(images.load("project/new.png"))
             projectMenu.AppendItem(item)
-            wx.EVT_MENU(frame, ProjectService.NEW_PROJECT_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, ProjectService.NEW_PROJECT_ID, frame.ProcessUpdateUIEvent)
+            wx.EVT_MENU(frame, constants.ID_NEW_PROJECT, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_NEW_PROJECT, frame.ProcessUpdateUIEvent)
             
-            item = wx.MenuItem(projectMenu,ProjectService.OPEN_PROJECT_ID, _("Open Project"), _("Open an existing project"))
+            item = wx.MenuItem(projectMenu,constants.ID_OPEN_PROJECT, _("Open Project"), _("Open an existing project"))
             item.SetBitmap(images.load("project/open.png"))
             projectMenu.AppendItem(item)
-            wx.EVT_MENU(frame, ProjectService.OPEN_PROJECT_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, ProjectService.OPEN_PROJECT_ID, frame.ProcessUpdateUIEvent)
+            wx.EVT_MENU(frame, constants.ID_OPEN_PROJECT, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_OPEN_PROJECT, frame.ProcessUpdateUIEvent)
             
-            if not menuBar.FindItemById(ProjectService.CLOSE_PROJECT_ID):
-                projectMenu.Append(ProjectService.CLOSE_PROJECT_ID, _("Close Project"), _("Closes currently open project"))
-                wx.EVT_MENU(frame, ProjectService.CLOSE_PROJECT_ID, frame.ProcessEvent)
-                wx.EVT_UPDATE_UI(frame, ProjectService.CLOSE_PROJECT_ID, frame.ProcessUpdateUIEvent)
-            if not menuBar.FindItemById(ProjectService.SAVE_PROJECT_ID):
-                item = wx.MenuItem(projectMenu,ProjectService.SAVE_PROJECT_ID, _("Save Project"), _("Save project to local disk"))
+            if not menuBar.FindItemById(constants.ID_CLOSE_PROJECT):
+                projectMenu.Append(constants.ID_CLOSE_PROJECT, _("Close Project"), _("Closes currently open project"))
+                wx.EVT_MENU(frame, constants.ID_CLOSE_PROJECT, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, constants.ID_CLOSE_PROJECT, frame.ProcessUpdateUIEvent)
+            if not menuBar.FindItemById(constants.ID_SAVE_PROJECT):
+                item = wx.MenuItem(projectMenu,constants.ID_SAVE_PROJECT, _("Save Project"), _("Save project to local disk"))
                 item.SetBitmap(images.load("project/save.png"))
                 projectMenu.AppendItem(item)
-                wx.EVT_MENU(frame, ProjectService.SAVE_PROJECT_ID, frame.ProcessEvent)
-                wx.EVT_UPDATE_UI(frame, ProjectService.SAVE_PROJECT_ID, frame.ProcessUpdateUIEvent)
-            if not menuBar.FindItemById(ProjectService.DELETE_PROJECT_ID):
-                item = wx.MenuItem(projectMenu,ProjectService.DELETE_PROJECT_ID, _("Delete Project"), _("Delete currently open project and its files."))
+                wx.EVT_MENU(frame, constants.ID_SAVE_PROJECT, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, constants.ID_SAVE_PROJECT, frame.ProcessUpdateUIEvent)
+            if not menuBar.FindItemById(constants.ID_DELETE_PROJECT):
+                item = wx.MenuItem(projectMenu,constants.ID_DELETE_PROJECT, _("Delete Project"), _("Delete currently open project and its files."))
                 item.SetBitmap(images.load("project/trash.png"))
                 projectMenu.AppendItem(item)
-                wx.EVT_MENU(frame, ProjectService.DELETE_PROJECT_ID, frame.ProcessEvent)
-                wx.EVT_UPDATE_UI(frame, ProjectService.DELETE_PROJECT_ID, frame.ProcessUpdateUIEvent)
+                wx.EVT_MENU(frame, constants.ID_DELETE_PROJECT, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, constants.ID_DELETE_PROJECT, frame.ProcessUpdateUIEvent)
                 
-            if not menuBar.FindItemById(ProjectService.CLEAN_PROJECT_ID):
-                item = wx.MenuItem(projectMenu,ProjectService.CLEAN_PROJECT_ID, _("Clean Project"), _("Clean project pyc and pyo files"))
+            if not menuBar.FindItemById(constants.ID_CLEAN_PROJECT):
+                item = wx.MenuItem(projectMenu,constants.ID_CLEAN_PROJECT, _("Clean Project"), _("Clean project pyc and pyo files"))
                 projectMenu.AppendItem(item)
-                wx.EVT_MENU(frame, ProjectService.CLEAN_PROJECT_ID, frame.ProcessEvent)
-                wx.EVT_UPDATE_UI(frame, ProjectService.CLEAN_PROJECT_ID, frame.ProcessUpdateUIEvent)
+                wx.EVT_MENU(frame, constants.ID_CLEAN_PROJECT, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, constants.ID_CLEAN_PROJECT, frame.ProcessUpdateUIEvent)
                 
-            if not menuBar.FindItemById(ProjectService.ARCHIVE_PROJECT_ID):
-                item = wx.MenuItem(projectMenu,ProjectService.ARCHIVE_PROJECT_ID, _("Archive Project"), _("Archive project to zip file"))
+            if not menuBar.FindItemById(constants.ID_ARCHIVE_PROJECT):
+                item = wx.MenuItem(projectMenu,constants.ID_ARCHIVE_PROJECT, _("Archive Project"), _("Archive project to zip file"))
                 item.SetBitmap(images.load("project/archive.png"))
                 projectMenu.AppendItem(item)
-                wx.EVT_MENU(frame, ProjectService.ARCHIVE_PROJECT_ID, frame.ProcessEvent)
-                wx.EVT_UPDATE_UI(frame, ProjectService.ARCHIVE_PROJECT_ID, frame.ProcessUpdateUIEvent)
+                wx.EVT_MENU(frame, constants.ID_ARCHIVE_PROJECT, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, constants.ID_ARCHIVE_PROJECT, frame.ProcessUpdateUIEvent)
             
             projectMenu.AppendSeparator()
-            item = wx.MenuItem(projectMenu,ProjectService.IMPORT_FILES_ID, _("Import Files..."), _("Import files to the current project"))
+            item = wx.MenuItem(projectMenu,constants.ID_IMPORT_FILES, _("Import Files..."), _("Import files to the current project"))
             item.SetBitmap(images.load("project/import.png"))
             projectMenu.AppendItem(item)
-            wx.EVT_MENU(frame, ProjectService.IMPORT_FILES_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, ProjectService.IMPORT_FILES_ID, frame.ProcessUpdateUIEvent)
-            if not menuBar.FindItemById(ProjectService.ADD_FILES_TO_PROJECT_ID):
-                projectMenu.Append(ProjectService.ADD_FILES_TO_PROJECT_ID, _("Add &Files to Project..."), _("Adds a document to the current project"))
-                wx.EVT_MENU(frame, ProjectService.ADD_FILES_TO_PROJECT_ID, frame.ProcessEvent)
-                wx.EVT_UPDATE_UI(frame, ProjectService.ADD_FILES_TO_PROJECT_ID, frame.ProcessUpdateUIEvent)
-            if not menuBar.FindItemById(ProjectService.ADD_DIR_FILES_TO_PROJECT_ID):
-                projectMenu.Append(ProjectService.ADD_DIR_FILES_TO_PROJECT_ID, _("Add Directory Files to Project..."), _("Adds a directory's documents to the current project"))
-                wx.EVT_MENU(frame, ProjectService.ADD_DIR_FILES_TO_PROJECT_ID, frame.ProcessEvent)
-                wx.EVT_UPDATE_UI(frame, ProjectService.ADD_DIR_FILES_TO_PROJECT_ID, frame.ProcessUpdateUIEvent)
-            if not menuBar.FindItemById(ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID):
-                projectMenu.Append(ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID, _("&Add Active File to Project..."), _("Adds the active document to a project"))
-                wx.EVT_MENU(frame, ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID, frame.ProcessEvent)
-                wx.EVT_UPDATE_UI(frame, ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID, frame.ProcessUpdateUIEvent)
+            wx.EVT_MENU(frame, constants.ID_IMPORT_FILES, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_IMPORT_FILES, frame.ProcessUpdateUIEvent)
+            if not menuBar.FindItemById(constants.ID_ADD_FILES_TO_PROJECT):
+                projectMenu.Append(constants.ID_ADD_FILES_TO_PROJECT, _("Add &Files to Project..."), _("Adds a document to the current project"))
+                wx.EVT_MENU(frame, constants.ID_ADD_FILES_TO_PROJECT, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, constants.ID_ADD_FILES_TO_PROJECT, frame.ProcessUpdateUIEvent)
+            if not menuBar.FindItemById(constants.ID_ADD_DIR_FILES_TO_PROJECT):
+                projectMenu.Append(constants.ID_ADD_DIR_FILES_TO_PROJECT, _("Add Directory Files to Project..."), _("Adds a directory's documents to the current project"))
+                wx.EVT_MENU(frame, constants.ID_ADD_DIR_FILES_TO_PROJECT, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, constants.ID_ADD_DIR_FILES_TO_PROJECT, frame.ProcessUpdateUIEvent)
+            if not menuBar.FindItemById(constants.ID_ADD_CURRENT_FILE_TO_PROJECT):
+                projectMenu.Append(constants.ID_ADD_CURRENT_FILE_TO_PROJECT, _("&Add Active File to Project..."), _("Adds the active document to a project"))
+                wx.EVT_MENU(frame, constants.ID_ADD_CURRENT_FILE_TO_PROJECT, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, constants.ID_ADD_CURRENT_FILE_TO_PROJECT, frame.ProcessUpdateUIEvent)
             
-            if not menuBar.FindItemById(ProjectService.ADD_NEW_FILE_ID):
+            if not menuBar.FindItemById(constants.ID_ADD_NEW_FILE):
                 projectMenu.AppendSeparator()
-                item = wx.MenuItem(projectMenu,ProjectService.ADD_NEW_FILE_ID, _("New File"), _("Creates a new file"))
+                item = wx.MenuItem(projectMenu,constants.ID_ADD_NEW_FILE, _("New File"), _("Creates a new file"))
                 item.SetBitmap(images.load("project/new_file.png"))
                 projectMenu.AppendItem(item)
-                wx.EVT_MENU(frame, ProjectService.ADD_NEW_FILE_ID, frame.ProcessEvent)
-                wx.EVT_UPDATE_UI(frame, ProjectService.ADD_NEW_FILE_ID, frame.ProcessUpdateUIEvent)
+                wx.EVT_MENU(frame, constants.ID_ADD_NEW_FILE, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, constants.ID_ADD_NEW_FILE, frame.ProcessUpdateUIEvent)
                 
-            if not menuBar.FindItemById(ProjectService.ADD_FOLDER_ID):
-                item = wx.MenuItem(projectMenu,ProjectService.ADD_FOLDER_ID, _("New Folder"), _("Creates a new folder"))
+            if not menuBar.FindItemById(constants.ID_ADD_FOLDER):
+                item = wx.MenuItem(projectMenu,constants.ID_ADD_FOLDER, _("New Folder"), _("Creates a new folder"))
                 item.SetBitmap(images.load("project/folder.png"))
                 projectMenu.AppendItem(item)
-                wx.EVT_MENU(frame, ProjectService.ADD_FOLDER_ID, frame.ProcessEvent)
-                wx.EVT_UPDATE_UI(frame, ProjectService.ADD_FOLDER_ID, frame.ProcessUpdateUIEvent)
-            if not menuBar.FindItemById(ProjectService.ADD_PACKAGE_FOLDER_ID):
-                item = wx.MenuItem(projectMenu,ProjectService.ADD_PACKAGE_FOLDER_ID, _("New Package Folder"), _("Creates a new package folder"))
+                wx.EVT_MENU(frame, constants.ID_ADD_FOLDER, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, constants.ID_ADD_FOLDER, frame.ProcessUpdateUIEvent)
+            if not menuBar.FindItemById(constants.ID_ADD_PACKAGE_FOLDER):
+                item = wx.MenuItem(projectMenu,constants.ID_ADD_PACKAGE_FOLDER, _("New Package Folder"), _("Creates a new package folder"))
                 item.SetBitmap(images.load("project/package.png"))
                 projectMenu.AppendItem(item)
-                wx.EVT_MENU(frame, ProjectService.ADD_PACKAGE_FOLDER_ID, frame.ProcessEvent)
-                wx.EVT_UPDATE_UI(frame, ProjectService.ADD_PACKAGE_FOLDER_ID, frame.ProcessUpdateUIEvent)
+                wx.EVT_MENU(frame, constants.ID_ADD_PACKAGE_FOLDER, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, constants.ID_ADD_PACKAGE_FOLDER, frame.ProcessUpdateUIEvent)
                 
-            if not menuBar.FindItemById(ProjectService.PROJECT_PROPERTIES_ID):
+            if not menuBar.FindItemById(constants.ID_PROJECT_PROPERTIES):
                 projectMenu.AppendSeparator()
-               ## projectMenu.Append(ProjectService.PROJECT_PROPERTIES_ID, _("Project Properties"), _("Project Properties"))
-                ###
-                item = wx.MenuItem(projectMenu,ProjectService.PROJECT_PROPERTIES_ID, _("Project Properties"), _("Project Properties"))
+                item = wx.MenuItem(projectMenu,constants.ID_PROJECT_PROPERTIES, _("Project Properties"), _("Project Properties"))
                 item.SetBitmap(images.load("project/properties.png"))
                 projectMenu.AppendItem(item)
-                wx.EVT_MENU(frame, ProjectService.PROJECT_PROPERTIES_ID, frame.ProcessEvent)
-                wx.EVT_UPDATE_UI(frame, ProjectService.PROJECT_PROPERTIES_ID, frame.ProcessUpdateUIEvent)
-            projectMenu.Append(ProjectService.OPEN_PROJECT_PATH_ID, _("Open Project Path in Explorer"), _("Open Project Path"))
-            wx.EVT_MENU(frame, ProjectService.OPEN_PROJECT_PATH_ID, frame.ProcessEvent)
-            wx.EVT_UPDATE_UI(frame, ProjectService.OPEN_PROJECT_PATH_ID, frame.ProcessUpdateUIEvent)
+                wx.EVT_MENU(frame, constants.ID_PROJECT_PROPERTIES, frame.ProcessEvent)
+                wx.EVT_UPDATE_UI(frame, constants.ID_PROJECT_PROPERTIES, frame.ProcessUpdateUIEvent)
+            projectMenu.Append(constants.ID_OPEN_PROJECT_PATH, _("Open Project Path in Explorer"), _("Open Project Path"))
+            wx.EVT_MENU(frame, constants.ID_OPEN_PROJECT_PATH, frame.ProcessEvent)
+            wx.EVT_UPDATE_UI(frame, constants.ID_OPEN_PROJECT_PATH, frame.ProcessUpdateUIEvent)
         index = menuBar.FindMenu(_("&Format"))
         if index == -1:
             index = menuBar.FindMenu(_("&View"))
@@ -4940,24 +4911,24 @@ class ProjectService(Service.Service):
         elif id == ProjectService.RUN_CURRENT_PM_EXTERNAL_BROWSER_ID:
             self.OnRunProcessModel(event, runCurrentFile=True, newWindow=True, forceExternal=True)
             return True
-        elif id == ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID:
+        elif id == constants.ID_ADD_CURRENT_FILE_TO_PROJECT:
             self.OnAddCurrentFileToProject(event)
             return True
-        elif (id == ProjectService.PROJECT_PROPERTIES_ID
+        elif (id == constants.ID_PROJECT_PROPERTIES
         or id == Property.FilePropertiesService.PROPERTIES_ID
-        or id == ProjectService.ADD_NEW_FILE_ID
-        or id == ProjectService.ADD_FOLDER_ID
-        or id == ProjectService.ADD_PACKAGE_FOLDER_ID
-        or id == ProjectService.DELETE_PROJECT_ID
-        or id == ProjectService.CLOSE_PROJECT_ID
-        or id == ProjectService.IMPORT_FILES_ID
-        or id == ProjectService.NEW_PROJECT_ID
-        or id == ProjectService.OPEN_PROJECT_PATH_ID
-        or id == ProjectService.OPEN_PROJECT_ID
-        or id == ProjectService.SAVE_PROJECT_ID
-        or id == ProjectService.ADD_NEW_FILE_ID
-        or id == ProjectService.ARCHIVE_PROJECT_ID
-        or id == ProjectService.CLEAN_PROJECT_ID):
+        or id == constants.ID_ADD_NEW_FILE
+        or id == constants.ID_ADD_FOLDER
+        or id == constants.ID_ADD_PACKAGE_FOLDER
+        or id == constants.ID_DELETE_PROJECT
+        or id == constants.ID_CLOSE_PROJECT
+        or id == constants.ID_IMPORT_FILES
+        or id == constants.ID_NEW_PROJECT
+        or id == constants.ID_OPEN_PROJECT_PATH
+        or id == constants.ID_OPEN_PROJECT
+        or id == constants.ID_SAVE_PROJECT
+        or id == constants.ID_ADD_NEW_FILE
+        or id == constants.ID_ARCHIVE_PROJECT
+        or id == constants.ID_CLEAN_PROJECT):
             if self.GetView():
                 return self.GetView().ProcessEvent(event)
             else:
@@ -4979,29 +4950,29 @@ class ProjectService(Service.Service):
         ProjectService.RUN_CURRENT_PM_EXTERNAL_BROWSER_ID]:
             event.Enable(True)
             return True
-        elif id == ProjectService.ADD_CURRENT_FILE_TO_PROJECT_ID:
+        elif id == constants.ID_ADD_CURRENT_FILE_TO_PROJECT:
             event.Enable(self._CanAddCurrentFileToProject())
             return True
-        elif id in [ProjectService.ADD_FILES_TO_PROJECT_ID,
-        ProjectService.ADD_DIR_FILES_TO_PROJECT_ID,
+        elif id in [constants.ID_ADD_FILES_TO_PROJECT,
+        constants.ID_ADD_DIR_FILES_TO_PROJECT,
         ProjectService.RENAME_ID,
-        ProjectService.OPEN_SELECTION_ID]:
+        constants.ID_OPEN_SELECTION]:
             event.Enable(False)
             return True
-        elif id == ProjectService.PROJECT_PROPERTIES_ID:
+        elif id == constants.ID_PROJECT_PROPERTIES:
             event.Enable(self._HasOpenedProjects())
             return True
         elif id in [Property.FilePropertiesService.PROPERTIES_ID,
-            ProjectService.ADD_FOLDER_ID,
-            ProjectService.ADD_PACKAGE_FOLDER_ID,
-            ProjectService.ADD_NEW_FILE_ID,
-            ProjectService.DELETE_PROJECT_ID,
-            ProjectService.CLOSE_PROJECT_ID,
-            ProjectService.SAVE_PROJECT_ID,
-            ProjectService.OPEN_PROJECT_PATH_ID,
-            ProjectService.IMPORT_FILES_ID,
-            ProjectService.ARCHIVE_PROJECT_ID,
-            ProjectService.CLEAN_PROJECT_ID]:
+            constants.ID_ADD_FOLDER,
+            constants.ID_ADD_PACKAGE_FOLDER,
+            constants.ID_ADD_NEW_FILE,
+            constants.ID_DELETE_PROJECT,
+            constants.ID_CLOSE_PROJECT,
+            constants.ID_SAVE_PROJECT,
+            constants.ID_OPEN_PROJECT_PATH,
+            constants.ID_IMPORT_FILES,
+            constants.ID_ARCHIVE_PROJECT,
+            constants.ID_CLEAN_PROJECT]:
             if self.GetView():
                 return self.GetView().ProcessUpdateUIEvent(event)
             else:

@@ -88,3 +88,14 @@ DEBUGGER_PAGE_COMMON_METHOD = "StopAndRemoveUI"
 
 #when application run,the menu name translated to other language
 VIEW_MENU_ORIG_NAME = "&View"
+FPRMAT_MENU_ORIG_NAME = "&Format"
+PROJECT_MENU_ORIG_NAME = "&Project"
+RUN_MENU_ORIG_NAME = "&Run"
+TOOLS_MENU_ORIG_NAME = "&Tools"
+WINDOWS_MENU_ORIG_NAME ="&Window"
+HELP_MENU_ORIG_NAME = "&Help"
+
+
+CR_LF_EOL_CHAR = '\r\n'
+CR_EOL_CHAR = '\r'
+LF_EOL_CHAR = '\n'
