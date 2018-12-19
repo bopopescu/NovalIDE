@@ -61,6 +61,11 @@ class FeedbackDialog(wx.Dialog):
         self.Fit()
         
     def OnSend(self,event):
+        
+        content = self.content_ctrl.GetValue().strip()
+        if content == "":
+            wx.MessageBox(_("Content could not be empty!"),style=wx.OK|wx.ICON_ERROR)
+            return
         result = UserDataDb.get_db().GetUserInfo()
         content =  CONTENT_TEMPLATE % (result[5],result[3],result[1],utils.GetAppVersion(),self.content_ctrl.GetValue().strip())
         subject = u"%s【%s】" % (self._title_txtctrl.GetValue().strip(),self._feedback_category_combo.GetValue())

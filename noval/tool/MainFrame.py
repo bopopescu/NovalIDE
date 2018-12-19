@@ -22,6 +22,7 @@ import MainWindowAddOn
 import noval.util.constants as constants
 from MenuBar import MainMenuBar
 from noval.util.popupmenu import PopupMenu
+import Feedback
 
 _ = consts._
 

@@ -137,6 +137,8 @@ Section "MainSection" SEC01
   File "dist\_multiprocessing.pyd"
   SetOutPath "$INSTDIR\noval"
   File /r "dist\noval\*.*"
+  SetOutPath "$INSTDIR\Crypto"
+  File /r "dist\Crypto\*.*"
   SetOutPath "$INSTDIR\tcl"
   File /r "dist\tcl\*.*"
   SetOutPath "$APPDATA\NovalIDE\intellisence\builtins"
@@ -258,6 +260,7 @@ Section Uninstall
 
   RMDir /r "$INSTDIR\tcl"
   RMDir /r "$INSTDIR\noval"
+  RMDir /r "$INSTDIR\Crypto"
 
   RMDir "$INSTDIR"
 /*******************************************
