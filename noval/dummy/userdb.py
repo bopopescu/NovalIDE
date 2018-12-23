@@ -65,8 +65,8 @@ class UserDataDb(BaseDb):
     USER_DATA_DB_NAME = "data.db"
     DB_VERSION = "1.0.1"
     ###HOST_SERVER_ADDR = 'http://127.0.0.1:8000'
-    ##HOST_SERVER_ADDR = 'http://www.novalide.com'
-    HOST_SERVER_ADDR = 'http://47.105.90.123:8080/'
+    HOST_SERVER_ADDR = 'http://www.novalide.com'
+    ####HOST_SERVER_ADDR = 'http://47.105.90.123:8080/'
     __metaclass__ = Singleton.SingletonNew
 
     def __init__(self):

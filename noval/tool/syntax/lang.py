@@ -72,7 +72,7 @@ LANG_MAP = {
             ID_LANG_H      : (LANG_H,      'h'),
             ID_LANG_CSS    : (LANG_CSS,    'css'),
             ID_LANG_JS     : (LANG_JS,     'js'),
-            ID_LANG_HTML   : (LANG_HTML,   'htm html shtm shtml xhtml'),
+            ID_LANG_HTML   : (LANG_HTML,   'html htm shtm shtml xhtml'),
             ID_LANG_PROPS  : (LANG_PROPS,  'ini inf reg url cfg cnf'),
             ID_LANG_PYTHON : (LANG_PYTHON, 'py pyw'),
             ID_LANG_SQL    : (LANG_SQL,    'sql'),
