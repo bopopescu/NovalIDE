@@ -69,9 +69,9 @@ class FeedbackDialog(wx.Dialog):
         result = UserDataDb.get_db().GetUserInfo()
         content =  CONTENT_TEMPLATE % (result[5],result[3],result[1],utils.GetAppVersion(),self.content_ctrl.GetValue().strip())
         subject = u"%s【%s】" % (self._title_txtctrl.GetValue().strip(),self._feedback_category_combo.GetValue())
-        Mail.send_mail(subject,content)
-        wx.MessageBox(_("Send mail success,Thanks for your feedback!"))
-        self.EndModal(wx.ID_OK)
+        if Mail.send_mail(subject,content):
+            wx.MessageBox(_("Send mail success,Thanks for your feedback!"))
+            self.EndModal(wx.ID_OK)
 
 class FeedBack(plugin.Plugin):
     plugin.Implements(iface.MainWindowI)

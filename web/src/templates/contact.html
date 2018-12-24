@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block banner %}
+<!--banner-->
+<section class="banner">
+    <img src="/media/images/contact-banner.jpg" alt="">
+</section>
+{% endblock %}
+
+{% block navigation_name %}
+<div><a class="cur" href="contact.html">联系方式</a></div>
+{% endblock %}
+{% block navigation_content %}
+<a href="contact.html">联系我们</a> > <em>联系方式</em>
+{% endblock %}	
+
+{% block content %}
+<!--内页内容区域-->
+<div class="nycontainer">
+	<div class="container2">
+		<div class="nytit">
+			<h2>联系方式:QQ群   欢迎交流</h2>
+		</div>
+		<div class="contact">
+			<img  src="/media/images/python.png"/>
+			<img src="/media/images/web.png"/>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block news %}
+<!--内页新闻资讯-->
+<div class="nynews">
+	<div class="container2">
+		<div class="nynewwrap">
+			<div class="nytit2">
+				<span></span>
+				<h3>功能资讯</h3>
+			</div>
+			<ul class="clearfix">
+				<li>
+					<div class="redbg">
+						<a class="nynewstit">炫酷的代码高亮模式</a>
+						<p>支持多种语言语法解析，灵活定义配色方案</p>
+						
+					</div>
+					<div class="redbghover"></div>
+				</li>
+				<li>
+					<div class="redbg">
+						<a class="nynewstit" >插件式开发</a>
+						<p>包含20多种专门为编辑设计开发的插件，方便二次开发</p>
+					</div>
+					<div class="redbghover"></div>
+				</li>
+				<li>
+					<div class="redbg">
+						<a class="nynewstit" >免费轻便及跨平台特性</a>
+						<p>nsis打包压缩， 大小不足12M，功能强，永久免费而且支持跨平台。</p>
+					</div>
+					<div class="redbghover"></div>
+				</li>
+				<li>
+					<div class="redbg">
+						<a class="nynewstit">超强的包管理器</a>
+						<p>使用pip工具一键式安装和卸载Python第三方包，省时省力。</p>
+					</div>
+					<div class="redbghover"></div>
+				</li>
+					<li>
+					<div class="redbg">
+						<a class="nynewstit">丰富的智能提示</a>
+						<p>使用先进的代码解析器智能分析Python代码，强大的联想功能，让开发者事半功倍。</p>
+					</div>
+					<div class="redbghover"></div>
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>
+{% endblock %}
+

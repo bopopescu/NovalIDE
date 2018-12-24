@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2018-12-19 22:26+中国标准时间\n"
+"POT-Creation-Date: 2018-12-24 22:09+中国标准时间\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -833,6 +833,11 @@ msgstr ""
 
 #: D:\env\Noval\noval\tool\ImageEditor.py:48
 msgid "Open Image File"
+msgstr ""
+
+#: D:\env\Noval\noval\tool\Mail.py:40
+#: D:\env\Noval\noval\tool\service\ExtensionService.py:225
+msgid "could not connect to server"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\MainFrame.py:62
@@ -4144,10 +4149,6 @@ msgstr ""
 
 #: D:\env\Noval\noval\tool\service\ExtensionService.py:184
 msgid "Goto official website of Python"
-msgstr ""
-
-#: D:\env\Noval\noval\tool\service\ExtensionService.py:225
-msgid "could not connect to version server"
 msgstr ""
 
 #: D:\env\Noval\noval\tool\service\ExtensionService.py:233

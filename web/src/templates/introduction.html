@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block banner %}
+<!--banner-->
+<section class="banner">
+    <img src="/media/images/about_banner.jpg" alt="">
+</section>
+{% endblock %}
+
+{% block navigation_name %}
+<div><a class="cur" href="introduction.html">产品介绍</a></div>
+{% endblock %}
+{% block navigation_content %}
+<a href="introduction.html">NovalIDE</a> > <em>产品介绍</em>
+{% endblock %}
+{% block content %}
+<!--内页内容区域-->
+<div class="nycontainer">
+	<div class="container2">
+		<div class="about">
+			<div class="nytit">
+				<h2>产品介绍</h2>
+			</div>
+			<img class="aboutimg1" src="/media/images/aboutimg.jpg" alt="" />
+			<div class="abouttxt">
+				<p>NovalIDE是一款国产、开源、跨平台、免费而且轻便的Python IDE，
+有丰富的语法高亮功能，支持Python、C/C++、HTML、JavaScript、XML、CSS等多种开发语言，
+能够自动检测，加载并允许用户自由添加和删除Python解释器，
+并选择相应的解释器运行脚本，支持函数智能提示和代码自动完成， 
+以及新建和管理工程，支持断点调试，并能监视，查看变量以及堆栈变化， 
+强大的包管理器，能通过pip一键式安装卸载Python包，
+纯中文界面，可以切换中英文2个语言版本， 
+提供开放式接口支持程序员开发自定义插件，支持运行Python2.6,2.7和3.x版本，并可以在不同版本之间进行切换。</p>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block news %}
+<div class="nynews">
+	<div class="container2">
+		<div class="nynewwrap">
+			<div class="nytit2">
+				<span></span>
+				<h3>功能资讯</h3>
+			</div>
+			<ul class="clearfix">
+				<li>
+					<div class="redbg">
+						<a class="nynewstit">炫酷的代码高亮模式</a>
+						<p>支持多种语言语法解析，灵活定义配色方案</p>
+						
+					</div>
+					<div class="redbghover"></div>
+				</li>
+				<li>
+					<div class="redbg">
+						<a class="nynewstit" >插件式开发</a>
+						<p>包含20多种专门为编辑设计开发的插件，方便二次开发</p>
+					</div>
+					<div class="redbghover"></div>
+				</li>
+				<li>
+					<div class="redbg">
+						<a class="nynewstit" >免费轻便及跨平台特性</a>
+						<p>nsis打包压缩， 大小不足12M，功能强，永久免费而且支持跨平台。</p>
+					</div>
+					<div class="redbghover"></div>
+				</li>
+				<li>
+					<div class="redbg">
+						<a class="nynewstit">超强的包管理器</a>
+						<p>使用pip工具一键式安装和卸载Python第三方包，省时省力。</p>
+					</div>
+					<div class="redbghover"></div>
+				</li>
+					<li>
+					<div class="redbg">
+						<a class="nynewstit">丰富的智能提示</a>
+						<p>使用先进的代码解析器智能分析Python代码，强大的联想功能，让开发者事半功倍。</p>
+					</div>
+					<div class="redbghover"></div>
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>
+{% endblock %}

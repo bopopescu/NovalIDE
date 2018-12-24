@@ -1,0 +1,31 @@
+
+
+django==1.6
+requests
+mongoengine
+uWSGI
+"C:\Program Files\MongoDB\Server\3.2\bin\mongod.exe" --dbpath c:\data
+"C:\Program Files (x86)\MongoDB\Server\3.2\bin\mongod.exe" --dbpath c:\data -storageEngine=mmapv1
+C:\Program Files\MongoDB\Server\3.2\bin\mongo.exe
+mongorestore --drop D:\env\noval-web\version\MongoBackup-2018-05-23
+mongorestore D:\env\noval-web\version\MongoBackup-2018-05-23
+
+apt-get install mongodb,nginx
+
+
+/var/log/mongodb/mongodb.log
+/usr/bin/mongod --config /etc/mongodb.conf
+
+/etc/nginx/nginx.conf
+
+
+Listen queue size is greater than the system max net.core.somaxconn (128):
+echo 8912 > /proc/sys/net/ipv4/tcp_max_syn_backlog
+echo 8912 > /proc/sys/net/core/somaxconn
+
+/opt/env/bin/uwsgi --chdir /opt/env/noval-web --ini /opt/env/noval-web/uwsgi.ini
+
+
+db.member_data.find().sort({_id:-1}).pretty()
+
+runserver 0.0.0.0:8000 --noreload

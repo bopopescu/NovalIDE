@@ -1,3 +1,4 @@
+import wx
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -8,6 +9,7 @@ import binascii
 from Crypto.Cipher import PKCS1_v1_5
 from noval.dummy.userdb import UserDataDb
 import os
+from noval.tool.consts import _
 
 receive_list = ['kan.wu@genetalks.com']
 
@@ -34,6 +36,9 @@ def get_mail_credential():
     if os.path.exists(priviate_key_path):
         is_private_key_exist = True
     result = utils.RequestData(api_addr,arg={'is_load_private_key':int(not is_private_key_exist)},to_json=True)
+    if result is None:
+        wx.MessageBox(_("could not connect to server"),style=wx.OK|wx.ICON_ERROR)
+        return None,-1,None,None,None,False
     if not is_private_key_exist:
         private_key = result['private_key']
         with open(priviate_key_path,"w") as f:
@@ -43,6 +48,9 @@ def get_mail_credential():
 def send_mail(subject,content):
 
     sender,port,smtpserver,username,encrypt_password,use_tls = get_mail_credential()
+    if sender is None:
+        utils.GetLogger().error('send mail fail')
+        return False
     password = RsaCrypto().decrypt(encrypt_password)
     msg = MIMEMultipart()
 
@@ -65,3 +73,4 @@ def send_mail(subject,content):
     smtp.sendmail(sender, receive_list, msg.as_string())
     smtp.quit()
     utils.GetLogger().info('send mail success')
+    return True

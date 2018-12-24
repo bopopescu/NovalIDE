@@ -222,7 +222,7 @@ class ExtensionService(Service.BaseService):
         data = utils.RequestData(api_addr,arg = {'app_version':app_version,'lang':lang})
         if data is None:
             if not ignore_error:
-                wx.MessageBox(_("could not connect to version server"),style=wx.OK|wx.ICON_ERROR)
+                wx.MessageBox(_("could not connect to server"),style=wx.OK|wx.ICON_ERROR)
             return
         #no update
         if data['code'] == 0:

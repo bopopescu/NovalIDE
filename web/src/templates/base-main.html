@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<title>NovalIDE</title>
+	<meta name="keywords" content="NovalIDE,Python,IDE,国产,国内,Noval">
+	<meta name="description" content="NovalIDE是一款纯国产的Python IDE，集编辑调试运行一体的Python集成开发环境，炫酷的代码高亮模式，免费轻便及跨平台特性，多版本解释器自由切换，丰富的智能提示，超强的包管理器以及支持插件式开发的高扩展性。">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<link rel="shortcut icon" href="/media/images/noval.ico">
+	
+	<!-- include main css -->
+	<link rel="stylesheet" type="text/css" href="/media/css/slick.css"/>	
+	<link rel="stylesheet" type="text/css" href="/media/css/bootstrap.css"/>
+	<link rel="stylesheet" type="text/css" href="/media/css/iconfont.css">
+	<link rel="stylesheet" type="text/css" href="/media/css/jquery.mmenu.all.css"/>
+	<link rel="stylesheet" type="text/css" href="/media/css/style.css"/>
+	<link rel="stylesheet" type="text/css" href="/media/css/jquery.mCustomScrollbar.css"/>
+	<link rel="stylesheet" href="/media/css/animates.css" />
+	
+	<!--[if lt IE 9]>
+    <script src="http://apps.bdimg.com/libs/html5shiv/r29/html5.min.js"></script>
+    <script src="http://apps.bdimg.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <script type="text/javascript" src="js/selectivizr.js" ></script>
+    <![endif]-->
+   
+</head>
+<body>
+	
+<div>
+    {% include "header.html" %}
+	<!--banner-->
+    {% block banner %}{% endblock %}
+    {% block content %}{% endblock %}	
+</div>	
+{% block information %}{% endblock %}
+{% block detail_content %}{% endblock %}
+
+{% include "footer.html" %}
+{% include "link.html" %}
+
+
+<!--Include Js-->
+<script src="/media/js/jquery-1.8.3-jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<!--移动端导航-->
+<script src="/media/js/jquery.mmenu.all.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="/media/js/public.js" type="text/javascript" charset="utf-8"></script>
+<!--slick-->
+<script src="/media/js/slick.min.js" type="text/javascript" charset="utf-8"></script>
+{% block javascript_includes %}{% endblock %}
+{% block javascript_init %}{% endblock %}
+<!--<script src="//cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>-->
+
+</body>
+</html>
+

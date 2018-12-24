@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block banner %}
+<!--banner-->
+<section class="banner">
+    <img src="/media/images/update-banner.jpg" alt="">
+</section>
+{% endblock %}
+
+{% block navigation_name %}
+<div><a class="cur" href="updatelog.html">更新记录</a></div>
+{% endblock %}
+{% block navigation_content %}
+<em>更新记录</em>
+{% endblock %}
+{% block content %}
+<!--内页内容区域-->
+<div class="nycontainer">
+	<div class="container2">
+		<div class="nytit">
+			<h2>更新记录</h2>
+			<h3>创意精彩生活；致力于发展高附加值产品</h3>
+			<span> creative wonderful life; committed to the development of high value-added products</span>
+		</div>
+		<div class="job">
+			<ul>
+				<li class="clearfix active">
+					<div class="jobtit">
+						<span>最新<b></b></span>
+						<span class="zhiwei">
+							<b>版本</b><b>NovalIDE 1.1.1版本</b>
+						</span>
+						<i></i>
+					</div>
+					<div class="jobcon slideDown">
+						<h3>新增功能特性与性能优化</h3><br/>
+						<b>新增特性</b>
+						<p>1、主菜单添加了访问官方网站的入口；</p>
+						<p>2、支持在主菜单中添加一些常用扩展工具的快捷键和菜单；</p>
+						<p>3、添加了Web浏览器功能；</p>
+						<p>4、支持用户在工程中添加新建文件模板，文件种类有Python,JavaScript,CSS,HTML,XML等；</p>
+						<p>5、Windows安装包提供中英文语言选择功能</p>
+						<b>性能优化</b>
+						<p>1、允许用户删除软件自带或内建的解释器，只保留一个用户自己的解释器；</p>
+						<p>2、设置关闭文档快捷键为Ctrl+W</p>
+						<p>3、优化对Python文件中文编码的处理，灵活处理Python2和3对中文编码申明方式的不同</p>
+						<p>4、优化了软件其它的一些性能并修复了一些BUG</p>
+						<br/>
+						<hr />
+						<a>Windows/Linux版本    更新时间:2018-06-11</a>
+					</div>
+				</li>
+				<li class="clearfix">
+					<div class="jobtit">
+						<span><b>初版</b></span>
+						<span class="zhiwei">
+							<b>版本</b><b>NovalIDE 1.1.0版本</b>
+						</span>
+						<i></i>
+					</div>
+					<div class="jobcon ">
+						<h3>第一版正式发布</h3><br/>
+						<b>文件与编辑</b>
+						<p>1、支持在工具栏和菜单中打开，保存以及保存所有文件</p>
+                        <p>2、支持文件编辑常用的复制，剪切，粘贴，撤销，重做，选择所有等功能及其快捷键</p>
+                        <p>3、允许一些高级的编辑功能如大小写转换，以及tab转空格和空格转tab等功能</p>
+                        <p>4、支持在文档插入日期，注释模板，文件内容，以及Python编码申明</p>
+                        <p>5、可以在文档，项目以及目录查找和替换文本内容</p>
+                        <p>6、支持插入和管理书签</p>
+						<b>调试与运行</b>
+					<p>1、支持在软件中断点调试，单步调试，查看堆栈变化以及变量值，目前只支持Python2.7</p>
+                    <p>2、支持左键点击添加或删除断点，断点管理</p>
+                    <p>3、用户可以自由选择当前解释器来运行Python代码</p>
+                    <p>4、运行使用系统真实终端(cmd)环境运行Python脚本，并支持快捷键运行</p>
+                    <p>5、可以自由快速方便的重启，终止，和关闭调试运行进程</p>
+                    <p>6、可以设置运行参数和PythonPath路径，并保存配置，并在下一次运行中使用此配置</p>
+					<b>解释器管理</b>
+					<p>1、自动加载电脑上所有安装的解释器，并可以添加，删除自定义解释器</p>
+                    <p>2、独立的解释器管理界面，自动分析解释器智能提示数据信息</p>
+                    <p>3、集成pip包管理器，一键式安装，卸载Python第三方包</p>
+                    <p>4、添加和删除解释器搜索路径，并能够设置解释器运行环境变量</p>
+					<b>智能提示与代码解析</b>
+					<p>1、自动解析解释器搜索路径下的所有代码文件，并生成智能提示数据信息</p>
+                    <p>2、支持列出模块以及类成员信息</p>
+                    <p>3、输入import支持列出所有可导入模块</p>
+                    <p>4、按F12快捷键或右键点击转到定义，可以转到代码的定义</p>
+                    <p>5、可浏览代码视图，包括导入模块，类，函数的解析，并能定位到行</p>
+					<b>中英文切换</b>
+                    <p>1、默认为英文版本，在菜单tools/options里面可以切换中文版本</p>
+					<b>项目操作和管理</b>
+					<p>1、目前只支持空项目以及从现有代码导入项目</p>
+					<p>2、可以在项目中任意复制，剪切，粘贴文件，并在文件系统上有相应的操作</p>
+					<p>3、项目运行必须设置启动文件才能运行，可在项目文件右键设置任意一个启动文件</p>
+					<p>4、支持新建，保存，关闭，以及删除工程</p>
+					<p>5、可以添加现有文件和文件夹到工程中</p>
+					<p>6、右键导入文件到工程，可以导入现有代码到工程，并保持原有完整的目录结构</p>
+					<b>版本更新</b>
+					<p>1、官方网站提供官方版本下载渠道</p>
+					<p>2、软件启动时会自动检测更新，如果有新版本，会提示新版本下载</p>
+					<p>3、帮助菜单提供检测新版本入口，如果有新版本，会提示新版本下载</p>
+					
+						<br/>
+						<hr />
+						<a>Windows/Linux版本   更新时间:2018-5-22 </a>
+					</div>
+				</li>
+		
+			</ul>
+		</div>
+	</div>
+</div>
+{% endblock %}
+{% block news %}
+<div class="nynews">
+	<div class="container2">
+		<div class="nynewwrap">
+			<div class="nytit2">
+				<span></span>
+				<h3>功能资讯</h3>
+			</div>
+			<ul class="clearfix">
+				<li>
+					<div class="redbg">
+						<a class="nynewstit">炫酷的代码高亮模式</a>
+						<p>支持多种语言语法解析，灵活定义配色方案</p>
+						
+					</div>
+					<div class="redbghover"></div>
+				</li>
+				<li>
+					<div class="redbg">
+						<a class="nynewstit" >插件式开发</a>
+						<p>包含20多种专门为编辑设计开发的插件，方便二次开发</p>
+					</div>
+					<div class="redbghover"></div>
+				</li>
+				<li>
+					<div class="redbg">
+						<a class="nynewstit" >免费轻便及跨平台特性</a>
+						<p>nsis打包压缩， 大小不足12M，功能强，永久免费而且支持跨平台。</p>
+					</div>
+					<div class="redbghover"></div>
+				</li>
+				<li>
+					<div class="redbg">
+						<a class="nynewstit">超强的包管理器</a>
+						<p>使用pip工具一键式安装和卸载Python第三方包，省时省力。</p>
+					</div>
+					<div class="redbghover"></div>
+				</li>
+					<li>
+					<div class="redbg">
+						<a class="nynewstit">丰富的智能提示</a>
+						<p>使用先进的代码解析器智能分析Python代码，强大的联想功能，让开发者事半功倍。</p>
+					</div>
+					<div class="redbghover"></div>
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>
+{% endblock %}

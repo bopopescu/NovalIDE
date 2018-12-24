@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2018-12-19 22:26+ÖÐ¹ú±ê×¼Ê±¼ä\n"
-"PO-Revision-Date: 2018-12-19 22:31+0800\n"
+"POT-Creation-Date: 2018-12-24 22:09+ÖÐ¹ú±ê×¼Ê±¼ä\n"
+"PO-Revision-Date: 2018-12-24 22:10+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -822,9 +822,6 @@ msgid "Warning"
 msgstr "警告"
 
 #: D:\env\Noval\noval\tool\IDE.py:774
-#, fuzzy
-#| msgid ""
-#| "File \"%s\" has already been modified outside,Do You Want to reload it?"
 msgid "'%s' has been modified outside of %s.  Reload '%s' from file system?"
 msgstr "文件 \"%s\" 已经在外部被改变，要重载文档内容吗？"
 
@@ -849,6 +846,11 @@ msgstr ""
 #: D:\env\Noval\noval\tool\ImageEditor.py:48
 msgid "Open Image File"
 msgstr "打开图片"
+
+#: D:\env\Noval\noval\tool\Mail.py:40
+#: D:\env\Noval\noval\tool\service\ExtensionService.py:225
+msgid "could not connect to server"
+msgstr "不能连接服务器"
 
 #: D:\env\Noval\noval\tool\MainFrame.py:62
 #: D:\env\Noval\noval\tool\MainFrame.py:87
@@ -4234,10 +4236,6 @@ msgstr "Python官方网站"
 #: D:\env\Noval\noval\tool\service\ExtensionService.py:184
 msgid "Goto official website of Python"
 msgstr "打开Python官方网址"
-
-#: D:\env\Noval\noval\tool\service\ExtensionService.py:225
-msgid "could not connect to version server"
-msgstr "不能连接版本服务器"
 
 #: D:\env\Noval\noval\tool\service\ExtensionService.py:233
 msgid "Update Available"
