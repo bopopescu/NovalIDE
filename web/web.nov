@@ -132,5 +132,7 @@
   <noval:file filePath="./src/templates/footer.html" logicalFolder="src/templates" isStartup="false"/>
   <noval:file filePath="./src/templates/header.html" logicalFolder="src/templates" isStartup="false"/>
   <noval:file filePath="./src/templates/link.html" logicalFolder="src/templates" isStartup="false"/>
+  <noval:file filePath="./src/templates/404.html" logicalFolder="src/templates" isStartup="false"/>
+  <noval:file filePath="./src/web/request_response.py" logicalFolder="src/web" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>

@@ -346,6 +346,8 @@ class PythonView(CodeEditor.CodeView):
         view = treeCtrl.GetCallbackView()
         newCheckSum = self.GenCheckSum()
         if not force:
+            #if document length has been changed ,force to parse the document syntax again
+            force = self._checkSum != newCheckSum
             if view and view is self:
                 if self._checkSum == newCheckSum:
                     return False

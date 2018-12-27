@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'home'
 ]
 
-MIDDLEWARE = [
+MIDDLEWARE_CLASSES = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'web.disable_crsf.CsrfDisableMiddleware',   #禁用csrf
@@ -55,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'web.profile_middleware.ProfilerMiddleware',
+    'web.request_response.RequestResponse'
    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
