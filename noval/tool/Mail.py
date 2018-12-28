@@ -30,7 +30,7 @@ def get_priviate_key_path():
     return priviate_key_path
             
 def get_mail_credential():
-    api_addr = UserDataDb.HOST_SERVER_ADDR + "member/get_mail"
+    api_addr = UserDataDb.HOST_SERVER_ADDR + "/member/get_mail"
     priviate_key_path = get_priviate_key_path()
     is_private_key_exist = False
     if os.path.exists(priviate_key_path):
