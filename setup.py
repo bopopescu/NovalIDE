@@ -97,6 +97,9 @@ elif sys.platform.find('linux') != -1:
                         'tool/bmp_source/template/*', 
                         'tool/syntax/lexer/*.py',
                         'tool/bmp_source/toolbar/*', 
+                        'tool/bmp_source/project/*', 
+                        'tool/bmp_source/debugger/*', 
+                        'tool/bmp_source/web/*', 
                         'tool/bmp_source/*.*', 
                         'locale/en_US/LC_MESSAGES/*.mo',
                         'locale/zh_CN/LC_MESSAGES/*.mo'
