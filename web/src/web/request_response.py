@@ -27,7 +27,7 @@ class RequestResponse(object):
                 #     print s
             for x in request.REQUEST:
                 print '--path:', request.path
-                print '--args:', x, 'value:', request.REQUEST.get(x)
+                ###print '--args:', x, 'value:', request.REQUEST.get(x)
         
         logger.info("%s -- %s: --- %s" % (request.path, request.META.get('HTTP_COOKIE'), request.REQUEST))
         #请求是否需要登录
