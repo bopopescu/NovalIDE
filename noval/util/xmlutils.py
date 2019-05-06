@@ -10,22 +10,20 @@
 # License:      wxWindows License
 #----------------------------------------------------------------------------
 
-from noval.util.lang import *
 import os
 import time
 import urllib
 import logging
-from noval.util.lang import *
 import noval.util.objutils as objutils
 import noval.util.xmlmarshaller as xmlmarshaller
 import noval.util.logger as logger
-from noval.tool.consts import PROJECT_NAMESPACE_URL
+from noval.consts import PROJECT_NAMESPACE_URL
 
 xmlLogger = logging.getLogger("novalide.util.xml")
     
 def load(fileName, knownTypes=None, knownNamespaces=None, createGenerics=False):
     loadedObject = None
-    fileObject = file(fileName)
+    fileObject = open(fileName)
     timeStart = time.time()
     xml = ""
     try:
@@ -38,7 +36,7 @@ def load(fileName, knownTypes=None, knownNamespaces=None, createGenerics=False):
         fileObject.close()
         if xmlLogger.isEnabledFor(logger.LEVEL_INFO):
             timeDone = time.time()
-            logger.info(xmlLogger, ('Load statistics for file %s (%d bytes): elapsed time = %f secs' % (fileName, len(xml), timeDone-timeStart)))
+            xmlLogger.info(('Load statistics for file %s (%d bytes): elapsed time = %f secs' % (fileName, len(xml), timeDone-timeStart)))
     return loadedObject
 
 def loadURI(uri, knownTypes=None, knownNamespaces=None, xmlSource=None, createGenerics=False):
@@ -54,7 +52,7 @@ def loadURI(uri, knownTypes=None, knownNamespaces=None, xmlSource=None, createGe
     finally:
         if xmlLogger.isEnabledFor(logger.LEVEL_INFO):
             timeDone = time.time()
-            logger.info(xmlLogger, ('Load statistics for URI %s (%d bytes): elapsed time = %f secs' % (uri, len(xml), timeDone-timeStart)))
+            xmlLogger.info(('Load statistics for URI %s (%d bytes): elapsed time = %f secs' % (uri, len(xml), timeDone-timeStart)))
     return loadedObject
 
 def unmarshal(xml, knownTypes=None, knownNamespaces=None, xmlSource=None, createGenerics=False):
@@ -71,12 +69,12 @@ def save(fileName, objectToSave, prettyPrint=True, marshalType=True, knownTypes=
     try:
         fileObject.write(xml)
         fileObject.flush()
-    except Exception, errorData:
+    except Exception as errorData:
         fileObject.close()
         raise xmlmarshaller.MarshallerException('Error marshalling object to file "%s": %s' % (fileName, str(errorData)))
     fileObject.close()
     timeDone = time.time()
-    logger.info(xmlLogger, ('Save statistics for file %s: elapsed time = %f secs' % (fileName, timeDone-timeStart)))
+    xmlLogger.info(('Save statistics for file %s: elapsed time = %f secs' % (fileName, timeDone-timeStart)))
     
 def marshal(objectToSave, prettyPrint=True, marshalType=True, knownTypes=None, knownNamespaces=None, encoding='utf-8'):
     if (knownTypes == None): 
@@ -140,7 +138,7 @@ def cloneObject(objectToClone, knownTypes=None, marshalType=True, knownNamespace
     return clonedObject
 
 def getAgVersion(fileName):
-    fileObject = file(fileName)
+    fileObject = open(fileName)
     try:
         xml = fileObject.read()
     finally:
@@ -385,9 +383,7 @@ def getAgKnownTypes():
             import activegrid.model.schema
             import activegrid.server.deployment
             import activegrid.model.wsdl
-            ifDefPy()
             import activegrid.data.dataservice
-            endIfDef()
             for keyName, className in getAgXsdToClassName().iteritems():
                 classType = objutils.classForName(className)
                 if (classType == None):

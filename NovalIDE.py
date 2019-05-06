@@ -1,15 +1,18 @@
-#----------------------------------------------------------------------------
-# Name:         NovalIDE.py
+# -*- coding: utf-8 -*-
+#-------------------------------------------------------------------------------
+# Name:        NovalIDE.py
 # Purpose:
 #
-# Author:       wukan
+# Author:      wukan
 #
-# Created:      12/26/2017
-# CVS-ID:       $Id$
-# Copyright:    (c) 2017-~ NovalIDE, Inc.
-# License:      wxWindows License
-#----------------------------------------------------------------------------
+# Created:     2019-01-08
+# Copyright:   (c) wukan 2019
+# Licence:     GPL-3.0
+#-------------------------------------------------------------------------------
 
-from noval.noval import main
-main()
+
+from noval.launcher import run
+import noval.model as model
+#设置软件运行的语言,默认为Python
+run(model.LANGUAGE_DEFAULT)
 

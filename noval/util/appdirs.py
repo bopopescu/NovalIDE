@@ -1,20 +1,21 @@
-#----------------------------------------------------------------------------
-# Name:         appdirs.py
-# Purpose:      Utilities for retrieving special application dirs
+#-------------------------------------------------------------------------------
+# Name:        appdirs.py
+# Purpose:
 #
-# Author:       Kevin Ollivier, Jeff Norton
+# Author:      wukan
 #
-# Created:      8/27/05
-# CVS-ID:       $Id$
-# Copyright:    (c) 2004-2005 ActiveGrid, Inc.
-# License:      wxWindows License
-#----------------------------------------------------------------------------
+# Created:     2019-01-08
+# Copyright:   (c) wukan 2019
+# Licence:     GPL-3.0
+#-------------------------------------------------------------------------------
 
-from noval.util.lang import *
 import sys
 import os
 import string
-import noval.util.sysutils as sysutils
+import noval.util.apputils as apputils
+from noval import GetApp
+
+PLUGIN_DIR_NAME = "plugins"
 
 def _getSystemDir(kind):
     if (kind == AG_LOGS_DIR):
@@ -22,46 +23,34 @@ def _getSystemDir(kind):
     elif (kind == AG_DEMOS_DIR):
         return os.path.join(getSystemDir(AG_SYSTEM_DIR), "demos")
     else:
-        path = ""
-        if (sysutils.isServer()):
-            path = os.getenv("ACTIVEGRID_SERVER_HOME")
-            if ((path is None) or (len(path) < 1)):
-                path = sysutils.mainModuleDir
-        else:
-            path = os.getenv("AG_DOCUMENTS_DIR")
-            if ((path is None) or (len(path) < 1)):
-                if sysutils.isWindows():
-                    ifDefPy()
+        path = os.getenv("AG_DOCUMENTS_DIR")
+        if ((path is None) or (len(path) < 1)):
+            if apputils.is_windows():
+                try:
+                    from win32com.shell import shell, shellcon
+                    path = shell.SHGetFolderPath(0, shellcon.CSIDL_PERSONAL, None, 0)
+                except:
+                    pass
+                if ((path is None) or (len(path) < 1)):
+                    homedrive = asString(os.getenv("HOMEDRIVE"))
+                    homepath = os.getenv("HOMEPATH")
+##                        if ((homedrive is not None) and (len(homedrive) > 0) and (homepath is not None) and (len(homepath) > 0)):
+                    path = os.path.join(homedrive, homepath, "MYDOCU~1")
+            else:
+                if sys.platform == "darwin":
                     try:
-                        from win32com.shell import shell, shellcon
-                        path = shell.SHGetFolderPath(0, shellcon.CSIDL_PERSONAL, None, 0)
+                        import macfs
+                        import MACFS
+                        fsspec_disk, fsspec_desktop = macfs.FindFolder(MACFS.kOnSystemDisk, MACFS.kDocumentsFolderType, 0)
+                        path = macfs.FSSpec((fsspec_disk, fsspec_desktop, '')).as_pathname()
                     except:
                         pass
-                    endIfDef()
-                    if ((path is None) or (len(path) < 1)):
-                        homedrive = asString(os.getenv("HOMEDRIVE"))
-                        homepath = os.getenv("HOMEPATH")
-##                        if ((homedrive is not None) and (len(homedrive) > 0) and (homepath is not None) and (len(homepath) > 0)):
-                        path = os.path.join(homedrive, homepath, "MYDOCU~1")
-                else:
-                    ifDefPy()
-                    if sys.platform == "darwin":
-                        try:
-                            import macfs
-                            import MACFS
-                            fsspec_disk, fsspec_desktop = macfs.FindFolder(MACFS.kOnSystemDisk, MACFS.kDocumentsFolderType, 0)
-                            path = macfs.FSSpec((fsspec_disk, fsspec_desktop, '')).as_pathname()
-                        except:
-                            pass
-                    endIfDef()
-                
-                ifDefPy()
-                if ((path is None) or (len(path) < 1)):
-                    path = os.path.expanduser("~")
-                endIfDef()
-                if ((path is None) or (len(path) < 1)):
-                    path = "/"
-                path = os.path.join(path, "NovalIDE")
+            
+            if ((path is None) or (len(path) < 1)):
+                path = os.path.expanduser("~")
+            if ((path is None) or (len(path) < 1)):
+                path = "/"
+            path = os.path.join(path, "NovalIDE")
             
         return path
         
@@ -96,26 +85,23 @@ def getSystemDir(kind=0):
 # NOTE: We don't set this at startup because wxStandardPaths needs a running
 # application object. This makes sure the wxApp will always be created when
 # we get the folder.
-ifDefPy()
-def getAppDataFolder():
-    try:
-        # NOTE: cannot import wx from the server
-        import wx
-        # wxStandardPaths requires a running app
-        if wx.GetApp() and wx.Platform != "__WXGTK__":
-            data_folder = wx.StandardPaths.Get().GetUserDataDir()
-            if not os.path.exists(data_folder):
-                os.mkdir(data_folder)
-            return data_folder
-    except:
-        pass
-    # wxBug: on *nix, it wants to point to ~/.appname, but
-    # so does wxConfig... For now, redirect this to ~/.appbuilder
-    # when this is fixed, we'll migrate settings to the correct place
-    return os.path.join(os.path.expanduser("~"), ".Noval")
-endIfDef()
 
-ifDefPy()
+def get_user_data_path():
+    if apputils.is_windows():
+        import ctypes.wintypes
+        CSIDL_APPDATA = 26
+        SHGFP_TYPE_CURRENT = 0
+        buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
+        ctypes.windll.shell32.SHGetFolderPathW(
+            0, CSIDL_APPDATA, 0, SHGFP_TYPE_CURRENT, buf
+        )
+        return os.path.join(buf.value, GetApp().GetAppName())
+    else:
+        # wxBug: on *nix, it wants to point to ~/.appname, but
+        # so does wxConfig... For now, redirect this to ~/.appbuilder
+        # when this is fixed, we'll migrate settings to the correct place
+        return os.path.join(os.path.expanduser("~"), ".Noval")
+
 def createSystemDirs():
     if (not os.path.exists(getSystemDir())):
         os.mkdir(getSystemDir())
@@ -123,15 +109,20 @@ def createSystemDirs():
         os.mkdir(getSystemDir(AG_LOGS_DIR))
     if (not os.path.exists(getSystemDir(AG_DEMOS_DIR))):
         os.mkdir(getSystemDir(AG_DEMOS_DIR))
-endIfDef()
 
-def GetAppImageDirLocation():
-    app_image_path = os.path.join(sysutils.mainModuleDir, "noval", "tool", "bmp_source")
+def get_app_image_location():
+    app_image_path = os.path.join(apputils.mainModuleDir, "noval", "bmp_source")
     return app_image_path
     
-def GetAppDataDirLocation():
-    app_image_path = os.path.join(sysutils.mainModuleDir, "noval", "tool", "data")
-    return app_image_path
+def get_app_data_location():
+    app_data_path = os.path.join(apputils.mainModuleDir, "noval", "data")
+    return app_data_path
     
-def GetAppLocation():
-    return sysutils.mainModuleDir
+def get_app_path():
+    return apputils.mainModuleDir
+    
+def get_user_plugin_path():
+    return os.path.join(get_user_data_path(),PLUGIN_DIR_NAME)
+
+def get_sys_plugin_path():
+    return os.path.join(get_app_path(),PLUGIN_DIR_NAME)

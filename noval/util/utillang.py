@@ -12,8 +12,11 @@
 
 import os
 import sys
-import UserDict
 import tempfile
+try:
+    from UserDict import DictMixin
+except ImportError:
+    from collections import MutableMapping as DictMixin
 import xml.sax.saxutils as saxutils
 
 import noval.util.parser as parser
@@ -79,7 +82,7 @@ def getEnvVar(name, defaultVal=None):
         return os.environ[name]
     return defaultVal
 
-class ObjAsDict(UserDict.DictMixin):
+class ObjAsDict(DictMixin):
     """
     Passing this to eval as the local variables dictionary allows the
     evaluated code to access properties in the wrapped object
@@ -91,7 +94,7 @@ class ObjAsDict(UserDict.DictMixin):
     def __getitem__(self, key):
         try:
             return getattr(self.obj, key)
-        except AttributeError, e:
+        except AttributeError as e:
             if self.specialEntries.has_key(key):
                 return self.specialEntries[key]
             raise KeyError(e.args)

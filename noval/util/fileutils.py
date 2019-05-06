@@ -1,14 +1,15 @@
-#----------------------------------------------------------------------------
-# Name:         fileutils.py
-# Purpose:      Active grid miscellaneous utilities
+# -*- coding: utf-8 -*-
+#-------------------------------------------------------------------------------
+# Name:        fileutils.py
+# Purpose:
 #
-# Author:       Jeff Norton
+# Author:      wukan
 #
-# Created:      12/10/04
-# CVS-ID:       $Id$
-# Copyright:    (c) 2004-2005 ActiveGrid, Inc.
-# License:      wxWindows License
-#----------------------------------------------------------------------------
+# Created:     2019-01-22
+# Copyright:   (c) wukan 2019
+# Licence:     GPL-3.0
+#-------------------------------------------------------------------------------
+
 
 import logging
 import copy
@@ -18,30 +19,15 @@ import sys
 import zipfile
 
 import noval.util.logger as logger
-import noval.util.sysutils as sysutils
+import noval.util.apputils as apputils
 import noval.util.utillang as utillang
-from noval.util.lang import *
 import subprocess
-import strutils
+import noval.util.strutils as strutils
 import chardet
-import fchecker
-from noval.tool.consts import ERROR_OK,UNKNOWN_ERROR
-import noval.tool.syntax.lang as lang
-import noval.tool.syntax.syntax as syntax
-from noval.tool.consts import _
-
-
-_Checker = fchecker.FileTypeChecker()
-
+import noval.util.txtutils as txtutils
 global fileutilsLogger
 fileutilsLogger = logging.getLogger("activegrid.util.fileutils")
-# FATAL : No logging
-# ERROR : No logging
-# WARN  : No logging
-# INFO  : No logging
-# DEBUG : debugging
-logger.setLevelFatal(fileutilsLogger)
-#logging.getLogger().addHandler(logging.StreamHandler(sys.stderr))
+_Checker = txtutils.FileTypeChecker()
 
 def addRef(varname):
     return "${%s}" % varname
@@ -307,7 +293,6 @@ def isEmptyDir(dir):
         return False
     return len(os.listdir(dir)) == 0
 
-ifDefPy()
 def zip(zipfilepath, basedir=None, files=None):
     """Zip all files in files and save zip as zipfilepath. If files is None, zip all files in basedir. For all files to be zipped, if they are relative to basedir, include the relative path in the archive."""
     
@@ -333,16 +318,11 @@ def zip(zipfilepath, basedir=None, files=None):
                 arcname = getRelativePath(file, basedir)
             if not arcname:
                 arcname = file
-                logger.debug(fileutilsLogger,\
-                                "%s: adding %s with arcname %s" %\
-                                (zipfilepath, file, arcname))
+                fileutilsLogger.debug("%s: adding %s with arcname %s" %(zipfilepath, file, arcname))
             z.write(file, arcname)
     finally:
-        z.close()
-endIfDef()        
+        z.close()        
 
-
-ifDefPy()
 def unzip(zipfilepath, extractdir):
     """Unzip zipfilepath into extractdir."""
     z = zipfile.ZipFile(zipfilepath, mode="r")
@@ -361,24 +341,19 @@ def unzip(zipfilepath, extractdir):
         f = open(filename, "w")
         f.write(z.read(info.filename))
         f.close()
-endIfDef()
 
-ifDefPy()
+
 def copyFile(src, dest):
     """Copies file src to dest. Creates directories in 'dest' path if necessary."""
     destdir = os.path.dirname(dest)
     if not os.path.exists(destdir):
         os.makedirs(destdir)
     shutil.copy(src, dest)
-endIfDef()
 
-ifDefPy()
 def copyDir(src, dest):
     """Copies dir 'src' into dir 'dest'. Creates 'dest' if it does not exist."""
     shutil.copytree(src, dest)
-endIfDef()
 
-ifDefPy()
 def remove(file):
     if not os.path.exists(file):
         return
@@ -386,31 +361,7 @@ def remove(file):
         os.remove(file)
     elif os.path.isdir(file):
         shutil.rmtree(file)
-endIfDef()
 
-def getUserTempDir():
-    systemTempDir = utillang.getSystemTempDir()
-    userName = sysutils.getUserName()
-    userNameNoSpace = userName.replace('_','__').replace(' ','_')
-    userTempDir = systemTempDir + os.sep + "activegrid_" + userNameNoSpace
-    return userTempDir
-
-def createUserTempDir():
-    userTempDir = getUserTempDir()
-    if not os.path.exists(userTempDir):
-        os.makedirs(userTempDir)
-        os.chmod(userTempDir, 0700)
-
-createUserTempDir()
-
-ifDefPy()
-import warnings
-warnings.filterwarnings("ignore", message="tmpnam is a potential security risk to your program")
-def getTmpFile():
-    return os.tmpnam()
-endIfDef()
-
-ifDefPy()
 #@accepts str, dict, str, str, boolean
 def replaceToken(infilepath, tokens={}, outfilepath=None, delim="@@",\
                  useEnv=False):
@@ -437,15 +388,14 @@ def replaceToken(infilepath, tokens={}, outfilepath=None, delim="@@",\
         f.write(content)
     finally:
         if f: f.close()
-endIfDef()
 
 def open_file_directory(file_path):
     """
         Opens the parent directory of a file, selecting the file if possible.
     """
-    err_code = ERROR_OK
+    ret = 0
     err_msg = ''
-    if sysutils.isWindows():
+    if apputils.is_windows():
         # Normally we can just run `explorer /select, filename`, but Python 2
         # always calls CreateProcessA, which doesn't support Unicode. We could
         # call CreateProcessW with ctypes, but the following is more robust.
@@ -459,38 +409,50 @@ def open_file_directory(file_path):
             pidl = ctypes.windll.shell32.ILCreateFromPathA(file_path)
             
         if 0 == pidl:
-            err_code = ctypes.windll.kernel32.GetLastError()
-            err_msg = win32api.FormatMessage(err_code)
+            ret = ctypes.windll.kernel32.GetLastError()
+            err_msg = win32api.FormatMessage(ret)
+            if apputils.is_py2():
+                err_msg = err_msg.decode(apputils.get_default_encoding())
         ctypes.windll.shell32.SHOpenFolderAndSelectItems(pidl, 0, None, 0)
         ctypes.windll.shell32.ILFree(pidl)
         ctypes.windll.ole32.CoUninitialize()
     else:
-        subprocess.Popen(["nautilus", file_path])
-    return err_code,err_msg
+        try:
+            subprocess.Popen(["nautilus", file_path])
+        except Exception as e:
+            ret = -1
+            err_msg = str(e)
+            
+    if ret != 0:
+        raise RuntimeError(err_msg)
 
 def open_path_in_terminator(file_path):
-    import locale
-    err_code = ERROR_OK
+    ret = 0
     err_msg = ''
-    sys_encoding = locale.getdefaultlocale()[1]
-    if sysutils.isWindows():
+    sys_encoding = apputils.get_default_encoding()
+    if apputils.is_windows():
         import ctypes
         import win32api
         try:
-            subprocess.Popen('start cmd.exe',shell=True,cwd=file_path.encode(sys_encoding))
+            if apputils.is_py2():
+                file_path = file_path.encode(sys_encoding)
+            subprocess.Popen('start cmd.exe',shell=True,cwd=file_path)
         except:
-            err_code = ctypes.windll.kernel32.GetLastError()
-            err_msg = win32api.FormatMessage(err_code)
+            ret = ctypes.windll.kernel32.GetLastError()
+            err_msg = win32api.FormatMessage(ret)
+            if apputils.is_py2():
+                err_msg = err_msg.decode(apputils.get_default_encoding())
     else:
         try:
             subprocess.Popen('gnome-terminal',shell=True,cwd=file_path.encode(sys_encoding))
         except Exception as e:
-            err_code = UNKNOWN_ERROR
+            ret = -1
             err_msg = str(e)
-    return err_code,err_msg
+    if ret != 0:
+        raise RuntimeError(err_msg)
         
 def start_file(file_path):
-    if sysutils.isWindows():
+    if apputils.is_windows():
         os.startfile(file_path)
     else:
         subprocess.call(["xdg-open", file_path])
@@ -503,7 +465,7 @@ def is_file_hiden(path):
         is_hidden = True if hidden_flag == win32con.FILE_ATTRIBUTE_HIDDEN else False
         return is_hidden
 
-    if sysutils.isWindows():
+    if apputils.is_windows():
         import win32con
         import win32file
         is_hidden = False
@@ -583,7 +545,7 @@ def RemoveDir(dir_path):
     os.rmdir(dir_path)
     
 
-if sysutils.isWindows():
+if apputils.is_windows():
     def is_writable(path, user):
         return True
 else:
@@ -601,11 +563,29 @@ else:
             (mode & stat.S_IWOTH > 0)
          )
 
-
 def opj(path):
     """Convert paths to the platform-specific separator"""
-    st = apply(os.path.join, tuple(path.split('/')))
+   ### st = apply(os.path.join, tuple(path.split('/')))
+    split_paths = path.split('/')
+    #修复os.path.join bug,在windows下硬盘符号后面必须添加路径分隔符
+    if split_paths[0].endswith(":") and not path.startswith('/'):
+        split_paths[0] += os.sep
+    paths = tuple(split_paths)
+    st = os.path.join(*paths)
     # HACK: on Linux, a leading / gets lost...
     if path.startswith('/'):
         st = '/' + st
     return st
+    
+def get_filename_from_path(path):
+    """
+    Returns the filename for a full path.
+    """
+    return os.path.split(path)[1]
+    
+
+def get_filepath_from_path(path):
+    """
+    Returns the filename for a full path.
+    """
+    return os.path.split(path)[0]

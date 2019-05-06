@@ -11,11 +11,8 @@
 #----------------------------------------------------------------------------
 
 import re
-from noval.util.lang import *
-ifDefPy()
 import string
 import array
-endIfDef()
 
 XPATH_ROOT_VAR = '__rootObj__'
 GETOBJECTPARTNAMES  =   ["primaryRef", "ref", "orderings", "limit"]
@@ -167,9 +164,9 @@ def isXPathNonVar(var):
     try:
         t=int(var)
         return True
-    except TypeError, e:
+    except TypeError as e:
         pass
-    except ValueError, e:
+    except ValueError as e:
         pass
 
     return False

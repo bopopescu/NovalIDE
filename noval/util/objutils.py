@@ -1,25 +1,28 @@
-#----------------------------------------------------------------------------
-# Name:         objutils.py
-# Purpose:      Object Utilities
+#-------------------------------------------------------------------------------
+# Name:        objutils.py
+# Purpose:
 #
-# Author:       Alan Mullendore
+# Author:      wukan
 #
-# Created:      5/10/05
-# CVS-ID:       $Id$
-# Copyright:    (c) 2004-2005 ActiveGrid, Inc.
-# License:      wxWindows License
-#----------------------------------------------------------------------------
+# Created:     2019-02-15
+# Copyright:   (c) wukan 2019
+# Licence:     GPL-3.0
+#-------------------------------------------------------------------------------
+
 
 import logging
 import traceback
 import sys
 import os
-import __builtin__
+try:
+    import __builtin__
+except ImportError:
+    import builtins as __builtin__
+    
 import types
 import noval.util.utillang as utillang
 import noval.util.datetimeparser as datetimeparser
 from types import *
-from noval.util.lang import *
 
 FUNCTION_HAS_ATTR = '_hasAttr'
 FUNCTION_GET_ATTR = '_getAttr'

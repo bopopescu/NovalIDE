@@ -1,20 +1,21 @@
-#----------------------------------------------------------------------------
-# Name:         strutils.py
-# Purpose:      String Utilities
+# -*- coding: utf-8 -*-
+#-------------------------------------------------------------------------------
+# Name:        strutils.py
+# Purpose:
 #
-# Author:       Morgan Hua
+# Author:      wukan
 #
-# Created:      11/3/05
-# CVS-ID:       $Id$
-# Copyright:    (c) 2005 ActiveGrid, Inc.
-# License:      wxWindows License
-#----------------------------------------------------------------------------
+# Created:     2019-01-18
+# Copyright:   (c) wukan 2019
+# Licence:     GPL-3.0
+#-------------------------------------------------------------------------------
+
 import os
 import re
-import wx
-import txtutil
-
-_ = wx.GetTranslation
+import noval.python.parser.utils as parserutils
+from noval.util import apputils
+from noval import _,GetApp
+import noval.util.txtutils as txtutils
 
 def caseInsensitiveCompare(s1, s2):
     """ Method used by sort() to sort values in case insensitive order """
@@ -115,17 +116,30 @@ def parseArgs(argStr, stripQuotes=False):
         argStr = argStr[endIndex:]
     return rtn
 
-def GetFileExt(filename,to_lower=True):
+def get_file_extension(filename,to_lower=True,has_dot=False):
     basename = os.path.basename(filename)
     names = basename.split(".")
     if 1 == len(names):
         return ""
     if to_lower:
-        return names[-1].lower()
+        ext = names[-1].lower()
     else:
-        return names[-1]
+        ext = names[-1]
+    if has_dot:
+        ext = "." + ext
+    return ext
     
-def GetFilenameWithoutExt(file_path_name):
+
+def MakeNameEndInExtension(name, extension):
+    if not name:
+        return name
+    ext = get_file_extension(name)
+    if ext == extension:
+        return name
+    else:
+        return name + extension
+    
+def get_filename_without_ext(file_path_name):
     filename = os.path.basename(file_path_name)
     return os.path.splitext(filename)[0]
 
@@ -151,23 +165,23 @@ def emphasis_path(path):
     path = "\"%s\"" % path
     return path
     
-
-def GenFileFilters(exclude_template_type = None):
+def gen_file_filters(exclude_template_type = None):
+    filters = []
+    for temp in GetApp().GetDocumentManager().GetTemplates():
+        if exclude_template_type is not None and temp.GetDocumentType() == exclude_template_type:
+            continue
+        if temp.IsVisible():
+            filter = get_template_filter(temp)
+            filters.append(filter)
+    filters.append((_("All Files"),".*"))
+    #将列表倒序,使"所有文件"显示在看得见的第一行
+    filters = filters[::-1]
+    return filters
     
-    if wx.Platform == "__WXMSW__" or wx.Platform == "__WXGTK__" or wx.Platform == "__WXMAC__":
-        descr = ''
-        for temp in wx.GetApp().GetDocumentManager()._templates:
-            if exclude_template_type is not None and temp.GetDocumentType() == exclude_template_type:
-                continue
-            if temp.IsVisible() :
-                if len(descr) > 0:
-                    descr = descr + _('|')
-                descr = descr + _(temp.GetDescription()) + " (" + temp.GetFileFilter() + ") |" + temp.GetFileFilter()  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
-        descr = _("All Files") + "(*.*) |*.*|%s" % descr # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
-    else:
-        descr = "*.*"
-        
-    return descr
+def get_template_filter(template):
+    descr = template.GetFileFilter()
+    filter_types = [l.lstrip("*") for l in descr.split(";")]
+    return (template.GetDescription(),' '.join(filter_types))
     
 
 def HexToRGB(hex_str):
@@ -203,7 +217,7 @@ def EncodeString(string, encoding=None):
     if not encoding:
         encoding = DEFAULT_ENCODING
 
-    if txtutil.IsUnicode(string):
+    if txtutils.IsUnicode(string):
         try:
             rtxt = string.encode(encoding)
         except LookupError:
@@ -211,3 +225,30 @@ def EncodeString(string, encoding=None):
         return rtxt
     else:
         return string
+        
+
+def is_none_or_empty(value_str):
+    return parserutils.IsNoneOrEmpty(value_str)
+    
+def is_same_path(path1,path2):
+    return parserutils.ComparePath(path1,path2)
+    
+def compare_version(new_ver_str,old_ver_str):
+    new_ver = parserutils.CalcVersionValue(new_ver_str)
+    old_ver = parserutils.CalcVersionValue(old_ver_str)
+    if new_ver == old_ver:
+        return 0
+    elif new_ver > old_ver:
+        return 1
+    else:
+        return -1
+        
+
+def isInArgs(argname, argv):
+    result = False
+    if ("-" + argname) in argv:
+        result = True
+    if apputils.is_windows() and ("/" + argname) in argv:
+        result = True        
+    return result
+    

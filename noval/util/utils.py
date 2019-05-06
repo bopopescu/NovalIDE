@@ -1,90 +1,215 @@
-import wx
-from noval.util.logger import app_debugLogger
-import noval.util.sysutils as sysutilslib
-import WxThreadSafe
-from appdirs import *
-import logging
-import requests
-
-def GetLogger(logger_name = ""):
-    if logger_name == "" or logger_name == "root":
-        return app_debugLogger
-    return logging.getLogger(logger_name)
-
-def GetOpenView(file_path):
-    foundView = None
-    openDocs = wx.GetApp().GetDocumentManager().GetDocuments()
-    for openDoc in openDocs:
-        if openDoc.GetFilename() == file_path:
-            foundView = openDoc.GetFirstView()
-            break
-    return foundView
+# -*- coding: utf-8 -*-
+from noval.util.logger import *
+from noval.util.apputils import *
+from noval.util.appdirs import *
+from noval import GetApp
     
-def ProfileGet(key,default_value=""):
-    if isinstance(default_value,basestring):
-        return wx.ConfigBase_Get().Read(key, default_value)
+def profile_get(key,default_value=""):
+    if is_py2():
+        basestring_ = basestring
+    elif is_py3():
+        basestring_ = str
+    if isinstance(default_value,basestring_):
+        return GetApp().GetConfig().Read(key, default_value)
     else:
         try:
             default_value = ""
-            return eval(wx.ConfigBase_Get().Read(key, default_value))
+            return eval(GetApp().GetConfig().Read(key, default_value))
         except:
             return default_value
     
-def ProfileGetInt(key,default_value=-1):
-    return wx.ConfigBase_Get().ReadInt(key, default_value)
+def profile_get_int(key,default_value=-1):
+    return GetApp().GetConfig().ReadInt(key, default_value)
     
-def ProfileSet(key,value):
-    if type(value) == int:
-        wx.ConfigBase_Get().WriteInt(key,value)
+def profile_set(key,value):
+    if type(value) == int or type(value) == bool:
+        GetApp().GetConfig().WriteInt(key,value)
     else:
-        wx.ConfigBase_Get().Write(key,value)
+        GetApp().GetConfig().Write(key,value)
 
-@WxThreadSafe.call_after
-def UpdateStatusBar(msg,number=0):
-    wx.GetApp().MainFrame.GetStatusBar().SetStatusText(msg,number)
+def update_statusbar(msg):
+    GetApp().MainFrame.PushStatusText(msg)
+    
+def get_main_frame():
+    return GetApp().MainFrame
 
-def GetMainModulePath():
-    return sysutilslib.mainModuleDir
+def get_child_pids(ppid):
+    child_ids = []
+    for pid in psutil.pids():
+        try:
+            p = psutil.Process(pid)
+            if p.ppid() == ppid:
+                child_ids.append(p.pid)
+        except:
+            pass
+    return child_ids
     
-
-def GetUserDataPath():
-    return getAppDataFolder()
-    
-def GetUserDataPluginPath():
-    return os.path.join(GetUserDataPath(),"plugins")
-
-def GetSystemPluginPath():
-    return os.path.join(GetMainModulePath(),"plugins")
-    
-def GetAppVersion():
-    return sysutilslib.GetAppVersion()
-    
-def GetMainWindow():
-    return wx.GetApp().MainFrame
-    
-def IsWindows():
-    return sysutilslib.isWindows()
-    
-def IsLinux():
-    return sysutilslib.isLinux()
-    
-
-def RequestData(addr,arg={},method='get',timeout = None,to_json=True):
-    '''
-    '''
-    params = {}
+if is_windows():
+    from noval.util.registry import *
+elif is_linux():
     try:
-        if timeout is not None:
-            params['timeout'] = timeout
-        req = None
-        if method == 'get':
-            params['params'] = arg
-            req = requests.get(addr,**params)
-        elif method == 'post':
-            req = requests.post(addr,data = arg,**params)
-        if not to_json:
-            return req.text
-        return req.json()
-    except Exception as e:
-        GetLogger().error('open %s error:%s' ,addr,e)
-    return None
+        from ConfigParser import ConfigParser
+    except:
+        from configparser import ConfigParser
+class Config(object):
+    
+    if is_windows():
+        def __init__(self,app_name):
+            self.app_name = app_name
+            base_reg = Registry().Open('SOFTWARE')
+            self.reg = self.EnsureOpenKey(base_reg,self.app_name)
+                
+        def EnsureOpenKey(self,parent_reg,key):
+            #打开时必须设置注册表有写的权限,否则会提示权限不足
+            reg = parent_reg.Open(key,access=KEY_ALL_ACCESS)
+            if reg is None:
+                reg = parent_reg.CreateKey(key)
+            return reg
+                
+        def GetDestRegKey(self,key,ensure_open=True):
+            '''
+                按照/分割线分割多级key,如果是写入操作,则创建所有子健
+                如果是读取操作,则不能创建子健,只能打开,如果打开失败,则返回None
+                ensure_open:打开子健失败时是否创建子健
+            '''
+            if -1 == key.find("/"):
+                return self.reg,key
+            child_keys = key.split("/")
+            last_key = child_keys.pop()
+            loop_reg = self.reg
+            for child in child_keys:
+                if ensure_open:
+                    child_reg = self.EnsureOpenKey(loop_reg,child)
+                else:
+                    child_reg = loop_reg.Open(child,access=KEY_ALL_ACCESS)
+                    if child_reg is None:
+                        return None,last_key
+                loop_reg = child_reg
+            return loop_reg,last_key
+                
+        def Read(self,key,default=""):
+            dest_key_reg,last_key = self.GetDestRegKey(key,ensure_open=False)
+            if dest_key_reg is None:
+                return default
+            try:
+                return dest_key_reg.ReadEx(last_key)
+            except:
+                if is_py2():
+                    assert(isinstance(default,basestring))
+                elif is_py3():
+                    assert(isinstance(default,str))
+                return default
+            
+        def ReadInt(self,key,default=-1):
+            if not self.Exist(key):
+                assert(isinstance(default,int))
+                return default
+            return int(self.Read(key))
+            
+        def Write(self,key,value):
+            dest_key_reg,last_key = self.GetDestRegKey(key)
+            try:
+                val_type = REG_SZ
+                if is_py3() and type(value) == bytes:
+                    val_type = REG_BINARY
+                dest_key_reg.WriteValueEx(last_key,value,val_type=val_type)
+            except Exception as e:
+                get_logger().exception("write reg key %s fail" % key)
+                
+        def WriteInt(self,key,value):
+            dest_key_reg,last_key = self.GetDestRegKey(key)
+            dest_key_reg.WriteValueEx(last_key,value,val_type=REG_DWORD)
+                
+        def Exist(self,key):
+            try:
+                self.reg.ReadEx(key)
+                return True
+            except:
+                return False
+            
+    else:
+        def __init__(self,app_name):
+            self.app_name = app_name
+            self.cfg = ConfigParser()
+            self.config_path = os.path.join(os.path.expanduser("~"),"." + self.app_name)
+            self.cfg.read(self.config_path)
+            
+        def GetDestSection(self,key,ensure_open=True):
+            '''
+                按照/分割线分割多级key,如果是写入操作,则创建所有子健
+                如果是读取操作,则不能创建子健,只能打开,如果打开失败,则返回None
+                ensure_open:打开子健失败时是否创建子健
+            '''
+            if -1 == key.find("/"):
+                return 'DEFAULT',key
+            sections = key.split("/")
+            last_key = sections.pop()
+            for i in range(len(sections)):
+                section = ("/").join(sections[0:i+1])
+                if ensure_open:
+                    #禁止写入空字段[]
+                    if section and not self.cfg.has_section(section):
+                        self.cfg.add_section(section)
+                else:
+                    child_reg = loop_reg.Open(child,access=KEY_ALL_ACCESS)
+                    if child_reg is None:
+                        return None,last_key
+            return ("/").join(sections),last_key
+                
+        def Read(self,key,default=""):
+            section,last_key = self.GetDestSection(key)
+            try:
+                return self.cfg.get(section,last_key)
+            except:
+                if is_py2():
+                    assert(isinstance(default,basestring))
+                elif is_py3():
+                    assert(isinstance(default,str))
+                return default
+            
+        def ReadInt(self,key,default=-1):
+            try:
+                return int(self.Read(key))
+            except:
+                return default
+            
+        def Write(self,key,value):
+            section,last_key = self.GetDestSection(key)
+            if isinstance(value, str) or (is_py2() and isinstance(value,unicode)):
+                if is_py2():
+                    value = str(value)
+                self.cfg.set(section,last_key,value)
+            else:
+                self.cfg.set(section,last_key,repr(value))
+            
+        def WriteInt(self,key,value):
+            section,last_key = self.GetDestSection(key)
+            #将bool值转换为int
+            if type(value) == bool:
+                value = int(value)
+            assert(type(value) == int)
+            #python3 configparser不支持写入整形变量,必须先转换为字符串
+            if is_py3():
+                value = str(value)
+            self.cfg.set(section,last_key,value)
+            
+        def Save(self):
+            with open(self.config_path,"w") as f:
+                self.cfg.write(f)
+
+def call_after(func): 
+    def _wrapper(*args, **kwargs): 
+        return GetApp().after(100,func, *args, **kwargs) 
+    return _wrapper 
+    
+def py3_cmp(l,r):
+    if r < l:
+        return -1
+    if l < r:
+        return 1
+    return 0
+    
+def get_tk_version_str():
+    tkVer = GetApp().call('info', 'patchlevel')
+    return tkVer
+    #print(tk._default_root.tk.call("info", "patchlevel"))

@@ -1,27 +1,25 @@
-#----------------------------------------------------------------------------
-# Name:         xmlmarshaller.py
+#-------------------------------------------------------------------------------
+# Name:        xmlmarshaller.py
 # Purpose:
 #
-# Authors:      John Spurling, Joel Hare, Jeff Norton, Alan Mullendore
+# Author:      wukan
 #
-# Created:      7/28/04
-# CVS-ID:       $Id$
-# Copyright:    (c) 2004-2005 ActiveGrid, Inc.
-# License:      wxWindows License
-#----------------------------------------------------------------------------
+# Created:     2019-02-15
+# Copyright:   (c) wukan 2019
+# Licence:     GPL-3.0
+#-------------------------------------------------------------------------------
+
+from __future__ import print_function
 import sys
 from types import *
-from noval.util.lang import *
 import logging
-ifDefPy()
 import xml.sax
 import xml.sax.handler
 import xml.sax.saxutils
 import datetime
-endIfDef()
 import noval.util.utillang as utillang
 import noval.util.objutils as objutils
-import noval.util.sysutils as sysutils
+import noval.util.apputils as apputils
 import noval.util.logger as logger
 
 MODULE_PATH = "__main__"
@@ -113,14 +111,8 @@ __xmlcdatacontent__ = "messyContent"
 
 global xmlMarshallerLogger
 xmlMarshallerLogger = logging.getLogger("novalide.util.xmlmarshaller.marshal")
-# INFO  : low-level info
-# DEBUG : debugging info
-
-################################################################################
-#
-# module exceptions
-#
-################################################################################
+def ag_className(obj):
+    return obj.__class__.__name__
 
 class Error(Exception):
     """Base class for errors in this module."""
@@ -409,16 +401,16 @@ class XMLObjectFactory(xml.sax.ContentHandler):
         else:
             self.knownNamespaces = knownNamespaces
         self.reversedNamespaces = {}
-        for longns, shortns in self.knownNamespaces.iteritems():
+        for longns, shortns in self.knownNamespaces.items():
             self.reversedNamespaces[shortns] = longns
         self.knownTypes = {}
         if (knownTypes != None):
-            for tag, cls in knownTypes.iteritems():
+            for tag, cls in knownTypes.items():
                 i = tag.rfind(':')
                 if i >= 0:
                     shortns = tag[:i]
                     tag = tag[i+1:]
-                    if not self.reversedNamespaces.has_key(shortns):
+                    if shortns not in self.reversedNamespaces:
                         errorString = 'Error unmarshalling XML document from source "%s": knownTypes specifies an unmapped short namespace "%s" for element "%s"' % (self.xmlSource, shortns, tag)
                         raise UnmarshallerException(errorString)
                     longns = self.reversedNamespaces[shortns]
@@ -478,7 +470,7 @@ class XMLObjectFactory(xml.sax.ContentHandler):
             if k.startswith('xmlns'):
                 longNs = attrs[k]
                 eLongNs = longNs + '/'
-                if str(eLongNs) in asDict(self.knownNamespaces):
+                if str(eLongNs) in self.knownNamespaces:
                     longNs = eLongNs
                 if k == 'xmlns':
                     nse.defaultNS = longNs
@@ -491,7 +483,7 @@ class XMLObjectFactory(xml.sax.ContentHandler):
                 objtype = attrs.getValue(k)
         nse = self.appendElementStack(element, nse)
         if nsname != None:
-            if nse.nsMap.has_key(nsname):
+            if nsname in nse.nsMap:
                 longname = '%s:%s' % (nse.nsMap[nsname], name)
 ##            elif objtype == None:
 ##                errorString = 'Error unmarshalling XML document from source "%s": tag "%s" at line "%d", column "%d" has an undefined namespace' % (self.xmlSource, xsname, self._locator.getLineNumber(), self._locator.getColumnNumber())
@@ -595,7 +587,7 @@ class XMLObjectFactory(xml.sax.ContentHandler):
                                     attr = "-1"
                                 try:
                                     attr = _objectfactory(type, attr)
-                                except Exception, exceptData:
+                                except Exception as exceptData:
                                     errorString = 'Error unmarshalling attribute "%s" at line %d, column %d in XML document from source "%s": %s' % (attrname, self._locator.getLineNumber(), self._locator.getColumnNumber(), self.xmlSource, str(exceptData))
                                     raise UnmarshallerException(errorString)
                     try:
@@ -656,11 +648,9 @@ class XMLObjectFactory(xml.sax.ContentHandler):
                         defaultValue = _objectfactory(langType, element.default)
                         obj.__dict__[elementName] = defaultValue
 
-        ifDefPy()
         if (isinstance(obj, list)):
             if ((element.attrs.has_key("mutable")) and (element.attrs.getValue("mutable") == "false")):
                 obj = tuple(obj)
-        endIfDef()
             
         if (len(self.elementstack) > 0):
 ##            print "[endElement] appending child with name: ", name, "; objtype: ", objtype
@@ -673,7 +663,7 @@ class XMLObjectFactory(xml.sax.ContentHandler):
 
 def _toAttrName(obj, name):
     if (hasattr(obj, "__xmlrename__")):
-        for key, val in obj.__xmlrename__.iteritems():
+        for key, val in obj.__xmlrename__.items():
             if (name == val):
                 name = key
                 break
@@ -682,9 +672,9 @@ def _toAttrName(obj, name):
     return str(name)
     
 def printKnownTypes(kt, where):
-    print 'KnownTypes from %s' % (where)
+    print ('KnownTypes from %s' % (where))
     for tag, cls in kt.iteritems():
-        print '%s => %s' % (tag, str(cls))
+        print ('%s => %s' % (tag, str(cls)))
 
 __typeMappingXsdToLang = {
     "string": "str",
@@ -736,11 +726,11 @@ def _getXmlValue(langValue):
 def unmarshal(xmlstr, knownTypes=None, knownNamespaces=None, xmlSource=None, createGenerics=False):
     objectfactory = XMLObjectFactory(knownTypes, knownNamespaces, xmlSource, createGenerics)
     # on Linux, pyXML's sax.parseString fails when passed unicode
-    if (not sysutils.isWindows()):
+    if (not apputils.is_windows()):
         xmlstr = str(xmlstr)
     try:
         xml.sax.parseString(xmlstr, objectfactory)
-    except xml.sax.SAXParseException, errorData:
+    except xml.sax.SAXParseException as errorData:
         if xmlSource == None:
             xmlSource = 'unknown'
         errorString = 'SAXParseException ("%s") detected at line %d, column %d in XML document from source "%s" ' % (errorData.getMessage(), errorData.getLineNumber(), errorData.getColumnNumber(), xmlSource)
@@ -752,7 +742,7 @@ def marshal(obj, elementName=None, prettyPrint=False, marshalType=True, indent=0
     if obj != None and hasattr(obj, '__xmldeepexclude__'):
         worker.xmldeepexclude = obj.__xmldeepexclude__
     xmlstr = "".join(worker._marshal(obj, elementName, indent=indent))
-    logger.info(xmlMarshallerLogger, "marshal produced string of type %s", type(xmlstr))
+    xmlMarshallerLogger.info("marshal produced string of type %s", type(xmlstr))
     if (encoding == None):
         return xmlstr
     if (not isinstance(encoding, basestring)):
@@ -801,7 +791,7 @@ class XMLMarshalWorker(object):
         else:
             knownShortNs = self.knownNamespaces[tagLongNs]
             knownTagName = knownShortNs + ':' + name
-        if (knownTagName in asDict(self.knownTypes)):
+        if (knownTagName in self.knownTypes):
             knownClass = self.knownTypes[knownTagName]
             return True
         return False
@@ -898,9 +888,9 @@ class XMLMarshalWorker(object):
             
     def _marshal(self, obj, elementName=None, nameSpacePrefix="", indent=0):
         if (obj != None):
-            logger.debug(xmlMarshallerLogger, "--> _marshal: elementName=%s%s, type=%s, obj=%s, indent=%d", nameSpacePrefix, elementName, type(obj), str(obj), indent)
+            xmlMarshallerLogger.debug("--> _marshal: elementName=%s%s, type=%s, obj=%s, indent=%d", nameSpacePrefix, elementName, type(obj), str(obj), indent)
         else:
-            logger.debug(xmlMarshallerLogger, "--> _marshal: elementName=%s%s, obj is None, indent=%d", nameSpacePrefix, elementName, indent)
+            xmlMarshallerLogger.debug("--> _marshal: elementName=%s%s, obj is None, indent=%d", nameSpacePrefix, elementName, indent)
         if ((obj != None) and (hasattr(obj, 'preMarshal'))):
             obj.preMarshal()
         excludeAttrs = []
@@ -959,10 +949,8 @@ class XMLMarshalWorker(object):
             members_to_skip.extend(xmlattributes)
             for attr in xmlattributes:
                 internalAttrName = attr
-                ifDefPy()
                 if (attr.startswith("__") and not attr.endswith("__")): 
                     internalAttrName = classNamePrefix + attr
-                endIfDef()
                 # Fail silently if a python attribute is specified to be
                 # an XML attribute but is missing.
                 attrNameSpacePrefix = ""
@@ -975,7 +963,7 @@ class XMLMarshalWorker(object):
                             break
                 attrs = obj.__dict__
                 value = attrs.get(internalAttrName)
-                if (hasattr(obj, "__xmlrename__") and attr in asDict(obj.__xmlrename__)):
+                if (hasattr(obj, "__xmlrename__") and attr in obj.__xmlrename__):
                     attr = obj.__xmlrename__[attr]
                 xsdElement = None
                 complexType = getComplexType(obj)
@@ -1094,7 +1082,7 @@ class XMLMarshalWorker(object):
                 if hasattr(obj, "__xmlattrgroups__"):
                     attrGroups = obj.__xmlattrgroups__.copy()
                     if (not isinstance(attrGroups, dict)):
-                        raise Exception, "__xmlattrgroups__ is not a dict, but must be"
+                        raise Exception("__xmlattrgroups__ is not a dict, but must be")
                     for n in attrGroups.iterkeys():
                         members_to_skip.extend(attrGroups[n])
                 else:
@@ -1126,7 +1114,7 @@ class XMLMarshalWorker(object):
                         # specially: instead of listing the contained items inside
                         # of a separate list, as God intended, list them inside
                         # the object containing the sequence.
-                        if (hasattr(obj, "__xmlflattensequence__") and (value != None) and (name in asDict(obj.__xmlflattensequence__))):
+                        if (hasattr(obj, "__xmlflattensequence__") and (value != None) and (name in obj.__xmlflattensequence__)):
                             xmlnametuple = obj.__xmlflattensequence__[name]
                             if (xmlnametuple == None):
                                 xmlnametuple = [name]
@@ -1140,7 +1128,7 @@ class XMLMarshalWorker(object):
                             for seqitem in value:
                                 xmlMemberString.extend(self._marshal(seqitem, xmlname, subElementNameSpacePrefix, indent=indent+increment))
                         else:
-                            if (hasattr(obj, "__xmlrename__") and name in asDict(obj.__xmlrename__)):
+                            if (hasattr(obj, "__xmlrename__") and name in obj.__xmlrename__):
                                 xmlname = obj.__xmlrename__[name]
                             else:
                                 xmlname = name
@@ -1178,8 +1166,7 @@ class XMLMarshalWorker(object):
                     xmlString.append("><![CDATA[%s]]></%s>%s" % (cdataContent, elementName, newline))
                 else:
                     xmlString.append("/>%s" % newline)
-        if logger.isEnabledForDebug(xmlMarshallerLogger):
-            logger.debug(xmlMarshallerLogger, "<-- _marshal: %s", objutils.toDiffableString(xmlString))
+        xmlMarshallerLogger.debug("<-- _marshal: %s", objutils.toDiffableString(xmlString))
         #print "<-- _marshal: %s" % str(xmlString)
         self.popNSStack()
         return xmlString
@@ -1207,18 +1194,18 @@ class MarshallerPerson:
         self.fabulousness = "tres tres"
         self.nonSmoker = False
 
-if isMain(__name__):
+if __name__ == "__main__":
     p1 = MarshallerPerson()
     p1.setPerson() 
     xmlP1 = marshal(p1, prettyPrint=True, encoding="utf-8")        
-    print "\n########################"
-    print   "# testPerson test case #"
-    print   "########################"
-    print xmlP1
+    print ("\n########################")
+    print ("# testPerson test case #")
+    print ("########################")
+    print (xmlP1)
     p2 = unmarshal(xmlP1)
     xmlP2 = marshal(p2, prettyPrint=True, encoding="utf-8")
     if xmlP1 == xmlP2:
-        print "Success: repeated marshalling yields identical results"
+        print ("Success: repeated marshalling yields identical results")
     else:
-        print "Failure: repeated marshalling yields different results"
-        print xmlP2
+        print ("Failure: repeated marshalling yields different results")
+        print (xmlP2)

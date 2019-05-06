@@ -6,7 +6,7 @@ if sys.platform == "win32":
     import modulefinder
     import win32com.client
     is_debug = False
-
+    
     #this block code used to add win32com.shell and win32com.shellcon module to library.zip
     ###******************************************###########
     for p in win32com.__path__[1:]:
@@ -22,50 +22,48 @@ if sys.platform == "win32":
         if argv == "debug" or argv == "-debug":
             is_debug = True
             del sys.argv[i]
+            
+    data_files = [
+        ("noval/bmp_source", glob.glob("noval/bmp_source/*.ico") + glob.glob("noval/bmp_source/*.jpg") \
+                             + glob.glob("noval/bmp_source/*.png") + glob.glob("noval/bmp_source/*.gif")),
+        ("noval/bmp_source/toolbar",glob.glob("noval/bmp_source/toolbar/*.png")),
+        ("noval/bmp_source/file",glob.glob("noval/bmp_source/file/*.png")+glob.glob("noval/bmp_source/file/*.gif")),
+        ("noval/bmp_source/files",glob.glob("noval/bmp_source/files/*.png")+glob.glob("noval/bmp_source/files/*.gif")),
+        ("noval/bmp_source/project",glob.glob("noval/bmp_source/project/*.*")),
+        ("noval/bmp_source/project/python",glob.glob("noval/bmp_source/project/python/*.*")),
+        ("noval/bmp_source/python",glob.glob("noval/bmp_source/python/*.*")),
+        ("noval/bmp_source/python/debugger",glob.glob("noval/bmp_source/python/debugger/*.png") \
+                                                        + glob.glob("noval/bmp_source/debugger/*.ico")),
+                                                        
+        ("noval/bmp_source/python/outline",glob.glob("noval/bmp_source/python/outline/*.*")),
+        ("noval/bmp_source/template",glob.glob("noval/bmp_source/template/*.*")),
+        ("noval/debugger",glob.glob("noval/debugger/DebuggerHarness.py")),
+        ("noval/debugger",glob.glob("noval/debugger/DebuggerHarness3.py")),
+        ("noval/data",["noval/data/tips.txt"]),
+        ("noval/data",["noval/data/tips_zh_CN.txt"]),
+        ("noval/data/template",glob.glob("noval/data/template/*.tar.bz2")),
+        ("noval/data/sample",glob.glob("noval/data/sample/*.sample")),
+        ("noval/data/styles",glob.glob("noval/data/styles/*.ess")),
+        ("noval/syntax/lexer",glob.glob("noval/syntax/lexer/*.py")),
+        ("noval/python/syntax/lexer",glob.glob("noval/python/syntax/lexer/*.py")),
+          ("locale/en_US/LC_MESSAGES",['locale/en_US/LC_MESSAGES/novalide.mo']),
+           ("locale/zh_CN/LC_MESSAGES",['locale/zh_CN/LC_MESSAGES/novalide.mo',\
+                        'locale/zh_CN/LC_MESSAGES/wxstd.mo',\
+                        'locale/zh_CN/LC_MESSAGES/wxstock.mo',]),
+           ('',['version.txt','template.xml'])
+    ]
+    options = { "py2exe":{"dll_excludes":["MSVCP90.dll"],"packages": ['PIL.IcoImagePlugin','csv','noval.syntax.syndata']}}
 
     if is_debug:
         print 'executable run in console mode'
         setup(console=[{"script":"NovalIDE.py","icon_resources":[(1, u"noval.ico")]}],
-              options = { "py2exe":{"dll_excludes":["MSVCP90.dll"],"packages": ['wx.lib.pubsub','csv','noval.tool.syntax.syndata']}},
-                data_files=[("noval/tool/bmp_source", glob.glob("noval/tool/bmp_source/*.ico") + glob.glob("noval/tool/bmp_source/*.jpg") \
-                             + glob.glob("noval/tool/bmp_source/*.png") + glob.glob("noval/tool/bmp_source/*.gif")),
-                    ("noval/tool/bmp_source/toolbar",glob.glob("noval/tool/bmp_source/toolbar/*.png")),
-                    ("noval/tool/bmp_source/web",glob.glob("noval/tool/bmp_source/web/*.png")),
-                    ("noval/tool/bmp_source/project",glob.glob("noval/tool/bmp_source/project/*.png")+glob.glob("noval/tool/bmp_source/project/*.gif")+glob.glob("noval/tool/bmp_source/project/*.ico")),
-                    ("noval/tool/bmp_source/debugger",glob.glob("noval/tool/bmp_source/debugger/*.png") \
-                                                        + glob.glob("noval/tool/bmp_source/debugger/*.ico")),
-                    ("noval/tool/bmp_source/template",glob.glob("noval/tool/bmp_source/template/*.*")),
-                    ("noval/tool/data",["noval/tool/data/tips.txt"]),
-                     ("noval/parser",glob.glob("noval/parser/*.py")),
-                     ("noval/tool/syntax/lexer",glob.glob("noval/tool/syntax/lexer/*.py")),
-                      ("noval/locale/en_US/LC_MESSAGES",['noval/locale/en_US/LC_MESSAGES/novalide.mo']),
-                       ("noval/locale/zh_CN/LC_MESSAGES",['noval/locale/zh_CN/LC_MESSAGES/novalide.mo']),],)
+              options = options,
+                data_files=data_files,)
     else:
         print 'executable run in windows mode'
         setup(windows=[{"script":"NovalIDE.py","icon_resources":[(1, u"noval.ico")]}],
-              options = { "py2exe":{"dll_excludes":["MSVCP90.dll"],"packages": ['wx.lib.pubsub','csv','noval.tool.syntax.syndata']}},
-                data_files=[("noval/tool/bmp_source", glob.glob("noval/tool/bmp_source/*.ico") + glob.glob("noval/tool/bmp_source/*.jpg") \
-                             + glob.glob("noval/tool/bmp_source/*.png") + glob.glob("noval/tool/bmp_source/*.gif")),
-                    ("noval/tool/bmp_source/toolbar",glob.glob("noval/tool/bmp_source/toolbar/*.png")),
-                    ("noval/tool/bmp_source/web",glob.glob("noval/tool/bmp_source/web/*.png")),
-                    ("noval/tool/bmp_source/project",glob.glob("noval/tool/bmp_source/project/*.png")+glob.glob("noval/tool/bmp_source/project/*.gif")+glob.glob("noval/tool/bmp_source/project/*.ico")),
-                    ("noval/tool/bmp_source/debugger",glob.glob("noval/tool/bmp_source/debugger/*.png") \
-                                                        + glob.glob("noval/tool/bmp_source/debugger/*.ico")),
-                    ("noval/tool/bmp_source/template",glob.glob("noval/tool/bmp_source/template/*.*")),
-                    ("noval/tool/debugger",glob.glob("noval/tool/debugger/DebuggerHarness.py")),
-                    ("noval/tool/debugger",glob.glob("noval/tool/debugger/DebuggerHarness3.py")),
-                    ("noval/tool/data",["noval/tool/data/tips.txt"]),
-                    ("noval/tool/data",["noval/tool/data/tips_zh_CN.txt"]),
-                    ("noval/tool/data/template",glob.glob("noval/tool/data/template/*.tar.bz2")),
-                    ("noval/tool/data/sample",glob.glob("noval/tool/data/sample/*.sample")),
-                    ("noval/tool/data/styles",glob.glob("noval/tool/data/styles/*.ess")),
-                    ("noval/tool/syntax/lexer",glob.glob("noval/tool/syntax/lexer/*.py")),
-                     ("noval/parser",glob.glob("noval/parser/*.py")),
-                      ("noval/locale/en_US/LC_MESSAGES",['noval/locale/en_US/LC_MESSAGES/novalide.mo']),
-                       ("noval/locale/zh_CN/LC_MESSAGES",['noval/locale/zh_CN/LC_MESSAGES/novalide.mo',\
-                                    'noval/locale/zh_CN/LC_MESSAGES/wxstd.mo',\
-                                    'noval/locale/zh_CN/LC_MESSAGES/wxstock.mo',]),
-                       ('',['version.txt','template.xml'])],)
+              options = options,
+                data_files=data_files,)
 
 elif sys.platform.find('linux') != -1:
     from distutils.core import setup
