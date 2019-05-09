@@ -48,6 +48,7 @@ import noval.project.command as projectcommand
 from noval.project.templatemanager import ProjectTemplateManager
 import noval.newTkDnD as newTkDnD
 import noval.misc as misc
+import noval.ui_base as ui_base
     
 #----------------------------------------------------------------------------
 # Constants
@@ -75,13 +76,12 @@ class ProjectDocument(core.Document):
     #项目生成的二进制文件不能添加到项目中去
     BIN_FILE_EXTS = []
     
-    
-    @staticmethod
-    def GetUnProjectDocument():
-        unproj_model = self.GetProjectModel()
+    @classmethod
+    def GetUnProjectDocument(cls):
+        unproj_model = cls.GetProjectModel()
         unproj_model.Id = ProjectDocument.UNPROJECT_MODEL_ID
         unprojProj = ProjectDocument(model=unproj_model)
-        unprojProj.SetFilename(NOT_IN_ANY_PROJECT)
+        unprojProj.SetFilename(consts.NOT_IN_ANY_PROJECT)
         return unprojProj
         
     @staticmethod
@@ -100,47 +100,15 @@ class ProjectDocument(core.Document):
         self.document_watcher = filewatcher.FileAlarmWatcher()
         self._commandProcessor = projectcommand.CommandProcessor()
         
-    def GetProjectModel(self):
+    @staticmethod
+    def GetProjectModel():
         raise Exception("This method must be implemented in derived class")
 
     def GetRunConfiguration(self,start_up_file):
         file_key = self.GetFileKey(start_up_file)
         run_configuration_name = utils.ProfileGet(file_key + "/RunConfigurationName","")
         return run_configuration_name
-        
-    def GetRunParameter(self,start_up_file):
-        #check the run configuration first,if exist,use run configuration
-        run_configuration_name = self.GetRunConfiguration(start_up_file)
-        if run_configuration_name:
-            file_configuration = RunConfiguration.FileConfiguration(self,start_up_file)
-            run_configuration = file_configuration.LoadConfiguration(run_configuration_name)
-            try:
-                return run_configuration.GetRunParameter()
-            except PromptErrorException as e:
-                wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR)
-                return None
-            
-        config = wx.ConfigBase_Get()
-        use_argument = config.ReadInt(self.GetFileKey(start_up_file,"UseArgument"),True)
-        if use_argument:
-            initialArgs = config.Read(self.GetFileKey(start_up_file,"RunArguments"),"")
-        else:
-            initialArgs = ''
-        python_path = config.Read(self.GetFileKey(start_up_file,"PythonPath"),"")
-        startIn = config.Read(self.GetFileKey(start_up_file,"RunStartIn"),"")
-        if startIn == '':
-            startIn = os.path.dirname(self.GetFilename())
-        env = {}
-        paths = set()
-        path_post_end = config.ReadInt(self.GetKey("PythonPathPostpend"), True)
-        if path_post_end:
-            paths.add(str(os.path.dirname(self.GetFilename())))
-        #should avoid environment contain unicode string,such as u'xxx'
-        if len(python_path) > 0:
-            paths.add(str(python_path))
-        env[PYTHON_PATH_NAME] = os.pathsep.join(list(paths))
-        return configuration.RunParameter(wx.GetApp().GetCurrentInterpreter(),start_up_file.filePath,initialArgs,env,startIn,project=self)
-
+    
     def __copy__(self):
         model = copy.copy(self.GetModel())        
         clone =  ProjectDocument(model)
@@ -204,15 +172,11 @@ class ProjectDocument(core.Document):
     def OnOpenDocument(self, filePath):
         view = GetApp().MainFrame.GetProjectView(show=True,generate_event=False).GetView()
         if not os.path.exists(filePath):
-            wx.GetApp().CloseSplash()
-            msgTitle = wx.GetApp().GetAppName()
+            GetApp().CloseSplash()
+            msgTitle = GetApp().GetAppName()
             if not msgTitle:
                 msgTitle = _("File Error")
-            wx.MessageBox(_("Could not find '%s'.") % filePath,
-                          msgTitle,
-                          wx.OK | wx.ICON_EXCLAMATION | wx.STAY_ON_TOP,
-                          wx.GetApp().GetTopWindow())
-                          
+            messagebox.showwarning(msgTitle,_("Could not find '%s'.") % filePath,parent = GetApp().GetTopWindow())
             #TODO:this may cause problem ,should watch some time to check error or not
             if self in self.GetDocumentManager().GetDocuments():
                 self.Destroy()
@@ -930,9 +894,6 @@ class NewProjectWizard(Wizard.BaseWizard):
         self.project_templates = ProjectTemplateManager().ProjectTemplates
         self.LoadProjectTemplates()
         
-    def GetTreeKnownPath(self,path):
-        return ''.join(path.split())
-        
     def CreateProjectTemplatePage(self,wizard):
         page = Wizard.BitmapTitledWizardPage(wizard, _("New Project Wizard"),_("Welcom to new project wizard"),"python_logo.png")    
        # self.vert_scrollbar = SafeScrollbar(self, orient=tk.VERTICAL)
@@ -981,15 +942,24 @@ class NewProjectWizard(Wizard.BaseWizard):
                     self.tree.selection_set(node_id)
             for template_name,pages in self.project_templates[template_catlog]:
                 #treeview不能存储包含空格的路径,故需要先把空格去掉
-                template_path = self.GetTreeKnownPath(template_catlog + "/" + template_name)
-                template_node_id = self.tree.insert(node_id, "end", text=template_name,values=template_path)
+                template_path = template_catlog + "/" + template_name
+                template_node_id = self.tree.insert(node_id, "end", text=template_name,values=(template_path,))
                 page_instances = self.InitPageInstances(pages)
                 self.SetPagesChain(page_instances)
                 self.template_pages[template_path] = page_instances
                 
     def InitPageInstances(self,pages):
         page_instances = []
-        for page_class in pages:
+        for page_info in pages:
+            args = {}
+            #如果页面初始化需要参数,则使用列表或元祖的方式指定页面和参数信息
+            if isinstance(page_info,list) or isinstance(page_info,tuple):
+                #列表的第一个元素为页面名称或类名
+                page_class = page_info[0]
+                #列表第二个元素为页面启动的参数,为字典类型
+                args = page_info[1]
+            else:
+                page_class = page_info
             if isinstance(page_class,str):
                 page_class_parts = page_class.split(".")
                 page_module_name = ".".join(page_class_parts[0:-1])
@@ -997,7 +967,10 @@ class NewProjectWizard(Wizard.BaseWizard):
                 #如果模块名称包含多级层,必须设置fromlist参数为True
                 page_module = __import__(page_module_name,fromlist=True)
                 page_class = getattr(page_module,page_class_name)
-            page = page_class(self)
+            try:
+                page = page_class(self,**args)
+            except Exception as e:
+                utils.get_logger().error("init page instance error %s",e)
             page_instances.append(page)
         return page_instances
 
@@ -1489,107 +1462,6 @@ class ProjectView(misc.AlarmEventView):
                 self.RemoveCurrentDocumentUpdate()
             if not self.GetDocument():
                 self.AddProjectRoot(_("Projects"))
-                
-    def ProcessEvent(self, event):
-        id = event.GetId()
-        if id == constants.ID_CLOSE_PROJECT:
-            self.CloseProject()
-            return True
-        elif id == constants.ID_ADD_FILES_TO_PROJECT:
-            self.OnAddFileToProject(event)
-            return True
-        elif id == constants.ID_ADD_DIR_FILES_TO_PROJECT:
-            self.OnAddDirToProject(event)
-            return True
-        elif id == constants.ID_ADD_CURRENT_FILE_TO_PROJECT:
-            return False  # Implement this one in the service
-        elif id == constants.ID_ADD_NEW_FILE:
-            self.OnAddNewFile(event)
-            return True
-        elif id == constants.ID_ADD_FOLDER:
-            self.OnAddFolder(event)
-            return True
-        elif id == constants.ID_ADD_PACKAGE_FOLDER:
-            self.OnAddPackageFolder(event)
-            return True
-        elif id == ProjectService.RENAME_ID:
-            self.OnRename(event)
-            return True
-        elif id == wx.ID_CLEAR:
-            self.DeleteFromProject(event)
-            return True
-        elif id == constants.ID_DELETE_PROJECT:
-            self.OnDeleteProject(event)
-            return True
-        elif id == wx.ID_CUT:
-            self.OnCut(event)
-            return True
-        elif id == wx.ID_COPY:
-            self.OnCopy(event)
-            return True
-        elif id == wx.ID_PASTE:
-            self.OnPaste(event)
-            return True
-        elif (id == wx.ID_CLEAR
-        or id == constants.ID_REMOVE_FROM_PROJECT):
-            self.RemoveFromProject(event)
-            return True
-        elif id == wx.ID_SELECTALL:
-            self.OnSelectAll(event)
-            return True
-        elif id == constants.ID_OPEN_SELECTION:
-            self.OnOpenSelection(event)
-            return True
-        elif id == Property.FilePropertiesService.PROPERTIES_ID:
-            self.OnProperties(event)
-            return True
-        elif id == constants.ID_PROJECT_PROPERTIES:
-            self.OnProjectProperties()
-            return True
-        elif id == constants.ID_IMPORT_FILES:
-            self.ImportFilesToProject(event)
-            return True
-        elif id == constants.ID_OPEN_PROJECT_PATH:
-            self.OpenProjectPath(event)
-            return True
-        elif id == constants.ID_NEW_PROJECT:
-            self.NewProject(event)
-            return True
-        elif id == constants.ID_OPEN_PROJECT:
-            self.OpenProject(event)
-            return True
-        elif id == constants.ID_SAVE_PROJECT:
-            self.SaveProject(event)
-            return True
-        elif id == constants.ID_SET_PROJECT_STARTUP_FILE:
-            self.SetProjectStartupFile()
-            return True
-        elif id == constants.ID_START_RUN:
-            self.RunFile()
-            return True
-        elif id == constants.ID_START_DEBUG:
-            self.DebugRunFile()
-            return True
-        elif id == constants.ID_BREAK_INTO_DEBUGGER:
-            self.BreakintoDebugger()
-            return True
-        elif id == constants.ID_OPEN_FOLDER_PATH:
-            self.OpenFolderPath(event)
-            return True
-        elif id == constants.ID_OPEN_TERMINAL_PATH:
-            self.OpenPromptPath(event)
-            return True
-        elif id == constants.ID_COPY_PATH:
-            self.CopyPath(event)
-            return True
-        elif id == constants.ID_CLEAN_PROJECT:
-            self.CleanProject()
-            return True
-        elif id == constants.ID_ARCHIVE_PROJECT:
-            self.ArchiveProject()
-            return True
-        else:
-            return False
             
     def OnResourceViewToolClicked(self, event):
         id = event.GetId()
@@ -2389,10 +2261,6 @@ class ProjectView(misc.AlarmEventView):
         wx.EVT_MENU(self._treeCtrl, constants.ID_COPY_PATH, self.ProcessEvent)
         return menu
         
-    def GetSVNItemIds(self,itemIDs):
-        if SVN_INSTALLED:
-            itemIDs.extend([None, SVNService.SVNService.SVN_UPDATE_ID, SVNService.SVNService.SVN_CHECKIN_ID, SVNService.SVNService.SVN_REVERT_ID])
-
     def GetPopupProjectMenu(self):
         menu = wx.Menu()
         itemIDs = [constants.ID_NEW_PROJECT,constants.ID_OPEN_PROJECT,constants.ID_CLOSE_PROJECT,constants.ID_SAVE_PROJECT, constants.ID_DELETE_PROJECT,\
@@ -2488,7 +2356,7 @@ class ProjectView(misc.AlarmEventView):
 
 
     def OnRename(self, event=None):
-        items = self._treeCtrl.GetSelections()
+        items = self._treeCtrl.selection()
         if not items:
             return
         item = items[0]
@@ -2595,12 +2463,11 @@ class ProjectView(misc.AlarmEventView):
             wx.TheClipboard.Close()
 
 
-    def OnCut(self, event):
+    def OnCut(self):
         self.CopyFileItem(self.CUT_FILE_TYPE)
         self.RemoveFromProject(event)
 
-
-    def OnCopy(self, event):
+    def OnCopy(self):
         self.CopyFileItem(self.COPY_FILE_TYPE)
         
     def CopyToDest(self,src_path,file_name,dest_path,action_type):
@@ -2690,19 +2557,19 @@ class ProjectView(misc.AlarmEventView):
             wx.TheClipboard.Close()
 
 
-    def RemoveFromProject(self, event):
-        items = self._treeCtrl.GetSelections()
+    def RemoveFromProject(self):
+        items = self._treeCtrl.selection()
         files = []
         for item in items:
             if not self._IsItemFile(item):
                 folderPath = self._GetItemFolderPath(item)
-                self.GetDocument().GetCommandProcessor().Submit(ProjectRemoveFolderCommand(self, self.GetDocument(), folderPath))
+                self.GetDocument().GetCommandProcessor().Submit(projectcommand.ProjectRemoveFolderCommand(self, self.GetDocument(), folderPath))
             else:
                 file = self._GetItemFile(item)
                 if file:
                     files.append(file)
         if files:
-            self.GetDocument().GetCommandProcessor().Submit(ProjectRemoveFilesCommand(self.GetDocument(), files))
+            self.GetDocument().GetCommandProcessor().Submit(projectcommand.ProjectRemoveFilesCommand(self.GetDocument(), files))
         
     def GetOpenDocument(self,filepath):
         openDocs = self.GetDocumentManager().GetDocuments()[:]  # need copy or docs shift when closed
@@ -2711,7 +2578,7 @@ class ProjectView(misc.AlarmEventView):
                 return d
         return None
 
-    def DeleteFromProject(self, event):
+    def DeleteFromProject(self):
         is_file_selected = False
         is_folder_selected = False
         if self._HasFilesSelected():
@@ -2719,28 +2586,17 @@ class ProjectView(misc.AlarmEventView):
         if self._HasFoldersSelected():
             is_folder_selected = True
         if is_file_selected and not is_folder_selected:
-            yesNoMsg = wx.MessageDialog(self.GetFrame(),
-                         _("Delete cannot be reversed.\n\nRemove the selected files from the\nproject and file system permanently?"),
-                         _("Delete Files"),
-                         wx.YES_NO|wx.ICON_QUESTION)
+            yesNoMsg = messagebox.askyesno(_("Delete Files"),_("Delete cannot be reversed.\n\nRemove the selected files from the\nproject and file system permanently?"),
+                         parent=self.GetFrame())
         elif is_folder_selected and not is_file_selected:
-            yesNoMsg = wx.MessageDialog(self.GetFrame(),
-                         _("Delete cannot be reversed.\n\nRemove the selected folder and its files from the\nproject and file system permanently?"),
-                         _("Delete Folder"),
-                         wx.YES_NO|wx.ICON_QUESTION)
+            yesNoMsg = messagebox.askyesno(_("Delete Folder"),_("Delete cannot be reversed.\n\nRemove the selected folder and its files from the\nproject and file system permanently?"),
+                         parent=self.GetFrame())
         elif is_folder_selected and is_file_selected:
-            yesNoMsg = wx.MessageDialog(self.GetFrame(),
-             _("Delete cannot be reversed.\n\nRemove the selected folder and files from the\nproject and file system permanently?"),
-             _("Delete Folder And Files"),
-             wx.YES_NO|wx.ICON_QUESTION)
-             
-        yesNoMsg.CenterOnParent()
-        status = yesNoMsg.ShowModal()
-        yesNoMsg.Destroy()
-        if status == wx.ID_NO:
+            yesNoMsg = messagebox.askyesno(_("Delete Folder And Files"),_("Delete cannot be reversed.\n\nRemove the selected folder and files from the\nproject and file system permanently?"),
+             parent=self.GetFrame())
+        if yesNoMsg == False:
             return
-             
-        items = self._treeCtrl.GetSelections()
+        items = self._treeCtrl.selection()
         delFiles = []
         for item in items:
             if self._IsItemFile(item):
@@ -2775,61 +2631,20 @@ class ProjectView(misc.AlarmEventView):
                 folderPath = self._GetItemFolderPath(item)
                 self.GetDocument().GetCommandProcessor().Submit(ProjectRemoveFolderCommand(self, self.GetDocument(), folderPath,True))
             
-    def OnDeleteFile(self, event):
-        yesNoMsg = wx.MessageDialog(self.GetFrame(),
-                                 _("Delete cannot be reversed.\n\nRemove the selected files from the\nproject and file system permanently?"),
-                                 _("Delete File"),
-                                 wx.YES_NO|wx.ICON_QUESTION)
-        yesNoMsg.CenterOnParent()
-        status = yesNoMsg.ShowModal()
-        yesNoMsg.Destroy()
-        if status == wx.ID_NO:
-            return
-
-        items = self._treeCtrl.GetSelections()
-        delFiles = []
-        for item in items:
-            filePath = self._GetItemFilePath(item)
-            if filePath and filePath not in delFiles:
-                delFiles.append(filePath)
-
-        # remove selected files from project
-        self.GetDocument().RemoveFiles(delFiles)
-
-        # remove selected files from file system
-        for filePath in delFiles:
-            if os.path.exists(filePath):
-                try:
-                    os.remove(filePath)
-                except:
-                    wx.MessageBox("Could not delete '%s'.  %s" % (os.path.basename(filePath), sys.exc_value),
-                                  _("Delete File"),
-                                  wx.OK | wx.ICON_EXCLAMATION,
-                                  self.GetFrame())
-
     def DeleteProject(self, noPrompt=False, closeFiles=True, delFiles=True):
         
-        class DeleteProjectDialog(wx.Dialog):
+        class DeleteProjectDialog(ui_base.CommonModaldialog):
         
             def __init__(self, parent, doc):
-                wx.Dialog.__init__(self, parent, -1, _("Delete Project"), size = (310, 330))
-        
-                sizer = wx.BoxSizer(wx.VERTICAL)
-                sizer.Add(wx.StaticText(self, -1, _("Delete cannot be reversed.\nDeleted files are removed from the file system permanently.\n\nThe project file '%s' will be closed and deleted.") % os.path.basename(doc.GetFilename())), 0, wx.ALL, SPACE)
-                self._delFilesCtrl = wx.CheckBox(self, -1, _("Delete all files in project"))
+                ui_base.CommonModaldialog.__init__(self, parent)
+                self.title(_("Delete Project"))
+                ttk.Label(self,text=_("Delete cannot be reversed.\nDeleted files are removed from the file system permanently.\n\nThe project file '%s' will be closed and deleted.") % os.path.basename(doc.GetFilename()))
+                self._delFilesCtrl = ttk.Checkbutton(self,text=_("Delete all files in project"))
                 self._delFilesCtrl.SetValue(True)
                 self._delFilesCtrl.SetToolTipString(_("Deletes files from disk, whether open or closed"))
-                sizer.Add(self._delFilesCtrl, 0, wx.LEFT|wx.RIGHT|wx.BOTTOM, SPACE)
-                self._closeDeletedCtrl = wx.CheckBox(self, -1, _("Close open files belonging to project"))
+                self._closeDeletedCtrl = ttk.Checkbutton(self,text=_("Close open files belonging to project"))
                 self._closeDeletedCtrl.SetValue(True)
                 self._closeDeletedCtrl.SetToolTipString(_("Closes open editors for files belonging to project"))
-                sizer.Add(self._closeDeletedCtrl, 0, wx.LEFT|wx.RIGHT|wx.BOTTOM, SPACE)
-                
-                sizer.Add(self.CreateButtonSizer(wx.OK | wx.CANCEL), 0, wx.ALIGN_RIGHT|wx.RIGHT|wx.LEFT|wx.BOTTOM, SPACE)
-        
-                self.SetSizer(sizer)
-                sizer.Fit(self)
-                self.Layout()
 
         doc = self.GetDocument()
         if not noPrompt:
@@ -3133,7 +2948,7 @@ class ProjectView(misc.AlarmEventView):
     def _HasFilesSelected(self):
         if not self._treeCtrl:
             return False
-        items = self._treeCtrl.GetSelections()
+        items = self._treeCtrl.selection()
         if not items:
             return False
         for item in items:
@@ -3145,7 +2960,7 @@ class ProjectView(misc.AlarmEventView):
     def _HasFoldersSelected(self):
         if not self._treeCtrl:
             return False
-        items = self._treeCtrl.GetSelections()
+        items = self._treeCtrl.selection()
         if not items:
             return False
         for item in items:

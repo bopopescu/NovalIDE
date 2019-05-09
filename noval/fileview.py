@@ -7,7 +7,7 @@ import noval.iface as iface
 import noval.plugin as plugin
 import noval.consts as consts
 import noval.constants as constants
-from noval.ui_base import TreeFrame
+from noval.ttkwidgets.treeviewframe import TreeViewFrame
 from tkinter import ttk
 import noval.util.utils as utils
 import noval.util.fileutils as fileutils
@@ -61,9 +61,9 @@ def get_win_drives():
 SAVE_OPEN_FOLDER_KEY = "FileViewSaveFolder"
 OPEN_FOLDER_KEY = "FileViewLastFolder"
 
-class BaseFileBrowser(TreeFrame):
+class BaseFileBrowser(TreeViewFrame):
     def __init__(self, master, show_hidden_files=False):
-        TreeFrame.__init__(self, master, ["#0", "kind", "path"], displaycolumns=(0,))
+        TreeViewFrame.__init__(self, master, ["#0", "kind", "path"], displaycolumns=(0,))
         self.default_extentsion = "." + syntax.SyntaxThemeManager().GetLexer(GetApp().GetDefaultLangId()).GetDefaultExt()
  
         self.show_hidden_files = show_hidden_files
@@ -277,7 +277,7 @@ class BaseFileBrowser(TreeFrame):
                 x
                 for x in self.ListDir(path)
                 if include_hidden_files
-                or not fileutils.is_file_hiden(os.path.join(path, x))
+                or not fileutils.is_file_path_hidden(os.path.join(path, x))
             ]
 
             if first_level:
@@ -306,6 +306,8 @@ class MainFileBrowser(BaseFileBrowser):
         self.menu.Append(constants.ID_ADD_FOLDER, _("&Create new folder"),handler=self.create_new_folder)
         self.menu.Append(constants.ID_CREATE_NEW_FILE, _("&Create new file"),handler=self.create_new_file)
         self.tree.bind("<3>", self.on_secondary_click, True)
+        #鼠标双击Tree控件事件
+        self.tree.bind("<Double-Button-1>", self.on_double_click, "+")
         
     def RefreshPath(self,node_id=None):
         selected_path = self.get_selected_path()
@@ -375,11 +377,11 @@ class MainFileBrowser(BaseFileBrowser):
         else:
             parent_path = os.path.dirname(selected_path)
 
+        initial_name = self.get_proposed_new_file_name(parent_path, "","newfoler")
         name = tkSimpleDialog.askstring(
             _("New folder"),
             "Provide folder name",
-            initialvalue="newfoler",
-            # selection_range=(0, len(initial_name)-3)
+            initialvalue=initial_name,
         )
 
         if not name:
@@ -394,12 +396,9 @@ class MainFileBrowser(BaseFileBrowser):
 
         self.open_path_in_browser(path, True)
 
-    def get_proposed_new_file_name(self, folder, extension):
-        base = "new_file"
-
+    def get_proposed_new_file_name(self, folder, extension,base = "new_file"):
         if os.path.exists(os.path.join(folder, base + extension)):
             i = 2
-
             while True:
                 name = base + "_" + str(i) + extension
                 path = os.path.join(folder, name)

@@ -1,165 +1,120 @@
+import tkinter as tk
 from tkinter import ttk
+from tkinter import filedialog,messagebox
 from noval import NewId,_
 import noval.util.fileutils as fileutils
 import noval.util.apputils as sysutils
 import noval.python.parser.utils as parserutils
 import locale
 import noval.imageutils as imageutils
-import noval.ui_base as ui_base
+import noval.consts as consts
+import noval.ttkwidgets.treeviewframe as treeviewframe
+import noval.menu as tkmenu
 
 ID_GOTO_PATH = NewId()
 ID_REMOVE_PATH = NewId()
 
+ID_NEW_ZIP = NewId()
+ID_NEW_EGG = NewId()
+ID_NEW_WHEEL = NewId()
+
 class BasePythonPathPanel:
-    """description of class"""
-
-    ID_NEW_ZIP = NewId()
-    ID_NEW_EGG = NewId()
-    ID_NEW_WHEEL = NewId()
-    
+    """description of class"""    
     def InitUI(self,hide_tree_root=False):
-        if not hide_tree_root:
-            self.treeview = ui_base.TreeFrame(self)
-        else:
-            self.treeview = wx.TreeCtrl(self,size=(300,-1),style=wx.TR_NO_LINES|wx.TR_HIDE_ROOT|wx.TR_DEFAULT_STYLE)
+        self.has_root = not hide_tree_root
+        self.treeview = treeviewframe.TreeViewFrame(self)
         self.treeview.tree["show"] = ("tree",)
+        self.treeview.pack(side=tk.LEFT,fill="both",expand=1)
         self.LibraryIcon = imageutils.load_image("","python/library_obj.gif")
-        #wx.EVT_RIGHT_DOWN(self.tree_ctrl, self.OnRightClick)
+        self.treeview.tree.bind("<3>", self.OnRightClick, True)
+    
+        padx = consts.DEFAUT_CONTRL_PAD_X/2
+        pady = consts.DEFAUT_CONTRL_PAD_Y/2
+        right_frame = ttk.Frame(self)
+        self.add_path_btn = ttk.Button(right_frame, text=_("Add Path.."),command=self.AddNewPath)
+        self.add_path_btn.pack(padx=padx,pady=(pady))
 
-        self.add_path_btn = ttk.Button(self, text=_("Add Path.."),command=self.AddNewPath)
-        self.add_file_btn = ttk.Button(self, text=_("Add File..."),command=self.PopFileMenu)
-        self.remove_path_btn = ttk.Button(self, text=_("Remove Path..."),command=self.RemovePath)
+        self.remove_path_btn = ttk.Button(right_frame, text=_("Remove Path..."),command=self.RemovePath)
+        self.remove_path_btn.pack(padx=padx,pady=(pady))
         
-        self._popUpMenu = None
+        self.add_file_btn = ttk.Menubutton(right_frame,
+                            text=_("Add File..."),state="pressed")
+        self.add_file_btn.pack(padx=padx,pady=(pady))
         
-    def PopFileMenu(self,event):
-        
-        btn = event.GetEventObject()
-        # Create the popup menu
-        self.CreatePopupMenu()
-        # Position the menu:
-        # The menu should be positioned at the bottom left corner of the button.
-        btnSize = btn.GetSize()
-        btnPt = btn.GetPosition()
-        # Since the btnPt (button position) is in client coordinates, 
-        # and the menu coordinates is relative to screen we convert
-        # the coords
-        # A nice feature with the Popup menu, is the ability to provide an 
-        # object that we wish to handle the menu events, in this case we
-        # pass 'self'
-        # if we wish the menu to appear under the button, we provide its height
-        if isinstance(self._popUpMenu,flatmenu.FlatMenu):
-            btnPt = btn.GetParent().ClientToScreen(btnPt)
-            self._popUpMenu.SetOwnerHeight(btnSize.y)
-            self._popUpMenu.Popup(wx.Point(btnPt.x, btnPt.y), self)
-        else:
-            self.PopupMenu(self._popUpMenu, wx.Point(btnPt.x, btnPt.y+btnSize.height))
+        right_frame.pack(side=tk.LEFT,fill="y")
+        self.button_menu = self.CreatePopupMenu()
+        self.add_file_btn.config(menu = self.button_menu)
+        self.menu = None
         
     def CreatePopupMenu(self):
-        if not self._popUpMenu:
-            if sysutils.isWindows():
-                self._popUpMenu = flatmenu.FlatMenu()
-                menuItem = flatmenu.FlatMenuItem(self._popUpMenu, self.ID_NEW_ZIP, _("Add Zip File"), "", wx.ITEM_NORMAL)
-                self.Bind(flatmenu.EVT_FLAT_MENU_SELECTED, self.AddNewFilePath, id = self.ID_NEW_ZIP)
-                self._popUpMenu.AppendItem(menuItem)
-                menuItem = flatmenu.FlatMenuItem(self._popUpMenu, self.ID_NEW_EGG, _("Add Egg File"), "", wx.ITEM_NORMAL)
-                self.Bind(flatmenu.EVT_FLAT_MENU_SELECTED, self.AddNewFilePath, id = self.ID_NEW_EGG)
-                self._popUpMenu.AppendItem(menuItem)
-                menuItem = flatmenu.FlatMenuItem(self._popUpMenu, self.ID_NEW_WHEEL, _("Add Wheel File"), "", wx.ITEM_NORMAL)
-                self.Bind(flatmenu.EVT_FLAT_MENU_SELECTED, self.AddNewFilePath, id = self.ID_NEW_WHEEL)
-                self._popUpMenu.AppendItem(menuItem)
-            else:
-                self._popUpMenu = wx.Menu()
-                menuItem = wx.MenuItem(self._popUpMenu, self.ID_NEW_ZIP, _("Add Zip File"), "", wx.ITEM_NORMAL)
-                wx.EVT_MENU(self, self.ID_NEW_ZIP,self.AddNewFilePath)
-                self._popUpMenu.AppendItem(menuItem)
-                menuItem = wx.MenuItem(self._popUpMenu,self.ID_NEW_EGG, _("Add Egg File"), "", wx.ITEM_NORMAL)
-                wx.EVT_MENU(self,self.ID_NEW_EGG,self.AddNewFilePath)
-                self._popUpMenu.AppendItem(menuItem)
-                menuItem = wx.MenuItem(self._popUpMenu,self.ID_NEW_WHEEL, _("Add Wheel File"), "", wx.ITEM_NORMAL)
-                wx.EVT_MENU(self,self.ID_NEW_WHEEL,self.AddNewFilePath)
-                self._popUpMenu.AppendItem(menuItem)
-                
+        menu = tkmenu.PopupMenu()
+        menuItem = tkmenu.MenuItem(ID_NEW_ZIP, _("Add Zip File"), None, None,None)
+        menu.AppendMenuItem(menuItem,handler=lambda:self.AddNewFilePath(ID_NEW_ZIP))
+        menuItem = tkmenu.MenuItem(ID_NEW_EGG, _("Add Egg File"), None, None,None)
+        menu.AppendMenuItem(menuItem,handler=lambda:self.AddNewFilePath(ID_NEW_EGG))
+        menuItem = tkmenu.MenuItem(ID_NEW_WHEEL, _("Add Wheel File"), None, None,None)
+        menu.AppendMenuItem(menuItem,handler=lambda:self.AddNewFilePath(ID_NEW_WHEEL))
+        return menu
 
-    def AddNewFilePath(self,event):
-        id = event.GetId()
-        if id == self.ID_NEW_ZIP:
-            descr = _("Zip File") + " (*.zip)|*.zip"
+    def AddNewFilePath(self,id):
+        if id == ID_NEW_ZIP:
+            filetypes = [(_("Zip File") ,"*.zip"),]
             title = _("Choose a Zip File")
-        elif id == self.ID_NEW_EGG:
-            descr = _("Egg File") + " (*.egg)|*.egg"
+        elif id == ID_NEW_EGG:
+            filetypes = [(_("Egg File") , "*.egg"),]
             title = _("Choose a Egg File")
-        elif id == self.ID_NEW_WHEEL:
-            descr = _("Wheel File") + " (*.whl)|*.whl"
+        elif id == ID_NEW_WHEEL:
+            filetypes = [(_("Wheel File") ,"*.whl"),]
             title = _("Choose a Wheel File")
-        dlg = wx.FileDialog(self,title ,
-                       wildcard = descr,
-                       style=wx.OPEN|wx.FILE_MUST_EXIST|wx.CHANGE_DIR)
-        if dlg.ShowModal() != wx.ID_OK:
-            dlg.Destroy()
+        path = filedialog.askopenfilename(title=title ,
+                       filetypes = filetypes,
+                       master=self)
+        if not path:
             return
-        path = dlg.GetPath()
-        dlg.Destroy()
-        if self.CheckPathExist(path):
-            wx.MessageBox(_("Path already exist"),_("Add Path"),wx.OK,self)
-            return
-        item = self.tree_ctrl.AppendItem(self.tree_ctrl.GetRootItem(),path)
-        self.tree_ctrl.SetItemImage(item,self.LibraryIconIdx,wx.TreeItemIcon_Normal)
+        self.AddPath(fileutils.opj(path))
 
-    def AddNewPath(self,event):
-        dlg = wx.DirDialog(wx.GetApp().GetTopWindow(),
-                        _("Choose a directory to Add"), 
-                        style=wx.DD_DEFAULT_STYLE|wx.DD_NEW_DIR_BUTTON)
-        if dlg.ShowModal() != wx.ID_OK:
-            dlg.Destroy()
-            return
-        path = dlg.GetPath()
+    def AddNewPath(self):
+        path = filedialog.askdirectory(title=_("Choose a directory to Add"))
+        self.AddPath(path)
+        
+    def AddPath(self,path):
         if self.CheckPathExist(path):
-            wx.MessageBox(_("Path already exist"),_("Add Path"),wx.OK,self)
+            messagebox.showinfo(_("Add Path"),_("Path already exist"),parent= self)
             return
-        dlg.Destroy()
-        item = self.tree_ctrl.AppendItem(self.tree_ctrl.GetRootItem(),path)
-        self.tree_ctrl.SetItemImage(item,self.LibraryIconIdx,wx.TreeItemIcon_Normal)
+        self.treeview.tree.insert(self.GetRootItem(),"end",text=path,image=self.LibraryIcon)
         
     def OnRightClick(self, event):
-        
-        if self.tree_ctrl.GetSelection() == self.tree_ctrl.GetRootItem():
+        if self.treeview.tree.selection()[0] == self.GetRootItem():
             return
-        x, y = event.GetPosition()
-        menu = wx.Menu()
-        menu.Append(ID_GOTO_PATH, _("&Goto Path"))
-        #must not use name ProcessEvent,otherwise will invoke flatmenu pop event invalid
-        wx.EVT_MENU(self, ID_GOTO_PATH, self.TreeCtrlEvent)
+        if self.menu is None:
+            self.menu = tkmenu.PopupMenu()
+            self.menu.Append(ID_GOTO_PATH, _("&Goto Path"),handler=lambda:self.TreeCtrlEvent(ID_GOTO_PATH))
+            self.menu.Append(ID_REMOVE_PATH, _("&Remove Path"),handler=lambda:self.TreeCtrlEvent(ID_REMOVE_PATH))
+        self.menu.tk_popup(event.x_root, event.y_root)
         
-        menu.Append(ID_REMOVE_PATH, _("&Remove Path"))
-        wx.EVT_MENU(self, ID_REMOVE_PATH, self.TreeCtrlEvent)
-        
-        self.tree_ctrl.PopupMenu(menu,wx.Point(x, y))
-        menu.Destroy()
-        
-    def TreeCtrlEvent(self, event): 
-        id = event.GetId()
+    def TreeCtrlEvent(self,id): 
         if id == ID_GOTO_PATH:
-            item = self.tree_ctrl.GetSelection()
-            if item is not None and item.IsOk():
-                fileutils.open_file_directory(self.tree_ctrl.GetItemText(item))
+            item = self.treeview.tree.selection()[0]
+            fileutils.open_file_directory(self.treeview.tree.item(item,"text"))
             return True
         elif id == ID_REMOVE_PATH:
-            self.RemovePath(event)
+            self.RemovePath()
             return True
         else:
             return True
+            
+    def GetRootItem(self):
+        if self.has_root:
+            root_item = self.treeview.tree.get_children()[0]
+        else:
+            root_item = ''
+        return root_item
         
     def CheckPathExist(self,path):
-        items = []
-        root_item = self.tree_ctrl.GetRootItem()
-        (item, cookie) = self.tree_ctrl.GetFirstChild(root_item)
-        while item:
-            items.append(item)
-            (item, cookie) = self.tree_ctrl.GetNextChild(root_item, cookie)
-        
+        root_item = self.GetRootItem()
+        items = self.treeview.tree.get_children(root_item)
         for item in items:
-            if parserutils.ComparePath(self.tree_ctrl.GetItemText(item),path):
+            if parserutils.ComparePath(self.treeview.tree.item(item,"text"),path):
                 return True
         return False
         
@@ -174,11 +129,12 @@ class BasePythonPathPanel:
             (item, cookie) = self.tree_ctrl.GetNextChild(root_item, cookie)
         return path_list
 
-    def RemovePath(self,event):
-        item = self.tree_ctrl.GetSelection()
-        if item is None or not item.IsOk():
+    def RemovePath(self):
+        selections = self.treeview.tree.selection()
+        if not selections:
             return
-        self.tree_ctrl.Delete(item)
+        item = selections[0]
+        self.treeview.tree.delete(item)
 
     def ConvertPath(self,path):
         sys_encoding = locale.getdefaultlocale()[1]

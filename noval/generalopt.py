@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:        generalopt.py
 # Purpose:
@@ -111,21 +112,34 @@ class GeneralOptionPanel(ttk.Frame):
         self.language_combox.pack(side=tk.LEFT,fill="x")
         row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
         self.enablemru_var = tk.IntVar(value=utils.profile_get_int(consts.ENABLE_MRU_KEY, True))
-        enableMRUCheckBox = ttk.Checkbutton(self, text=_("Enable MRU Menu"),variable=self.enablemru_var)
+        enableMRUCheckBox = ttk.Checkbutton(self, text=_("Enable MRU Menu"),variable=self.enablemru_var,command=self.checkEnableMRU)
         enableMRUCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
-###        self.Bind(wx.EVT_CHECKBOX,self.checkEnableMRU,self._enableMRUCheckBox)
 
         row = ttk.Frame(self)
-        self._mru_ctrl = ttk.Entry(row, text=str(utils.profile_get_int(consts.MRU_LENGTH_KEY,consts.DEFAULT_MRU_FILE_NUM)))
+        self.mru_var = tk.IntVar(value=utils.profile_get_int(consts.MRU_LENGTH_KEY,consts.DEFAULT_MRU_FILE_NUM))
+        #验证历史文件个数文本控件输入是否合法
+        validate_cmd = self.register(self.validateMRUInput)
+        self.mru_ctrl = ttk.Entry(row,validate = 'key', textvariable=self.mru_var,validatecommand = (validate_cmd, '%P'))
         ttk.Label(row, text=_("File History length in MRU Files") + "(%d-%d): " % \
                                                             (MIN_MRU_FILE_LIMIT,MAX_MRU_FILE_LIMIT)).pack(side=tk.LEFT)
-        self._mru_ctrl.pack(side=tk.LEFT)
+        self.mru_ctrl.pack(side=tk.LEFT)
         row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
-       ### self.checkEnableMRU(None)
+        self.checkEnableMRU()
+       
+    def validateMRUInput(self,contents):
+        if contents.isdigit():
+            n = int(contents)
+            if n >= MIN_MRU_FILE_LIMIT and n <=MAX_MRU_FILE_LIMIT:
+                return True
+        self.mru_ctrl.bell()
+        return False
 
-    def checkEnableMRU(self,event):
-        enableMRU = self._enableMRUCheckBox.GetValue()
-        self._mru_ctrl.Enable(enableMRU)
+    def checkEnableMRU(self):
+        enableMRU = self.enablemru_var.get()
+        if enableMRU:
+            self.mru_ctrl["state"] = "normal"
+        else:
+            self.mru_ctrl["state"] = tk.DISABLED
 
     def OnOK(self, optionsDialog):
         """

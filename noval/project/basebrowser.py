@@ -4,7 +4,6 @@ import os
 import tkinter as tk
 from tkinter import messagebox,filedialog
 import noval.consts as consts
-from noval.ui_base import TreeFrame
 from tkinter import ttk
 import noval.util.utils as utils
 import noval.util.fileutils as fileutils
@@ -292,15 +291,7 @@ class BaseProjectbrowser(ttk.Frame):
             self.tree.delete(child_id)
 
     def clear(self):
-        self._clear_tree()
-
-    def on_secondary_click(self, event):
-        node_id = self.tree.identify_row(event.y)
-        if node_id:
-            self.tree.selection_set(node_id)
-            self.tree.focus(node_id)
-            self.menu.tk_popup(event.x_root, event.y_root)
-            
+        self._clear_tree()            
 
     def GetItemFilePath(self, item):
         data = self.tree.GetPyData(item)
@@ -560,16 +551,17 @@ class BaseProjectbrowser(ttk.Frame):
                 menu = self.GetPopupProjectMenu()
             else:
                 menu = self.GetPopupFileMenu()
+        menu["postcommand"] = lambda: menu._update_menu()
         menu.tk_popup(event.x_root, event.y_root)
 
     def GetPopupFileMenu(self):
         menu = tkmenu.PopupMenu(self,**misc.get_style_configuration("Menu"))
         menu.Append(constants.ID_OPEN_SELECTION, _("&Open"))
-        common_item_ids = [None,consts.ID_REDO,consts.ID_REDO,consts.ID_CUT,consts.ID_COPY,consts.ID_PASTE,consts.ID_CLEAR,None,consts.ID_SELECTALL]
+        common_item_ids = [None,consts.ID_UNDO,consts.ID_REDO,consts.ID_CUT,consts.ID_COPY,consts.ID_PASTE,consts.ID_CLEAR,None,consts.ID_SELECTALL]
         self.GetCommonItemsMenu(menu,common_item_ids)
         
-        menu.Append(constants.ID_RENAME,_("&Rename"))
-        menu.Append(constants.ID_REMOVE_FROM_PROJECT,_("Remove from Project"))
+        menu.Append(constants.ID_RENAME,_("&Rename"),handler=lambda:self.ProcessEvent(constants.ID_RENAME))
+        menu.Append(constants.ID_REMOVE_FROM_PROJECT,_("Remove from Project"),handler=lambda:self.ProcessEvent(constants.ID_REMOVE_FROM_PROJECT))
 ##        tree_item = self._treeCtrl.GetSingleSelectItem()
 ##        filePath = self._GetItemFilePath(tree_item)
 ##        itemIDs = []
@@ -629,10 +621,6 @@ class BaseProjectbrowser(ttk.Frame):
         wx.EVT_MENU(self._treeCtrl, constants.ID_COPY_PATH, self.ProcessEvent)
         return menu
         
-    def GetSVNItemIds(self,itemIDs):
-        if SVN_INSTALLED:
-            itemIDs.extend([None, SVNService.SVNService.SVN_UPDATE_ID, SVNService.SVNService.SVN_CHECKIN_ID, SVNService.SVNService.SVN_REVERT_ID])
-
     def GetPopupProjectMenu(self):
         menu = tkmenu.PopupMenu(self,**misc.get_style_configuration("Menu"))
         menu["postcommand"] = lambda: menu._update_menu()
@@ -664,13 +652,105 @@ class BaseProjectbrowser(ttk.Frame):
             if menu_item is None:
                 continue
             handler = GetApp().Menubar.GetMenuhandler(_("&Project"),item_id)
-            menu.AppendMenuItem(menu_item,handler=handler)
+            extra = {}
+            #更改编辑菜单的tester命令
+            if item_id in [consts.ID_UNDO,consts.ID_REDO]:
+                extra.update(dict(tester=lambda:False))
+            elif item_id in [consts.ID_CUT,consts.ID_COPY,consts.ID_PASTE,consts.ID_CLEAR,consts.ID_SELECTALL]:
+                extra.update(dict(tester=None))
+            if handler == None:
+                def common_handler(id=item_id):
+                    self.ProcessEvent(id)
+                handler = common_handler
+            menu.AppendMenuItem(menu_item,handler=handler,**extra)
+            
+    def ProcessEvent(self, id):
+        view = self.GetView()
+        if id == constants.ID_ADD_FILES_TO_PROJECT:
+            self.OnAddFileToProject(event)
+            return True
+        elif id == constants.ID_ADD_DIR_FILES_TO_PROJECT:
+            self.OnAddDirToProject(event)
+            return True
+        elif id == constants.ID_ADD_CURRENT_FILE_TO_PROJECT:
+            return False  # Implement this one in the service
+        elif id == constants.ID_ADD_NEW_FILE:
+            self.OnAddNewFile(event)
+            return True
+        elif id == constants.ID_ADD_FOLDER:
+            self.OnAddFolder(event)
+            return True
+        elif id == constants.ID_ADD_PACKAGE_FOLDER:
+            self.OnAddPackageFolder(event)
+            return True
+        elif id == constants.ID_RENAME:
+            view.OnRename()
+            return True
+        elif id == constants.ID_CLEAR:
+            view.DeleteFromProject()
+            return True
+        elif id == constants.ID_DELETE_PROJECT:
+            self.OnDeleteProject(event)
+            return True
+        elif id == constants.ID_CUT:
+            view.OnCut()
+            return True
+        elif id == constants.ID_COPY:
+            view.OnCopy()
+            return True
+        elif id == constants.ID_PASTE:
+            view.OnPaste()
+            return True
+        elif id == constants.ID_REMOVE_FROM_PROJECT:
+            view.RemoveFromProject()
+            return True
+        elif id == constants.ID_SELECTALL:
+            self.OnSelectAll(event)
+            return True
+        elif id == constants.ID_OPEN_SELECTION:
+            self.OnOpenSelection(event)
+            return True
+        elif id == Property.FilePropertiesService.PROPERTIES_ID:
+            self.OnProperties(event)
+            return True
+        elif id == constants.ID_PROJECT_PROPERTIES:
+            self.OnProjectProperties()
+            return True
+        elif id == constants.ID_IMPORT_FILES:
+            self.ImportFilesToProject(event)
+            return True
+        elif id == constants.ID_OPEN_PROJECT_PATH:
+            self.OpenProjectPath(event)
+            return True
+        elif id == constants.ID_SET_PROJECT_STARTUP_FILE:
+            self.SetProjectStartupFile()
+            return True
+        elif id == constants.ID_START_RUN:
+            self.RunFile()
+            return True
+        elif id == constants.ID_START_DEBUG:
+            self.DebugRunFile()
+            return True
+        elif id == constants.ID_BREAK_INTO_DEBUGGER:
+            self.BreakintoDebugger()
+            return True
+        elif id == constants.ID_OPEN_FOLDER_PATH:
+            self.OpenFolderPath(event)
+            return True
+        elif id == constants.ID_OPEN_TERMINAL_PATH:
+            self.OpenPromptPath(event)
+            return True
+        elif id == constants.ID_COPY_PATH:
+            self.CopyPath(event)
+            return True
+        else:
+            return False
             
     def StartCopyFilesToProject(self,progress_ui,file_list,src_path,dest_path):
-     #   self.copy_thread = threading.Thread(target = self.CopyFilesToProject,args=(progress_ui,file_list,src_path,dest_path))
-      #  self.copy_thread.start()
+        self.copy_thread = threading.Thread(target = self.CopyFilesToProject,args=(progress_ui,file_list,src_path,dest_path))
+        self.copy_thread.start()
         
-        self.CopyFilesToProject(progress_ui,file_list,src_path,dest_path)
+       # self.CopyFilesToProject(progress_ui,file_list,src_path,dest_path)
         
     def BuildFileList(self,file_list):
         return file_list

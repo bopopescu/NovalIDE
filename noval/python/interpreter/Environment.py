@@ -4,11 +4,14 @@ from tkinter import ttk
 import noval.ui_base as ui_base
 import os
 import noval.ttkwidgets.linklabel as linklabel
+import noval.consts as consts
+import noval.ttkwidgets.treeviewframe as treeviewframe
+import noval.ui_common as ui_common
 
 class SystemEnvironmentVariableDialog(ui_base.CommonModaldialog):
-    def __init__(self,parent,dlg_id,title):
-        wx.Dialog.__init__(self,parent,dlg_id,title)
-        self.Sizer = wx.BoxSizer()
+    def __init__(self,parent,title):
+        ui_base.CommonModaldialog.__init__(self,parent)
+        self.title(title)
         self.dvlc = dataview.DataViewListCtrl(self,size=(350,400))
         self.dvlc.AppendTextColumn(_('Key'), width=150)
         self.dvlc.AppendTextColumn(_('Value'),width=200)
@@ -24,18 +27,33 @@ class EnvironmentPanel(ttk.Frame):
     def __init__(self,parent):
         ttk.Frame.__init__(self, parent)
         
-        ttk.Label(self, text=_("Set user defined environment variable:"))
-        columns = [_('Key'),_('Value')]
-        self.listview = ui_base.TreeFrame(self,columns=columns)
+     #   ttk.Label(self, text=_("Set user defined environment variable:")).pack()
+        columns = ['Key','Value']
+        self.listview = treeviewframe.TreeViewFrame(self,columns=columns,show="headings")
+        for column in columns:
+            self.listview.tree.heading(column, text=_(column))
+            
+        self.listview.pack(side=tk.LEFT,fill="both",expand=1)
+        
+        padx = consts.DEFAUT_CONTRL_PAD_X/2
+        pady = consts.DEFAUT_CONTRL_PAD_Y/2
+        right_frame = ttk.Frame(self)
+        
         self.new_btn = ttk.Button(self, text=_("New.."),command=self.NewVariable)
+        self.new_btn.pack(padx=padx,pady=(pady))
         self.edit_btn = ttk.Button(self, text=_("Edit"),command=self.EditVariable)
+        self.edit_btn.pack(padx=padx,pady=(pady))
         self.remove_btn = ttk.Button(self,text=_("Remove..."),command=self.RemoveVariable)
+        
+        self.remove_btn.pack(padx=padx,pady=(pady))
+        right_frame.pack(side=tk.LEFT,fill="y")
+        
         self.include_chkvar = tk.IntVar(value=True)
         includeCheckBox = ttk.Checkbutton(self,text=_("Include system environment variable"),variable=self.include_chkvar)
         link_label = linklabel.LinkLabel(self,text=_("View"),link="https://github.com/RedFantom/ttkwidgets",\
                                          normal_color='royal blue',hover_color='blue',clicked_color='purple')
         self.interpreter = None
-       ### self.UpdateUI(None)
+        self.UpdateUI()
         
     def checkInclude(self,event):
         if self.interpreter is None:
@@ -43,7 +61,7 @@ class EnvironmentPanel(ttk.Frame):
         include_system_environ = self._includeCheckBox.GetValue()
         self.interpreter.Environ.IncludeSystemEnviron = include_system_environ
         
-    def UpdateUI(self,event):
+    def UpdateUI(self):
         selections = self.listview.tree.selection()
         if selections == []:
             self.remove_btn["state"] = tk.DISABLED
@@ -62,9 +80,9 @@ class EnvironmentPanel(ttk.Frame):
         if self.interpreter is not None:
             for env in self.interpreter.Environ:
                 self.listview.tree.insert("",0,values=(env,self.interpreter.Environ[env]))
-        self.UpdateUI(None)
+        self.UpdateUI()
             
-    def RemoveVariable(self,event):
+    def RemoveVariable(self):
         index = self.dvlc.GetSelectedRow()
         if index == wx.NOT_FOUND:
             return
@@ -94,9 +112,8 @@ class EnvironmentPanel(ttk.Frame):
                 return
         self.dvlc.AppendItem([key, value])
         
-    def NewVariable(self,event):
-        dlg = EnvironmentVariableDialog.EnvironmentVariableDialog(self,-1,_("New Environment Variable"))
-        dlg.CenterOnParent()
+    def NewVariable(self):
+        dlg = ui_common.EnvironmentVariableDialog(self,_("New Environment Variable"))
         status = dlg.ShowModal()
         key = dlg.key_ctrl.GetValue().strip()
         value = dlg.value_ctrl.GetValue().strip()
@@ -105,7 +122,7 @@ class EnvironmentPanel(ttk.Frame):
         self.UpdateUI(None)
         dlg.Destroy()
         
-    def EditVariable(self,event):
+    def EditVariable(self):
         index = self.dvlc.GetSelectedRow()
         if index == wx.NOT_FOUND:
             return
@@ -123,7 +140,7 @@ class EnvironmentPanel(ttk.Frame):
         self.UpdateUI(None)
         dlg.Destroy()
         
-    def OnGotoLink(self,event):
+    def OnGotoLink(self):
         dlg = SystemEnvironmentVariableDialog(self,-1,_("System Environment Variable"))
         dlg.CenterOnParent()
         dlg.ShowModal()

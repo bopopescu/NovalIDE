@@ -1,8 +1,9 @@
 from noval import _
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk,messagebox
 import noval.python.parser.utils as parserutils
 import noval.python.interpreter.PythonPathMixin as PythonPathMixin
+import noval.util.utils as utils
 
 class PythonPathPanel(ttk.Frame,PythonPathMixin.BasePythonPathPanel):
     def __init__(self,parent):
@@ -20,21 +21,25 @@ class PythonPathPanel(ttk.Frame,PythonPathMixin.BasePythonPathPanel):
                 if path.strip() == "":
                     continue
                 #process path contains chinese character
-                self.treeview.tree.insert("","end",text=path,image=self.LibraryIcon)
+                if utils.is_py2():
+                    path = self.ConvertPath(path)
+                self.treeview.tree.insert(root_item,"end",text=path,image=self.LibraryIcon)
             self.treeview.tree.item(root_item, open=True)
         self.UpdateUI()
         
-    def RemovePath(self,event):
+    def RemovePath(self):
         if self._interpreter is None:
             return
-        item = self.tree_ctrl.GetSelection()
-        if item == self.tree_ctrl.GetRootItem():
+        selections = self.treeview.tree.selection()
+        if not selections:
             return
-        path = self.tree_ctrl.GetItemText(item)
+        if selections[0] == self.treeview.tree.get_children()[0]:
+            return
+        path = self.treeview.tree.item(selections[0],"text")
         if parserutils.PathsContainPath(self._interpreter.SysPathList,path):
-            wx.MessageBox(_("The Python System Path could not be removed"),_("Error"),wx.OK|wx.ICON_ERROR,self)
+            messagebox.showerror(_("Error"),_("The Python System Path could not be removed"),parent=self)
             return
-        self.tree_ctrl.Delete(item)
+        PythonPathMixin.BasePythonPathPanel.RemovePath(self)
         
     def GetPythonPathList(self):
         python_path_list = self.GetPythonPathFromPathList()

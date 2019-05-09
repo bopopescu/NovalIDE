@@ -17,13 +17,14 @@ from tkinter import ttk
 import noval.consts as consts
 import noval.ttkwidgets.linklabel as linklabel
 import noval.python.interpreter.InterpreterManager as interpretermanager
-from noval.python.project.runconfig import PythonProjectConfiguration
+from noval.python.project.runconfig import PythonProjectConfiguration,PythonRunconfig
 import os
 import noval.python.parser.utils as dirutils
 import noval.project.command as command
 from noval.project.templatemanager import ProjectTemplateManager
 import noval.iface as iface
 import noval.plugin as plugin
+import noval.ui_common as ui_common
 
 class PythonProjectDocument(ProjectDocument):
 
@@ -32,13 +33,13 @@ class PythonProjectDocument(ProjectDocument):
     def __init__(self, model=None):
         ProjectDocument.__init__(self,model)
         
-
-    def GetProjectModel(self):
+    @staticmethod
+    def GetProjectModel():
         return pyprojectlib.PythonProject()
 
     def GetRunConfiguration(self,start_up_file):
         file_key = self.GetFileKey(start_up_file)
-        run_configuration_name = utils.ProfileGet(file_key + "/RunConfigurationName","")
+        run_configuration_name = utils.profile_get(file_key + "/RunConfigurationName","")
         return run_configuration_name
         
     def GetRunParameter(self,start_up_file):
@@ -53,26 +54,26 @@ class PythonProjectDocument(ProjectDocument):
                 wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR)
                 return None
             
-        config = wx.ConfigBase_Get()
-        use_argument = config.ReadInt(self.GetFileKey(start_up_file,"UseArgument"),True)
+
+        use_argument = utils.profile_get_int(self.GetFileKey(start_up_file,"UseArgument"),True)
         if use_argument:
-            initialArgs = config.Read(self.GetFileKey(start_up_file,"RunArguments"),"")
+            initialArgs = utils.profile_get(self.GetFileKey(start_up_file,"RunArguments"),"")
         else:
             initialArgs = ''
-        python_path = config.Read(self.GetFileKey(start_up_file,"PythonPath"),"")
-        startIn = config.Read(self.GetFileKey(start_up_file,"RunStartIn"),"")
+        python_path = utils.profile_get(self.GetFileKey(start_up_file,"PythonPath"),"")
+        startIn = utils.profile_get(self.GetFileKey(start_up_file,"RunStartIn"),"")
         if startIn == '':
             startIn = os.path.dirname(self.GetFilename())
         env = {}
         paths = set()
-        path_post_end = config.ReadInt(self.GetKey("PythonPathPostpend"), True)
+        path_post_end = utils.profile_get_int(self.GetKey("PythonPathPostpend"), True)
         if path_post_end:
             paths.add(str(os.path.dirname(self.GetFilename())))
         #should avoid environment contain unicode string,such as u'xxx'
         if len(python_path) > 0:
             paths.add(str(python_path))
-        env[PYTHON_PATH_NAME] = os.pathsep.join(list(paths))
-        return configuration.RunParameter(wx.GetApp().GetCurrentInterpreter(),start_up_file.filePath,initialArgs,env,startIn,project=self)
+        env[consts.PYTHON_PATH_NAME] = os.pathsep.join(list(paths))
+        return PythonRunconfig(GetApp().GetCurrentInterpreter(),start_up_file.filePath,initialArgs,env,startIn,project=self)
         
 
 class PythonProjectTemplate(ProjectTemplate):
@@ -128,11 +129,14 @@ class PythonProjectNameLocationPage(ProjectNameLocationPage):
         self.interpreter_combo['values'] = names
         self.interpreter_combo.current(0)
             
-        link_label = linklabel.LinkLabel(sizer_frame,text=_("Configuration"),link="https://github.com/RedFantom/ttkwidgets",\
-                                         normal_color='royal blue',hover_color='blue',clicked_color='purple')
+        link_label = linklabel.LinkLabel(sizer_frame,text=_("Configuration"),normal_color='royal blue',hover_color='blue',clicked_color='purple')
+        link_label.bind("<Button-1>", self.OpenInterpreterConfiguration)
         link_label.grid(column=2, row=2, sticky="nsew",padx=(consts.DEFAUT_CONTRL_PAD_X/2,0),pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         
 
+    def OpenInterpreterConfiguration(self,*args):
+        ui_common.ShowInterpreterConfigurationPage()
+        
     def Finish(self):
         if not ProjectNameLocationPage.Finish(self):
             return False
@@ -216,6 +220,6 @@ class DefaultProjectTemplateLoader(plugin.Plugin):
     def Load(self):
         ProjectTemplateManager().AddProjectTemplate(_("Gernal"),_("Empty Project"),[PythonProjectNameLocationPage,])
         ProjectTemplateManager().AddProjectTemplate(_("Gernal"),_("New Project From Existing Code"),\
-                    ["noval.python.project.viewer.PythonProjectNameLocationPage","noval.project.importfiles.ImportfilesPage"])
+                    ["noval.python.project.viewer.PythonProjectNameLocationPage",("noval.project.importfiles.ImportfilesPage",{'rejects':PythonProjectDocument.BIN_FILE_EXTS})])
 
 consts.DEFAULT_PLUGINS += ('noval.python.project.viewer.DefaultProjectTemplateLoader',)

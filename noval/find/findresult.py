@@ -37,7 +37,10 @@ class FindResultsview(ttk.Frame):
         self.text.set_read_only(True)
 
     def ClearLines(self):
+        #只读状态时无法删除数据需要先解除只读
+        self.text.set_read_only(False)
         self.text.delete('1.0','end')
+        self.text.set_read_only(True)
         
     def OnJumptoFoundLine(self, event=None, defLineNum=-1):
         if 0 == self.text.GetCurrentLine():

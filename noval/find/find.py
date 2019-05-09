@@ -280,7 +280,7 @@ class FindDialog(tk.Toplevel):
                     "current_found", self.active_found_tag[0], self.active_found_tag[1]
                 )  # remove the previous active tag if it was present
             for tag in self.passive_found_tags:
-                self.codeview.text.tag_remove(
+                self.codeview.GetCtrl().tag_remove(
                     "found", tag[0], tag[1]
                 )  # and remove all the previous passive tags that were present
             search_start_index = self.codeview.GetCtrl().index(

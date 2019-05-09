@@ -46,9 +46,10 @@ import noval.python.interpreter.InterpreterConfigruation as InterpreterConfigrua
 import noval.python.outline
 import noval.python.project.browser
 import noval.python.pyshell
-
-INTERPRETER_OPTION_NAME = "Interpreter"
-INTERPRETER_CONFIGURATIONS_ITEM_NAME = "Configuration List"
+import noval.python.debugger.Debugger as Debugger
+import noval.ui_common as ui_common
+import noval.misc as misc
+_debugger = None
 
 class PyIDEApplication(ide.IDEApplication):
 
@@ -56,6 +57,7 @@ class PyIDEApplication(ide.IDEApplication):
         ide.IDEApplication.__init__(self)
 
     def OnInit(self):
+        global _debugger
         if not ide.IDEApplication.OnInit(self):
             return False
         #关闭软件启动图片
@@ -63,11 +65,11 @@ class PyIDEApplication(ide.IDEApplication):
         #设置Python文本视图在大纲中显示语法树
         self.MainFrame.GetOutlineView().AddViewTypeForBackgroundHandler(pyeditor.PythonView)
         
-
+        _debugger = Debugger.Debugger()
         self.interpreter_combo = self.MainFrame.GetToolBar().AddCombox()
         self.interpreter_combo.bind("<<ComboboxSelected>>",self.OnCombo)
         
-        interpretermanager.InterpreterManager().LoadDefaultInterpreter()
+        self.LoadDefaultInterpreter()
         self.AddInterpreters()
         #projectService.SetCurrentProject()
         intellisence.IntellisenceManager().generate_default_intellisence_data()
@@ -85,9 +87,13 @@ class PyIDEApplication(ide.IDEApplication):
         insert_menu = edit_menu.GetMenu(constants.ID_INSERT)
         self.AddMenuCommand(constants.ID_INSERT_DECLARE_ENCODING,insert_menu,_("Insert Encoding Declare"),self.InsertEncodingDeclare,default_tester=True,default_command=True)
         
-        preference.PreferenceManager().AddOptionsPanel(INTERPRETER_OPTION_NAME,preference.GENERAL_ITEM_NAME,interpretergerneralconfiguration.InterpreterGeneralConfigurationPanel)
-        preference.PreferenceManager().AddOptionsPanel(INTERPRETER_OPTION_NAME,INTERPRETER_CONFIGURATIONS_ITEM_NAME,InterpreterConfigruation.InterpreterConfigurationPanel)
+        preference.PreferenceManager().AddOptionsPanel(preference.INTERPRETER_OPTION_NAME,preference.GENERAL_ITEM_NAME,interpretergerneralconfiguration.InterpreterGeneralConfigurationPanel)
+        preference.PreferenceManager().AddOptionsPanel(preference.INTERPRETER_OPTION_NAME,preference.INTERPRETER_CONFIGURATIONS_ITEM_NAME,InterpreterConfigruation.InterpreterConfigurationPanel)
         return True
+        
+    @misc.update_toolbar
+    def LoadDefaultInterpreter(self):
+        interpretermanager.InterpreterManager().LoadDefaultInterpreter()
         
     def GotoDefinition(self):
         current_view = self.GetDocumentManager().GetCurrentView()
@@ -171,6 +177,7 @@ class PyIDEApplication(ide.IDEApplication):
                 self.interpreter_combo.current(i)
                 break
 
+    @misc.update_toolbar
     def OnCombo(self,event):
         selection = self.interpreter_combo.current()
         if selection == len(self.interpreter_combo['values']) - 1:
@@ -180,6 +187,7 @@ class PyIDEApplication(ide.IDEApplication):
          #       prompt = True
           #  else:
             #    UICommon.ShowInterpreterOptionPage()
+            ui_common.ShowInterpreterConfigurationPage()
         else:
             interpreter = interpretermanager.InterpreterManager().interpreters[selection]
             self.SelectInterpreter(interpreter)
@@ -260,7 +268,7 @@ class PyIDEApplication(ide.IDEApplication):
         return terminal.run_in_terminal(cmd, cwd, env_overrides, True)
 
     def Run(self):
-        raise Exception("This method must be implemented in derived class")
+        _debugger.Run()
         
     def DebugRun(self):
         raise Exception("This method must be implemented in derived class")
@@ -286,3 +294,16 @@ class PyIDEApplication(ide.IDEApplication):
             text_view.AddText(dlg.name_var.get() + "\n")
             return True
         return False
+        
+    def UpdateUI(self,command_id):
+        current_interpreter = self.GetCurrentInterpreter()
+        #使用内建解释器时,禁止运行按钮和菜单
+        if command_id == constants.ID_RUN:
+            if current_interpreter is None or current_interpreter.IsBuiltIn:
+                return False
+        elif command_id == constants.ID_DEBUG:
+            if current_interpreter is None:
+                return False
+
+        return ide.IDEApplication.UpdateUI(self,command_id)
+            

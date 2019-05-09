@@ -100,3 +100,6 @@ PROJECT_ADD_PROGRESS_COMMAND_NAME   = "progress_add"
 
 #the first 2 line no of python file to place encoding declare
 ENCODING_DECLARE_LINE_NUM = 2
+
+PYTHON_PATH_NAME = 'PYTHONPATH'
+NOT_IN_ANY_PROJECT = "Not in any Project"

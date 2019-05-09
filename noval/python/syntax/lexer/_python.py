@@ -245,6 +245,23 @@ class SyntaxColorer:
                         self.text.tag_remove(tag, token_start, token_end)
                     # add tag
                     self.text.tag_add(token_type, token_start, token_end)
+                    
+class ShellSyntaxColorer(SyntaxColorer):
+    def _update_coloring(self):
+        parts = self.text.tag_prevrange("command", "end")
+
+        if parts:
+            end_row, end_col = map(int, self.text.index(parts[1]).split("."))
+
+            if end_col != 0:  # if not just after the last linebreak
+                end_row += 1  # then extend the range to the beginning of next line
+                end_col = 0  # (otherwise open strings are not displayed correctly)
+
+            start_index = parts[0]
+            end_index = "%d.%d" % (end_row, end_col)
+
+            self._update_uniline_tokens(start_index, end_index)
+            self._update_multiline_tokens(start_index, end_index)
 
 class SyntaxLexer(syndata.BaseLexer):
     """SyntaxData object for Python""" 
@@ -313,3 +330,6 @@ class SyntaxLexer(syndata.BaseLexer):
 '''
     def GetColorClass(self):
         return SyntaxColorer
+        
+    def GetShellColorClass(self):
+        return ShellSyntaxColorer

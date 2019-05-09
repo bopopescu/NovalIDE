@@ -99,24 +99,14 @@ class EncodingDeclareDialog(ui_base.CommonModaldialog):
         ui_base.CommonModaldialog.__init__(self,parent)
         self.title(_("Declare Encoding"))
         self.name_var = tk.StringVar(value="# -*- coding: utf-8 -*-")
-        self.name_ctrl = ttk.Entry(self, textvariable=self.name_var)
+        self.name_ctrl = ttk.Entry(self.main_frame, textvariable=self.name_var)
         self.name_ctrl.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         self.name_ctrl["state"] = tk.DISABLED
         
         self.check_var = tk.IntVar(value=False)
-        check_box = ttk.Checkbutton(self, text=_("Edit"),variable=self.check_var,command=self.onChecked)
+        check_box = ttk.Checkbutton(self.main_frame, text=_("Edit"),variable=self.check_var,command=self.onChecked)
         check_box.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-
-        bottom_frame = ttk.Frame(self)
-        bottom_frame.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-        
-        space_label = ttk.Label(bottom_frame,text="")
-        space_label.grid(column=0, row=0, sticky=tk.EW, padx=(consts.DEFAUT_CONTRL_PAD_X, consts.DEFAUT_CONTRL_PAD_X), pady=consts.DEFAUT_CONTRL_PAD_Y)
-        self.ok_button = ttk.Button(bottom_frame, text=_("&OK"), command=self._ok,default=tk.ACTIVE)
-        self.ok_button.grid(column=1, row=0, sticky=tk.EW, padx=(0, consts.DEFAUT_CONTRL_PAD_X), pady=consts.DEFAUT_CONTRL_PAD_Y)
-        self.cancel_button = ttk.Button(bottom_frame, text=_("Cancel"), command=self._cancel)
-        self.cancel_button.grid(column=2, row=0, sticky=tk.EW, padx=(0, consts.DEFAUT_CONTRL_PAD_X), pady=consts.DEFAUT_CONTRL_PAD_Y)
-        bottom_frame.columnconfigure(0, weight=1)
+        self.AddokcancelButton()
         
     def onChecked(self):
         if self.check_var.get():

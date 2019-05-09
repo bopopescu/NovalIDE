@@ -359,7 +359,7 @@ class ProjectRemoveFilesCommand(Command):
 
 
     def __init__(self, projectDoc, files):
-        wx.lib.docview.Command.__init__(self, canUndo = True)
+        Command.__init__(self, canUndo = True)
         self._projectDoc = projectDoc
         self._files = files
 

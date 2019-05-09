@@ -664,7 +664,7 @@ class OutlineView(ttk.Frame):
 
         self._tab_changed_binding = (GetApp().MainFrame.GetNotebook().bind("<<NotebookTabChanged>>", self._update_frame_contents, True))
         self.tree.bind("<3>", self.on_secondary_click, True)
-        self._sortOrder = self.SORT_BY_NONE
+        self._sortOrder = utils.profile_get_int("OutlineSort", self.SORT_BY_NONE)
         #当前在大纲中显示的文本视图
         self._callback_view = None
         #哪些视图类型允许在大纲中显示
@@ -800,54 +800,6 @@ class OutlineView(ttk.Frame):
                 return True
         return False
 
-class TreeFrame(ttk.Frame):
-    def __init__(
-        self,
-        master,
-        columns=[],
-        displaycolumns="#all",
-        show_scrollbar=True,
-        borderwidth=0,
-        relief="flat",
-        **tree_kw
-    ):
-        ttk.Frame.__init__(self, master, borderwidth=borderwidth, relief=relief)
-        # http://wiki.tcl.tk/44444#pagetoc50f90d9a
-        self.vert_scrollbar = ttk.Scrollbar(
-            self, orient=tk.VERTICAL, style=None
-        )
-        if show_scrollbar:
-            self.vert_scrollbar.grid(row=0, column=1, sticky=tk.NSEW)
-
-        self.tree = ttk.Treeview(
-            self,
-            columns=columns,
-            displaycolumns=displaycolumns,
-            yscrollcommand=self.vert_scrollbar.set,
-            **tree_kw
-        )
-        self.tree["show"] = "headings"
-        self.tree.grid(row=0, column=0, sticky=tk.NSEW)
-        self.vert_scrollbar["command"] = self.tree.yview
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(0, weight=1)
-        self.tree.bind("<<TreeviewSelect>>", self.on_select, "+")
-        #鼠标双击Tree控件事件
-        self.tree.bind("<Double-Button-1>", self.on_double_click, "+")
-
-    def _clear_tree(self):
-        for child_id in self.tree.get_children():
-            self.tree.delete(child_id)
-
-    def clear(self):
-        self._clear_tree()
-
-    def on_select(self, event):
-        pass
-
-    def on_double_click(self, event):
-        pass
-
 class DockFrame(ttk.Frame):
     def __init__(self, row,master=None,show=True,**kw):
         ttk.Frame.__init__(self, master, **kw)
@@ -885,6 +837,10 @@ class DockFrame(ttk.Frame):
 class CommonDialog(tk.Toplevel):
     def __init__(self, master,**kwargs):
         tk.Toplevel.__init__(self, master,**kwargs)
+        self.main_frame = ttk.Frame(self)
+        self.main_frame.grid(row=0, column=0, sticky="nsew")
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
         
     def CenterWindow(self):
         # looks like it doesn't take window border into account
@@ -945,23 +901,31 @@ class CommonModaldialog(CommonDialog):
     def _cancel(self, event=None):
         self.status = constants.ID_CANCEL
         self.destroy()
+        
+    def AddokcancelButton(self):
+        bottom_frame = ttk.Frame(self.main_frame)
+        bottom_frame.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        
+        space_label = ttk.Label(bottom_frame,text="")
+        space_label.grid(column=0, row=0, sticky=tk.EW, padx=(consts.DEFAUT_CONTRL_PAD_X, consts.DEFAUT_CONTRL_PAD_X), pady=consts.DEFAUT_CONTRL_PAD_Y)
+        self.ok_button = ttk.Button(bottom_frame, text=_("&OK"), command=self._ok,default=tk.ACTIVE)
+        self.ok_button.grid(column=1, row=0, sticky=tk.EW, padx=(0, consts.DEFAUT_CONTRL_PAD_X), pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+        self.cancel_button = ttk.Button(bottom_frame, text=_("Cancel"), command=self._cancel)
+        self.cancel_button.grid(column=2, row=0, sticky=tk.EW, padx=(0, consts.DEFAUT_CONTRL_PAD_X), pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+        bottom_frame.columnconfigure(0, weight=1)
 
 class SingleChoiceDialog(CommonModaldialog):
     def __init__(self, master,title,label,choices = [],selection=-1):
         CommonModaldialog.__init__(self, master, takefocus=1, background="pink")
-        main_frame = ttk.Frame(self)
-        main_frame.grid(row=1, column=2, sticky="nsew")
-        self.columnconfigure(1, weight=1)
-        self.rowconfigure(1, weight=1)
         self.title(title)
         #禁止对话框改变大小
         self.resizable(height=tk.FALSE, width=tk.FALSE)
-        label_ctrl = ttk.Label(main_frame,text=label)
+        label_ctrl = ttk.Label(self.main_frame,text=label)
         label_ctrl.pack(expand=1, fill="x",padx = consts.DEFAUT_CONTRL_PAD_X,pady = consts.DEFAUT_CONTRL_PAD_Y)
         
         v = tk.StringVar()
         #设置listbox的高度最小为5个文本的大小,超过则以实际解释器数量为准
-        self.listbox = tk.Listbox(main_frame,listvariable=v,height=max(len(choices),5))
+        self.listbox = tk.Listbox(self.main_frame,listvariable=v,height=max(len(choices),5))
         #listbox双击事件,设置双击等价于点击ok按钮
         self.listbox.bind('<Double-Button-1>',self._ok)
         v.set(tuple(choices))
@@ -970,13 +934,10 @@ class SingleChoiceDialog(CommonModaldialog):
         self.listbox.selection_set(selection)
         self.listbox.pack(expand=1, fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
         
-        separator = ttk.Separator (main_frame, orient = tk.HORIZONTAL)
+        separator = ttk.Separator (self.main_frame, orient = tk.HORIZONTAL)
         separator.pack(expand=1, fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady = (consts.DEFAUT_CONTRL_PAD_Y,0))
         
-        self.ok_button = ttk.Button(main_frame, text=_("&OK"), command=self._ok,default=tk.ACTIVE)
-        self.ok_button.pack(side=tk.LEFT,padx=consts.DEFAUT_CONTRL_PAD_X,pady = consts.DEFAUT_CONTRL_PAD_Y)
-        self.cancel_button = ttk.Button(main_frame, text=_("&Cancel"), command=self._cancel)
-        self.cancel_button.pack(fill=tk.X,padx=(0, consts.DEFAUT_CONTRL_PAD_X),pady = consts.DEFAUT_CONTRL_PAD_Y)
+        self.AddokcancelButton()
         self.status = -1
 
     def _ok(self, event=None):

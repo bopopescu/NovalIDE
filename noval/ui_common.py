@@ -16,6 +16,8 @@ from noval.consts import DEFAUT_CONTRL_PAD_X,DEFAUT_CONTRL_PAD_Y
 import noval.misc as misc
 import noval.ui_base as ui_base
 import noval.constants as constants
+import noval.preference as preference
+import noval.consts as consts
 
 class AutomaticPanedWindow(tk.PanedWindow):
     """
@@ -358,32 +360,26 @@ class PromptmessageBox(tk.Toplevel):
         self.destroy()
         
 class EnvironmentVariableDialog(ui_base.CommonModaldialog):
-    def __init__(self,parent,dlg_id,title):
-        wx.Dialog.__init__(self,parent,dlg_id,title)
-        contentSizer = wx.BoxSizer(wx.VERTICAL)
+    def __init__(self,parent,title):
+        ui_base.CommonModaldialog.__init__(self,parent)
+        self.title(title)
+        row = ttk.Frame(self.main_frame)
+        ttk.Label(row, text=_("Key: ")).pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        self.key_ctrl = ttk.Entry(row,text="")
+        self.key_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        row.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        lineSizer.Add(wx.StaticText(self, -1, _("Key: ")), 0, wx.ALIGN_CENTER | wx.LEFT, HALF_SPACE)
-        self.key_ctrl = wx.TextCtrl(self, -1, "", size=(200,-1))
-        lineSizer.Add(self.key_ctrl, 0, wx.LEFT|wx.ALIGN_BOTTOM, SPACE)
-        contentSizer.Add(lineSizer, 0, wx.ALL, HALF_SPACE)
+        row = ttk.Frame(self.main_frame)
+        ttk.Label(row, text=_("Value:")).pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        self.value_ctrl = ttk.Entry(row,text="")
+        self.value_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        row.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        self.AddokcancelButton()
+
+def ShowInterpreterConfigurationPage():
+    preference_dlg = preference.PreferenceDialog(GetApp().GetTopWindow(),selection=preference.GetOptionName(preference.INTERPRETER_OPTION_NAME,preference.INTERPRETER_CONFIGURATIONS_ITEM_NAME))
+    if preference_dlg.ShowModal() == constants.ID_OK:
+        GetApp().AddInterpreters()
+    else:
+        GetApp().SetCurrentInterpreter()
     
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        lineSizer.Add(wx.StaticText(self, -1, _("Value:")), 0, wx.ALIGN_CENTER | wx.LEFT, HALF_SPACE)
-        self.value_ctrl = wx.TextCtrl(self, -1, "", size=(200,-1))
-        lineSizer.Add(self.value_ctrl, 0, wx.LEFT, HALF_SPACE)
-        contentSizer.Add(lineSizer, 0, wx.ALL, HALF_SPACE)
-        
-        bsizer = wx.StdDialogButtonSizer()
-        ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
-        #set ok button default focused
-        ok_btn.SetDefault()
-        bsizer.AddButton(ok_btn)
-        
-        cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
-        bsizer.AddButton(cancel_btn)
-        bsizer.Realize()
-        contentSizer.Add(bsizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM,HALF_SPACE)
-        
-        self.SetSizer(contentSizer)
-        self.Fit()

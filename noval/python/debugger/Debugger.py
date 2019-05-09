@@ -9,99 +9,67 @@
 # Copyright:    (c) 2004-2005 ActiveGrid, Inc.
 # License:      wxWindows License
 #----------------------------------------------------------------------------
-import wx
-import wx.lib.intctrl
-import wx.lib.docview
-import wx.lib.dialogs
-import wx.gizmos
-import wx._core
-import wx.lib.pydocview
-from noval.tool import CodeEditor,PythonEditor
-from noval.tool.service import Service
-import noval.model.projectmodel as projectmodel
-from noval.tool.IDE import ACTIVEGRID_BASE_IDE
-if not ACTIVEGRID_BASE_IDE:
-    import ProcessModelEditor
-import wx.lib.scrolledpanel as scrolled
+#import noval.model.projectmodel as projectmodel
+from noval import NewId,GetApp,_
+from tkinter import ttk,messagebox
 import sys
 import time
-import SimpleXMLRPCServer
-import xmlrpclib
+try:
+    from SimpleXMLRPCServer import SimpleXMLRPCServer
+    import xmlrpclib
+    import Queue
+    import SocketServer
+   # import StringIO
+except ImportError:
+    from xmlrpc.server import SimpleXMLRPCServer
+    import xmlrpc.client as xmlrpclib
+    import queue as Queue
+    import socketserver as SocketServer
+
 import os
 import threading
-import Queue
-import SocketServer
-import noval.tool.project as project
+import noval.project.basemodel as projectlib
 import types
 from xml.dom.minidom import parse, parseString
 import bz2
 import pickle
-import DebuggerHarness
 import traceback
-import StringIO
-import noval.tool.UICommon as UICommon
-import noval.util.sysutils as sysutilslib
+import noval.util.apputils as sysutilslib
 import subprocess
 import shutil
-import noval.tool.interpreter.Interpreter as Interpreter
-import noval.tool.syntax.lang as lang
-import noval.util.WxThreadSafe as WxThreadSafe
-import DebugOutputCtrl
-import noval.parser.intellisence as intellisence
-import noval.tool.interpreter.InterpreterManager as interpretermanager
-from noval.tool.consts import PYTHON_PATH_NAME,NOT_IN_ANY_PROJECT,\
-        SPACE,HALF_SPACE,DEBUG_RUN_ITEM_NAME,DEBUGGER_PAGE_COMMON_METHOD
+import noval.python.interpreter.Interpreter as Interpreter
+import noval.syntax.lang as lang
+#import DebugOutputCtrl
+import noval.python.parser.intellisence as intellisence
+import noval.python.interpreter.InterpreterManager as interpretermanager
 import noval.util.strutils as strutils
-import noval.parser.utils as parserutils
+import noval.python.parser.utils as parserutils
 import noval.util.fileutils as fileutils
 import copy
-import noval.tool.service.OptionService as OptionService
 import noval.util.appdirs as appdirs
 import noval.util.utils as utils
-from noval.model import configuration
-import noval.tool.images as images
-import BreakPoints
+#from noval.model import configuration
+import noval.python.debugger.BreakPoints as BreakPoints
 import pickle
-from noval.util.exceptions import StartupPathNotExistError,PromptErrorException
-import noval.tool.project.RunConfiguration as RunConfiguration
-import Watchs
-import noval.tool.service.MessageService as MessageService
-import noval.tool.aui as aui
+import noval.project.baserun as baserun
+import noval.python.debugger.Watchs as Watchs
 import uuid
-import noval.util.constants as constants
+import noval.constants as constants
+import noval.ui_base as ui_base
+import noval.ui_common as ui_common
+if utils.is_py2():
+    import noval.python.debugger.DebuggerHarness as DebuggerHarness
+elif utils.is_py3():
+    import noval.python.debugger.DebuggerHarness3 as DebuggerHarness
 
-import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
-
-if wx.Platform == '__WXMSW__':
-    try:
-        import win32api
-        _PYWIN32_INSTALLED = True
-    except ImportError:
-        _PYWIN32_INSTALLED = False
-    _WINDOWS = True
-else:
-    _WINDOWS = False
-
-if not _WINDOWS or _PYWIN32_INSTALLED:
-    import process
-
-_ = wx.GetTranslation
+#import sys
+#reload(sys)
+#sys.setdefaultencoding('utf-8')
 
 #VERBOSE mode will invoke threading.Thread _VERBOSE,which will print a lot of thread debug text on screen
 _VERBOSE = False
 _WATCHES_ON = True
 
-import  wx.lib.newevent
-(UpdateTextEvent, EVT_UPDATE_STDTEXT) = wx.lib.newevent.NewEvent()
-(UpdateErrorEvent, EVT_UPDATE_ERRTEXT) = wx.lib.newevent.NewEvent()
-(DebugInternalWebServer, EVT_DEBUG_INTERNAL) = wx.lib.newevent.NewEvent()
-
-# Class to read from stdout or stderr and write the result to a text control.
-# Args: file=file-like object
-#       callback_function= function that takes a single argument, the line of text
-#       read.
 class OutputReaderThread(threading.Thread):
     def __init__(self, file, callback_function, callbackOnExit=None, accumulate=True):
         threading.Thread.__init__(self)
@@ -154,14 +122,14 @@ class OutputReaderThread(threading.Thread):
             #    pass
             except:
                 tp, val, tb = sys.exc_info()
-                print "Exception in OutputReaderThread.run():", tp, val
+                print ("Exception in OutputReaderThread.run():", tp, val)
                 self._keepGoing = False
         if self._callbackOnExit:
             try:
                 self._callbackOnExit()
             except wx._core.PyDeadObjectError:
                 pass
-        if _VERBOSE: print "Exiting OutputReaderThread"
+        if _VERBOSE: print ("Exiting OutputReaderThread")
 
     def AskToStop(self):
         self._keepGoing = False
@@ -169,11 +137,11 @@ class OutputReaderThread(threading.Thread):
 
 class Executor(object):
     def GetPythonExecutablePath():
-        path = UICommon.GetPythonExecPath()
-        if path:
-            return path
-        wx.MessageBox(_("To proceed we need to know the location of the python.exe you would like to use.\nTo set this, go to Tools-->Options and use the 'Python Inpterpreter' panel to configuration a interpreter.\n"), _("Python Executable Location Unknown"))
-        UICommon.ShowInterpreterOptionPage()
+        current_interpreter = GetApp().GetCurrentInterpreter()
+        if current_interpreter:
+            return current_interpreter.Path
+        messagebox.showinfo( _("Python Executable Location Unknown"),_("To proceed we need to know the location of the python.exe you would like to use.\nTo set this, go to Tools-->Options and use the 'Python Inpterpreter' panel to configuration a interpreter.\n"))
+        ui_common.ShowInterpreterConfigurationPage()
         return None
     GetPythonExecutablePath = staticmethod(GetPythonExecutablePath)
 
@@ -227,7 +195,7 @@ class Executor(object):
         else:
             command = self._cmd
 
-        if _VERBOSE: print "start debugger executable: " + command + "\n"
+        if _VERBOSE: print ("start debugger executable: " + command + "\n")
         utils.GetLogger().debug("start debugger executable: %s",command)
         self._process = process.ProcessOpen(command, mode='b', cwd=startIn, env=environment)
         # Kick off threads to read stdout and stderr and write them
@@ -283,13 +251,13 @@ class DebuggerExecutor(Executor):
         if(arg9 != None):
             self._cmd += self.spaceAndQuote(arg9)
 
-class RunCommandUI(wx.Panel):
+class RunCommandUI(ttk.Frame):
     runners = []
     
-    KILL_PROCESS_ID = wx.NewId()
-    CLOSE_TAB_ID = wx.NewId()
-    TERMINATE_ALL_PROCESS_ID = wx.NewId()
-    RESTART_PROCESS_ID = wx.NewId()
+    KILL_PROCESS_ID = NewId()
+    CLOSE_TAB_ID = NewId()
+    TERMINATE_ALL_PROCESS_ID = NewId()
+    RESTART_PROCESS_ID = NewId()
 
     def ShutdownAllRunners():
         # See comment on PythonDebuggerUI.StopExecution
@@ -368,7 +336,7 @@ class RunCommandUI(wx.Panel):
             wx.MessageBox(e.msg,_("Startup path not exist"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
             self.StopExecution()
             self.ExecutorFinished()
-        except Exception,e:
+        except Exception as e:
             wx.MessageBox(str(e),_("Run Error"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
             self.StopExecution()
             self.ExecutorFinished()
@@ -388,7 +356,6 @@ class RunCommandUI(wx.Panel):
         for runner in self.runners:
             runner.UpdateTerminateAllUI()
         
-    @WxThreadSafe.call_after
     def ExecutorFinished(self):
         try:
             self._tb.EnableTool(self.KILL_PROCESS_ID, False)
@@ -516,14 +483,14 @@ DEFAULT_PORT = 32032
 DEFAULT_HOST = 'localhost'
 PORT_COUNT = 21
 
-class BaseDebuggerUI(wx.Panel):
+class BaseDebuggerUI(ttk.Frame):
     debuggers = []
     
-    KILL_PROCESS_ID = wx.NewId()
-    CLOSE_WINDOW_ID = wx.NewId()
-    CLEAR_ID = wx.NewId()
-    STEP_INTO_ID = wx.NewId()
-    STEP_NEXT_ID = wx.NewId()
+    KILL_PROCESS_ID = NewId()
+    CLOSE_WINDOW_ID = NewId()
+    CLEAR_ID = NewId()
+    STEP_INTO_ID = NewId()
+    STEP_NEXT_ID = NewId()
 
     def NotifyDebuggersOfBreakpointChange():
         for debugger in BaseDebuggerUI.debuggers:
@@ -728,9 +695,9 @@ class BaseDebuggerUI(wx.Panel):
             self._tb.EnableTool(self.KILL_PROCESS_ID, False)
             if self.run_menu.FindItemById(constants.ID_TERMINATE_DEBUGGER):
                 self.run_menu.Enable(constants.ID_TERMINATE_DEBUGGER,False)
-    @WxThreadSafe.call_after
+
     def ExecutorFinished(self):
-        if _VERBOSE: print "In ExectorFinished"
+        if _VERBOSE: print ("In ExectorFinished")
         try:
             self.DisableAfterStop()
             self.UpdatePagePaneText(_("Debugging"), _("Finished Debugging"))
@@ -779,7 +746,7 @@ class BaseDebuggerUI(wx.Panel):
 
         if not foundView:
             if _VERBOSE:
-                print "filename=", filename
+                print ("filename=", filename)
             doc = wx.GetApp().GetDocumentManager().CreateDocument(DebuggerService.ExpandPath(filename), wx.lib.docview.DOC_SILENT)
             foundView = doc.GetFirstView()
 
@@ -894,12 +861,12 @@ class PythonDebuggerUI(BaseDebuggerUI):
         try:
             server = AGXMLRPCServer((hostname, port))
             server.server_close()
-            if _VERBOSE: print "Port ", str(port), " available."
+            if _VERBOSE: print ("Port ", str(port), " available.")
             return True
         except:
             tp,val,tb = sys.exc_info()
             if _VERBOSE: traceback.print_exception(tp, val, tb)
-            if _VERBOSE: print "Port ", str(port), " unavailable."
+            if _VERBOSE: print ("Port ", str(port), " unavailable.")
             return False
 
     PortAvailable = staticmethod(PortAvailable)
@@ -944,7 +911,7 @@ class PythonDebuggerUI(BaseDebuggerUI):
                 traceback.print_exception(tp, val, tb)
 
         else:
-            print "Starting debugger on these ports: %s, %s, %s" % (str(self._debuggerPort) , str(self._guiPort) , str(self._debuggerBreakPort))
+            print ("Starting debugger on these ports: %s, %s, %s" % (str(self._debuggerPort) , str(self._guiPort) , str(self._debuggerBreakPort)))
             path = DebuggerService.ExpandPath(DebuggerHarness.__file__)
             if interpreter.IsV3():
                 path = path.replace("DebuggerHarness","DebuggerHarness3").replace("DebuggerHarness3.pyc","DebuggerHarness3.py")
@@ -1104,7 +1071,7 @@ class PythonDebuggerUI(BaseDebuggerUI):
     def ProcessEvent(self,event):
         return self.framesTab._textCtrl.ProcessEvent(event)
 
-class BaseFramesUI(wx.SplitterWindow):
+class BaseFramesUI:
     
     THING_COLUMN_WIDTH = 175
     def __init__(self, parent, id, ui):
@@ -1404,10 +1371,10 @@ class PythonFramesUI(BaseFramesUI):
     def GetItemChain(self, item):
         parentChain = []
         if item:
-            if _VERBOSE: print 'Exploding: %s' % self._treeCtrl.GetItemText(item, 0)
+            if _VERBOSE: print ('Exploding: %s' % self._treeCtrl.GetItemText(item, 0))
             while item != self._root:
                 text = self._treeCtrl.GetItemText(item, 0)
-                if _VERBOSE: print "Appending ", text
+                if _VERBOSE: print ("Appending ", text)
                 parentChain.append(text)
                 item = self._treeCtrl.GetItemParent(item)
             parentChain.reverse()
@@ -1434,7 +1401,7 @@ class PythonFramesUI(BaseFramesUI):
             if item != 'locals':
                 value += item
                 prevItem = item
-        print value
+        print (value)
         self.ExecuteCommand(value)
         #swith to interact tab page
         self._notebook.SetSelection(1)
@@ -1626,7 +1593,7 @@ class PythonFramesUI(BaseFramesUI):
         tree = self._treeCtrl
         item = event.GetItem()
         if _VERBOSE:
-            print "In introspectCallback item is %s, pydata is %s" % (event.GetItem(), tree.GetPyData(item))
+            print ("In introspectCallback item is %s, pydata is %s" % (event.GetItem(), tree.GetPyData(item)))
         if tree.GetPyData(item) != "Introspect":
             event.Skip()
             return
@@ -1685,7 +1652,7 @@ class PythonFramesUI(BaseFramesUI):
             return False
 
 
-class DebuggerView(Service.ServiceView):
+class DebuggerView:
 
     #----------------------------------------------------------------------------
     # Overridden methods
@@ -1760,10 +1727,10 @@ class Interaction:
     def getQuit(self):
         return self._quit
 
-class AGXMLRPCServer(SimpleXMLRPCServer.SimpleXMLRPCServer):
+class AGXMLRPCServer(SimpleXMLRPCServer):
     def __init__(self, address, logRequests=0):
         ###enable request method return None value
-        SimpleXMLRPCServer.SimpleXMLRPCServer.__init__(self, address, logRequests=logRequests,allow_none=1)
+        SimpleXMLRPCServer.__init__(self, address, logRequests=logRequests,allow_none=1)
 
 class RequestHandlerThread(threading.Thread):
     def __init__(self,debuggerUI, queue, address):
@@ -1778,7 +1745,7 @@ class RequestHandlerThread(threading.Thread):
         self._server.register_function(self.request_input)
         self._debuggerUI = debuggerUI
         self._input_text = ""
-        if _VERBOSE: print "RequestHandlerThread on fileno %s" % str(self._server.fileno())
+        if _VERBOSE: print ("RequestHandlerThread on fileno %s" % str(self._server.fileno()))
 
     def run(self):
         while self._keepGoing:
@@ -1788,10 +1755,10 @@ class RequestHandlerThread(threading.Thread):
                 tp, val, tb = sys.exc_info()
                 traceback.print_exception(tp, val, tb)
                 self._keepGoing = False
-        if _VERBOSE: print "Exiting Request Handler Thread."
+        if _VERBOSE: print ("Exiting Request Handler Thread.")
 
     def interaction(self, message, frameXML, info):
-        if _VERBOSE: print "In RequestHandlerThread.interaction -- adding to queue"
+        if _VERBOSE: print ("In RequestHandlerThread.interaction -- adding to queue")
         interaction = Interaction(message, frameXML, info)
         self._queue.put(interaction)
         return ""
@@ -1813,7 +1780,6 @@ class RequestHandlerThread(threading.Thread):
         self.input_evt.wait()
         return self._input_text
         
-    @WxThreadSafe.call_after
     def get_input_text(self):
         dialog = wx.TextEntryDialog(self._debuggerUI.framesTab._textCtrl, "Enter the input text:" , "Enter input")
         if dialog.ShowModal() == wx.ID_OK:
@@ -1852,7 +1818,7 @@ class RequestBreakThread(threading.Thread):
 
         def run(self):
             try:
-                if _VERBOSE: print "RequestBreakThread, before call"
+                if _VERBOSE: print ("RequestBreakThread, before call")
                 if self._interrupt:
                     self._server.break_requested()
                 if self._pushBreakpoints:
@@ -1862,7 +1828,7 @@ class RequestBreakThread(threading.Thread):
                         self._server.die()
                     except:
                         pass
-                if _VERBOSE: print "RequestBreakThread, after call"
+                if _VERBOSE: print ("RequestBreakThread, after call")
             except:
                 tp,val,tb = sys.exc_info()
                 traceback.print_exception(tp, val, tb)
@@ -1873,14 +1839,14 @@ class DebuggerOperationThread(threading.Thread):
             self._function = function
 
         def run(self):
-            if _VERBOSE: print "In DOT, before call"
+            if _VERBOSE: print ("In DOT, before call")
             try:
                 self._function()
             except:
                 tp,val,tb = sys.exc_info()
                 traceback.print_exception(tp, val, tb)
             if _VERBOSE:
-                print "In DOT, after call"
+                print ("In DOT, after call")
 
 class BaseDebuggerCallback(object):
 
@@ -1911,7 +1877,7 @@ class BaseDebuggerCallback(object):
 class PythonDebuggerCallback(BaseDebuggerCallback):
 
     def __init__(self, host, port, debugger_url, break_url, debuggerUI, autoContinue=False):
-        if _VERBOSE: print "+++++++ Creating server on port, ", str(port)
+        if _VERBOSE: print ("+++++++ Creating server on port, ", str(port))
         self._timer = None
         self._queue = Queue.Queue(50)
         self._host = host
@@ -2023,19 +1989,19 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
             if self._service.GetExceptions():
                 self.PushExceptionBreakpoints()
         self._waiting = False
-        if _VERBOSE: print "+"*40
+        if _VERBOSE: print ("+"*40)
         #quit gui server
         if(quit):
             #whhen quit gui server stop the debugger execution
             self._debuggerUI.StopExecution(None)
             return ""
         if(info != ""):
-            if _VERBOSE: print "Hit interaction with exception"
+            if _VERBOSE: print ("Hit interaction with exception")
             #self._debuggerUI.StopExecution(None)
             #self._debuggerUI.SetStatusText("Got exception: " + str(info))
             self._debuggerUI.SwitchToOutputTab()
         else:
-            if _VERBOSE: print "Hit interaction no exception"
+            if _VERBOSE: print ("Hit interaction no exception")
         #if not self._autoContinue:
         self._debuggerUI.SetStatusText(message)
         if not self._autoContinue:
@@ -2046,7 +2012,7 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
             self._timer = wx.PyTimer(self.DoContinue)
             self._autoContinue = False
             self._timer.Start(250)
-        if _VERBOSE: print "+"*40
+        if _VERBOSE: print ("+"*40)
 
     def DoContinue(self):
         self._timer.Stop()
@@ -2054,12 +2020,12 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
         evt = DebugInternalWebServer()
         evt.SetId(constants.ID_STEP_CONTINUE)
         wx.PostEvent(self._debuggerUI, evt)
-        if _VERBOSE: print "Event Continue posted"
+        if _VERBOSE: print ("Event Continue posted")
 
         evt = DebugInternalWebServer()
         evt.SetId(DebuggerService.DEBUG_WEBSERVER_NOW_RUN_PROJECT_ID)
         wx.PostEvent(dbgService._frame, evt)
-        if _VERBOSE: print "Event RunProject posted"
+        if _VERBOSE: print ("Event RunProject posted")
 
     def SendRunEvent(self):
         class SendEventThread(threading.Thread):
@@ -2071,7 +2037,7 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
                 evt = DebugInternalWebServer()
                 evt.SetId(DebuggerService.DEBUG_WEBSERVER_NOW_RUN_PROJECT_ID)
                 wx.PostEvent(dbgService._frame, evt)
-                print "Event posted"
+                print ("Event posted")
         set = SendEventThread()
         set.start()
         
@@ -2087,10 +2053,6 @@ class Debugger:
     #----------------------------------------------------------------------------
     # Constants
     #----------------------------------------------------------------------------
-    DEBUG_WEBSERVER_ID = wx.NewId()
-    RUN_WEBSERVER_ID = wx.NewId()
-    DEBUG_WEBSERVER_CONTINUE_ID = wx.NewId()
-    DEBUG_WEBSERVER_NOW_RUN_PROJECT_ID = wx.NewId()
     RUN_PARAMETERS = []
     
     def AppendRunParameter(self,run_paramteter):
@@ -2114,7 +2076,7 @@ class Debugger:
                 return win32api.GetLongPathName(path)
             except:
                 if _VERBOSE:
-                    print "Cannot get long path for %s" % path
+                    print ("Cannot get long path for %s" % path)
 
         return path
 
@@ -2125,10 +2087,8 @@ class Debugger:
     #----------------------------------------------------------------------------
 
     def __init__(self):
-        Service.Service.__init__(self, serviceName, embeddedWindowLocation,icon_path="debugger/debug.ico")
         self.BREAKPOINT_DICT_STRING = "MasterBreakpointDict"
-        config = wx.ConfigBase_Get()
-        pickledbps = config.Read(self.BREAKPOINT_DICT_STRING)
+        pickledbps = utils.profile_get(self.BREAKPOINT_DICT_STRING)
         if pickledbps:
             try:
                 self._masterBPDict = pickle.loads(pickledbps.encode('ascii'))
@@ -2143,7 +2103,7 @@ class Debugger:
         self._frame = None
         self.projectPath = None
         self.phpDbgParam = None
-        self.dbgLanguage = projectmodel.LANGUAGE_DEFAULT
+       # self.dbgLanguage = projectmodel.LANGUAGE_DEFAULT
         self._debugger_ui = None
         
         
@@ -2648,7 +2608,7 @@ class Debugger:
         
     def IsFileContainBreakPoints(self,document):
         doc_path = document.GetFilename()
-        if self._masterBPDict.has_key(doc_path) and len(self._masterBPDict[doc_path]) > 0:
+        if doc_path in self._masterBPDict and len(self._masterBPDict[doc_path]) > 0:
             return True
         return False
         
@@ -2660,12 +2620,14 @@ class Debugger:
         if cur_project_document is None:
             return ''
         pj_key = cur_project_document.GetKey()
-        run_configuration_name = utils.ProfileGet(pj_key + "/RunConfigurationName","")
+        run_configuration_name = utils.profile_get(pj_key + "/RunConfigurationName","")
         return run_configuration_name
         
     def GetCurrentProject(self):
-        projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
-        return projectService.GetView().GetDocument()
+        return GetApp().MainFrame.GetProjectView(generate_event=False).GetCurrentProject()
+        
+    def GetActiveView(self):
+        return GetApp().GetDocumentManager().GetCurrentView()
         
     def GetFileRunParameter(self,filetoRun=None,is_break_debug=False):
         cur_project_document = self.GetCurrentProject()
@@ -2790,9 +2752,6 @@ class Debugger:
             return
         run_parameter.IsBreakPointDebug = True
         self.DebugRunScriptBreakPoint(run_parameter,autoContinue=False)
-
-    def OnRun(self,event):
-        self.Run()
         
     def Run(self,filetoRun=None):
         run_parameter = self.GetRunParameter(filetoRun)
@@ -2972,12 +2931,11 @@ class Debugger:
             for modify_doc in modify_docs:
                 modify_doc.Save()
             
-        projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
         filesModified = False
         modify_docs = []
-        docs = wx.GetApp().GetDocumentManager().GetDocuments()
+        docs = GetApp().GetDocumentManager().GetDocuments()
         for doc in docs:
-              if doc.IsModified() and (cur_project_document == projectService.FindProjectFromMapping(doc) or\
+              if doc.IsModified() and (cur_project_document == GetApp().MainFrame().GetProjectView(show=False,generate_event=False).FindProjectFromMapping(doc) or\
                                      cur_project_document.GetModel().FindFile(doc.GetFilename())):
                 filesModified = True
                 modify_docs.append(doc)
@@ -3084,7 +3042,7 @@ class Debugger:
     def ClearBreak(self, fileName, line):
         expandedName = DebuggerService.ExpandPath(fileName)
         if not self._masterBPDict.has_key(expandedName):
-            print "In ClearBreak: no key"
+            print ("In ClearBreak: no key")
             return
         else:
             newList = []
@@ -3154,7 +3112,7 @@ class Debugger:
     def UpdateWatchs(self,reset=False):
         self._debugger_ui.UpdateWatchs(reset)
 
-class DebuggerOptionsPanel(wx.Panel):
+class DebuggerOptionsPanel(ttk.Frame):
 
 
     def __init__(self, parent, id):
@@ -3217,8 +3175,8 @@ class DebuggerOptionsPanel(wx.Panel):
         return getContinueIcon()
 
 
-class CommandPropertiesDialog(wx.Dialog):
-    def __init__(self, parent, title, projectService, okButtonName=_("&OK"), debugging=False,is_last_config=False):
+class CommandPropertiesDialog(ui_base.CommonModaldialog):
+    def __init__(self, parent, title, projectService, okButtonName="&OK", debugging=False,is_last_config=False):
         self._projService = projectService
         self._is_last_config = is_last_config
         self._currentProj = projectService.GetCurrentProject()
@@ -3563,276 +3521,6 @@ class CommandPropertiesDialog(wx.Dialog):
             nameList.append(NOT_IN_ANY_PROJECT)
             self._currentProj = unprojProj
         return nameList, docList, index
-#----------------------------------------------------------------------
-from wx import ImageFromStream, BitmapFromImage
-import cStringIO
-
-#----------------------------------------------------------------------
-def getBreakData():
-    return \
-'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x02\
-\x00\x00\x00\x90\x91h6\x00\x00\x00\x03sBIT\x08\x08\x08\xdb\xe1O\xe0\x00\x00\
-\x00\x85IDAT(\x91\xbd\x92A\x16\x03!\x08CI\xdf\xdc\x0b\x8e\xe6\xd1\xe0d\xe9\
-\x82\xd6\xc7(\x9di7\xfd\xab<\x14\x13Q\xb8\xbb\xfc\xc2\xe3\xd3\x82\x99\xb9\
-\xe9\xaeq\xe1`f)HF\xc4\x8dC2\x06\xbf\x8a4\xcf\x1e\x03K\xe5h\x1bH\x02\x98\xc7\
-\x03\x98\xa9z\x07\x00%\xd6\xa9\xd27\x90\xac\xbbk\xe5\x15I\xcdD$\xdc\xa7\xceT\
-5a\xce\xf3\xe4\xa0\xaa\x8bO\x12\x11\xabC\xcb\x9c}\xd57\xef\xb0\xf3\xb7\x86p\
-\x97\xf7\xb5\xaa\xde\xb9\xfa|-O\xbdjN\x9b\xf8\x06A\xcb\x00\x00\x00\x00IEND\
-\xaeB`\x82'
-
-def getBreakBitmap():
-    return BitmapFromImage(getBreakImage())
-
-def getBreakImage():
-    stream = cStringIO.StringIO(getBreakData())
-    return ImageFromStream(stream)
-
-def getBreakIcon():
-    return wx.IconFromBitmap(getBreakBitmap())
-
-#----------------------------------------------------------------------
-
-def getClearOutputData():
-    return \
-'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x06\
-\x00\x00\x00\x1f\xf3\xffa\x00\x00\x00\x04sBIT\x08\x08\x08\x08|\x08d\x88\x00\
-\x00\x00\xb7IDAT8\x8d\xa5\x93\xdd\x11\xc3 \x0c\x83%`\xa3\xee\xd4\xaeA\xc6\
-\xe8N\xedF%\xea\x03\t\x81\xf0\x97\xbb\xf8%G\xce\xfe\x90eC\x1a\x8b;\xe1\xf2\
-\x83\xd6\xa0Q2\x8de\xf5oW\xa05H\xea\xd7\x93\x84$\x18\xeb\n\x88;\'.\xd5\x1d\
-\x80\x07\xe1\xa1\x1d\xa2\x1cbF\x92\x0f\x80\xe0\xd1 \xb7\x14\x8c \x00*\x15\
-\x97\x14\x8c\x8246\x1a\xf8\x98\'/\xdf\xd8Jn\xe65\xc0\xa7\x90_L"\x01\xde\x9d\
-\xda\xa7\x92\xfb\xc5w\xdf\t\x07\xc4\x05ym{\xd0\x1a\xe3\xb9xS\x81\x04\x18\x05\
-\xc9\x04\xc9a\x00Dc9\x9d\x82\xa4\xbc\xe8P\xb2\xb5P\xac\xf2\x0c\xd4\xf5\x00\
-\x88>\xac\xe17\x84\xe4\xb9G\x8b7\x9f\xf3\x1fsUl^\x7f\xe7y\x0f\x00\x00\x00\
-\x00IEND\xaeB`\x82'
-
-def getClearOutputBitmap():
-    return BitmapFromImage(getClearOutputImage())
-
-def getClearOutputImage():
-    stream = cStringIO.StringIO(getClearOutputData())
-    return ImageFromStream(stream)
-
-def getClearOutputIcon():
-    return wx.IconFromBitmap(getClearOutputBitmap())
-
-#----------------------------------------------------------------------
-def getCloseData():
-    return \
-'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x02\
-\x00\x00\x00\x90\x91h6\x00\x00\x00\x03sBIT\x08\x08\x08\xdb\xe1O\xe0\x00\x00\
-\x00\xedIDAT(\x91\xa5\x90!\xae\x840\x10\x86g_\xd6"*kz\x82j\xb0h\x1c\t\' x\
-\x92Z\xc2\x05\x10\x95\x18\x0e\x00\x02M\x82 \xe1\nMF#jz\x80\xea&+\x9a\x10\x96\
-\xdd}\xfb\xc8\x1b\xd7?\xdf\x97\xfe3\xb7u]\xe1\xca\xfc\\\xa2\xff- \xe24M\xc7\
-\xc49wJ\xee\xc7G]\xd7\x8c1\xc6\x18\xe7\xdc\'B\x08k\xed1y\xfaa\x1cG\xad\xb5\
-\x94\x12\x11\x9dsy\x9e+\xa5\x84\x10;\r\x00\xb7\xd3\x95\x8c1UU\x05A\x00\x00\
-\xd6\xda,\xcb\x92$\xf9\xb8\x03\x00PJ\x85\x10Zk\xa5\xd4+\xfdF\x00\x80\xae\xeb\
-\x08!\x84\x90y\x9e\x11\xf1\x8bP\x96\xa5\xef\xdd\xb6\xad\xb5VJ\xf9\x9b\xe0\
-\xe9\xa6i8\xe7\xbe\xdb\xb6mi\x9a\x0e\xc3\xf0F\x88\xe3\x18\x00\xfa\xbe\x0f\
-\xc3\xd0\'\x9c\xf3eY\xa2(*\x8ab\xc7\x9e\xaed\x8c\xa1\x94\xben\xf5\xb1\xd2W\
-\xfa,\xfce.\x0b\x0f\xb8\x96e\x90gS\xe0v\x00\x00\x00\x00IEND\xaeB`\x82'
-
-def getCloseBitmap():
-    return BitmapFromImage(getCloseImage())
-
-def getCloseImage():
-    stream = cStringIO.StringIO(getCloseData())
-    return ImageFromStream(stream)
-
-def getCloseIcon():
-    return wx.IconFromBitmap(getCloseBitmap())
-
-#----------------------------------------------------------------------
-def getContinueData():
-    return \
-'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x06\
-\x00\x00\x00\x1f\xf3\xffa\x00\x00\x00\x04sBIT\x08\x08\x08\x08|\x08d\x88\x00\
-\x00\x00\xcdIDAT8\x8d\xa5\x93\xd1\r\xc20\x0cD\xef\xec,\xc0b\x88\x8d`$\x06Cb\
-\x81\xc6\xc7GI\xeb\x94RZq?U"\xdby\xe7SIs\xfc#\xfbU\xa0\xa8\xba\xc6\xa0og\xee\
-!P\xd4y\x80\x04\xf3\xc2U\x82{\x9ct\x8f\x93\xb0\xa2\xdbm\xf5\xba\'h\xcdg=`\
-\xeeTT\xd1\xc6o& \t\x9a\x13\x00J\x9ev\xb1\'\xa3~\x14+\xbfN\x12\x92\x00@\xe6\
-\x85\xdd\x00\x000w\xe6\xe2\xde\xc7|\xdf\x08\xba\x1d(\xaa2n+\xca\xcd\x8d,\xea\
-\x98\xc4\x07\x01\x00D\x1dd^\xa8\xa8j\x9ew\xed`\xa9\x16\x99\xde\xa6G\x8b\xd3Y\
-\xe6\x85]\n\r\x7f\x99\xf5\x96Jnlz#\xab\xdb\xc1\x17\x19\xb0XV\xc2\xdf\xa3)\
-\x85<\xe4\x88\x85.F\x9a\xf3H3\xb0\xf3g\xda\xd2\x0b\xc5_|\x17\xe8\xf5R\xd6\
-\x00\x00\x00\x00IEND\xaeB`\x82'
-
-def getContinueBitmap():
-    return BitmapFromImage(getContinueImage())
-
-def getContinueImage():
-    stream = cStringIO.StringIO(getContinueData())
-    return ImageFromStream(stream)
-
-def getContinueIcon():
-    return wx.IconFromBitmap(getContinueBitmap())
-
-#----------------------------------------------------------------------
-def getNextData():
-    return \
-'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x06\
-\x00\x00\x00\x1f\xf3\xffa\x00\x00\x00\x04sBIT\x08\x08\x08\x08|\x08d\x88\x00\
-\x00\x00\x8eIDAT8\x8d\xa5SA\x12\xc4 \x08K\xb0\xff\xde\xe9\xbf\xb7\xa6\x87\
-\x1d:\xba\xa2tZn(\x84`"i\x05obk\x13\xd5CmN+\xcc\x00l\xd6\x0c\x00\xf5\xf8\x0e\
-gK\x06\x00 \xa5=k\x00\x00\xb0\xb2]\xd4?5f\xb1\xdb\xaf\xc6\xa2\xcb\xa8\xf0?\
-\x1c\x98\xae\x82\xbf\x81\xa4\x8eA\x16\xe1\n\xd1\xa4\x19\xb3\xe9\n\xce\xe8\
-\xf1\n\x9eg^\x18\x18\x90\xec<\x11\xf9#\x04XMZ\x19\xaac@+\x94\xd4\x99)SeP\xa1\
-)\xd6\x1dI\xe7*\xdc\xf4\x03\xdf~\xe7\x13T^Q?:X\x19d\x00\x00\x00\x00IEND\xaeB\
-`\x82'
-
-def getNextBitmap():
-    return BitmapFromImage(getNextImage())
-
-def getNextImage():
-    stream = cStringIO.StringIO(getNextData())
-    return ImageFromStream(stream)
-
-def getNextIcon():
-    return wx.IconFromBitmap(getNextBitmap())
-
-#----------------------------------------------------------------------
-def getStepInData():
-    return \
-'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x06\
-\x00\x00\x00\x1f\xf3\xffa\x00\x00\x00\x04sBIT\x08\x08\x08\x08|\x08d\x88\x00\
-\x00\x00\x87IDAT8\x8d\xadSA\x12\x84 \x0ck\x8a\xffv\xfc\xb74{X\xeb0P@\x07s\
-\x84\xa4$\x01\x00M\xb2\x02]R\x8b\xc86\xda\xdc\xedd\xb4~\xe8\x86\xc6\x01-\x93\
-\x96\xd9#\xf6\x06\xc3;p1I\xd1\x14\x0b#|\x17aF\xec\r\xeeF\xa0eB\xd34\xca\xd0A\
-]j\x84\xa6\x03\x00""\xb7\xb0tRZ\xf7x\xb7\x83\x91]\xcb\x7fa\xd9\x89\x0fC\xfd\
-\x94\x9d|9\x99^k\x13\xa1 \xb3\x16\x0f#\xd4\x88N~\x14\xe1-\x96\x7f\xe3\x0f\
-\x11\x91UC\x0cX\'\x1e\x00\x00\x00\x00IEND\xaeB`\x82'
-
-def getStepInBitmap():
-    return BitmapFromImage(getStepInImage())
-
-def getStepInImage():
-    stream = cStringIO.StringIO(getStepInData())
-    return ImageFromStream(stream)
-
-def getStepInIcon():
-    return wx.IconFromBitmap(getStepInBitmap())
-
-#----------------------------------------------------------------------
-def getStopData():
-    return \
-'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x06\
-\x00\x00\x00\x1f\xf3\xffa\x00\x00\x00\x04sBIT\x08\x08\x08\x08|\x08d\x88\x00\
-\x00\x00QIDAT8\x8d\xdd\x93A\n\xc00\x08\x04g\xb5\xff\x7fq\x13sn\xda&\x01\x0b\
-\xa5]\xf0"\xec(.J\xe6dd)\xf7\x13\x80\xadoD-12\xc8\\\xd3\r\xe2\xa6\x00j\xd9\
-\x0f\x03\xde\xbf\xc1\x0f\x00\xa7\x18\x01t\xd5\\\x05\xc8\\}T#\xe9\xfb\xbf\x90\
-\x064\xd8\\\x12\x1fQM\xf5\xd9\x00\x00\x00\x00IEND\xaeB`\x82'
-
-def getStopBitmap():
-    return BitmapFromImage(getStopImage())
-
-def getStopImage():
-    stream = cStringIO.StringIO(getStopData())
-    return ImageFromStream(stream)
-
-def getStopIcon():
-    return wx.IconFromBitmap(getStopBitmap())
-
-def getTerminateAllBitmap():
-    return images.load("debugger/terminate_all.png")
-    
-def getRestartBitmap():
-    return images.load("debugger/restart.png")
-#----------------------------------------------------------------------
-def getStepReturnData():
-    return \
-"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x06\
-\x00\x00\x00\x1f\xf3\xffa\x00\x00\x00\x04sBIT\x08\x08\x08\x08|\x08d\x88\x00\
-\x00\x00\x8dIDAT8\x8d\xa5S\xd1\x0e\xc4 \x08\xa3\xb0\xff\xbe\xdc\x7fO\xba'6\
-\xf1\xf44\xb3O$Phk\x04\xd4d\x07\xba\xc5\x16\x91#\nza\xdb\x84\x1a\xa2\xfe\xf8\
-\x99\xfa_=p+\xe8\x91ED\xbc<\xa4 \xb4\x0b\x01\xb5{\x01\xf9\xbbG-\x13\x87\x16f\
-\x84\xbf\x16V\xb0l\x01@\no\x86\xae\x82Q\xa8=\xa4\x0c\x80\xe70\xbd\x10jh\xbd\
-\x07R\x06#\xc9^N\xb6\xde\x03)\x83\x18\xaeU\x90\x9c>a\xb2P\r\xb3&/Y\xa8\xd1^^\
-\xb6\xf0\x16\xdb\xbf\xf1\x02\x81\xa5TK\x1d\x07\xde\x92\x00\x00\x00\x00IEND\
-\xaeB`\x82"
-
-def getStepReturnBitmap():
-    return BitmapFromImage(getStepReturnImage())
-
-def getStepReturnImage():
-    stream = cStringIO.StringIO(getStepReturnData())
-    return ImageFromStream(stream)
-
-def getStepReturnIcon():
-    return wx.IconFromBitmap(getStepReturnBitmap())
-
-#----------------------------------------------------------------------
-def getRunningManData():
-    return \
-'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x06\
-\x00\x00\x00\x1f\xf3\xffa\x00\x00\x00\x04sBIT\x08\x08\x08\x08|\x08d\x88\x00\
-\x00\x01\x86IDAT8\x8d\xa5\x93\xb1K\x02Q\x1c\xc7\xbf\xcf\x9a\x1bZl\x88\xb4\
-\x04\x83\x10\xa2\x96\xc0A\xa8\x96\x96\xf4h\xe9\xf0\x1f\xd0\xcd(Bpi\x13nH\xb2\
-%\x9d\x1a"\xb9)\xb4\x16i\x10\n\x13MA\x84\xa3&\xa1\xa1A\xa1E\xbdw\x97\xa2\xbd\
-\x06\xf1(\xef,\xac\xef\xf6x\xdf\xf7}\x9f\xdf\x97\xf7\x081M\xe0?\x9a\xfc\xcd \
-\\\xdc2\x99\xb6A[\x14\x91C\x9e\x8c\x1d\x00\x00\xd5\xa7*\x9a\x8a\xfa7\x82u\
-\xfb\x14dj\x03mQ\xc3}\xf2\xb5\x83\xc7B\x9e\x89\xf7/\xda\xba\xd1\x94\x01\x00j\
-CF\xe2t\xef\x1b>\x1f\x8c3Q\xf0\x11\xd3p\xa2yf\x1a\xbc\xcb\n\xdee\x85\xdd>\
-\x07\xb5!C\xe9\xb4\xb1\xe9=b\x03\x8fc\xc3\xcf\xbcN\xb3\x9e`@\x11\xb9\xaa`\
-\x7fg\x19\'\x97y\xd8\x96\xfa\xf8\x95\xf23d\xa5O4\xbfh\x87(\xf8\x88a\xc0 $|~\
-\x87n\xf7\x03\xaa\xf2\x8e\xc0\xee\n\x00 \x91\xab\xc3\xeb4\xc3\xed\xe1\xb4qF\
-\x96\xb8`\xb3h\xb7\xa6Jo\xa0\x9d\x1eD\xc1G\xc4!\x9f\xae\x03\x00\xa8\xd5jh4e\
-\r\xb9\xf0P\x82T,\x83\xf3\x0bl\xd8k\x18\xe0\xf6p\x84vz\xa0M\x8aB\xf2\x98\x84\
-\x03[\xb0.XP\xcafu^m\x04>\x18\xd7\x9aM\xe4\xea\xba\xc0x\xec\x8c\xa9\xca*^\
-\xa5\x1b}\xc0u*\xc9B\xd14\x12\xe8\x97%\x15\xcbF`\xdaH\xba\x80P4\r)\x13#R\xc6\
-\xf0\xdc\x8f2\x01\x80\x94\x89\xe9>\xc9(\xcd:\xb6\xd9\x1aw\xa0\x95i\xf8\x0e\
-\xc6\xd1\'\'\x86\xa2\xd5\x8d \xbe@\x00\x00\x00\x00IEND\xaeB`\x82'
-
-def getRunningManBitmap():
-    run_image_path = os.path.join(appdirs.GetAppImageDirLocation(), "toolbar","run.png")
-    run_image = wx.Image(run_image_path,wx.BITMAP_TYPE_ANY)
-    return BitmapFromImage(run_image)
-
-def getRunningManImage():
-    stream = cStringIO.StringIO(getRunningManData())
-    return ImageFromStream(stream)
-
-def getRunningManIcon():
-    icon = EmptyIcon()
-    icon.CopyFromBitmap(getRunningManBitmap())
-    return icon
-
-#----------------------------------------------------------------------
-def getDebuggingManData():
-    return \
-'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x10\x00\x00\x00\x10\x08\x06\
-\x00\x00\x00\x1f\xf3\xffa\x00\x00\x00\x04sBIT\x08\x08\x08\x08|\x08d\x88\x00\
-\x00\x01\xafIDAT8\x8d\x8d\x93\xbfK[Q\x14\xc7?7\n:\t\xb5SA\xc1?@\xc1A\x9c,%\
-\xd0\xa9\x83\xb5\x98!(b\t\xbc\xa7q("m\x1c\n5V]D\xd4-\xf8\x83\xa7\xa2\t\xa1\
-\xa6\xed$8\x08\x92\xa1\x8b\x14A\xd0YB"\xa4\xf4\x87\x90\x97K\xa8\xcb\xed\xf0\
-\xc8m\xae\xfa\xd4\x03\x07.\xe7\x9e\xf3\xfd\x9e\x9f\x88@\x1d\xb5\xba\x94\xca\
-\xaa\xeb\xb6\xbb4\xc0\x03d&\xb1\xa7\xfc\xfe\x0c\x80L\xdaQ\xd2\xad\x90I;F\x80\
-++\xbe\xe0bve\xdf\xd7y\xfemH\xc4\x162\xaa\xbb\xa5D(\x1c\x11\xb7\x02\x88@\x9d\
-f?*4\xd1\xf6\xa2\x0f\x80\x93\xf4\x8e\xe1\xb8\xf2\xf1\xb5\x18\x9cH(\x80\xe4bT\
-\x83\xd5W\x1f\xa1pD\x8c|\xd8T\x00\xdf\xd6\xd7\xe8\x1f\xb3tp\xf1\n^\xfe\xf8\
-\xa5^u7\x00P\x1eYP\xd2\x95\x1c\xa4\xa6\x84\x18\x8do\xab*C&\xed\xa8\xafG\x7f\
-\xe9\x1f\xb3x\xdc\x08\xad\x8f \x7f\tg%\xf8Y\x82\xe3\x8de\x86\x82\xcdF9\xba\
-\x84\xc1\x89\x84*K\t\xc0\xf0\xbbq:\x9f\xfcO\x7f?\xe7\x01\x9c\xff\x86Br\x8e\
-\x83\xd4\x94\x06\xd0SH.F\xc5P\xb0\x19\xe9z \xf9KOmkN\x07\x03\x14/r\xb4?\x8b\
-\xe8\xc6\xeb\x1e\x00l\x1f\xfe\xd15\x17\xaf<\xdb\xd37\xef\xd9\x9d\xb4\xe9\x8a\
-\xadj\xbfx\xb4\x878(#\x03\x00\xe9JF{[\xf92\xeb\xb1V\x99\xbbb\xab|\x9f\xb7\
-\x8d\xa9\x9cf\x1dq\x9au\xc4\x8dM\x0c\x85#\xa2x\x91cw\xd2\xd6i\x83\trk\x13\
-\x9f\x0fL\xab\xda\xe6\xd4\xd6Y+\xf1h\x8f\xb9T~G\xd2\x11\xb4\xd4\xe7O[\xf7\
-\x1e\xd6\x9d\xc7\xe4\xb7\xbe\x86\xf8\xb1?\xf4\x9c\xff\x01\xbe\xe9\xaf\x96\
-\xf0\x7fPA\x00\x00\x00\x00IEND\xaeB`\x82'
-
-def getDebuggingManBitmap():
-    debug_image_path = os.path.join(appdirs.GetAppImageDirLocation(), "toolbar","debug.png")
-    debug_image = wx.Image(debug_image_path,wx.BITMAP_TYPE_ANY)
-    return BitmapFromImage(debug_image)
-
-def getDebuggingManImage():
-    stream = cStringIO.StringIO(getDebuggingManData())
-    return ImageFromStream(stream)
-
-def getDebuggingManIcon():
-    icon = EmptyIcon()
-    icon.CopyFromBitmap(getDebuggingManBitmap())
-    return icon
     
 def getBreakPointBitmap():
     return images.load("debugger/breakpoint.png")

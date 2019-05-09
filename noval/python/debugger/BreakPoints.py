@@ -1,10 +1,9 @@
-import wx
-from noval.tool.consts import SPACE,HALF_SPACE,_
 import os
-import noval.tool.images as images
-import noval.util.constants as constants
+import noval.constants as constants
+import noval.ui_base as ui_base
+from tkinter import ttk
 
-class BreakpointExceptionDialog(wx.Dialog):
+class BreakpointExceptionDialog(ui_base.CommonModaldialog):
     EXCEPTIONS = ['ArithmeticError', 'AssertionError', 'AttributeError', 'BaseException', 'BufferError', \
         'BytesWarning', 'DeprecationWarning', 'EOFError', 'EnvironmentError', 'Exception', \
          'FloatingPointError', 'FutureWarning', 'GeneratorExit', 'IOError', 'ImportError', \
@@ -93,7 +92,7 @@ class BreakpointExceptionDialog(wx.Dialog):
             return
         self.listbox.Append(other_exception)
         
-class BreakpointsUI(wx.Panel):
+class BreakpointsUI(ttk.Frame):
     FILE_NAME_COLUMN_WIDTH = 150
     FILE_LINE_COLUMN_WIDTH = 50
     def __init__(self, parent, id, ui,degugger_service):

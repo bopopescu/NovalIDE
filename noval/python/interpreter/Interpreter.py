@@ -35,14 +35,19 @@ import noval.util.utils as utils
 from noval.executable import Executable,UNKNOWN_VERSION_NAME
 
 def GetCommandOutput(command,read_error=False):
+    output = ''
     try:
         p = subprocess.Popen(command,shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         if read_error:
-            return p.stderr.read()
-        return p.stdout.read()
+            output = p.stderr.read()
+        else:
+            output = p.stdout.read()
+        #PY3输出类型为bytes,需要转换为str类型
+        if utils.is_py3():
+            output = str(output,encoding = utils.get_default_encoding())
     except Exception as e:
         utils.get_logger().error("get command %s output error:%s",command,e)
-        return ''
+    return output
     
 #this class should inherit from object class
 #otherwise the property definition will not valid
@@ -80,11 +85,20 @@ class PythonEnvironment(object):
     def IncludeSystemEnviron(self,v):
         self._include_system_environ = v
         
+    def __next__(self):
+        '''
+            python3迭代方法
+        '''
+        return self.next()
+        
     def __iter__(self):
         self.iter = iter(self.environ)
         return self
         
     def next(self):
+        '''
+            python2迭代方法
+        '''
         return __builtin__.next(self.iter)
         
     def GetCount(self):
@@ -287,13 +301,8 @@ class PythonInterpreter(BuiltinPythonInterpreter):
     def GetVersion(self):
         output = GetCommandOutput("%s -V" % strutils.emphasis_path(self.Path),True).strip().lower()
         version_flag = "python "
-        #PY3输出类型为bytes,需要转换为str类型
-        if utils.is_py3():
-            output = str(output,encoding = utils.get_default_encoding())
         if output.find(version_flag) == -1:
             output = GetCommandOutput("%s -V" % strutils.emphasis_path(self.Path),False).strip().lower()
-            if utils.is_py3():
-                output = str(output,encoding = utils.get_default_encoding())
             if output.find(version_flag) == -1:
                 utils.get_logger().error("get version stdout output is *****%s****",output)
                 return
@@ -390,8 +399,6 @@ class PythonInterpreter(BuiltinPythonInterpreter):
             self._is_valid_interpreter = False
             return
         output = GetCommandOutput(run_cmd).strip()
-        if utils.is_py3():
-            output = str(output,encoding = utils.get_default_encoding())
         lst = eval(output)
         self._sys_path_list = lst
         

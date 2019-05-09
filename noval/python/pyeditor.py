@@ -9,6 +9,7 @@
 # Copyright:   (c) wukan 2019
 # Licence:     GPL-3.0
 #-------------------------------------------------------------------------------
+import os
 from tkinter import messagebox
 from noval import _,GetApp,NewId
 import noval.editor.code as codeeditor
@@ -31,6 +32,8 @@ import noval.python.analyzer as analyzer
 import noval.syntax.lang as lang
 import noval.menu as tkmenu
 import noval.constants as constants
+import noval.python.project.viewer as projectviewer
+import noval.python.project.runconfig as runconfig
 
 class PythonDocument(codeeditor.CodeDocument): 
 
@@ -43,19 +46,18 @@ class PythonDocument(codeeditor.CodeDocument):
         codeeditor.CodeDocument.__init__(self)
         
     def GetRunParameter(self):
-        config = wx.ConfigBase_Get()
         fileToRun = self.GetFilename()
-        unprojProj = project.ProjectEditor.ProjectDocument.GetUnProjectDocument()
-        initialArgs = config.Read(unprojProj.GetUnProjectFileKey(fileToRun,"RunArguments"),"")
-        python_path = config.Read(unprojProj.GetUnProjectFileKey(fileToRun,"PythonPath"),"")
-        startIn = config.Read(unprojProj.GetUnProjectFileKey(fileToRun,"RunStartIn"),"")
+        unprojProj = projectviewer.PythonProjectDocument.GetUnProjectDocument()
+        initialArgs = utils.profile_get(unprojProj.GetUnProjectFileKey(fileToRun,"RunArguments"),"")
+        python_path = utils.profile_get(unprojProj.GetUnProjectFileKey(fileToRun,"PythonPath"),"")
+        startIn = utils.profile_get(unprojProj.GetUnProjectFileKey(fileToRun,"RunStartIn"),"")
         if startIn == '':
             startIn = os.path.dirname(fileToRun)
         env = {}
         #should avoid environment contain unicode string,such as u'xxx'
         if python_path != '':
             env[consts.PYTHON_PATH_NAME] = str(python_path)
-        return configuration.RunParameter(wx.GetApp().GetCurrentInterpreter(),fileToRun,initialArgs,env,startIn)
+        return runconfig.PythonRunconfig(GetApp().GetCurrentInterpreter(),fileToRun,initialArgs,env,startIn)
 
     def get_coding_spec(self,lines):
         """Return the encoding declaration according to PEP 263.

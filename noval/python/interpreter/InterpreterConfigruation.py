@@ -1,6 +1,7 @@
 from noval import NewId,_
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox,filedialog
 import noval.python.interpreter.Interpreter as Interpreter
 import noval.python.parser.intellisence as intellisence
 import noval.util.apputils as sysutils
@@ -21,6 +22,10 @@ import noval.util.utils as utils
 import noval.ui_base as ui_base
 import noval.imageutils as imageutils
 import noval.consts as consts
+import noval.ttkwidgets.treeviewframe as treeviewframe
+import noval.misc as misc
+import noval.constants as constants
+import noval.menu as tkmenu
 
 ID_COPY_INTERPRETER_NAME = NewId()
 ID_COPY_INTERPRETER_VERSION = NewId()
@@ -52,52 +57,20 @@ class NewVirtualEnvProgressDialog(ui_base.GenericProgressDialog):
         self.msg = msg.strip()
 
 class NewVirtualEnvDialog(ui_base.CommonModaldialog):
-    def __init__(self,parent,interpreter,dlg_id,title):
-        wx.Dialog.__init__(self,parent,dlg_id,title)
-        contentSizer = wx.BoxSizer(wx.VERTICAL)
-        
-        flexGridSizer = wx.FlexGridSizer(cols = 3, vgap = HALF_SPACE, hgap = HALF_SPACE)
-        flexGridSizer.AddGrowableCol(1,1)
-        
-        flexGridSizer.Add(wx.StaticText(self, -1, _("Name:")), 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT)
+    def __init__(self,parent,interpreter,title):
+        ui_base.CommonModaldialog.__init__(self,parent)
+        self.title(title)
+        wx.StaticText(self, -1, _("Name:"))
         self.name_ctrl = wx.TextCtrl(self, -1, "", size=(-1,-1))
-        flexGridSizer.Add(self.name_ctrl, 2, flag=wx.ALIGN_CENTER_VERTICAL|wx.EXPAND)
-        flexGridSizer.Add(wx.StaticText(parent, -1, ""), 0)
-
-        flexGridSizer.Add(wx.StaticText(self, -1, _("Location:")), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT)
+        wx.StaticText(self, -1, _("Location:"))
         self.path_ctrl = wx.TextCtrl(self, -1, "", size=(-1,-1))
         self.path_ctrl.SetToolTipString(_("set the location of virtual env"))
-        flexGridSizer.Add(self.path_ctrl, 2, flag=wx.ALIGN_CENTER_VERTICAL|wx.EXPAND)
         self.browser_btn = wx.Button(self, -1, _("..."),size=(40,-1))
         wx.EVT_BUTTON(self.browser_btn, -1, self.ChooseVirtualEnvPath)
-        flexGridSizer.Add(self.browser_btn, flag=wx.ALIGN_RIGHT|wx.RIGHT, border=HALF_SPACE)  
-        
-        flexGridSizer.Add(wx.StaticText(self, -1, _("Base Interpreter:")), 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT)
         self._interprterChoice = wx.combo.BitmapComboBox(self, -1, "",choices = self.GetChoices(),size=(-1,-1), style=wx.CB_READONLY)
-        flexGridSizer.Add(self._interprterChoice, 2, flag=wx.ALIGN_CENTER_VERTICAL|wx.EXPAND)
-        flexGridSizer.Add(wx.StaticText(parent, -1, ""), 0)
-        
-        line_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        wx.StaticText(parent, -1, "")
         self._includeSitePackgaes = wx.CheckBox(self, -1, _("Inherited system site-packages from base interpreter"))
-        line_sizer.Add(self._includeSitePackgaes, 0, wx.LEFT|wx.BOTTOM,SPACE)
-        
-        contentSizer.Add(flexGridSizer, 1, flag=wx.EXPAND|wx.ALL,border=SPACE)
-        contentSizer.Add(line_sizer, 0, wx.RIGHT|wx.BOTTOM,HALF_SPACE)
-        
-        bsizer = wx.StdDialogButtonSizer()
-        ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
-        wx.EVT_BUTTON(ok_btn, -1, self.OnOKClick)
-        #set ok button default focused
-        ok_btn.SetDefault()
-        bsizer.AddButton(ok_btn)
-        
-        cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
-        bsizer.AddButton(cancel_btn)
-        bsizer.Realize()
-        contentSizer.Add(bsizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM,HALF_SPACE)
-        self.SetSizer(contentSizer)
-        self.Fit()
-        
+        self.AddokcancelButton()
         self._interpreter = interpreter
         self.LoadInterpreters()
        
@@ -145,78 +118,69 @@ class NewVirtualEnvDialog(ui_base.CommonModaldialog):
         self.EndModal(wx.ID_OK)
 
 class AddInterpreterDialog(ui_base.CommonModaldialog):
-    def __init__(self,parent,dlg_id,title):
-        wx.Dialog.__init__(self,parent,dlg_id,title)
-        contentSizer = wx.BoxSizer(wx.VERTICAL)
-        
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        lineSizer.Add(wx.StaticText(self, -1, _("Interpreter Path:")), 0, wx.ALIGN_CENTER | wx.LEFT, HALF_SPACE)
-        self.path_ctrl = wx.TextCtrl(self, -1, "", size=(200,-1))
-        if sysutils.isWindows():
-            self.path_ctrl.SetToolTipString(_("set the location of python.exe or pythonw.exe"))
+    def __init__(self,parent,title):
+        ui_base.CommonModaldialog.__init__(self,parent)
+        self.title(title)
+        row = ttk.Frame(self.main_frame)
+        ttk.Label(row,text=_("Interpreter Path:")).pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        self.path_ctrl = ttk.Entry(row,text="")
+        if sysutils.is_windows():
+            misc.create_tooltip(self.path_ctrl,_("set the location of python.exe or pythonw.exe"))
         else:
-            self.path_ctrl.SetToolTipString(_("set the location of python interpreter"))
-        lineSizer.Add(self.path_ctrl, 0, wx.LEFT|wx.ALIGN_BOTTOM, HALF_SPACE)
+            misc.create_tooltip(self.path_ctrl,_("set the location of python interpreter"))
+        self.path_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        self.browser_btn = ttk.Button(row, text=_("Browse..."),command=self.ChooseExecutablePath)
+        self.browser_btn.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        row.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        row = ttk.Frame(self.main_frame)
+        ttk.Label(row, text=_("Interpreter Name:")).pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        self.name = tk.StringVar()
+        self.name_ctrl = ttk.Entry(row,textvariable=self.name)
+        self.name_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        misc.create_tooltip(self.name_ctrl,_("set the name of python interpreter"))
+        row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        self.AddokcancelButton()
         
-        self.browser_btn = wx.Button(self, -1, _("Browse..."))
-        wx.EVT_BUTTON(self.browser_btn, -1, self.ChooseExecutablePath)
-        lineSizer.Add(self.browser_btn, 0, wx.LEFT|wx.ALIGN_BOTTOM, HALF_SPACE)
-        contentSizer.Add(lineSizer, 0, wx.ALL, HALF_SPACE)
-        
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        lineSizer.Add(wx.StaticText(self, -1, _("Interpreter Name:")), 0, wx.ALIGN_CENTER | wx.LEFT, HALF_SPACE)
-        self.name_ctrl = wx.TextCtrl(self, -1, "", size=(190,-1))
-        self.name_ctrl.SetToolTipString(_("set the name of python interpreter"))
-        lineSizer.Add(self.name_ctrl, 0, wx.LEFT, HALF_SPACE)
-        contentSizer.Add(lineSizer, 0, wx.ALL, HALF_SPACE)
-        
-        bsizer = wx.StdDialogButtonSizer()
-        ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
-        ok_btn.SetDefault()
-        bsizer.AddButton(ok_btn)
-        cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
-        bsizer.AddButton(cancel_btn)
-        bsizer.Realize()
-        contentSizer.Add(bsizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM,HALF_SPACE)
-        self.SetSizer(contentSizer)
-        self.Fit()
-        
-    def ChooseExecutablePath(self,event):
-        if sysutils.isWindows():
-            descr = _("Executable (*.exe) |*.exe")
+    def ChooseExecutablePath(self):
+        if sysutils.is_windows():
+            descrs = [(_("Executable"),".exe"),]
         else:
-            descr = "All Files (*)|*"
-        dlg = wx.FileDialog(self,_("Select Executable Path"),
-                            wildcard=descr,style=wx.OPEN|wx.FILE_MUST_EXIST|wx.CHANGE_DIR)
-        if dlg.ShowModal() == wx.ID_OK:
-            path = dlg.GetPath()
-            self.path_ctrl.SetValue(path)
-            self.name_ctrl.SetValue(path)
-            self.path_ctrl.SetInsertionPointEnd()
-        dlg.Destroy()  
+            descrs = [(_("All Files"),".*"),]
+        path = filedialog.askopenfilename(
+            master=self,
+            filetypes=descrs,
+            title=_("Select Executable Path")
+        )
+        if not path:
+            return
+        self.path_ctrl.SetValue(path)
+        self.name_ctrl.SetValue(path)
+        self.path_ctrl.SetInsertionPointEnd()
         
 class InterpreterConfigurationPanel(ttk.Frame):
     def __init__(self,parent):
         ttk.Frame.__init__(self, parent)
         interpreter_staticText = ttk.Label(self, text=_("Python interpreters(eg.:such as python.exe, pythonw.exe). Double or right click to rename."))
-        interpreter_staticText.grid(row=0, column=0, sticky=tk.NSEW)
+        interpreter_staticText.grid(row=0, column=0, sticky=tk.NSEW,padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         columns = ['id','Name','Version','Path','Default']
-        self.listview = ui_base.TreeFrame(self, columns=columns,displaycolumns=(1,2,3,4))
-        self.listview.grid(row=1, column=0, sticky=tk.NSEW)
+        self.listview = treeviewframe.TreeViewFrame(self, columns=columns,displaycolumns=(1,2,3,4),show="headings",height=8)
+        self.listview.tree.bind("<<TreeviewSelect>>", self.on_select, "+")
+        self.listview.tree.bind("<Double-Button-1>", self.ModifyInterpreterNameDlg, "+")
+        self.listview.tree.bind("<3>", self.OnContextMenu, True)
+        self.listview.grid(row=1, column=0, sticky=tk.NSEW,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
         for column in columns[1:]:
             self.listview.tree.heading(column, text=_(column))
+        self.listview.tree.column('1',width=100,anchor='w')
+        self.listview.tree.column('2',width=70,anchor='w')
+        self.listview.tree.column('4',width=70,anchor='w')
 
         # set single-cell frame
         self.columnconfigure(0, weight=1)
-      #  self.rowconfigure(0, weight=1)
-
-   #     dataview.EVT_DATAVIEW_ITEM_ACTIVATED(self.dvlc, -1, self.ModifyInterpreterNameDlg)
-    #    dataview.EVT_DATAVIEW_ITEM_CONTEXT_MENU(self.dvlc, -1,self.OnContextMenu)
         right_frame = ttk.Frame(self)
         padx = consts.DEFAUT_CONTRL_PAD_X/2
         pady = consts.DEFAUT_CONTRL_PAD_Y/2
         add_btn = ttk.Button(right_frame, text=_("Add"),command=self.AddInterpreter)
-        add_btn.pack(padx=padx,pady=(pady))
+        add_btn.pack(padx=padx,pady=(consts.DEFAUT_CONTRL_PAD_Y*3,pady))
         self.remove_btn = ttk.Button(right_frame, text=_("Remove"),command=self.RemoveInterpreter)
         self.remove_btn.pack(padx=padx,pady=(pady))    
         self.smart_analyse_btn = ttk.Button(right_frame, text=_("Smart Analyse"),command=self.SmartAnalyseIntreprter)
@@ -224,9 +188,9 @@ class InterpreterConfigurationPanel(ttk.Frame):
         self.set_default_btn = ttk.Button(right_frame,text=_("Set Default"),command=self.SetDefaultInterpreter)
         self.set_default_btn.pack(padx=padx,pady=(pady))
         right_frame.grid(row=0, column=1, rowspan=2,sticky=tk.NSEW)
-     #   wx.EVT_BUTTON(self.set_default_btn, -1, self.SetDefaultInterpreter)
-        nb = ttk.Notebook(self,style="ButtonNotebook.TNotebook")
-        nb.grid(row=2, column=0, rowspan=2,sticky=tk.NSEW)
+        nb = ttk.Notebook(self)
+        nb.grid(row=2, column=0, columnspan=2,sticky=tk.NSEW,padx=(consts.DEFAUT_CONTRL_PAD_X,0))
+        self.rowconfigure(2, weight=1)
         
         self.package_icon = imageutils.load_image("","project/python/package_obj.gif")
 
@@ -244,53 +208,30 @@ class InterpreterConfigurationPanel(ttk.Frame):
         nb.add(self.environment_panel, text=_("Environment Variable"),image=self.environment_icon,compound=tk.LEFT)
         self._interprter_configuration_changed = False
         self._interpreters = []
-        #current selected interpreter
         self._current_interpreter = None
         self.ScanAllInterpreters()
         self.UpdateUI()
+        self.menu = None
         
     def OnContextMenu(self, event):
-        menu = wx.Menu()
-        x, y = event.GetPosition().x,event.GetPosition().y
-        menu.Append(ID_COPY_INTERPRETER_NAME,_("Copy Name"))
-        wx.EVT_MENU(self, ID_COPY_INTERPRETER_NAME, self.ProcessEvent)
-        wx.EVT_UPDATE_UI(self, ID_COPY_INTERPRETER_NAME, self.ProcessUpdateUIEvent)
+        if self.menu is None:
+            self.menu = tkmenu.PopupMenu()
+            self.menu.Append(ID_COPY_INTERPRETER_NAME,_("Copy Name"),handler=lambda:self.ProcessEvent(ID_COPY_INTERPRETER_NAME))
+            self.menu.Append(ID_COPY_INTERPRETER_VERSION,_("Copy Version"),handler=lambda:self.ProcessEvent(ID_COPY_INTERPRETER_VERSION))
+            self.menu.Append(ID_COPY_INTERPRETER_PATH,_("Copy Path"),handler=lambda:self.ProcessEvent(ID_COPY_INTERPRETER_PATH))
+            self.menu.Append(ID_MODIFY_INTERPRETER_NAME,_("Modify Name"),handler=lambda:self.ProcessEvent(ID_MODIFY_INTERPRETER_NAME))
+            self.menu.Append(ID_REMOVE_INTERPRETER,_("Remove"),handler=lambda:self.ProcessEvent(ID_REMOVE_INTERPRETER))
+            self.menu.Append(ID_NEW_INTERPRETER_VIRTUALENV,_("New VirtualEnv"),handler=lambda:self.ProcessEvent(ID_NEW_INTERPRETER_VIRTUALENV))
+            self.menu.Append(ID_GOTO_INTERPRETER_PATH,_("Open Path in Explorer"),handler=lambda:self.ProcessEvent(ID_GOTO_INTERPRETER_PATH))
+        self.menu.tk_popup(event.x_root, event.y_root)
         
-        menu.Append(ID_COPY_INTERPRETER_VERSION,_("Copy Version"))
-        wx.EVT_MENU(self, ID_COPY_INTERPRETER_VERSION, self.ProcessEvent) 
-        wx.EVT_UPDATE_UI(self, ID_COPY_INTERPRETER_VERSION, self.ProcessUpdateUIEvent)
-        
-        menu.Append(ID_COPY_INTERPRETER_PATH,_("Copy Path"))
-        wx.EVT_MENU(self, ID_COPY_INTERPRETER_PATH, self.ProcessEvent)
-        wx.EVT_UPDATE_UI(self, ID_COPY_INTERPRETER_PATH, self.ProcessUpdateUIEvent)
-        
-        menu.Append(ID_MODIFY_INTERPRETER_NAME,_("Modify Name"))
-        wx.EVT_MENU(self, ID_MODIFY_INTERPRETER_NAME, self.ProcessEvent)
-        wx.EVT_UPDATE_UI(self, ID_MODIFY_INTERPRETER_NAME, self.ProcessUpdateUIEvent)
-        
-        menu.Append(ID_REMOVE_INTERPRETER,_("Remove"))
-        wx.EVT_MENU(self, ID_REMOVE_INTERPRETER, self.ProcessEvent)
-        wx.EVT_UPDATE_UI(self, ID_REMOVE_INTERPRETER, self.ProcessUpdateUIEvent)
-        
-        menu.Append(ID_NEW_INTERPRETER_VIRTUALENV,_("New VirtualEnv"))
-        wx.EVT_MENU(self, ID_NEW_INTERPRETER_VIRTUALENV, self.ProcessEvent)
-        wx.EVT_UPDATE_UI(self, ID_NEW_INTERPRETER_VIRTUALENV, self.ProcessUpdateUIEvent)
-        
-        menu.Append(ID_GOTO_INTERPRETER_PATH,_("Open Path in Explorer"))
-        wx.EVT_MENU(self, ID_GOTO_INTERPRETER_PATH, self.ProcessEvent)
-        wx.EVT_UPDATE_UI(self, ID_GOTO_INTERPRETER_PATH, self.ProcessUpdateUIEvent)
-        
-        self.dvlc.PopupMenu(menu,wx.Point(x, y))
-        menu.Destroy()
-        
-    def ProcessEvent(self, event): 
-        index = self.dvlc.GetSelectedRow()
-        if index == wx.NOT_FOUND:
+    def ProcessEvent(self,id): 
+        selections = self.listview.tree.selection()
+        if not selections:
             return
-        item = self.dvlc.RowToItem(index)
-        id = self.dvlc.GetItemData(item)
-        interpreter = interpretermanager.InterpreterAdmin(self._interpreters).GetInterpreterById(id)   
-        id = event.GetId()
+        item = selections[0]
+        interpreter_id = self.listview.tree.item(item)['values'][0]
+        interpreter = interpretermanager.InterpreterAdmin(self._interpreters).GetInterpreterById(interpreter_id)   
         if id == ID_COPY_INTERPRETER_NAME:
             sysutils.CopyToClipboard(interpreter.Name)
             return True
@@ -304,10 +245,10 @@ class InterpreterConfigurationPanel(ttk.Frame):
             self.ModifyInterpreterNameDlg(None)
             return True
         elif id == ID_REMOVE_INTERPRETER:
-            self.RemoveInterpreter(None)
+            self.RemoveInterpreter()
             return True
         elif id == ID_NEW_INTERPRETER_VIRTUALENV:
-            dlg = NewVirtualEnvDialog(self,interpreter,-1,_("New Virtual Env"))
+            dlg = NewVirtualEnvDialog(self,interpreter,_("New Virtual Env"))
             dlg.CenterOnParent()
             python_path = dlg._interprterChoice.GetClientData(dlg._interprterChoice.GetSelection())
             interpreter = interpretermanager.InterpreterManager().GetInterpreterByPath(python_path)
@@ -421,40 +362,36 @@ class InterpreterConfigurationPanel(ttk.Frame):
         return True
         
     def ModifyInterpreterNameDlg(self,event):
-        index = self.dvlc.GetSelectedRow()
-        if index == wx.NOT_FOUND:
-            self.UpdateUI()
+        selections = self.listview.tree.selection()
+        if not selections:
             return
-        item = self.dvlc.RowToItem(index)
-        id = self.dvlc.GetItemData(item)
-        dlg = AddInterpreterDialog(self,-1,_("Modify Interpreter Name"))
-        interpreter_path = self.dvlc.GetTextValue(index,2)
-        dlg.path_ctrl.SetValue(interpreter_path)
-        dlg.path_ctrl.Enable(False)
-        dlg.browser_btn.Enable(False)
-        interpreter_name = self.dvlc.GetTextValue(index,0)
-        dlg.name_ctrl.SetValue(interpreter_name)
-        dlg.CenterOnParent()
+        item = selections[0]
+        dlg = AddInterpreterDialog(self,_("Modify Interpreter Name"))
+        interpreter_path = self.listview.tree.item(item)['values'][3]
+        dlg.path_ctrl.insert('insert',interpreter_path)
+        dlg.path_ctrl["state"] = tk.DISABLED
+        dlg.browser_btn["state"] = tk.DISABLED
+        interpreter_name = self.listview.tree.item(item)['values'][1]
+        dlg.name_ctrl.insert('insert',interpreter_name)
         status = dlg.ShowModal()
         passedCheck = False
-        while status == wx.ID_OK and not passedCheck:
-            if 0 == len(dlg.name_ctrl.GetValue()):
-                wx.MessageBox(_("Interpreter Name is empty"),_("Error"),wx.OK|wx.ICON_ERROR,self)
+        if status == constants.ID_OK and not passedCheck:
+            if 0 == len(dlg.name.get()):
+                messagebox.showerror(_("Error"),_("Interpreter Name is empty"),parent=self)
                 status = dlg.ShowModal()
             else:
-                name = dlg.name_ctrl.GetValue()
+                name = dlg.name_ctrl.get()
                 if interpreter_name != name:
                     self._interprter_configuration_changed = True
                     self.dvlc.SetTextValue(name,index,0)
                 passedCheck = True
-        dlg.Destroy()
+        dlg.destroy()
         
     def AddInterpreter(self):
-        dlg = AddInterpreterDialog(self,-1,_("Add Interpreter"))
-        dlg.CenterOnParent()
+        dlg = AddInterpreterDialog(self,_("Add Interpreter"))
         status = dlg.ShowModal()
         passedCheck = False
-        while status == wx.ID_OK and not passedCheck:
+        while status == constants.ID_OK and not passedCheck:
             if 0 == len(dlg.path_ctrl.GetValue()):
                 wx.MessageBox(_("Interpreter Path is empty"),_("Error"),wx.OK|wx.ICON_ERROR,self)
                 status = dlg.ShowModal()
@@ -475,7 +412,7 @@ class InterpreterConfigurationPanel(ttk.Frame):
                 except RuntimeError as e:
                     wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR,self)
                     status = dlg.ShowModal()     
-        self.UpdateUI(None)
+        self.UpdateUI()
         dlg.Destroy()
         
     def AddOneInterpreter(self,interpreter):
@@ -487,45 +424,45 @@ class InterpreterConfigurationPanel(ttk.Frame):
         path = interpreter.Path
         if utils.is_py2():
             path = path.decode(utils.get_default_encoding())
-        self.listview.tree.insert("",0,values=(interpreter.Id,interpreter.Name,interpreter.Version,path,GetDefaultFlag(interpreter.Default)))
+        item = self.listview.tree.insert("",0,values=(interpreter.Id,interpreter.Name,interpreter.Version,path,GetDefaultFlag(interpreter.Default)))
+        self.listview.tree.selection_set(item)
         self.path_panel.AppendSysPath(interpreter)
         self.builtin_panel.SetBuiltiins(interpreter)
         self.environment_panel.SetVariables(interpreter)
         self.package_panel.LoadPackages(interpreter)
     
     def RemoveInterpreter(self):
-        index = self.dvlc.GetSelectedRow()
-        if index == wx.NOT_FOUND:
+        selections = self.listview.tree.selection()
+        if not selections:
             return
-            
-        item = self.dvlc.RowToItem(index)
-        id = self.dvlc.GetItemData(item)
-        if self.dvlc.GetTextValue(index,3) == _(YES_FLAG):
-            wx.MessageBox(_("Default Interpreter cannot be remove"),_("Warning"),wx.OK|wx.ICON_WARNING,self)
+        item = selections[0]
+        if self.listview.tree.item(item)['values'][4] == _(YES_FLAG):
+            messagebox.showwarning(_("Warning"),_("Default Interpreter cannot be remove"),parent=self)
             return
-        ret = wx.MessageBox(_("Interpreter remove action cannot be recover,Do you want to continue remove this interpreter?"),_("Warning"),wx.YES_NO|wx.ICON_QUESTION,self)
-        if ret == wx.YES:
+        ret = messagebox.askyesno(_("Warning"),_("Interpreter remove action cannot be recover,Do you want to continue remove this interpreter?"),parent=self)
+        if ret == True:
+            id = self.listview.tree.item(item)['values'][0]
             interpreter = interpretermanager.InterpreterAdmin(self._interpreters).GetInterpreterById(id)
             self._interpreters.remove(interpreter)
-            self.dvlc.DeleteItem(index)
+            self.listview.tree.delete(item)
             self._interprter_configuration_changed = True
             
-        self.UpdateUI(None)
+        self.UpdateUI()
         
     def SetDefaultInterpreter(self):
-        index = self.dvlc.GetSelectedRow()
-        if index == wx.NOT_FOUND:
+        selections = self.listview.tree.selection()
+        if not selections:
             return
             
-        item = self.dvlc.RowToItem(index)
-        id = self.dvlc.GetItemData(item)
-        if self.dvlc.GetTextValue(index,3) == _(YES_FLAG):
+        item = selections[0]
+        text = self.listview.tree.item(item)['values'][4]
+        if text == _(YES_FLAG):
             return
-        for row in range(self.dvlc.GetStore().GetCount()):
-            if row == index:
-                self.dvlc.SetTextValue(_(YES_FLAG),row,3)
+        for child in self.listview.tree.get_children():
+            if child == item:
+                self.listview.tree.set(item, column=4, value=_(YES_FLAG))
             else:
-                self.dvlc.SetTextValue(_(NO_FLAG),row,3)
+                self.listview.tree.set(child, column=4, value=_(NO_FLAG))
         self._interprter_configuration_changed = True
         
     def SmartAnalyseIntreprter(self):
@@ -574,12 +511,11 @@ class InterpreterConfigurationPanel(ttk.Frame):
             self.AddOneInterpreter(interpreter)
             self._interpreters.append(interpreter)
             
-    def on_select(self):
+    def on_select(self,event):
         self.UpdateUI()
         
     def UpdateUI(self):
         selections = self.listview.tree.selection()
-        print selections,"===================="
         if not selections:
             self._current_interpreter = None
             self.smart_analyse_btn["state"] = tk.DISABLED

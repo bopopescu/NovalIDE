@@ -381,12 +381,17 @@ class EditorNotebook(ui_base.ClosableNotebook):
         GetApp().AddMenuCommand(constants.ID_ZOOM_OUT,zoom_menu,_("Zoom Out"),lambda:self.ZoomView(-1),image=GetApp().GetImage("toolbar/zoom_out.png"),tester=lambda: self.get_current_editor() is not None,include_in_toolbar=True)
                
         outline_menu = tkmenu.PopupMenu()
+        self.outline_sort_var = tk.IntVar(value=utils.profile_get_int("OutlineSort", ui_base.OutlineView.SORT_BY_NONE))
         view_menu.AppendMenu(constants.ID_OUTLINE_SORT,_("Outline Sort"),outline_menu)
         
-        GetApp().AddMenuCommand(constants.ID_SORT_BY_NONE,outline_menu,_("Unsorted"),lambda:self.OutlineSort(constants.ID_SORT_BY_NONE),tester=lambda: self.get_current_editor() is not None,kind=consts.RADIO_MENU_ITEM_KIND)
-        GetApp().AddMenuCommand(constants.ID_SORT_BY_LINE,outline_menu,_("Sort By Line"),lambda:self.OutlineSort(constants.ID_SORT_BY_LINE),tester=lambda: self.get_current_editor() is not None,kind=consts.RADIO_MENU_ITEM_KIND)
-        GetApp().AddMenuCommand(constants.ID_SORT_BY_TYPE,outline_menu,_("Sort By Type"),lambda:self.OutlineSort(constants.ID_SORT_BY_TYPE),tester=lambda: self.get_current_editor() is not None,kind=consts.RADIO_MENU_ITEM_KIND)
-        GetApp().AddMenuCommand(constants.ID_SORT_BY_NAME,outline_menu,_("Sort By Name(A-Z)"),lambda:self.OutlineSort(constants.ID_SORT_BY_NAME),tester=lambda: self.get_current_editor() is not None,kind=consts.RADIO_MENU_ITEM_KIND)
+        GetApp().AddMenuCommand(constants.ID_SORT_BY_NONE,outline_menu,_("Unsorted"),lambda:self.OutlineSort(constants.ID_SORT_BY_NONE),\
+                                tester=lambda: self.get_current_editor() is not None,kind=consts.RADIO_MENU_ITEM_KIND,variable=self.outline_sort_var,value=ui_base.OutlineView.SORT_BY_NONE)
+        GetApp().AddMenuCommand(constants.ID_SORT_BY_LINE,outline_menu,_("Sort By Line"),lambda:self.OutlineSort(constants.ID_SORT_BY_LINE),\
+                                tester=lambda: self.get_current_editor() is not None,kind=consts.RADIO_MENU_ITEM_KIND,variable=self.outline_sort_var,value=ui_base.OutlineView.SORT_BY_LINE)
+        GetApp().AddMenuCommand(constants.ID_SORT_BY_TYPE,outline_menu,_("Sort By Type"),lambda:self.OutlineSort(constants.ID_SORT_BY_TYPE),\
+                                tester=lambda: self.get_current_editor() is not None,kind=consts.RADIO_MENU_ITEM_KIND,variable=self.outline_sort_var,value=ui_base.OutlineView.SORT_BY_TYPE)
+        GetApp().AddMenuCommand(constants.ID_SORT_BY_NAME,outline_menu,_("Sort By Name(A-Z)"),lambda:self.OutlineSort(constants.ID_SORT_BY_NAME),\
+                                tester=lambda: self.get_current_editor() is not None,kind=consts.RADIO_MENU_ITEM_KIND,variable=self.outline_sort_var,value=ui_base.OutlineView.SORT_BY_NAME)
         
         
         GetApp().AddCommand(constants.ID_PRE_POS,_("&View"),_("Previous Position"),self.GotoPrePos,image=GetApp().GetImage("toolbar/go_prev.png"),\

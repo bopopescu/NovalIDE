@@ -34,6 +34,13 @@ class PythonText(CodeCtrl):
         
     def CanPaste(self):
         return True
+        
+    def GetColorClass(self):
+        '''
+            shell窗口的python着色类和普通python文本的着色类稍微有点差别
+        '''
+        lexer = self.GetLangLexer()
+        return lexer.GetShellColorClass()
     
     def perform_return1111(self, event):
         # copied from idlelib.EditorWindow (Python 3.4.2)
@@ -167,6 +174,12 @@ class ShellText(PythonText):
             rmargin=io_indent,
             font="IOFont",
         )
+        
+        self.tag_configure(
+            "prompt",
+            font="PyShellBoldEditorFont",
+        )
+        
         if strutils.compare_version(utils.get_tk_version_str(),("8.6.6")) > 0:
             self.tag_configure(
                 "io", lmargincolor=get_syntax_options_for_tag("TEXT")["background"]
@@ -386,7 +399,7 @@ class ShellText(PythonText):
         self.mark_set("insert", "end")  # move cursor to the end
         # Do the return without auto indent
         ###PythonText.perform_return(self, event)
-        self.insert("insert", "\n")
+       # self.insert("insert", "\n")
         return "break"
 
     def on_secondary_click(self, event=None):
@@ -514,7 +527,7 @@ class ShellText(PythonText):
         i = 0
         while True:
             if i >= len(input_text):
-                return None
+                return input_text
             elif input_text[i] == "\n":
                 return input_text[: i + 1]
             else:
@@ -1055,7 +1068,7 @@ class PyShell(ttk.Frame):
             
         self.more = False
         
-        self.history = hiscache.HistoryCache()
+        self.history = hiscache.HistoryCache(100)
         self.historyIndex = -1
 
         # 显示Python解释器信息.
@@ -1222,7 +1235,7 @@ class PyShell(ttk.Frame):
             if self.interp.introText:
                 if text and not text.endswith(os.linesep):
                     self.write(os.linesep)
-                self.write(self.interp.introText,tags=('magic'))
+                self.write(self.interp.introText,tags=('magic',))
         except AttributeError:
             pass
 

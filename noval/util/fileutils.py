@@ -9,15 +9,12 @@
 # Copyright:   (c) wukan 2019
 # Licence:     GPL-3.0
 #-------------------------------------------------------------------------------
-
-
 import logging
 import copy
 import os
 import shutil
 import sys
 import zipfile
-
 import noval.util.logger as logger
 import noval.util.apputils as apputils
 import noval.util.utillang as utillang
@@ -456,27 +453,37 @@ def start_file(file_path):
         os.startfile(file_path)
     else:
         subprocess.call(["xdg-open", file_path])
+        
 
-def is_file_hiden(path):
-
+def is_path_hidden(path):
+    
     def is_windows_file_hidden(path):
+        import win32con
+        import win32file
         file_flag = win32file.GetFileAttributesW(path)
         hidden_flag = file_flag & win32con.FILE_ATTRIBUTE_HIDDEN
         is_hidden = True if hidden_flag == win32con.FILE_ATTRIBUTE_HIDDEN else False
         return is_hidden
-
+    
+    if os.path.basename(path).startswith("."):
+        return True
+    elif apputils.is_windows():
+        return is_windows_file_hidden(path)
+        
+def is_file_path_hidden(path):
+    '''
+        检查文件或目录是否隐藏,只要全路径中的某一段路径具有隐藏属性,则该全路径是隐藏的
+    '''
     if apputils.is_windows():
-        import win32con
-        import win32file
         is_hidden = False
         if os.path.isfile(path):
-            is_hidden = is_windows_file_hidden(path)
+            is_hidden = is_path_hidden(path)
         ###files or dirs in hidden dir is not hidden,so we shoud rotate to hidden dir
         else:
             while True:
                 if os.path.dirname(path) == path:
                     break
-                is_hidden = is_windows_file_hidden(path)
+                is_hidden = is_path_hidden(path)
                 if is_hidden:
                     break
                 path = os.path.dirname(path)
@@ -484,27 +491,27 @@ def is_file_hiden(path):
     else:
         is_hidden = False
         if os.path.isfile(path):
-            filename = os.path.basename(path)
-            is_hidden = True if filename.startswith(".") else False
+            is_hidden = is_path_hidden(path)
         else:
             while True:
                 dirname = os.path.basename(path)
                 if dirname == "" or dirname == "/":
                     break
-                is_hidden = True if dirname.startswith(".") else False
+                is_hidden = is_path_hidden(path)
                 if is_hidden:
                     break
                 path = os.path.dirname(path)
         return is_hidden
         
-def GetDirFiles(path,file_list,filters=[]):
+def GetDirFiles(path,file_list,filters=[],rejects=[]):
     for f in os.listdir(path):
         file_path = os.path.join(path, f)
         if os.path.isfile(file_path):
             if filters == []:
                 file_list.append(file_path)
             else:
-                if strutils.GetFileExt(file_path) in filters:
+                ext = strutils.get_file_extension(file_path)
+                if ext not in rejects and ext in filters:
                     file_list.append(file_path)
                         
 

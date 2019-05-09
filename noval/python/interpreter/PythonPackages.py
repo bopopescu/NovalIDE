@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-from noval import _
+from noval import _,GetApp
 from tkinter import ttk
+from tkinter import messagebox,filedialog
 import tkinter as tk
 import noval.ui_base as ui_base
 import noval.python.interpreter.InterpreterManager as interpretermanager
@@ -16,6 +17,8 @@ try:
     from urlparse import urlparse
 except ImportError:
     from urllib.parse import urlparse
+import noval.consts as consts
+import noval.ttkwidgets.treeviewframe as treeviewframe
 
 class ManagePackagesDialog(ui_base.CommonModaldialog):
     
@@ -34,7 +37,8 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
     
     BEST_PIP_SOURCE = None
         
-    def __init__(self,parent,dlg_id,title,manage_action,interpreter,interpreters,package_name=''):
+    def __init__(self,parent,title,manage_action,interpreter,interpreters,package_name=''):
+        self.title(title)
         self.interpreter = interpreter
         self.interpreters = interpreters
         self._manage_action = manage_action
@@ -48,10 +52,7 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
             _('SDUT'),
             _('Douban'),
         ]
-        wx.Dialog.__init__(self,parent,dlg_id,title,size=(-1,-1))
-        box_sizer = wx.BoxSizer(wx.VERTICAL)
-        
-
+        ui_base.CommonModaldialog.__init__(self,parent)
         if self._manage_action == ManagePackagesDialog.MANAGE_INSTALL_PACKAGE:
             lineSizer = wx.BoxSizer(wx.HORIZONTAL)
             lineSizer.Add(wx.StaticText(self, -1, _("We will use the pip source:")), 0, \
@@ -115,25 +116,8 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
         self.detail_btn = wx.Button(self, -1, _("Show Details") + "↓")
         self._show_details = False
         wx.EVT_BUTTON(self.detail_btn, -1, self.ShowHideDetails)
-        bsizer.Add(self.detail_btn, 0,flag=wx.LEFT, border=SPACE) 
-        
-        bsizer.Add(wx.StaticText(self, -1, ""), 1, wx.LEFT|wx.EXPAND, 0)
-        
-        self.ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
-        #set ok button default focused
-        self.ok_btn.SetDefault()
-        wx.EVT_BUTTON(self.ok_btn, -1, self.OnOKClick)
-        bsizer.Add(self.ok_btn, 0,flag=wx.RIGHT, border=SPACE) 
-        
-        cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
-        bsizer.Add(cancel_btn, 0,flag=wx.RIGHT, border=SPACE) 
-        
-        box_sizer.Add(bsizer, 0, wx.EXPAND |wx.BOTTOM|wx.TOP,SPACE)
-        
-        self.SetSizer(box_sizer)
-        self.Fit()
+        self.AddokcancelButton()
         self._install_with_name = True
-        
         if self._manage_action == ManagePackagesDialog.MANAGE_INSTALL_PACKAGE:
             if self.BEST_PIP_SOURCE is None:
                 self.CheckBestPipSource()
@@ -333,23 +317,34 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
 class PackagePanel(ttk.Frame):
     def __init__(self,parent):
         ttk.Frame.__init__(self, parent)
-        columns = [_('Name'),_('Version')]
-        self.listview = ui_base.TreeFrame(self,columns=columns)
-        self.install_btn = ttk.Button(self, text=_("Install with pip"),command=self.InstallPip)
-        self.uninstall_btn = ttk.Button(self, text=_("Uninstall with pip"),command=self.UninstallPip)
-        self.freeze_btn = ttk.Button(self, text=_("Freeze"),command=self.FreezePackage)
+        columns = ['Name','Version']
+        self.listview = treeviewframe.TreeViewFrame(self,columns=columns,show="headings")
+        self.listview.pack(side=tk.LEFT,fill="both",expand=1)
+        for column in columns:
+            self.listview.tree.heading(column, text=_(column))
+        
+        padx = consts.DEFAUT_CONTRL_PAD_X/2
+        pady = consts.DEFAUT_CONTRL_PAD_Y/2
+        right_frame = ttk.Frame(self)
+        self.install_btn = ttk.Button(right_frame, text=_("Install with pip"),command=self.InstallPip)
+        self.install_btn.pack(padx=padx,pady=(pady))
+        self.uninstall_btn = ttk.Button(right_frame, text=_("Uninstall with pip"),command=self.UninstallPip)
+        self.uninstall_btn.pack(padx=padx,pady=(pady))
+        self.freeze_btn = ttk.Button(right_frame, text=_("Freeze"),command=self.FreezePackage)
+        self.freeze_btn.pack(padx=padx,pady=(pady))
+        right_frame.pack(side=tk.LEFT,fill="y")
+        
         self.interpreter = None
 
-    def InstallPip(self,event):
+    def InstallPip(self):
         dlg = ManagePackagesDialog(self,-1,_("Install Package"),ManagePackagesDialog.MANAGE_INSTALL_PACKAGE,self.interpreter,self.GetParent().GetParent()._interpreters)
-        dlg.CenterOnParent()
         status = dlg.ShowModal()
         if status == wx.ID_OK:
             self.NotifyPackageConfigurationChange()
         dlg.Destroy()
         
         
-    def UninstallPip(self,event):
+    def UninstallPip(self):
         index = self.dvlc.GetSelectedRow()
         package_name = ""
         if index != wx.NOT_FOUND:
@@ -397,7 +392,7 @@ class PackagePanel(ttk.Frame):
         if remove_exist:
             utils.get_logger().info("package name %s version %s already exist,remove package first!",python_package.Name,python_package.Version)
             self.RemovePackage(python_package.Name,interpreter)
-        self.dvlc.AppendItem([python_package.Name,python_package.Version])
+        self.listview.tree.insert("",0,values=(python_package.Name,python_package.Version))
         if interpreter is not None:
             interpreter.Packages[python_package.Name] = python_package
         
@@ -408,28 +403,20 @@ class PackagePanel(ttk.Frame):
         self.dvlc.DeleteItem(row)
         del interpreter.Packages[package_name]
         
-    def GetPackageRow(self,package_name):
-        count = self.dvlc.GetStore().GetCount()
-        for i in range(count):
-            column_value = self.dvlc.GetTextValue(i,0)
-            if column_value.lower() == package_name.lower():
-                return i,column_value
-        return -1,""
-        
     def NotifyPackageConfigurationChange(self):
         self.GetParent().GetParent().NotifyConfigurationChange()
         
-    def FreezePackage(self,event):
-        text_docTemplate = wx.GetApp().GetDocumentManager().FindTemplateForPath("test.txt")
-        descr = _(text_docTemplate.GetDescription()) + " (" + text_docTemplate.GetFileFilter() + ") |" + text_docTemplate.GetFileFilter()
+    def FreezePackage(self):
+        text_docTemplate = GetApp().GetDocumentManager().FindTemplateForPath("test.txt")
         default_ext = text_docTemplate.GetDefaultExtension()
-        filename = wx.FileSelector(_("Save As"),
-                                   text_docTemplate.GetDirectory(),
-                                   "requirements.txt",
-                                   default_ext,
-                                   wildcard = descr,
-                                   flags = wx.SAVE | wx.OVERWRITE_PROMPT,
-                                   parent = self.GetParent())
+        descrs = strutils.get_template_filter(text_docTemplate)
+        filename = filedialog.asksaveasfilename(
+            master = GetApp(),
+            filetypes=[descrs],
+            defaultextension=default_ext,
+            initialdir=text_docTemplate.GetDirectory(),
+            initialfile="requirements.txt"
+        )
         if filename == "":
             return
         try:
@@ -437,4 +424,4 @@ class PackagePanel(ttk.Frame):
                 command = self.interpreter.GetPipPath() + " freeze"
                 subprocess.call(command,shell=True,stdout=f,stderr=subprocess.STDOUT)
         except Exception as e:
-            wx.MessageBox(str(e),style=wx.OK|wx.ICON_ERROR)
+            messagebox.showerror(_("Error"),str(e))

@@ -61,6 +61,12 @@ class CheckListbox(checkboxtreeview.CheckboxTreeview):
         childs = self.get_children()
         item = childs[index]
         return self.CheckItem(item,checked)
+        
+    def GetString(self,index):
+        childs = self.get_children()
+        item = childs[index]
+        return self.item(item,"text")
+        
 
 
    

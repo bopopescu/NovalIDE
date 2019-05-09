@@ -38,6 +38,13 @@ FILE_MARKER = "Searching file: "
 FIND_MATCHDIR = "FindMatchDir"
 FIND_MATCHDIRSUBFOLDERS = "FindMatchDirSubfolders"
 
+def _open(filename):
+    if utils.is_py2():
+        f = open(filename, 'r')
+    else:
+        f = open(filename, 'r',errors='replace')
+    return f
+    
 @singleton.Singleton
 class FindIndirService:
     
@@ -80,7 +87,7 @@ class FindIndirService:
                 break
             if not find_text_option.recursive and root != find_text_option.dirstr:
                 break
-            if not find_text_option.search_hidden and fileutils.is_file_hiden(root):
+            if not find_text_option.search_hidden and fileutils.is_file_path_hidden(root):
                 continue
             for name in files:
                 if find_text_option.file_types != []:
@@ -88,7 +95,7 @@ class FindIndirService:
                     if file_ext not in find_text_option.file_types:
                         continue
                 filename = os.path.join(root, name)
-                if not find_text_option.search_hidden and fileutils.is_file_hiden(filename):
+                if not find_text_option.search_hidden and fileutils.is_file_path_hidden(filename):
                     break
                 list_files.append(filename)
                 self.total_find_filecount += 1
@@ -141,10 +148,7 @@ class FindIndirService:
         regExpr = find_text_option.regex
         found_line = 0
         try:
-            if utils.is_py2():
-                docFile = open(filename, 'r')
-            else:
-                docFile = open(filename, 'r',errors='replace')
+            _open(filename)
         except IOError as e:
             utils.get_logger().warn("Warning, unable to read file: '%s'.  %s",filename, str(e))
             return found_line
@@ -338,7 +342,7 @@ class FindIndirService:
         utils.get_logger().debug("start to search text for closed project docs")
         for filename in filenames:
             try:
-                docFile = open(filename, 'r')
+                docFile = _open(filename)
             except IOError:
                 continue
 

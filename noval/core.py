@@ -1650,7 +1650,7 @@ class Document(object):
                 shutil.copy(filename, backupFilename)
                 copied = True
 
-            fileObject = file(filename, 'w')
+            fileObject = open(filename, 'w')
             self.SaveObject(fileObject)
             fileObject.close()
             fileObject = None

@@ -1,4 +1,4 @@
-![NovalIDE](noval/tool/bmp_source/logo.png)
+![NovalIDE](noval/bmp_source/logo.png)
 
 简介
 ----------------------------------
@@ -29,7 +29,7 @@ NovalIDE是一款开源，跨平台，而且免费的国产多功能，轻便的
 - [对一款优秀国产Python IDE---NovalIDE的体验](https://my.oschina.net/u/3728672/blog/1817030)
 - [Linux如何安装NovalIDE](https://my.oschina.net/u/3728672/blog/1831452)
 
-软件概貌: ![NovalIDE_Screen](noval/tool/bmp_source/images/banner_01.png)
+软件概貌: ![NovalIDE_Screen](noval/bmp_source/images/banner_01.png)
 
 编译
 ----------------------------------
@@ -101,7 +101,7 @@ cd Noval
 
 点击NovalIDE_Setup.exe并依次按安装向导安装，直到完成。
 
-![NovalIDE_WINDOWS_INSTALL](noval/tool/bmp_source/images/windows_insall.png)
+![NovalIDE_WINDOWS_INSTALL](noval/bmp_source/images/windows_insall.png)
 
 ### Linux安装
 从官网：[http://www.novalide.com](http://www.novalide.com/)下载[Linux版本](http://www.novalide.com/member/download_app?lang=zh_cn&os_name=linux)并解压 
@@ -127,47 +127,47 @@ cd NovalIDE-x.x.x
 ----------------------------------
 
 - 智能提示
-![CodeTip1](noval/tool/bmp_source/images/banner_02.png)
-![CodeTip2](noval/tool/bmp_source/images/banner_03.png)
-![CodeTip3](noval/tool/bmp_source/images/banner_04.png)
+![CodeTip1](noval/bmp_source/images/banner_02.png)
+![CodeTip2](noval/bmp_source/images/banner_03.png)
+![CodeTip3](noval/bmp_source/images/banner_04.png)
 
 - 解释器配置
-![InterpreterManage](noval/tool/bmp_source/images/banner_06.png)
+![InterpreterManage](noval/bmp_source/images/banner_06.png)
 
 - 包管理器
-![PipManage](noval/tool/bmp_source/images/banner_07.png)
+![PipManage](noval/bmp_source/images/banner_07.png)
 
 - 中英文切换
-![Zh_En](noval/tool/bmp_source/images/zh_en.png)
+![Zh_En](noval/bmp_source/images/zh_en.png)
 
 - 单元测试
-![UnitTest](noval/tool/bmp_source/images/banner_08.png)
+![UnitTest](noval/bmp_source/images/banner_08.png)
 
 - 新建工程
-![NewProject](noval/tool/bmp_source/images/project.png)
+![NewProject](noval/bmp_source/images/project.png)
 
 - 导入项目文件
-![ImportFile](noval/tool/bmp_source/images/importfile.png)
+![ImportFile](noval/bmp_source/images/importfile.png)
 
 - 项目运行配置
-![NewProjectConfiguration](noval/tool/bmp_source/images/configuration.png)
+![NewProjectConfiguration](noval/bmp_source/images/configuration.png)
 
 - 自动加载解释器
-![LoadInterpreter](noval/tool/bmp_source/images/interpreter.png)
+![LoadInterpreter](noval/bmp_source/images/interpreter.png)
 
 - 运行
-![Run1](noval/tool/bmp_source/images/run1.png)
-![Run2](noval/tool/bmp_source/images/run2.png)
+![Run1](noval/bmp_source/images/run1.png)
+![Run2](noval/bmp_source/images/run2.png)
 
 - 断点调试
-![Debugger1](noval/tool/bmp_source/images/debugger1.png)
-![Debugger2](noval/tool/bmp_source/images/debugger2.png)
-![Debugger3](noval/tool/bmp_source/images/debugger3.png)
-![Debugger4](noval/tool/bmp_source/images/debugger4.png)
+![Debugger1](noval/bmp_source/images/debugger1.png)
+![Debugger2](noval/bmp_source/images/debugger2.png)
+![Debugger3](noval/bmp_source/images/debugger3.png)
+![Debugger4](noval/bmp_source/images/debugger4.png)
 
 - 监视断点
-![Watch1](noval/tool/bmp_source/images/watch1.png)
-![Watch2](noval/tool/bmp_source/images/watch2.png)
+![Watch1](noval/bmp_source/images/watch1.png)
+![Watch2](noval/bmp_source/images/watch2.png)
 
 特别感谢
 ----------------------------------
@@ -180,7 +180,7 @@ cd NovalIDE-x.x.x
 ----------------------------------
 
 - 支付宝
-![Alipay](noval/tool/bmp_source/images/alipay.jpg)
+![Alipay](noval/bmp_source/images/alipay.jpg)
 
 - 微信支付
-![WeChatPay](noval/tool/bmp_source/images/wechatpay.jpg)
+![WeChatPay](noval/bmp_source/images/wechatpay.jpg)

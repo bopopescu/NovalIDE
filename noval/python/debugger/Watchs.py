@@ -1,8 +1,8 @@
-import wx
-from noval.tool.consts import SPACE,HALF_SPACE,_
+from noval import _,NewId
+import noval.util.apputils as sysutils
+import noval.ui_base as ui_base
+from tkinter import ttk
 import noval.util.utils as utils
-import noval.util.sysutils as sysutils
-import noval.tool.images as images
 
 ERROR_NAME_VALUE = "<errors:could not evaluate the value>"
 
@@ -68,11 +68,11 @@ class Watch:
         
     @classmethod
     def Load(cls):
-        watchs_str = utils.ProfileGet(cls.WATCH_LIST_KEY,"[]")
+        watchs_str = utils.profile_get(cls.WATCH_LIST_KEY,"[]")
         try:
             watch_list = eval(watchs_str)
         except Exception as e:
-            print e
+            print (e)
             watch_list = []
         watchs = []
         for dct in watch_list:
@@ -80,10 +80,10 @@ class Watch:
             watchs.append(watch)
         return watchs
 
-class WatchDialog(wx.Dialog):
-    WATCH_ALL_FRAMES = _("Watch in all frames")
-    WATCH_THIS_FRAME = _("Watch in this frame only")
-    WATCH_ONCE = _("Watch once and delete")
+class WatchDialog(ui_base.CommonModaldialog):
+    WATCH_ALL_FRAMES = "Watch in all frames"
+    WATCH_THIS_FRAME = "Watch in this frame only"
+    WATCH_ONCE = "Watch once and delete"
     
     WATCH_FRAME_TYPES = {
         Watch.CODE_ALL_FRAMES:WATCH_ALL_FRAMES,
@@ -173,12 +173,12 @@ class WatchDialog(wx.Dialog):
         if self._is_quick_watch:
             self._watchValueTextCtrl.SetValue(self._watchNameTextCtrl.GetValue())
 
-class WatchsPanel(wx.Panel):
+class WatchsPanel(ttk.Frame):
     """description of class"""
-    ID_ClEAR_WATCH = wx.NewId()
-    ID_ClEAR_ALL_WATCH = wx.NewId()
-    ID_EDIT_WATCH = wx.NewId()
-    ID_COPY_WATCH_EXPRESSION = wx.NewId()
+    ID_ClEAR_WATCH = NewId()
+    ID_ClEAR_ALL_WATCH = NewId()
+    ID_EDIT_WATCH = NewId()
+    ID_COPY_WATCH_EXPRESSION = NewId()
     WATCH_NAME_COLUMN_WIDTH = 150
     
     def __init__(self,parent,id,debuggerService):
