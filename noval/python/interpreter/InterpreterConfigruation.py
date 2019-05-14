@@ -26,6 +26,7 @@ import noval.ttkwidgets.treeviewframe as treeviewframe
 import noval.misc as misc
 import noval.constants as constants
 import noval.menu as tkmenu
+import noval.ui_utils as ui_utils
 
 ID_COPY_INTERPRETER_NAME = NewId()
 ID_COPY_INTERPRETER_VERSION = NewId()
@@ -157,9 +158,9 @@ class AddInterpreterDialog(ui_base.CommonModaldialog):
         self.name_ctrl.SetValue(path)
         self.path_ctrl.SetInsertionPointEnd()
         
-class InterpreterConfigurationPanel(ttk.Frame):
+class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
     def __init__(self,parent):
-        ttk.Frame.__init__(self, parent)
+        ui_utils.BaseConfigurationPanel.__init__(self, parent)
         interpreter_staticText = ttk.Label(self, text=_("Python interpreters(eg.:such as python.exe, pythonw.exe). Double or right click to rename."))
         interpreter_staticText.grid(row=0, column=0, sticky=tk.NSEW,padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         columns = ['id','Name','Version','Path','Default']
@@ -242,7 +243,7 @@ class InterpreterConfigurationPanel(ttk.Frame):
             sysutils.CopyToClipboard(interpreter.Path)
             return True
         elif id == ID_MODIFY_INTERPRETER_NAME:
-            self.ModifyInterpreterNameDlg(None)
+            self.ModifyInterpreterNameDlg()
             return True
         elif id == ID_REMOVE_INTERPRETER:
             self.RemoveInterpreter()
@@ -361,7 +362,7 @@ class InterpreterConfigurationPanel(ttk.Frame):
         event.Enable(True)
         return True
         
-    def ModifyInterpreterNameDlg(self,event):
+    def ModifyInterpreterNameDlg(self,event=None):
         selections = self.listview.tree.selection()
         if not selections:
             return

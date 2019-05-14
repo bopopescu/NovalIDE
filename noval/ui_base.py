@@ -867,10 +867,19 @@ class CommonDialog(tk.Toplevel):
                 )
 
         self.geometry("+%d+%d" % (left, top))
+        
+    def FormatTkButtonText(self,btn):
+        '''
+            如果按钮文字包含&符号,去掉该符号不显示
+        '''
+        text = btn.configure()['text'][4]
+        if text.find('&') != -1:
+            btn.configure(text=text.replace("&",""))
 
 class CommonModaldialog(CommonDialog):
     def __init__(self, master,**kwargs):
         CommonDialog.__init__(self, master,**kwargs)
+        self.protocol("WM_DELETE_WINDOW", self._cancel)
         self.status = -1
 
     def ShowModal(self,center=True):
@@ -912,6 +921,8 @@ class CommonModaldialog(CommonDialog):
         self.ok_button.grid(column=1, row=0, sticky=tk.EW, padx=(0, consts.DEFAUT_CONTRL_PAD_X), pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
         self.cancel_button = ttk.Button(bottom_frame, text=_("Cancel"), command=self._cancel)
         self.cancel_button.grid(column=2, row=0, sticky=tk.EW, padx=(0, consts.DEFAUT_CONTRL_PAD_X), pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+        self.FormatTkButtonText(self.ok_button)
+        self.FormatTkButtonText(self.cancel_button)
         bottom_frame.columnconfigure(0, weight=1)
 
 class SingleChoiceDialog(CommonModaldialog):

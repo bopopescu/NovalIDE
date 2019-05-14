@@ -13,8 +13,7 @@ def profile_get(key,default_value=""):
         return GetApp().GetConfig().Read(key, default_value)
     else:
         try:
-            default_value = ""
-            return eval(GetApp().GetConfig().Read(key, default_value))
+            return eval(GetApp().GetConfig().Read(key, ""))
         except:
             return default_value
     
@@ -25,7 +24,10 @@ def profile_set(key,value):
     if type(value) == int or type(value) == bool:
         GetApp().GetConfig().WriteInt(key,value)
     else:
-        GetApp().GetConfig().Write(key,value)
+        if isinstance(value, str) or (is_py2() and isinstance(value,unicode)):
+            GetApp().GetConfig().Write(key,value)
+        else:
+            GetApp().GetConfig().Write(key,repr(value))
 
 def update_statusbar(msg):
     GetApp().MainFrame.PushStatusText(msg)
@@ -126,6 +128,16 @@ class Config(object):
                 return True
             except:
                 return False
+                
+        def DeleteEntry(self,key_val):
+            try:
+                dest_key_reg.DeleteKey(key_val)
+            except:
+                dest_key_reg,value = self.GetDestRegKey(key_val)
+                try:
+                    dest_key_reg.DeleteValue(value)
+                except:
+                    get_logger().debug("delete key_val %s fail" % key_val)
             
     else:
         def __init__(self,app_name):
@@ -196,6 +208,13 @@ class Config(object):
         def Save(self):
             with open(self.config_path,"w") as f:
                 self.cfg.write(f)
+                
+        def DeleteEntry(self,key):
+            
+            reg = registry.Registry()
+            child_reg = reg.Open(r"SOFTWARE\NovalIDEDebug")
+            child_reg.DeleteKey('xxxx/yyy/zzz/ddd')
+            
 
 def call_after(func): 
     def _wrapper(*args, **kwargs): 
@@ -209,7 +228,3 @@ def py3_cmp(l,r):
         return 1
     return 0
     
-def get_tk_version_str():
-    tkVer = GetApp().call('info', 'patchlevel')
-    return tkVer
-    #print(tk._default_root.tk.call("info", "patchlevel"))

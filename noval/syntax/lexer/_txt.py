@@ -54,6 +54,9 @@ class SyntaxLexer(syndata.BaseLexer):
         return _("Text File")
         
     def GetSampleCode(self):
-        sample_file_path = os.path.join(appdirs.GetAppDataDirLocation(),"sample","txt.sample")
+        sample_file_path = os.path.join(appdirs.get_app_data_location(),"sample","txt.sample")
         return self.GetSampleCodeFromFile(sample_file_path)
+        
+    def GetColorClass(self):
+        return syndata.BaseSyntaxcolorer
 

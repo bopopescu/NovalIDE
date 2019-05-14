@@ -197,7 +197,7 @@ class DocPositionMgr(object):
         @return: position value for the given filename
 
         """
-        return self._records.get(name, (0,0))
+        return self._records.get(name, (None,None))
 
     def IsInitialized(self):
         """Has the cache been initialized

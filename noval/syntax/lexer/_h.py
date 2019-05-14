@@ -65,10 +65,9 @@ class SyntaxLexer(_c.SyntaxLexer):
         
     def GetDocIcon(self):
         return imageutils.load_image("","file/h_file.gif")
-        
-    def GetSampleCode(self):
-        sample_file_path = os.path.join(appdirs.GetAppDataDirLocation(),"sample","cpp.sample")
-        return self.GetSampleCodeFromFile(sample_file_path)
     
     def GetColorClass(self):
         return _cpp.SyntaxColorer
+        
+    def IsVisible(self):
+        return False

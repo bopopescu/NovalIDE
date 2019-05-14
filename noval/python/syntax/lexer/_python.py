@@ -67,14 +67,12 @@ STRING3 = matches_any("string3", [DQ3STRING, SQ3STRING])
 
 #-----------------------------------------------------------------------------#
 
-class SyntaxColorer:
+class SyntaxColorer(syndata.BaseSyntaxcolorer):
     def __init__(self, text):
-        self.text = text
+        syndata.BaseSyntaxcolorer.__init__(self,text)
         self._compile_regexes()
         self._config_tags()
-        self._update_scheduled = False
-        self._dirty_ranges = set()
-        self._use_coloring = True
+        
 
     def _compile_regexes(self):
         self.uniline_regex = re.compile(
@@ -127,8 +125,7 @@ class SyntaxColorer:
             self.text.tag_raise("open_string3")
 
     def schedule_update(self, event, use_coloring=True):
-        self._use_coloring = use_coloring
-
+        syndata.BaseSyntaxcolorer.schedule_update(self,event,use_coloring)
         # Allow reducing work by remembering only changed lines
         if hasattr(event, "sequence"):
             if event.sequence == "TextInsert":
@@ -313,7 +310,7 @@ class SyntaxLexer(syndata.BaseLexer):
         return imageutils.getPythonIcon()
         
     def GetSampleCode(self):
-        sample_file_path = os.path.join(appdirs.GetAppDataDirLocation(),"sample","python.sample")
+        sample_file_path = os.path.join(appdirs.get_app_data_location(),"sample","python.sample")
         return self.GetSampleCodeFromFile(sample_file_path)
         
     def GetCommentTemplate(self):

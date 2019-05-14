@@ -9,12 +9,13 @@ import noval.util.apputils as sysutilslib
 import noval.util.fileutils as fileutils
 import noval.python.parser.run as pythonrun
 import os
+import noval.ui_utils as ui_utils
 
-class InterpreterGeneralConfigurationPanel(ttk.Frame):
+class InterpreterGeneralConfigurationPanel(ui_utils.BaseConfigurationPanel):
     """description of class"""
     
     def __init__(self,parent):
-        ttk.Frame.__init__(self, parent)
+        ui_utils.BaseConfigurationPanel.__init__(self, parent)
         
         self._warnInterpreterPathVar = tk.IntVar(value=utils.profile_get_int("WarnInterpreterPath", True))
         warnInterpreterPathCheckBox = ttk.Checkbutton(self, text= _("Warn when interpreter path contain no asc character on debug and run"),\
@@ -43,52 +44,56 @@ class InterpreterGeneralConfigurationPanel(ttk.Frame):
         neverUpdateRadioBtn = ttk.Radiobutton(box_frame,text = _("Never"))
         neverUpdateRadioBtn.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
 
-        if not GetApp().GetDebug():
+        if GetApp().GetDebug():
             
-            sbox = tk.labelframe(self, text=_("Intellisence database location"))
-            interpreterLabelText = ttk.Label(sbox, text=_("Interpreter:"))
+            sbox = ttk.LabelFrame(self, text=_("Intellisence database location"))
+            sbox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+            row = ttk.Frame(sbox)
+            interpreterLabelText = ttk.Label(row, text=_("Interpreter:"))
+            interpreterLabelText.pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
             choices,default_selection = interpretermanager.InterpreterManager().GetChoices()
-            self.interpreterCombo = ttk.Combobox(sbox, choices=choices)
+            self.interpreterCombo = ttk.Combobox(row, values=choices)
             self.interpreterCombo.state(['readonly'])
             if len(choices) > 0:
-                self.interpreterCombo.SetSelection(default_selection)
-           ## self.interpreterCombo.Bind(wx.EVT_COMBOBOX, self.OnSelectInterpreter) 
-            locationLabelText = ttk.Label(sbox, text=_("Database Location:"))
-            self.locationControl = ttk.Entry(sbox, -1)
-            self.locationControl.Enable(False)
-            into_file_explower_btn = ttk.Button(self, -1, _("Into file explorer"))
-            wx.EVT_BUTTON(into_file_explower_btn, -1, self.IntoFileExplorer)
-            lineSizer.Add(into_file_explower_btn, 0,flag=wx.LEFT, border=SPACE) 
+                self.interpreterCombo.current(default_selection)
+            self.interpreterCombo.bind("<<ComboboxSelected>>",self.OnSelectInterpreter)
+            self.interpreterCombo.pack(side=tk.LEFT,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+            row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+            row = ttk.Frame(sbox)
+            locationLabelText = ttk.Label(row, text=_("Database Location:"))
+            locationLabelText.pack(side=tk.LEFT,fill="x")
+            locationControl = ttk.Entry(row)
+            locationControl["state"] = tk.DISABLED
+            locationControl.pack(side=tk.LEFT,fill="x",expand=1)
+            row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
             
-            copy_path_btn = ttk.Button(self, -1, _("Copy path"))
-            wx.EVT_BUTTON(copy_path_btn, -1, self.CopyDatabasePath)
-            lineSizer.Add(copy_path_btn, 0,flag=wx.LEFT, border=SPACE) 
-            
-            database_version_btn = ttk.Button(self, -1, _("Database version"))
-            wx.EVT_BUTTON(database_version_btn, -1, self.GetDatabaseVersion)
-            lineSizer.Add(database_version_btn, 0,flag=wx.LEFT, border=SPACE)
-            
-            last_update_btn = ttk.Button(self, -1, _("Last update time"))
-            wx.EVT_BUTTON(last_update_btn, -1, self.GetLastUpdateTime)
-            lineSizer.Add(last_update_btn, 0,flag=wx.LEFT, border=SPACE) 
-            
-            clear_data_btn = ttk.Button(self, -1, _("Clear data"))
-            wx.EVT_BUTTON(clear_data_btn, -1, self.ClearIntellisenceData)
-            self.OnSelectInterpreter(None)
+            row = ttk.Frame(sbox)
+            into_file_explower_btn = ttk.Button(row, text=_("Into file explorer"),command=self.IntoFileExplorer)
+            into_file_explower_btn.pack(side=tk.LEFT,fill="x",padx=(0,consts.DEFAUT_CONTRL_PAD_X))
+            copy_path_btn = ttk.Button(row, text=_("Copy path"),command=self.CopyDatabasePath)
+            copy_path_btn.pack(side=tk.LEFT,fill="x",padx=(0,consts.DEFAUT_CONTRL_PAD_X))
+            database_version_btn = ttk.Button(row, text=_("Database version"),command=self.GetDatabaseVersion)
+            database_version_btn.pack(side=tk.LEFT,fill="x",padx=(0,consts.DEFAUT_CONTRL_PAD_X))
+            last_update_btn = ttk.Button(row, text=_("Last update time"),command=self.GetLastUpdateTime)
+            last_update_btn.pack(side=tk.LEFT,fill="x",padx=(0,consts.DEFAUT_CONTRL_PAD_X))
+            clear_data_btn = ttk.Button(row,text=_("Clear data"),command=self.ClearIntellisenceData)
+            clear_data_btn.pack(side=tk.LEFT,fill="x",padx=(0,consts.DEFAUT_CONTRL_PAD_X))
+            row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+           # self.OnSelectInterpreter(None)
        # self.SetUpdateIntervalOption()
         
-    def IntoFileExplorer(self,event):
+    def IntoFileExplorer(self):
         location = self.locationControl.GetValue()
         err_code,msg = fileutils.open_file_directory(location)
         if err_code != ERROR_OK:
             wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
         
-    def CopyDatabasePath(self,event):
+    def CopyDatabasePath(self):
         path = self.locationControl.GetValue()
         sysutilslib.CopyToClipboard(path)
         wx.MessageBox(_("Copied to clipboard"))
         
-    def GetDatabaseVersion(self,event):
+    def GetDatabaseVersion(self):
         interpreter = self.GetCurrentInterpreter()
         if interpreter is None:
             return
@@ -100,7 +105,7 @@ class InterpreterGeneralConfigurationPanel(ttk.Frame):
         except Exception as e:
             wx.MessageBox(str(e),style=wx.OK|wx.ICON_ERROR)
         
-    def GetLastUpdateTime(self,event):
+    def GetLastUpdateTime(self):
         interpreter = self.GetCurrentInterpreter()
         if interpreter is None:
             return
@@ -112,7 +117,7 @@ class InterpreterGeneralConfigurationPanel(ttk.Frame):
         except Exception as e:
             wx.MessageBox(str(e),style=wx.OK|wx.ICON_ERROR)
         
-    def ClearIntellisenceData(self,event):
+    def ClearIntellisenceData(self):
         interpreter = self.GetCurrentInterpreter()
         if interpreter is None:
             return

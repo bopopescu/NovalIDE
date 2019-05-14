@@ -36,19 +36,25 @@ class DocTabbedParentFrame(ttk.Frame):
         #设置第二行,即主框架所在的行权重为1,即填充满
         self.rowconfigure(consts.DEFAULT_MAIN_FRAME_ROW, weight=1)
         self._views = {}
-
+        self.LoadLastperspective()
+        self._is_maximized = False
+        west_width = self.GetLocationWidth(['nw',"w","sw"])
+        east_width = self.GetLocationWidth(['ne',"e","se"])
         self._west_pw = ui_common.AutomaticPanedWindow(
             self._main_pw,
             1,
             orient=tk.VERTICAL,
-            preferred_size_in_pw=400,
+            preferred_size_in_pw=west_width,
+            width = west_width
         )
-        self._center_pw = ui_common.AutomaticPanedWindow(self._main_pw, 2, orient=tk.VERTICAL)
+        center_width = GetApp().winfo_screenwidth()-west_width-east_width
+        self._center_pw = ui_common.AutomaticPanedWindow(self._main_pw, 2, orient=tk.VERTICAL,width=center_width)
         self._east_pw = ui_common.AutomaticPanedWindow(
             self._main_pw,
             3,
             orient=tk.VERTICAL,
-            preferred_size_in_pw=400,
+            preferred_size_in_pw=east_width,
+            width = east_width
         )
         
         self._view_notebooks = {
@@ -66,7 +72,7 @@ class DocTabbedParentFrame(ttk.Frame):
             "s": ui_common.AutomaticNotebook(
                 self._center_pw,
                 3,
-                preferred_size_in_pw=utils.profile_get_int("layout.s_nb_height",500),
+                preferred_size_in_pw=utils.profile_get_int("layout.s_nb_height",200),
             ),
             "ne": ui_common.AutomaticNotebook(
                 self._east_pw,
@@ -107,33 +113,10 @@ class DocTabbedParentFrame(ttk.Frame):
 
     def AddToolbarButton(self,command_id,image,command_label,handler,accelerator,tester):
         self._toolbar.AddButton(command_id,image,command_label,handler,accelerator,tester)
-                        
-    def MaximizeEditorWindow(self,event):
-        
-        is_maximized = True
-        for pane in self._mgr.GetAllPanes():
-            if pane.name == consts.EDITOR_CONTENT_PANE_NAME or pane.name == consts.TOOLBAR_PANE_NAME or not pane.IsShown() or \
-                    pane.IsNotebookPage() or isinstance(pane.window,aui.auibar.AuiToolBar):
-                continue
-            if not pane.IsMinimized():
-                is_maximized = False
-                break
-        if not is_maximized:
-            self._perspective = self._mgr.SavePerspective()
-        all_panes = self._mgr.GetAllPanes()
-        for pane in all_panes:
-            if pane.name == consts.EDITOR_CONTENT_PANE_NAME or pane.IsMinimized() or pane.name == consts.TOOLBAR_PANE_NAME or \
-                    pane.IsNotebookPage() or not pane.IsShown() or isinstance(pane.window,aui.auibar.AuiToolBar):
-                continue
-            self._mgr.MinimizePane(pane)
-        
-    def RestoreEditorWindow(self,event):
-        if self._perspective is None:
-            return
-        self._mgr.LoadPerspective(self._perspective)
         
     def CreateNotebook(self):
-        self._editor_notebook = notebook.EditorNotebook(self._center_pw)
+        nb_height = GetApp().winfo_screenheight()-self.GetLocationHeight(['s'])-100
+        self._editor_notebook = notebook.EditorNotebook(self._center_pw,height=nb_height)
         self._editor_notebook.position_key = 1  # type: ignore
         self._center_pw.insert("auto", self._editor_notebook)
         
@@ -171,16 +154,6 @@ class DocTabbedParentFrame(ttk.Frame):
         
         common_plugin_loader = plugin_joint.CommonPluginLoader(plgmgr)
         common_plugin_loader.Load()
-        #self._plugin_handlers['menu'].extend(addons.GetEventHandlers())
-        #self._plugin_handlers['ui'].extend(addons.GetEventHandlers(ui_evt=True))
-        #self.InitPluginMenus()
-
-    def InitPluginMenus(self):
-        for menu_item_command in self._plugin_handlers['menu']:
-            wx.EVT_MENU(self, menu_item_command[0], menu_item_command[1])
-            
-        for menu_update_item_command in self._plugin_handlers['ui']:
-            wx.EVT_UPDATE_UI(self, menu_update_item_command[0], menu_update_item_command[1])
             
     def RemoveNotebookPage(self,panel):
         self._editor_notebook.close_editor(panel)
@@ -229,9 +202,6 @@ class DocTabbedParentFrame(ttk.Frame):
                                             
 
         self.GetNotebook()._InitCommands()
-        #在此处初始化插件
-        self.InitPlugins()
-        self.GetProjectView()._InitCommands()
                                             
 
     def CreateEditCommandHandler(self,virtual_event_sequence):
@@ -377,10 +347,14 @@ class DocTabbedParentFrame(ttk.Frame):
         try:
             utils.profile_set(self._toolbar.GetToolbarKey(), self._toolbar.IsShown())
             utils.profile_set(self.status_bar.GetStatusbarKey(), self.status_bar.IsShown())
+            self.SavePerspective()
             for view_name in self._views:
                 visibility_flag = self._views[view_name]['visibility_flag']
                 utils.profile_set(consts.FRAME_VIEW_VISIBLE_KEY % view_name,visibility_flag.get())
+            utils.profile_set("LastPerspective",self._last_perspective)
+            self.GetProjectView().SaveProjectConfig()
         except:
+            utils.get_logger().exception("")
             print (self._toolbar.GetToolbarKey(), self._toolbar.IsShown())
             print (self.status_bar.GetStatusbarKey(), self.status_bar.IsShown())
             for view_name in self._views:
@@ -439,5 +413,96 @@ class DocTabbedParentFrame(ttk.Frame):
     def PushStatusText(self,msg,label=""):
         self.GetStatusBar().PushStatusText(msg,label)
         
- 
+    def LoadLastperspective(self):
+        self._last_perspective = {}
+        if utils.profile_get_int("LoadLastPerspective",True):
+            self._last_perspective = utils.profile_get('LastPerspective',default_value={})
+
+    def ToggleMaximizeView(self,event=None):
+        if GetApp().IsFullScreen:
+            return
+        self._is_maximized = not self._is_maximized
+        if self._is_maximized:
+            self.MaximizeEditor()
+        else:
+            self.RestoreEditor()
+
+    def GetLocationWidth(self,location_options=[]):
+        for location in location_options:
+            for view_name in self._last_perspective:
+                if self._last_perspective[view_name]['location']['location'] == location and self._last_perspective[view_name]['visible']:
+                    return self._last_perspective[view_name]['location']['width']
+        return GetApp().GetDefaultPaneWidth()
+
+    def GetLocationHeight(self,location_options=[]):
+        for location in location_options:
+            for view_name in self._last_perspective:
+                if self._last_perspective[view_name]['location']['location'] == location and self._last_perspective[view_name]['visible']:
+                    return self._last_perspective[view_name]['location']['height']
+        return GetApp().GetDefaultPaneHeight()
+        
+    def HideAll(self,is_full_screen=False):
+        views = self.GetViews()
+        for view_name in views:
+            self.ShowView(view_name,hidden=True,toogle_visibility_flag=True)
+
+        if is_full_screen:
+            self.GetStatusBar().Show(False)
+            self.GetToolBar().Show(False)
+
+    def SavePerspective(self,is_full_screen=False):
+        views = self.GetViews()
+        self._last_perspective = {}
+        for view_name in views:
+            visibility_flag = views[view_name]['visibility_flag']
+            instance = self._views[view_name]["instance"]
+            d = {}
+            d['visible'] = visibility_flag.get()
+            location = {}
+            location['location'] = self._views[view_name]["location"]
+            location['width'] = instance.master.master.winfo_width()
+            location['height'] = instance.master.master.winfo_height()
+            d["location"] = location
+            self._last_perspective[view_name] = d
+
+        if is_full_screen:
+            self._last_perspective[self.GetStatusBar().GetStatusbarKey()] = dict(visible=self.GetStatusBar().IsShown())
+            self._last_perspective[self.GetToolBar().GetToolbarKey()] = dict(visible=self.GetToolBar().IsShown())
+        
+    def GetViews(self):
+        return self._views
+        
+    def MaximizeEditor(self):
+        is_maximized = True
+        views = self.GetViews()
+        for view_name in views:
+            visibility_flag = views[view_name]['visibility_flag']
+            if visibility_flag.get():
+                is_maximized = False
+        if not is_maximized:
+            self.SavePerspective()
+            self.HideAll()
+        self._is_maximized = True
+
+    def LoadPerspective(self,is_full_screen=False):
+        for view_name in self._last_perspective:
+            visible = self._last_perspective[view_name]['visible']
+            if is_full_screen:
+                if not view_name in self._views:
+                    if view_name == self.GetToolBar().GetToolbarKey():
+                        self.GetToolBar().Show(visible)
+                    elif view_name == self.GetStatusBar().GetStatusbarKey():
+                        self.GetStatusBar().Show(visible)
+                    continue
+            self.ShowView(view_name,hidden=not visible,toogle_visibility_flag=True)
+
+    def RestoreEditor(self):
+        self.LoadPerspective()
+        self._is_maximized = False
+        
+    def ToogleMaximizeView(self):
+        if self._is_maximized:
+            self.RestoreEditor()
+        else:
+            self.MaximizeEditor() 
     

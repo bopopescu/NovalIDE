@@ -41,8 +41,8 @@ class EditorNotebook(ui_base.ClosableNotebook):
     Manages opened files / modules
     """
 
-    def __init__(self, master):
-        ui_base.ClosableNotebook.__init__(self,master, padding=0)
+    def __init__(self, master,**kw):
+        ui_base.ClosableNotebook.__init__(self,master, padding=0,**kw)
         self._popup_index = -1
         self._current_document = None
         self._tabs_menu = None
@@ -55,6 +55,8 @@ class EditorNotebook(ui_base.ClosableNotebook):
         #单击鼠标中间滚轮,关闭文档标签
         self.bind("<ButtonRelease-2>", self.MouseMiddleClick, True)
         self.bind("<<NotebookTabChanged>>", self.OnTabChange, True)
+        #双击标签页最大化和恢复文本编辑窗口
+        self.bind("<Double-Button-1>", self.ToogleMaximizeView, True)
             
         GetApp().bind("InitTkDnd",self.SetDropTarget,True)
         self.images = []
@@ -266,6 +268,13 @@ class EditorNotebook(ui_base.ClosableNotebook):
                 template = tab_view_frame.GetView().GetDocument().GetDocumentTemplate()
                 item = tkmenu.MenuItem(id,filename,None,template.GetIcon(),None)
                 tabsMenu.AppendMenuItem(item,handler=open_index_tab)
+                
+        if not GetApp().IsFullScreen:
+            menu.add_separator()
+            menu_item = tkmenu.MenuItem(constants.ID_MAXIMIZE_EDITOR_WINDOW,_("Maximize Editor Window"),None,GetApp().GetImage("maximize_editor.png"),None)
+            menu.AppendMenuItem(menu_item,GetApp().MainFrame.MaximizeEditor)
+            menu_item = tkmenu.MenuItem(constants.ID_RESTORE_EDITOR_WINDOW,_("Restore Editor Window"),None,GetApp().GetImage("restore_editor.png"),None)
+            menu.AppendMenuItem(menu_item,GetApp().MainFrame.RestoreEditor)
 
         menu.tk_popup(*self.winfo_toplevel().winfo_pointerxy())
         
@@ -347,7 +356,7 @@ class EditorNotebook(ui_base.ClosableNotebook):
         text_view.GotoLine(lineno)
 
     def _InitCommands(self):
-        GetApp().AddCommand(constants.ID_FIND,_("&Edit"),_("&Find..."),handler=lambda:self.DoFind(),image="toolbar/find.png",default_tester=True,default_command=True,include_in_toolbar=True)
+        GetApp().AddCommand(constants.ID_FIND,_("&Edit"),_("&Find..."),handler=lambda:self.DoFind(),image="toolbar/find.png",default_tester=True,default_command=True,include_in_toolbar=True,extra_sequences=["<<CtrlFInText>>"])
         #解除默认绑定事件,从新绑定快捷键ctrl+h的事件
         GetApp().AddCommand(constants.ID_REPLACE,_("&Edit"),_("R&eplace..."),lambda:self.DoFind(True),default_tester=True,default_command=True,extra_sequences=["<<CtrlHInText>>"])
         GetApp().AddCommand(constants.ID_GOTO_LINE,_("&Edit"),_("&Go to Line..."),self.GotoLine,image="gotoline.png",default_tester=True,default_command=True)
@@ -449,16 +458,16 @@ class EditorNotebook(ui_base.ClosableNotebook):
         self.get_current_editor().GetView().UpdateFontSize(delta)
         
     def DoFind(self,replace=False):
-        findtext.ShowFindReplaceDialog(self.get_current_editor(),replace=replace)
+        findtext.ShowFindReplaceDialog(GetApp(),replace=replace)
         
     def FindIndir(self):
-        findindir.ShowFindIndirDialog(GetApp())
+        findindir.ShowFindIndirDialog(GetApp(),self.get_current_editor())
         
     def FindInfile(self):
-        findindir.ShowFindInfileDialog(GetApp())
+        findindir.ShowFindInfileDialog(self.get_current_editor())
         
     def FindInproject(self):
-        findindir.ShowFindInprojectDialog(GetApp())
+        findindir.ShowFindInprojectDialog(GetApp(),self.get_current_editor())
         
     def OutlineSort(self,outline_sort_id):
         sort_order = ui_base.OutlineView.SORT_BY_NONE
@@ -495,5 +504,8 @@ class EditorNotebook(ui_base.ClosableNotebook):
             return
         with open(path) as f:
             self.get_current_editor().GetView().AddText(f.read())
+            
+    def ToogleMaximizeView(self,event):
+        GetApp().MainFrame.ToogleMaximizeView()
         
         

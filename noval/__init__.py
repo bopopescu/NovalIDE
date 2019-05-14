@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import threading
 import gettext
 from noval import ui_lang
@@ -19,12 +20,6 @@ def GetApp():
     return _AppInstance
 
 class Locale(object):
-    
-    LANGUAGE_NAMES = {
-        ui_lang.LANGUAGE_CHINESE_SIMPLIFIED:'zh_CN',
-        ui_lang.LANGUAGE_ENGLISH_US:'en_US'
-    }
-    
     def __init__(self,lang_id):
         self._lang_id = lang_id
         self._domains = []
@@ -42,11 +37,21 @@ class Locale(object):
         self._domains.append(domain)
         
         for lookup_dir in self._lookup_dirs:
-            t = gettext.translation(domain, lookup_dir, languages = [self.GetLanguageName()],fallback=True)
+            #搜索翻译文件存储目录,中文简体为zh_CN目录,英文目录为en_US,具体语言对应的目录参见ui_lang模块LANGUANGE_LIST
+            t = gettext.translation(domain, lookup_dir, languages = [self.GetLanguageCanonicalName()],fallback=True)
             self._trans.append(t)
             
     def GetLanguageName(self):
-        return Locale.LANGUAGE_NAMES[self._lang_id]
+        for lang in ui_lang.LANGUANGE_LIST:
+            if lang[0] == self._lang_id:
+                return lang[2]
+        raise RuntimeError("unknown lang id %d",self._lang_id)
+        
+    def GetLanguageCanonicalName(self):
+        for lang in ui_lang.LANGUANGE_LIST:
+            if lang[0] == self._lang_id:
+                return lang[1]
+        raise RuntimeError("unknown lang id %d",self._lang_id)
         
     def GetText(self,raw_text):
         for tran in self._trans:
@@ -57,7 +62,10 @@ class Locale(object):
         
     @classmethod
     def IsAvailable(cls,lang_id):
-        return lang_id in cls.LANGUAGE_NAMES
+        for lang in ui_lang.LANGUANGE_LIST:
+            if lang[0] == lang_id:
+                return True
+        return False
         
 def GetTranslation(raw_text):
     global _AppInstance

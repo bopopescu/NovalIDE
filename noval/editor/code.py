@@ -381,7 +381,7 @@ class CodeCtrl(texteditor.TextCtrl):
         if self._lang_lexer is None:
             document = self.master.master.GetView().GetDocument()
             file_ext = document.GetDocumentTemplate().GetDefaultExtension()
-            self._lang_lexer = syntax.SyntaxThemeManager().GetLexer(syntax.SyntaxThemeManager().GetLangIdFromExt(file_ext))
+            self._lang_lexer = syntax.SyntaxThemeManager().GetLangLexerFromExt(file_ext)
         return self._lang_lexer
         
     def SetLangLexer(self,lexer):

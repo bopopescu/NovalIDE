@@ -67,14 +67,17 @@ class SyntaxThemeManager(object):
                 return lexer
         return self.GetLexer(lang.ID_LANG_TXT)
         
-    def GetLangIdFromExt(self,ext):
+    def GetLangLexerFromExt(self,ext):
         for lexer in self.lexers:
             if lexer.ContainExt(ext):
-                return lexer.LangId
-        return lang.ID_LANG_TXT
+                return lexer
+        return self.GetLexer(lang.ID_LANG_TXT)
         
-    def GetLangIdFromDescription(self,desc):
-        return lang.GetIdFromDescription(desc)
+    def GetLangLexerFromShowname(self,showname):
+        for lexer in self.lexers:
+            if lexer.GetShowName() == showname:
+                return lexer
+        return self.GetLexer(lang.ID_LANG_TXT)
         
     @property
     def Lexers(self):

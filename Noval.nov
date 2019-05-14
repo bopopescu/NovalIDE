@@ -449,9 +449,7 @@
   <noval:file filePath="./noval/bmp_source/debugger/watch.png" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
   <noval:file filePath="./noval/bmp_source/debugger/watches.png" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
   <noval:file filePath="./noval/bmp_source/debugger/watch_exp.png" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/DocumentOption.py" logicalFolder="noval" isStartup="false"/>
   <noval:file filePath="./noval/EOLFormat.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/FullScreenDialog.py" logicalFolder="noval" isStartup="false"/>
   <noval:file filePath="./noval/bmp_source/images/alipay.jpg" logicalFolder="noval/bmp_source/images" isStartup="false"/>
   <noval:file filePath="./noval/bmp_source/images/banner_01.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
   <noval:file filePath="./noval/bmp_source/images/banner_02.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
@@ -615,5 +613,10 @@
   <noval:file filePath="./noval/python/interpreter/gerneralconfiguration.py" logicalFolder="noval/python/interpreter" isStartup="false"/>
   <noval:file filePath="./noval/python/debugger/Debugger.py" logicalFolder="noval/python/debugger" isStartup="false"/>
   <noval:file filePath="./noval/ttkwidgets/listboxframe.py" logicalFolder="noval/ttkwidgets" isStartup="false"/>
+  <noval:file filePath="./noval/docoption.py" logicalFolder="noval" isStartup="false"/>
+  <noval:file filePath="./noval/python/pyutils.py" logicalFolder="noval/python" isStartup="false"/>
+  <noval:file filePath="./noval/syntax/lexer/_c.py" logicalFolder="noval/syntax/lexer" isStartup="false"/>
+  <noval:file filePath="./noval/syntax/lexer/_cpp.py" logicalFolder="noval/syntax/lexer" isStartup="false"/>
+  <noval:file filePath="./noval/syntax/lexer/_h.py" logicalFolder="noval/syntax/lexer" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>

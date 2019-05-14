@@ -14,6 +14,7 @@ import noval.syntax.lang as lang
 import noval.syntax.syntax as syntax
 import noval.util.strutils as strutils
 import noval.util.utils as utils
+import noval.python.pyutils as pyutils
 from noval.util import hiscache
 import re
 import noval.editor.text as texteditor
@@ -180,7 +181,7 @@ class ShellText(PythonText):
             font="PyShellBoldEditorFont",
         )
         
-        if strutils.compare_version(utils.get_tk_version_str(),("8.6.6")) > 0:
+        if strutils.compare_version(pyutils.get_tk_version_str(),("8.6.6")) > 0:
             self.tag_configure(
                 "io", lmargincolor=get_syntax_options_for_tag("TEXT")["background"]
             )
@@ -1076,17 +1077,16 @@ class PyShell(ttk.Frame):
         self.text._insert_prompt()
         
     def _arrow_up(self,event):
-        if self.historyIndex < 0:
-            self.text.bell()
+        #if self.historyIndex < 0:
+         #   self.text.bell()
             #返回break禁止默认键盘事件
-            return "break"
+          #  
         self.OnHistoryReplace(step=+1)
+        return "break"
         
     def _arrow_down(self,event):
-        if self.historyIndex < 0 or self.historyIndex >= self.history.GetSize():
-            self.text.bell()
-            return "break"
         self.OnHistoryReplace(step=-1)
+        return "break"
         
     def perform_return(self,event):
         self.text.perform_return(event)
@@ -1284,6 +1284,8 @@ class PyShell(ttk.Frame):
             command = self.history[self.historyIndex]
             command = command.replace('\n', os.linesep + ps2)
             self.ReplaceSelection(command)
+        else:
+            self.text.bell()
 
 class PyshellViewLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)

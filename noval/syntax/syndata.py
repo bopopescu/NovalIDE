@@ -140,4 +140,16 @@ class BaseLexer(object):
         if 0 == len(self.exts):
             self.exts = self.GetExt().split()
         return self.exts
+
+
+class BaseSyntaxcolorer:
+    def __init__(self,text):
+        self.text = text
+        self._update_scheduled = False
+        self._dirty_ranges = set()
+        self._use_coloring = False
+
+    def schedule_update(self, event, use_coloring=True):
+        self._use_coloring = use_coloring
+
         

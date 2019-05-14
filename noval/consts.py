@@ -34,9 +34,10 @@ RECENT_FILES_KEY = "RecentFiles"
 CURRENT_PROJECT_KEY = "ProjectCurrent"
 PROJECT_DOCS_SAVED_KEY = "IsProjectSaveDocs"
 PROJECT_SAVE_DOCS_KEY  = "ProjectSavedDocs"
-DEFAULT_DOCUMENT_TYPE_NAME = "Python Document"
 ENABLE_MRU_KEY = "EnableMRU"
 MRU_LENGTH_KEY = "MRULength"
+CHECK_EOL_KEY = "CheckEOL"
+LANGUANGE_ID_KEY = "LanguageId"
 
 
 DEFAULT_FONT_FAMILY = "Courier New"
@@ -46,7 +47,7 @@ DEFAULT_SYNTAX_THEME = "Default Light"
 
 DEFAULT_PLUGINS = ("noval.fileview.FileViewLoader","noval.find.findresult.FindResultsviewLoader",\
                    "noval.base_ui_themes.BaseUIThemeLoader","noval.clean_ui_themes.CleanUIThemeLoader",\
-                   "noval.paren_matcher.ParenMatcherPluginLoader")
+                   "noval.paren_matcher.ParenMatcherPluginLoader","noval.feedback.FeedBack")
 
 
 NORMAL_MENU_ITEM_KIND = 0

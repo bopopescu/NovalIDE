@@ -18,7 +18,7 @@ from PIL import ImageTk
 import noval.consts as consts
 from noval.util import utils
 import noval.core as core
-
+import os
 
 def get_style_configuration(style_name, default={}):
     style = ttk.Style()
@@ -151,6 +151,9 @@ class AlarmEventView(core.View):
         self._is_external_changed = False
         
     def Alarm(self,alarm_event):
+        if os.path.exists(self.GetDocument().GetFilename()) and self.GetDocument().IsDocumentModificationDateCorrect():
+            utils.get_logger().warn("accept modify alarm event,but file %s modify time is not chanaged",self.GetDocument().GetFilename())
+            return
         self._alarm_event = alarm_event
         self._is_external_changed = True
         

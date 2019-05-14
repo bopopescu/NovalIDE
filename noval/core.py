@@ -82,6 +82,8 @@ class App(tk.Tk):
         self._splash = None
         self.locale = noval.Locale(noval.ui_lang.LANGUAGE_DEFAULT)
         self.frame = None
+        #是否全屏显示
+        self._is_full_screen = False
         #初始化历史文件菜单id列表,文件id的值必须是连续增长的
         InitMRUIds()
         self._BootstrapApp()
@@ -355,10 +357,18 @@ class App(tk.Tk):
         return None
         
     def GetDefaultPaneWidth(self):
-        return self.winfo_screenwidth()/6
+        return int(self.winfo_screenwidth()/6)
         
     def GetDefaultPaneHeight(self):
-        return self.winfo_screenheight()/7
+        return int(self.winfo_screenheight()/7)
+        
+    def ToggleFullScreen(self):
+        self._is_full_screen = not self._is_full_screen
+        self.attributes("-fullscreen", self._is_full_screen)
+
+    @property
+    def IsFullScreen(self):
+        return self._is_full_screen
         
 class DocManager(object):
 
@@ -568,7 +578,7 @@ class DocManager(object):
             templates.sort(tempcmp)
 
 
-        default_document_type = utils.profile_get(consts.DEFAULT_DOCUMENT_TYPE_KEY,consts.DEFAULT_DOCUMENT_TYPE_NAME)
+        default_document_type = utils.profile_get(consts.DEFAULT_DOCUMENT_TYPE_KEY,GetApp().GetDefaultDocumentType())
         default_document_template = self.FindTemplateForDocumentType(default_document_type)
         strings = []
         default_document_selection = -1
@@ -2142,6 +2152,9 @@ class View(object):
         #if self.GetFrame() is None:
          #   return
         #self.GetFrame().SetFocus()
+        
+    def DoFind(self):
+        pass
 
 class DocTabbedChildFrame(ttk.Frame):
     """

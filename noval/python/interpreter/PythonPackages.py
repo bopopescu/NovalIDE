@@ -19,6 +19,8 @@ except ImportError:
     from urllib.parse import urlparse
 import noval.consts as consts
 import noval.ttkwidgets.treeviewframe as treeviewframe
+import noval.editor.text as texteditor
+import noval.util.urlutils as urlutils
 
 class ManagePackagesDialog(ui_base.CommonModaldialog):
     
@@ -38,6 +40,7 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
     BEST_PIP_SOURCE = None
         
     def __init__(self,parent,title,manage_action,interpreter,interpreters,package_name=''):
+        ui_base.CommonModaldialog.__init__(self,parent)
         self.title(title)
         self.interpreter = interpreter
         self.interpreters = interpreters
@@ -54,68 +57,46 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
         ]
         ui_base.CommonModaldialog.__init__(self,parent)
         if self._manage_action == ManagePackagesDialog.MANAGE_INSTALL_PACKAGE:
-            lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-            lineSizer.Add(wx.StaticText(self, -1, _("We will use the pip source:")), 0, \
-                              wx.ALIGN_CENTER, SPACE)
-            self._pipSourceCombo = wx.ComboBox(self, -1,choices=self.SOURCE_NAME_LIST,value=self.SOURCE_NAME_LIST[0], \
-                                               size=(200,-1),style = wx.CB_READONLY)
-            lineSizer.Add(self._pipSourceCombo,1, wx.EXPAND|wx.LEFT, SPACE)
-            
-            self.check_source_btn = wx.Button(self, -1, _("Check the best source"))
-            wx.EVT_BUTTON(self.check_source_btn, -1, self.CheckTheBestSource)
-            lineSizer.Add(self.check_source_btn, 0,flag=wx.LEFT, border=SPACE) 
-            
-            box_sizer.Add(lineSizer, 0,wx.EXPAND| wx.LEFT|wx.TOP|wx.RIGHT, SPACE)
-        
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+            row = ttk.Frame(self.main_frame)
+            ttk.Label(row,text=_("We will use the pip source:")).pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+            self._pipSourceCombo = ttk.Combobox(row, values=self.SOURCE_NAME_LIST,value=self.SOURCE_NAME_LIST[0])
+            self._pipSourceCombo.pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+            self.check_source_btn = ttk.Button(row, text= _("Check the best source"),command=self.CheckTheBestSource)
+            self.check_source_btn.pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+            row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+        row = ttk.Frame(self.main_frame)
         if self._manage_action == ManagePackagesDialog.MANAGE_INSTALL_PACKAGE:
-            lineSizer.Add(wx.StaticText(self, -1, _("We will download and install it in the interpreter:")), 0, \
-                          wx.ALIGN_CENTER | wx.LEFT, SPACE)
+            ttk.Label(row,text=_("We will download and install it in the interpreter:")).pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         else:
-            lineSizer.Add(wx.StaticText(self, -1, _("We will uninstall it in the interpreter:")), 0, \
-                          wx.ALIGN_CENTER | wx.LEFT, SPACE)
+            ttk.Label(row,text=_("We will uninstall it in the interpreter:")).pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         names = self.GetNames()
-        self._interpreterCombo = wx.ComboBox(self, -1,choices=names,value=self.interpreter.Name, style = wx.CB_READONLY)
-        lineSizer.Add(self._interpreterCombo,0, wx.EXPAND|wx.LEFT, SPACE)
-        box_sizer.Add(lineSizer, 0,wx.EXPAND| wx.RIGHT|wx.TOP, SPACE)
-        
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self._interpreterCombo = ttk.Combobox(row,values=names,value=self.interpreter.Name,state="readonly")
+        self._interpreterCombo.pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+    
         if self._manage_action == ManagePackagesDialog.MANAGE_INSTALL_PACKAGE:
-            lineSizer.Add(wx.StaticText(self, -1, _("Type the name of package to install:")), 0, wx.ALIGN_CENTER|wx.LEFT, SPACE)
+            ttk.Label(self.main_frame, text=_("Type the name of package to install:")).pack(pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         else:
-            lineSizer.Add(wx.StaticText(self, -1, _("Type the name of package to uninstall:")), 0, wx.ALIGN_CENTER|wx.LEFT, SPACE)
-        box_sizer.Add(lineSizer, 0,wx.EXPAND| wx.TOP, SPACE)
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.value_ctrl = wx.TextCtrl(self, -1, "",size=(-1,-1))
-        lineSizer.Add(self.value_ctrl, 1, wx.LEFT|wx.EXPAND, SPACE)
+            ttk.Label(self.main_frame,text= _("Type the name of package to uninstall:")).pack(pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+
+        row = ttk.Frame(self.main_frame)
+        self.value_ctrl = ttk.Entry(row)
+        self.value_ctrl.pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         if self._manage_action == ManagePackagesDialog.MANAGE_UNINSTALL_PACKAGE:
             self.value_ctrl.SetValue(package_name)
-        self.browser_btn = wx.Button(self, -1, _("Browse..."))
-        wx.EVT_BUTTON(self.browser_btn, -1, self.BrowsePath)
-        lineSizer.Add(self.browser_btn, 0,flag=wx.LEFT, border=SPACE) 
-        box_sizer.Add(lineSizer, 0, flag=wx.RIGHT|wx.TOP|wx.EXPAND, border=SPACE)
-        
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.browser_btn = ttk.Button(row, text=_("Browse..."),command=self.BrowsePath)
+        self.browser_btn.pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+    
         if self._manage_action == ManagePackagesDialog.MANAGE_INSTALL_PACKAGE:
-            lineSizer.Add(wx.StaticText(self, -1, _("To install the specific version,type \"xxx==1.0.1\"\nTo install more packages,please specific the path of requirements.txt")), \
-                          0, wx.ALIGN_CENTER | wx.LEFT, SPACE)
-            
+            ttk.Label(self.main_frame, text=_("To install the specific version,type \"xxx==1.0.1\"\nTo install more packages,please specific the path of requirements.txt"))
         else:
-            lineSizer.Add(wx.StaticText(self, -1, _("To uninstall more packages,please specific the path of requirements.txt")), \
-                          0, wx.ALIGN_CENTER | wx.LEFT, SPACE)
-        box_sizer.Add(lineSizer, 0, wx.RIGHT|wx.TOP|wx.EXPAND, SPACE)
+            ttk.Label(self.main_frame, text=_("To uninstall more packages,please specific the path of requirements.txt"))
+        self.output_ctrl = texteditor.TextCtrl(self.main_frame)
+        self.output_ctrl['state'] = tk.DISABLED
         
-        self.detailSizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.output_ctrl = wx.TextCtrl(self, -1, "", style = wx.TE_MULTILINE|wx.TE_READONLY,size=(-1,250))
-      ###  self.output_ctrl.Enable(False)
-        self.detailSizer.Add(self.output_ctrl, 1, wx.LEFT, SPACE)
-        box_sizer.Add(self.detailSizer, 0, wx.RIGHT|wx.TOP|wx.EXPAND, SPACE)
-        box_sizer.Hide(self.detailSizer)
-        
-        bsizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.detail_btn = wx.Button(self, -1, _("Show Details") + "↓")
+        self.detail_btn = ttk.Button(self.main_frame, text=_("Show Details") + "↓",command=self.ShowHideDetails)
         self._show_details = False
-        wx.EVT_BUTTON(self.detail_btn, -1, self.ShowHideDetails)
         self.AddokcancelButton()
         self._install_with_name = True
         if self._manage_action == ManagePackagesDialog.MANAGE_INSTALL_PACKAGE:
@@ -274,17 +255,17 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
             pip_source = self.SOURCE_LIST[i]
             api_addr = pip_source + "/ok"
             start = time.time()
-            if utils.RequestData(api_addr,timeout=10,to_json=False):
+            if urlutils.RequestData(api_addr,timeout=10,to_json=False):
                 end = time.time()
                 elapse = end - start
                 sort_pip_source_dct[pip_source] = elapse
-                utils.GetLogger().debug("response time of pip source %s is %.2fs",pip_source,elapse)
+                utils.get_logger().debug("response time of pip source %s is %.2fs",pip_source,elapse)
                 
         if len(sort_pip_source_dct) == 0:
             return
                 
         best_source,elapse = sorted(sort_pip_source_dct.items(),key = lambda x:x[1],reverse = False)[0]
-        utils.GetLogger().info("the best pip source is %s,response time is %.2fs",best_source,elapse)
+        utils.get_logger().info("the best pip source is %s,response time is %.2fs",best_source,elapse)
         ManagePackagesDialog.BEST_PIP_SOURCE = best_source
         self.SelectBestPipSource()
         self.EnableCheckSourcButton(True)
@@ -308,11 +289,11 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
 
     def EnableCheckSourcButton(self,enable=True):
         if enable:
-            self.check_source_btn.Enable(True)
-            self.check_source_btn.SetLabel(_("Check the best source"))
+            self.check_source_btn['state'] = "normal"
+            self.check_source_btn.configure(text=_("Check the best source"))
         else:
-            self.check_source_btn.SetLabel(_("Checking the best source"))
-            self.check_source_btn.Enable(False)
+            self.check_source_btn.configure(text=_("Checking the best source"))
+            self.check_source_btn['state'] = tk.DISABLED
         
 class PackagePanel(ttk.Frame):
     def __init__(self,parent):
@@ -333,11 +314,10 @@ class PackagePanel(ttk.Frame):
         self.freeze_btn = ttk.Button(right_frame, text=_("Freeze"),command=self.FreezePackage)
         self.freeze_btn.pack(padx=padx,pady=(pady))
         right_frame.pack(side=tk.LEFT,fill="y")
-        
         self.interpreter = None
 
     def InstallPip(self):
-        dlg = ManagePackagesDialog(self,-1,_("Install Package"),ManagePackagesDialog.MANAGE_INSTALL_PACKAGE,self.interpreter,self.GetParent().GetParent()._interpreters)
+        dlg = ManagePackagesDialog(self,_("Install Package"),ManagePackagesDialog.MANAGE_INSTALL_PACKAGE,self.interpreter,self.master.master._interpreters)
         status = dlg.ShowModal()
         if status == wx.ID_OK:
             self.NotifyPackageConfigurationChange()

@@ -49,6 +49,7 @@ from noval.project.templatemanager import ProjectTemplateManager
 import noval.newTkDnD as newTkDnD
 import noval.misc as misc
 import noval.ui_base as ui_base
+import noval.ui_utils as ui_utils
     
 #----------------------------------------------------------------------------
 # Constants
@@ -2638,35 +2639,30 @@ class ProjectView(misc.AlarmEventView):
             def __init__(self, parent, doc):
                 ui_base.CommonModaldialog.__init__(self, parent)
                 self.title(_("Delete Project"))
-                ttk.Label(self,text=_("Delete cannot be reversed.\nDeleted files are removed from the file system permanently.\n\nThe project file '%s' will be closed and deleted.") % os.path.basename(doc.GetFilename()))
-                self._delFilesCtrl = ttk.Checkbutton(self,text=_("Delete all files in project"))
-                self._delFilesCtrl.SetValue(True)
-                self._delFilesCtrl.SetToolTipString(_("Deletes files from disk, whether open or closed"))
-                self._closeDeletedCtrl = ttk.Checkbutton(self,text=_("Close open files belonging to project"))
-                self._closeDeletedCtrl.SetValue(True)
-                self._closeDeletedCtrl.SetToolTipString(_("Closes open editors for files belonging to project"))
+                ttk.Label(self.main_frame,text=_("Delete cannot be reversed.\nDeleted files are removed from the file system permanently.\n\nThe project file '%s' will be closed and deleted.") % os.path.basename(doc.GetFilename())).\
+                    pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y))
+                self._delFilesChkVar = tk.IntVar(value=True)
+                delFilesCtrl = ttk.Checkbutton(self.main_frame,text=_("Delete all files in project"),variable=self._delFilesChkVar)
+                delFilesCtrl.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
+                misc.create_tooltip(delFilesCtrl,_("Deletes files from disk, whether open or closed"))
+                
+                self._closeDeletedChkVar = tk.IntVar(value=True)
+                closeDeletedCtrl = ttk.Checkbutton(self.main_frame,text=_("Close open files belonging to project"),variable=self._closeDeletedChkVar)
+                closeDeletedCtrl.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
+                misc.create_tooltip(closeDeletedCtrl,_("Closes open editors for files belonging to project"))
+                self.AddokcancelButton()
 
         doc = self.GetDocument()
         if not noPrompt:
             dlg = DeleteProjectDialog(self.GetFrame(), doc)
-            dlg.CenterOnParent()
             status = dlg.ShowModal()
-            delFiles = dlg._delFilesCtrl.GetValue()
-            closeFiles = dlg._closeDeletedCtrl.GetValue()
-            dlg.Destroy()
-            if status == wx.ID_CANCEL:
+            delFiles = dlg._delFilesChkVar.get()
+            closeFiles = dlg._closeDeletedChkVar.get()
+            if status == constants.ID_CANCEL:
                 return
 
         if closeFiles or delFiles:
             filesInProject = doc.GetFiles()
-            if not ACTIVEGRID_BASE_IDE:
-                deploymentFilePath = self.GetDocument().GetDeploymentFilepath()
-                if deploymentFilePath:
-                    filesInProject.append(deploymentFilePath)  # remove deployment file also.
-                    import activegrid.server.secutils as secutils
-                    keystoreFilePath = os.path.join(os.path.dirname(deploymentFilePath), secutils.AGKEYSTORE_FILENAME)
-                    filesInProject.append(keystoreFilePath)  # remove keystore file also.
-                
             # don't remove self prematurely
             filePath = doc.GetFilename()
             if filePath in filesInProject:
@@ -3101,11 +3097,11 @@ class ProjectFileDropTarget(newTkDnD.FileDropTarget):
             return wx.DragCopy
         return wx.DragNone
 
-class ProjectOptionsPanel(ttk.Frame):
+class ProjectOptionsPanel(ui_utils.BaseConfigurationPanel):
 
 
     def __init__(self, master,**kwargs):
-        ttk.Frame.__init__(self,master=master,**kwargs)
+        ui_utils.BaseConfigurationPanel.__init__(self,master=master,**kwargs)
         self.projectsavedoc_chkvar = tk.IntVar(value=utils.profile_get_int("ProjectSaveDocs", True))
         projSaveDocsCheckBox = ttk.Checkbutton(self, text=_("Remember open projects"),variable=self.projectsavedoc_chkvar)
         projSaveDocsCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))

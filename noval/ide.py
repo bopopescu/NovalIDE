@@ -26,7 +26,7 @@ from noval.editor import imageviewer as imageviewer
 import noval.misc as misc
 import tkinter.font as tk_font
 from tkinter import ttk
-from noval.syntax import synglob
+from noval.syntax import synglob,syntax
 from noval.util import record
 import noval.menu as tkmenu
 import noval.editor.code as codeeditor
@@ -40,6 +40,11 @@ import noval.generalopt as generalopt
 import noval.ui_common as ui_common
 import noval.project.baseviewer as baseprojectviewer
 import noval.docposition as docposition
+import noval.ui_utils as ui_utils
+import noval.ui_lang as ui_lang
+import noval.docoption as docoption
+import noval.about as about
+import noval.colorfont as colorfont
 #这些导入模块未被引用,用于py2exe打包模块进library.zip里面去
 import noval.fileview as fileview
 import noval.find.findresult as findresult
@@ -100,12 +105,9 @@ class IDEApplication(core.App):
         if utils.profile_get_int(consts.FRAME_MAXIMIZED_KEY,True):
             self.MaxmizeWindow()
 
-
         ##locale must be set as app member property,otherwise it will only workable when app start up
         ##it will not workable after app start up,the translation also will not work
-        ###lang_id = GeneralOption.GetLangId(config.Read("Language",sysutilslib.GetLangConfig()))
-        #lang_id = 60
-        lang_id = 0
+        lang_id = utils.profile_get_int(consts.LANGUANGE_ID_KEY,ui_lang.LANGUAGE_CHINESE_SIMPLIFIED)
         if Locale.IsAvailable(lang_id):
             self.locale = Locale(lang_id)
             self.locale.AddCatalogLookupPathPrefix(os.path.join(utils.get_app_path(),'locale'))
@@ -161,7 +163,13 @@ class IDEApplication(core.App):
         self._InitMainFrame()
         #再初始化程序菜单及其命令
         self._InitCommands()
-        
+        preference.PreferenceManager().AddOptionsPanel(preference.ENVIRONMENT_OPTION_NAME,preference.GENERAL_ITEM_NAME,generalopt.GeneralOptionPanel)
+        preference.PreferenceManager().AddOptionsPanel(preference.ENVIRONMENT_OPTION_NAME,preference.PROJECT_ITEM_NAME,baseprojectviewer.ProjectOptionsPanel)
+        preference.PreferenceManager().AddOptionsPanel(preference.ENVIRONMENT_OPTION_NAME,preference.TEXT_ITEM_NAME,texteditor.TextOptionsPanel)
+        preference.PreferenceManager().AddOptionsPanel(preference.ENVIRONMENT_OPTION_NAME,"Document",docoption.DocumentOptionsPanel)
+        preference.PreferenceManager().AddOptionsPanel(preference.ENVIRONMENT_OPTION_NAME,preference.FONTS_CORLORS_ITEM_NAME,colorfont.ColorFontOptionsPanel)
+        #必须等菜单栏和主窗口初始化完成才在此处初始化插件
+        self.InitPlugins()
         #打开从命令行传递的参数文件
         self.OpenCommandLineArgs()
         
@@ -177,11 +185,13 @@ class IDEApplication(core.App):
         self.bind("TextInsert", self.EventTextChange, True)
         self.bind("TextDelete", self.EventTextChange, True)
         self.bind("<FocusIn>", self._on_focus_in, True)
-        
-        preference.PreferenceManager().AddOptionsPanel(preference.ENVIRONMENT_OPTION_NAME,preference.GENERAL_ITEM_NAME,generalopt.GeneralOptionPanel)
-        preference.PreferenceManager().AddOptionsPanel(preference.ENVIRONMENT_OPTION_NAME,preference.PROJECT_ITEM_NAME,baseprojectviewer.ProjectOptionsPanel)
-        preference.PreferenceManager().AddOptionsPanel(preference.ENVIRONMENT_OPTION_NAME,preference.TEXT_ITEM_NAME,texteditor.TextOptionsPanel)
         return True
+        
+    def InitPlugins(self):
+        self.MainFrame.InitPlugins()
+        #在插件初始化完后才创建项目菜单和外观菜单
+        self.MainFrame.GetProjectView()._InitCommands()
+        self.InitThemeMenu()
         
     def AppendDefaultCommand(self,command_id):
         self._default_command_ids.append(command_id)
@@ -317,13 +327,17 @@ class IDEApplication(core.App):
                             extra_sequences,**extra_args)
                             
 
-    def InsertCommand(self,item_after_id,command_id,main_menu_name,command_label,handler,accelerator=None,image = None,\
-                      add_separator=False,kind=consts.NORMAL_MENU_ITEM_KIND,variable=None,tester=None):
+    def InsertCommand(self,refer_item_id,command_id,main_menu_name,command_label,handler,accelerator=None,image = None,\
+                      add_separator=False,kind=consts.NORMAL_MENU_ITEM_KIND,variable=None,tester=None,pos="after"):
 
         main_menu = self._menu_bar.GetMenu(main_menu_name)
         accelerator = self.AddAcceleratorCommand(command_id,accelerator,handler,tester)
-        main_menu.InsertAfter(item_after_id,command_id,command_label,handler=handler,img=image,accelerator=accelerator,\
-                         kind=kind,variable=variable,tester=tester)
+        if pos == "after":
+            main_menu.InsertAfter(refer_item_id,command_id,command_label,handler=handler,img=image,accelerator=accelerator,\
+                             kind=kind,variable=variable,tester=tester)
+        elif pos == "before":
+            main_menu.InsertBefore(refer_item_id,command_id,command_label,handler=handler,img=image,accelerator=accelerator,\
+                             kind=kind,variable=variable,tester=tester)
                             
     def AddAcceleratorCommand(self,command_id,accelerator,handler,tester,bell_when_denied = True,\
                               skip_sequence_binding=False,extra_sequences=[]):
@@ -412,14 +426,20 @@ class IDEApplication(core.App):
         #加载历史文件记录到Files菜单最后
         self.GetDocumentManager().FileHistoryAddFilesToMenu()
         self.MainFrame._InitCommands()
-        self.InitThemeMenu()
+        self.AddCommand(constants.ID_SHOW_FULLSCREEN,_("&View"),_("Show FullScreen"),self.ShowFullScreen,image="monitor.png")
 
         self.AddCommand(constants.ID_RUN,_("&Run"),_("&Start Running"),self.Run,image="toolbar/run.png",include_in_toolbar=True,default_tester=True,default_command=True)
         self.AddCommand(constants.ID_DEBUG,_("&Run"),_("&Start Debugging"),self.DebugRun,image="toolbar/debug.png",include_in_toolbar=True,default_tester=True,default_command=True)
         self.AddCommand(constants.ID_OPEN_TERMINAL,_("&Tools"),_("&Terminator"),self.OpenTerminator,image="cmd.png")
+        
         self.AddCommand(constants.ID_CHECK_UPDATE,_("&Help"),_("&Check for Updates"),handler=lambda:self.CheckUpdate(ignore_error=False))
         self.AddCommand(constants.ID_GOTO_OFFICIAL_WEB,_("&Help"),_("&Visit NovalIDE Website"),self.GotoWebsite)
-    
+        self.AddCommand(constants.ID_ABOUT,_("&Help"),_("&About"),self.OnAbout,image="about.png")
+
+    def OnAbout(self):
+        aboutdlg = about.AboutDialog(self)
+        aboutdlg.ShowModal()
+        
     def Run(self):
         raise Exception("This method must be implemented in derived class")
         
@@ -848,6 +868,15 @@ class IDEApplication(core.App):
     def OnOptions(self):
         preference_dlg = preference.PreferenceDialog(self)
         preference_dlg.ShowModal()
+        
+    def ShowFullScreen(self):
+        if not self.IsFullScreen:
+            ui_utils.GetFullscreenDialog().Show()
+        else:
+            ui_utils.GetFullscreenDialog().CloseDialog()
+            
+    def GetDefaultDocumentType(self):
+        return syntax.SyntaxThemeManager().GetLexer(self.GetDefaultLangId()).GetDocTypeName()
 
 class AppEvent(record.Record):
     def __init__(self, sequence, **kwargs):

@@ -75,10 +75,10 @@ class PyIDEApplication(ide.IDEApplication):
         intellisence.IntellisenceManager().generate_default_intellisence_data()
       
         if utils.is_windows():
-            self.AddCommand(constants.ID_OPEN_PYTHON_HELP,_("&Help"),_("&Python Help Document"),handler=self.OpenPythonHelpDocument,image=self.GetImage("pydoc.png"))
+            self.InsertCommand(consts.ID_FEEDBACK,constants.ID_OPEN_PYTHON_HELP,_("&Help"),_("&Python Help Document"),handler=self.OpenPythonHelpDocument,image=self.GetImage("pydoc.png"),pos="before")
             
         self.AddCommand(constants.ID_GOTO_DEFINITION,_("&Edit"),_("Goto Definition"),self.GotoDefinition,default_tester=True,default_command=True)
-        self.AddCommand(constants.ID_GOTO_PYTHON_WEB,_("&Help"),_("&Python Website"),handler=self.GotoPythonWebsite)
+        self.InsertCommand(consts.ID_FEEDBACK,constants.ID_GOTO_PYTHON_WEB,_("&Help"),_("&Python Website"),handler=self.GotoPythonWebsite,pos="before")
         self.AddCommand(constants.ID_UNITTEST,_("&Tools"),_("&UnitTest"),self.OnUnittestDlg,default_tester=True,default_command=True)
         self.AddCommand(constants.ID_OPEN_INTERPRETER,_("&Tools"),_("&Interpreter"),self.OpenInterpreter,image=self.GetImage("python/interpreter.png"))
         self.AddCommand(constants.ID_PREFERENCES,_("&Tools"),_("&Options..."),self.OnOptions,image=self.GetImage("prefer.png"),add_separator=True,\

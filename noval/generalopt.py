@@ -9,7 +9,7 @@
 # Copyright:   (c) wukan 2019
 # Licence:     GPL-3.0
 #-------------------------------------------------------------------------------
-from noval import _
+from noval import _,Locale
 import tkinter as tk
 from tkinter import ttk
 import noval.util.apputils as apputils
@@ -17,10 +17,8 @@ import glob
 import os
 import noval.consts as consts
 import noval.util.utils as utils
-
-
-OPT_NO_OP    = 0
-OPT_DESCRIPT = 1
+import noval.ui_lang as ui_lang
+import noval.ui_utils as ui_utils
 
 MIN_MRU_FILE_LIMIT = 1
 MAX_MRU_FILE_LIMIT = 20
@@ -33,14 +31,14 @@ def GetAvailLocales():
 
     """
     avail_loc = list()
-    loc = glob.glob(os.path.join(sysutilslib.mainModuleDir,'noval','locale', "*"))
+    loc = glob.glob(os.path.join(apputils.mainModuleDir,'locale', "*"))
     for path in loc:
         the_path = os.path.join(path, "LC_MESSAGES", consts.APPLICATION_NAME.lower() + ".mo")
         if os.path.exists(the_path):
             avail_loc.append(os.path.basename(path))
     return avail_loc
 
-def GetLocaleDict(loc_list, opt=OPT_NO_OP):
+def GetLocaleDict(loc_list):
     """Takes a list of cannonical locale names and by default returns a
     dictionary of available language values using the canonical name as
     the key. Supplying the Option OPT_DESCRIPT will return a dictionary
@@ -51,41 +49,39 @@ def GetLocaleDict(loc_list, opt=OPT_NO_OP):
 
     """
     lang_dict = dict()
-    for lang in [x for x in dir(wx) if x.startswith("LANGUAGE_")]:
-        langId = getattr(wx, lang)
-        langOk = False
-        try:
-            langOk = wx.Locale.IsAvailable(langId)
-        except wx.PyAssertionError:
-            continue
-
+    for lang in [x for x in dir(ui_lang) if x.startswith("LANGUAGE_")]:
+        langId = getattr(ui_lang, lang)
+        langOk = Locale.IsAvailable(langId)
         if langOk:
-            loc_i = wx.Locale.GetLanguageInfo(langId)
-            if loc_i:
-                if loc_i.CanonicalName in loc_list:
-                    if opt == OPT_DESCRIPT:
-                        lang_dict[loc_i.Description] = langId
-                    else:
-                        lang_dict[loc_i.CanonicalName] = langId
+            loc_i = Locale(langId)
+            if loc_i.GetLanguageCanonicalName() in loc_list:
+                lang_dict[loc_i.GetLanguageName()] = langId
     return lang_dict
 
-def GetLangId(lang_n):
+def GetLangName(langId):
     """Gets the ID of a language from the description string. If the
     language cannot be found the function simply returns the default language
     @param lang_n: Canonical name of a language
     @return: wx.LANGUAGE_*** id of language
 
     """
-    if lang_n == "Default" or lang_n == '' or lang_n.lower() == "english":
-        # No language set, default to English
-        return wx.LANGUAGE_ENGLISH_US
-    elif lang_n.lower() == "chinese":
-        return wx.LANGUAGE_CHINESE_SIMPLIFIED
+    langOk = Locale.IsAvailable(langId)
+    if not langOk:
+        raise RuntimeError("unknown lang id %d",langId)
         
-    lang_desc = GetLocaleDict(GetAvailLocales(), OPT_DESCRIPT)
-    return lang_desc.get(lang_n, wx.LANGUAGE_DEFAULT)
+    loc_i = Locale(langId)
+    return loc_i.GetLanguageName()
+    
+def GetLangList():
+    lang_list = []
+    available_locales = GetAvailLocales()
+    lang_ids = GetLocaleDict(available_locales).values()
+    for i,lang_id in enumerate(lang_ids):
+        loc_i = Locale(lang_id)
+        lang_list.append((i,lang_id,loc_i.GetLanguageName()),)
+    return lang_list
 
-class GeneralOptionPanel(ttk.Frame):
+class GeneralOptionPanel(ui_utils.BaseConfigurationPanel):
     """
     A general options panel that is used in the OptionDialog to configure the
     generic properties of a pydocview application, such as "show tips at startup"
@@ -98,7 +94,7 @@ class GeneralOptionPanel(ttk.Frame):
         Initializes the panel by adding an "Options" folder tab to the parent notebook and
         populating the panel with the generic properties of a pydocview application.
         """
-        ttk.Frame.__init__(self,master=master,**kwargs)
+        ui_utils.BaseConfigurationPanel.__init__(self,master=master,**kwargs)
         
        # self._showTipsCheckBox = wx.CheckBox(self, -1, _("Show tips at start up"))
         #self._showTipsCheckBox.SetValue(config.ReadInt("ShowTipAtStartup", True))
@@ -107,7 +103,14 @@ class GeneralOptionPanel(ttk.Frame):
         chkUpdateCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y))
 
         row = ttk.Frame(self)
-        self.language_combox = ttk.Combobox(row,text=utils.profile_get("Language",""))
+        self.lang_list = GetLangList()
+        values = [_(lang[2]) for lang in self.lang_list]
+        try:
+            lang = GetLangName(utils.profile_get_int(consts.LANGUANGE_ID_KEY,-1))
+        except RuntimeError as e:
+            utils.get_logger().error(e)
+            lang = ""
+        self.language_combox = ttk.Combobox(row,text=lang,value=values,state="readonly")
         ttk.Label(row, text=_("Language") + u": ").pack(side=tk.LEFT,fill="x")
         self.language_combox.pack(side=tk.LEFT,fill="x")
         row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
@@ -127,12 +130,10 @@ class GeneralOptionPanel(ttk.Frame):
         self.checkEnableMRU()
        
     def validateMRUInput(self,contents):
-        if contents.isdigit():
-            n = int(contents)
-            if n >= MIN_MRU_FILE_LIMIT and n <=MAX_MRU_FILE_LIMIT:
-                return True
-        self.mru_ctrl.bell()
-        return False
+        if not contents.isdigit():
+            self.mru_ctrl.bell()
+            return False
+        return True
 
     def checkEnableMRU(self):
         enableMRU = self.enablemru_var.get()

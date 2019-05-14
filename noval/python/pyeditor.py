@@ -91,7 +91,7 @@ class PythonDocument(codeeditor.CodeDocument):
                 ret = messagebox.askyesno(_("Declare Encoding"),_("Detect your python file contain chinese character,please insert encoding declare.\n\nClick 'Yes' to insert,or 'No' to cancel?"),parent=view.GetFrame())
                 if ret == True:
                     if GetApp().InsertEncodingDeclare(view):
-                        lines = view.GetTopLines(consts.ENCODING_DECLARE_LINE_NUM)
+                        lines = view.GetCtrl().GetTopLines(consts.ENCODING_DECLARE_LINE_NUM)
                         declare_encoding = self.get_coding_spec(lines)
         if declare_encoding is None:
             #if not decalare encoding,then set file encoding default to ascii encoding

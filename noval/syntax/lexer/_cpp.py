@@ -59,14 +59,11 @@ STRING_CLOSED = matches_any("string", [SQSTRING_CLOSED, DQSTRING_CLOSED])
 
 #-----------------------------------------------------------------------------#
 
-class SyntaxColorer:
+class SyntaxColorer(syndata.BaseSyntaxcolorer):
     def __init__(self, text):
-        self.text = text
+        syndata.BaseSyntaxcolorer.__init__(self,text)
         self._compile_regexes()
         self._config_tags()
-        self._update_scheduled = False
-        self._dirty_ranges = set()
-        self._use_coloring = True
 
     def _compile_regexes(self):
         self.uniline_regex = re.compile(
@@ -275,7 +272,7 @@ class SyntaxLexer(syndata.BaseLexer):
         return imageutils.load_image("","file/cpp.png")
         
     def GetSampleCode(self):
-        sample_file_path = os.path.join(appdirs.GetAppDataDirLocation(),"sample","cpp.sample")
+        sample_file_path = os.path.join(appdirs.get_app_data_location(),"sample","cpp.sample")
         return self.GetSampleCodeFromFile(sample_file_path)
         
     def GetCommentTemplate(self):

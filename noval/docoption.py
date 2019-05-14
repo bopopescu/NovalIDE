@@ -1,7 +1,12 @@
+from noval import _,GetApp
+import tkinter as tk
+from tkinter import ttk
 import sys
 import codecs
 import noval.util.utils as utils
 import locale
+import noval.consts as consts
+import noval.ui_utils as ui_utils
 
 def GetEncodings():
     """Get a list of possible encodings to try from the locale information
@@ -56,7 +61,7 @@ def GetEncodings():
                     pass
     return rlist
 
-class DocumentOptionsPanel(ttk.Frame):
+class DocumentOptionsPanel(ui_utils.BaseConfigurationPanel):
     """
     A general options panel that is used in the OptionDialog to configure the
     generic properties of a pydocview application, such as "show tips at startup"
@@ -64,41 +69,45 @@ class DocumentOptionsPanel(ttk.Frame):
     """
 
     def __init__(self, parent):
-        ttk.Frame.__init__(self, parent)
-        self._showCloseBtnCheckBox = ttk.Checkbutton(self, -1, _("Show close button on tabs"))
-        self._showCloseBtnCheckBox.SetValue(config.ReadInt("ShowCloseButton",True))
-
-        self.encodings_combo = ttk.Combobox(self, choices = GetEncodings(),value=config.Read(DEFAULT_FILE_ENCODING_KEY,""), \
-                            style = wx.CB_READONLY)
-        ttk.Label(self, text=_("File Default Encoding") + u": "))
-    
-        self._chkEOLCheckBox = ttk.Checkbutton(self, -1, _("Warn when mixed eol characters are detected"))
-        self._chkEOLCheckBox.SetValue(config.ReadInt(CHECK_EOL_KEY, True))
-        self._remberCheckBox = ttk.Checkbutton(self, -1, _("Remember File Position"))
-        self._remberCheckBox.SetValue(config.ReadInt(REMBER_FILE_KEY, True))
-
-        self.document_types_combox = wx.ComboBox(self, -1,choices=[],style= wx.CB_READONLY)
-        ttk.Label(self, text=_("Default New Document Type") + u": "))
-        self.InitDocumentTypes()
+        ui_utils.BaseConfigurationPanel.__init__(self, parent)
+      #  self.checkupdate_var = tk.IntVar(value=utils.profile_get_int(consts.CHECK_UPDATE_ATSTARTUP_KEY, True))
+       # self._showCloseBtnCheckBox = ttk.Checkbutton(self, -1, _("Show close button on tabs"))
+        #chkUpdateCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y))
+        #elf._showCloseBtnCheckBox.SetValue(config.ReadInt("ShowCloseButton",True))
+        
+        self._remberCheckVar = tk.IntVar(value=utils.profile_get_int(consts.REMBER_FILE_KEY, True))
+        remberCheckBox = ttk.Checkbutton(self, text=_("Remember File Position"),variable=self._remberCheckVar)
+        remberCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y))
+        row = ttk.Frame(self)
+        self.encodings_combo = ttk.Combobox(row, values = GetEncodings(),value=utils.profile_get(consts.DEFAULT_FILE_ENCODING_KEY,""), \
+                            state = "readonly")
+        ttk.Label(row, text=_("File Default Encoding") + u": ").pack(side=tk.LEFT,fill="x")
+        self.encodings_combo.pack(side=tk.LEFT,fill="x")
+        row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+        
+        self._chkModifyCheckVar = tk.IntVar(value=utils.profile_get_int("CheckFileModify", True))
+        chkModifyCheckBox = ttk.Checkbutton(self, text=_("Check if on disk file has been modified by others"),variable=self._chkModifyCheckVar)
+        chkModifyCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
+        
+        self._chkEOLCheckVar = tk.IntVar(value=utils.profile_get_int(consts.CHECK_EOL_KEY, False))
+        chkEOLCheckBox = ttk.Checkbutton(self, text=_("Warn when mixed eol characters are detected"),variable=self._chkEOLCheckVar)
+        chkEOLCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
+        
+        row = ttk.Frame(self)
+        document_type_names,index = self.GetDocumentTypes()
+        self.document_types_combox = ttk.Combobox(row, values=document_type_names,state = "readonly")
+        self.document_types_combox.current(index)
+        ttk.Label(row, text=_("Default New Document Type") + u": ").pack(side=tk.LEFT,fill="x")
+        self.document_types_combox.pack(side=tk.LEFT,fill="x")
+        row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=consts.DEFAUT_CONTRL_PAD_Y)     
 
     def OnOK(self, optionsDialog):
         """
         Updates the config based on the selections in the options panel.
         """
-        config = wx.ConfigBase_Get()
-        if self._AllowModeChanges():
-            config.WriteInt("UseMDI", (self._documentRadioBox.GetStringSelection() == self._mdiChoice))
-            config.WriteInt("UseWinMDI", (self._documentRadioBox.GetStringSelection() == self._winMdiChoice))
+
             
-        if wx.GetApp().GetUseTabbedMDI():
-            config.WriteInt("ShowCloseButton",self._showCloseBtnCheckBox.GetValue())
-            config.WriteInt("TabStyle",self.tabs_styles_combo.GetSelection())
-            if self._tabAlignmentRadioBox.GetStringSelection() == _('Align bottom of document'):
-                config.WriteInt("TabsAlignment",TabAlignBottom)
-            else:
-                config.WriteInt("TabsAlignment",TabAlignTop)
-            self.OnNotebookFlag()
-            
+        config.WriteInt("ShowCloseButton",self._showCloseBtnCheckBox.GetValue())
         config.Write(DEFAULT_FILE_ENCODING_KEY,self.encodings_combo.GetValue())
         config.WriteInt(REMBER_FILE_KEY, self._remberCheckBox.GetValue())
         config.WriteInt(CHECK_EOL_KEY, self._chkEOLCheckBox.GetValue())
@@ -108,15 +117,18 @@ class DocumentOptionsPanel(ttk.Frame):
             config.Write("DefaultDocumentType",template.GetDocumentName())
         return True
 
-    def InitDocumentTypes(self):
-        document_type_name = utils.ProfileGet("DefaultDocumentType",DEFAULT_DOCUMENT_TYPE_NAME)
+    def GetDocumentTypes(self):
+        type_names = []
+        default_document_typename = utils.profile_get("DefaultDocumentType",GetApp().GetDefaultDocumentType())
+        current_document_typename = ''
         templates = []
-        for temp in wx.GetApp().GetDocumentManager().GetTemplates():
+        for temp in GetApp().GetDocumentManager().GetTemplates():
             #filter image document and any file document
             if temp.IsVisible() and temp.IsNewable():
                 templates.append(temp)
         for temp in templates:
-            i = self.document_types_combox.Append(_(temp.GetDescription()))
-            if document_type_name == temp.GetDocumentName():
-                self.document_types_combox.SetSelection(i)
-            self.document_types_combox.SetClientData(i,temp)
+            descr = temp.GetDescription()
+            if  default_document_typename == temp.GetDocumentName():
+                current_document_typename = _(descr)
+            type_names.append(_(descr))
+        return type_names,type_names.index(current_document_typename)

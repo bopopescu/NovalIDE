@@ -150,3 +150,117 @@ def get_environment_with_overrides(overrides):
             else:
                 env[key] = overrides[key]
     return env
+    
+
+class FullScreenDialog(ui_base.CommonDialog):
+    
+    def __init__(self, parent):
+        """Initialize the navigator window
+        @param parent: parent window
+        @param auiMgr: wx.aui.AuiManager
+        @keyword icon: wx.Bitmap or None
+        @keyword title: string (dialog title)
+
+        """
+        ui_base.CommonDialog.__init__(self,parent)
+        self.title(_('FullScreen Display'))
+        self._listBox = None
+        self.transient(parent)
+        # Setup
+        self.__DoLayout()
+        self.protocol("WM_DELETE_WINDOW", self.CloseDialog)
+
+        #双击列表框,回车,Esc键关闭窗口
+        self._listBox.bind("<Double-Button-1>", self.CloseDialog, True)
+        self._listBox.bind("<Return>", self.CloseDialog, True)
+        self._listBox.bind("<Escape>", self.CloseDialog)
+
+    def __DoLayout(self):
+        """Layout the dialog controls
+        @param icon: wx.Bitmap or None
+        @param title: string
+
+        """
+        self._listBox = tk.Listbox(self.main_frame,height=2)
+        self._listBox.pack(fill="both",expand=1)
+
+    def OnKeyUp(self, event):
+        """Handles wx.EVT_KEY_UP"""
+        key_code = event.GetKeyCode()
+        # TODO: add setter method for setting the navigation key
+        if key_code in self._close_keys:
+            self.CloseDialog()
+        else:
+            event.Skip()
+
+    def PopulateListControl(self):
+        """Populates the L{AuiPaneNavigator} with the panes in the AuiMgr"""
+        GetApp().MainFrame.SavePerspective(is_full_screen=True)
+        GetApp().MainFrame.HideAll(is_full_screen=True)
+        self._listBox.insert(0,_("Close Show FullScreen"))
+
+    def OnItemDoubleClick(self, event):
+        """Handles the wx.EVT_LISTBOX_DCLICK event"""
+        self.CloseDialog()
+
+    def CloseDialog(self,event=None):
+        global _fullScreenDlg
+        """Closes the L{AuiPaneNavigator} dialog"""
+        GetApp().ToggleFullScreen()
+        GetApp().MainFrame.LoadPerspective(is_full_screen=True)
+        self.destroy()
+        _fullScreenDlg = None
+
+    def GetCloseKeys(self):
+        """Get the list of keys that can dismiss the dialog
+        @return: list of long (wx.WXK_*)
+
+        """
+        return self._close_keys
+
+    def SetCloseKeys(self, keylist):
+        """Set the keys that can be used to dismiss the L{AuiPaneNavigator}
+        window.
+        @param keylist: list of key codes
+
+        """
+        self._close_keys = keylist
+
+    def Show(self):
+        # Set focus on the list box to avoid having to click on it to change
+        # the tab selection under GTK.
+        self.PopulateListControl()
+        self._listBox.focus_set()
+        self._listBox.selection_set(0)
+        self.CenterWindow()
+        GetApp().ToggleFullScreen()
+        
+_fullScreenDlg = None
+def GetFullscreenDialog():
+    global _fullScreenDlg
+    if _fullScreenDlg == None:
+        _fullScreenDlg = FullScreenDialog(GetApp().MainFrame)
+    
+    return _fullScreenDlg
+    
+class BaseConfigurationPanel(ttk.Frame):
+    
+    def __init__(self,master,**kw):
+        ttk.Frame.__init__(self,master,**kw)
+        self._interprter_configuration_changed = False
+        
+    def OnOK(self,optionsDialog):
+        if not self.Validate():
+            return False
+        return True
+        
+    def OnCancel(self,optionsDialog):
+        if self._interprter_configuration_changed:
+            return False
+        return True
+        
+    def NotifyConfigurationChange(self):
+        self._interprter_configuration_changed = True
+        
+    def Validate(self):
+        return True

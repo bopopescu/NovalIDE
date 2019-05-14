@@ -388,7 +388,7 @@ class FindIndirService:
 
 class FindIndirDialog(ui_base.CommonModaldialog):
     
-    def __init__(self, master):
+    def __init__(self, master,findString=''):
         ui_base.CommonModaldialog.__init__(self, master, takefocus=1, background="pink")
         self.title(_("Find in Directory"))
         self.resizable(height=tk.FALSE, width=tk.FALSE)
@@ -435,8 +435,8 @@ class FindIndirDialog(ui_base.CommonModaldialog):
         self.find_label = ttk.Label(sizer_frame,text=_("Find what:"),)
         self.find_label.pack(fill="x", side=tk.LEFT,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y/2, 0))
 
-        self.find_entry_var = tk.StringVar()
-        self.find_entry = ttk.Combobox(sizer_frame, textvariable=self.find_entry_var)
+        self.find_entry = findtext.FindtextCombo(sizer_frame,findString)
+        self.find_entry_var = self.find_entry.find_entry_var
         self.find_entry.pack(fill="x",side=tk.LEFT, padx=(0, consts.DEFAUT_CONTRL_PAD_X/2), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         
 
@@ -468,7 +468,6 @@ class FindIndirDialog(ui_base.CommonModaldialog):
         )
         self.regular_checkbutton.pack(fill="x", padx=(consts.DEFAUT_CONTRL_PAD_X, 0),pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
         
-
         right_frame = ttk.Frame(self)
         right_frame.grid(column=1, row=0, sticky="nsew",rowspan=5)
         
@@ -481,9 +480,7 @@ class FindIndirDialog(ui_base.CommonModaldialog):
             right_frame, text=_("Cancel"), command=self.Close
         )
         self.cancel_button.pack(fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X/2,consts.DEFAUT_CONTRL_PAD_X/2), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
-
         self.bind("<Return>", self.FindIndir, True)
-        
 
     def Close(self):
         self.destroy()
@@ -543,7 +540,7 @@ class SearchProgressDialog(ui_base.GenericProgressDialog):
 
 class FindInfileDialog(ui_base.CommonModaldialog):
     
-    def __init__(self, master):
+    def __init__(self, master,findString = ""):
         ui_base.CommonModaldialog.__init__(self, master, takefocus=1, background="pink")
         self.UpdateTitle()
         self.resizable(height=tk.FALSE, width=tk.FALSE)
@@ -552,8 +549,9 @@ class FindInfileDialog(ui_base.CommonModaldialog):
         self.find_label = ttk.Label(sizer_frame,text=_("Find what:"),)
         self.find_label.pack(fill="x", side=tk.LEFT,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y/2, 0))
 
-        self.find_entry_var = tk.StringVar()
-        self.find_entry = ttk.Combobox(sizer_frame, textvariable=self.find_entry_var)
+        
+        self.find_entry = findtext.FindtextCombo(sizer_frame,findString)
+        self.find_entry_var = self.find_entry.find_entry_var
         self.find_entry.pack(fill="x",side=tk.LEFT, padx=(0, consts.DEFAUT_CONTRL_PAD_X/2), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
 
         sizer_frame = ttk.Frame(self)
@@ -609,8 +607,8 @@ class FindInfileDialog(ui_base.CommonModaldialog):
 
 class FindInprojectDialog(FindInfileDialog):
     
-    def __init__(self, master):
-        FindInfileDialog.__init__(self,master)
+    def __init__(self, master,findString):
+        FindInfileDialog.__init__(self,master,findString)
         
     def UpdateTitle(self):
         self.dlg_title = _("Find in Project")
@@ -621,8 +619,13 @@ class FindInprojectDialog(FindInfileDialog):
         FindIndirService().FindInproject(findtext.CURERNT_FIND_OPTION,GetApp().MainFrame.GetSearchresultsView())
         self.destroy()
 
-def ShowFindIndirDialog(master):
-    dlg = FindIndirDialog(master)
+def ShowFindIndirDialog(master,editor):
+    if editor == None:
+        findString = ''
+    else:
+        findString = editor.GetView().GetCtrl().GetSelectionText()
+        
+    dlg = FindIndirDialog(master,findString)
     dlg.ShowModal()
   #  dlg.grab_set()
    # import noval.misc as misc
@@ -631,9 +634,14 @@ def ShowFindIndirDialog(master):
     
 
 def ShowFindInfileDialog(master):
-    dlg = FindInfileDialog(master)
+    findString = master.GetView().GetCtrl().GetSelectionText()
+    dlg = FindInfileDialog(master,findString)
     dlg.ShowModal()
 
-def ShowFindInprojectDialog(master):
-    dlg = FindInprojectDialog(master)
+def ShowFindInprojectDialog(master,editor):
+    if editor == None:
+        findString = ''
+    else:
+        findString = editor.GetView().GetCtrl().GetSelectionText()
+    dlg = FindInprojectDialog(master,findString)
     dlg.ShowModal()

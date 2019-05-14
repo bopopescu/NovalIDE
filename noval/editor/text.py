@@ -34,6 +34,8 @@ import noval.misc as misc
 import tkinter.font as tkfont
 import noval.docposition as docposition
 import noval.constants as constants
+import noval.python.pyutils as pyutils
+import noval.ui_utils as ui_utils
 
 def classifyws(s, tabwidth):
     raw = effective = 0
@@ -274,8 +276,8 @@ class TextDocument(core.Document):
         rember_file_pos = GetApp().GetConfig().ReadInt(consts.REMBER_FILE_KEY, True)
         if rember_file_pos:
             pos = docposition.DocMgr.GetPos(filename)
-            self.GetFirstView().GotoPos(*pos)
-        #self.GetFirstView().OnUpdateStatusBar(None)
+            if pos[0] != None:
+                self.GetFirstView().GetCtrl().GotoPos(*pos)
         self._is_loading_doc = False
         return True
 
@@ -361,6 +363,8 @@ class TextView(misc.AlarmEventView):
         self._textEditor.bind("<<ActivateView>>", self.ActivateView)
         self._textEditor.event_add("<<ActivateView>>","<KeyRelease>")
         self._textEditor.bind("<ButtonRelease>", self.ButtonRelease)
+        #文本框按Esc键时如果处于全屏模式,则退出全屏模式
+        self._textEditor.bind("<Escape>", self.ToogleFullScreen)
                             
         self._text_frame.grid(row=0, column=0, sticky=tk.NSEW, in_=frame)
         self._text_frame.home_widget = frame  # don't forget home
@@ -375,6 +379,10 @@ class TextView(misc.AlarmEventView):
         
         self.update_appearance()
         return True
+        
+    def ToogleFullScreen(self,event):
+        if GetApp().IsFullScreen:
+            ui_utils.GetFullscreenDialog().CloseDialog()
         
     def ButtonRelease(self,event):
         self.ActivateView(event)
@@ -598,6 +606,9 @@ class TextCtrl(ui_base.TweakableText):
         self.bind("<Control-t>", self._redirect_ctrlt, True)
         self.bind("<Control-k>", self._redirect_ctrlk, True)
         self.bind("<Control-h>", self._redirect_ctrlh, True)
+        #tk8.5.15版本默认绑定了contrl-f事件,需要重新绑定该事件
+        if strutils.compare_version(pyutils.get_tk_version_str(),("8.6.6")) < 0:
+            self.bind("<Control-f>", self._redirect_ctrlf, True)
         
         self.bind("<BackSpace>", if_not_readonly(self.perform_smart_backspace), True)
      #   self.bind("<Return>", if_not_readonly(self.perform_return), True)
@@ -645,6 +656,10 @@ class TextCtrl(ui_base.TweakableText):
         # I want to disable the swap effect of Ctrl-T in the text but still
         # keep the event for other purposes
         self.event_generate("<<CtrlTInText>>")
+        return "break"
+        
+    def _redirect_ctrlf(self,event):
+        self.event_generate("<<CtrlFInText>>")
         return "break"
         
     def _redirect_ctrlk(self, event):
@@ -1285,10 +1300,16 @@ class TextCtrl(ui_base.TweakableText):
             lines.append(self.GetLineText(i))
         return lines
         
-class TextOptionsPanel(ttk.Frame):
+    def GetSelectionText(self):
+        first,last = self.get_selection()
+        if first == last:
+            return ''
+        return self.get(first,last)
+        
+class TextOptionsPanel(ui_utils.BaseConfigurationPanel):
 
     def __init__(self, parent,  hasWordWrap = False):
-        ttk.Frame.__init__(self, parent)
+        ui_utils.BaseConfigurationPanel.__init__(self, parent)
         self._hasWordWrap = hasWordWrap
         if self._hasWordWrap:
             self._wordWrapCheckBox = ttk.Checkbutton(self, text=_("Wrap words inside text area"))

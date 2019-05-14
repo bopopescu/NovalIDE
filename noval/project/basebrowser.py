@@ -793,4 +793,7 @@ class BaseProjectbrowser(ttk.Frame):
         
     def StopImport(self):
         self.stop_import = True
+        
+    def SaveProjectConfig(self):
+        self.GetView().WriteProjectConfig()
 

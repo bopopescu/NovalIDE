@@ -1,4 +1,3 @@
-import wx
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -9,7 +8,6 @@ import binascii
 from Crypto.Cipher import PKCS1_v1_5
 from dummy.userdb import UserDataDb
 import os
-from noval.tool.consts import _
 
 receive_list = ['kan.wu@genetalks.com']
 

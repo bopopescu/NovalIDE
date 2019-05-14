@@ -441,7 +441,8 @@ class PopupMenu(tk.Menu):
             mitem = self.Append(id_, text, helpstr, handler, img,accelerator,kind,variable,tester)
         return mitem
 
-    def InsertBefore(self, item_id, id_, label=u'', helpstr=u'', use_bmp=True):
+    def InsertBefore(self, item_id, id_, text, helpstr=u'', handler=None,img=None,accelerator=None,\
+               kind=consts.NORMAL_MENU_ITEM_KIND,variable=None,tester=None):
         """Inserts the given item before the specified item id in
         the menu. If the id cannot be found then the item will appended
         to the end of the menu.
@@ -455,16 +456,15 @@ class PopupMenu(tk.Menu):
         @return: menu item that was inserted
 
         """
-        pos = None
-        for item in xrange(self.GetMenuItemCount()):
-            mitem = self.FindItemByPosition(item)
-            if mitem.GetId() == item_id:
-                pos = item
+        pos = -1
+        for i,menu_item in enumerate(self._items):
+            if menu_item.id == item_id:
+                pos = i
                 break
-        if pos:
-            mitem = self.Insert(pos, id_, label, helpstr, kind, use_bmp)
+        if pos >-1:
+            mitem = self.Insert(pos, id_, text, helpstr, handler, img,accelerator,kind,variable,tester)
         else:
-            mitem = self.Append(id_, label, helpstr, kind, use_bmp)
+            mitem = self.Append(id_, text, helpstr, handler, img,accelerator,kind,variable,tester)
         return mitem
 
     def InsertAlpha(self, id_, label=u'', helpstr=u'', after=0, use_bmp=True):
@@ -654,7 +654,7 @@ class MenuBar(tk.Menu):
         return self.GetMenuByName(_(WINDOWS_MENU_ORIG_NAME))
 
     def GetHelpMenu(self):
-        self.GetMenu(_("&Help"))
+        return self.GetMenu(_("&Help"))
         
     @staticmethod
     def FormatMenuName(menu_name):

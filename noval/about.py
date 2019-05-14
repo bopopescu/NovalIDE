@@ -1,140 +1,109 @@
-#----------------------------------------------------------------------------
-# Name:         AboutDialog.py
-# Purpose:      AboutBox which has copyright notice, license information, and credits
+# -*- coding: utf-8 -*-
+#-------------------------------------------------------------------------------
+# Name:        about.py
+# Purpose:
 #
-# Author:       Morgan Hua
+# Author:      wukan
 #
-# Created:      3/22/05
-# Copyright:    (c) 2005-2006 ActiveGrid, Inc.
-# CVS-ID:       $Id$
-# License:      wxWindows License
-#----------------------------------------------------------------------------
+# Created:     2019-05-10
+# Copyright:   (c) wukan 2019
+# Licence:     <your licence>
+#-------------------------------------------------------------------------------
+from noval import GetApp,_
+import tkinter as tk
+from tkinter import ttk
+import noval.util.apputils as apputils
+import noval.ui_base as ui_base
+import noval.python.pyutils as pyutils
+import webbrowser
+import datetime
+import platform
+import noval.imageutils as imageutils
 
-import wx
-import os.path
-from IDE import ACTIVEGRID_BASE_IDE, getIDESplashBitmap
-import noval.util.sysutils as sysutilslib
-_ = wx.GetTranslation
-
-#----------------------------------------------------------------------------
-# Package License Data for AboutDialog
-#   Package, License, URL
-#   If no information is available, put a None as a place holder.
-#
-#   NO GPL Allowed.  Only LGPL, BSD, and Public Domain Based Licenses!
-#----------------------------------------------------------------------------
-
-
-licenseData = [  # add licenses for base IDE features
-    ("NovalIDE", "GPL-3.0", "https://gitee.com/wekay/NovalIDE"),
-    ("Python 2.7", "Python Software Foundation License", "http://www.python.org/2.7/license.html"),
-    ("wxPython 3.0", "wxWidgets 2 - LGPL", "http://wxwidgets.org/newlicen.htm"),
-    ("wxWidgets", "wxWindows Library License 3", "http://www.wxwidgets.org/manuals/2.6.1/wx_wxlicense.html"),
-    ("pychecker", "MetaSlash - BSD", "http://pychecker.sourceforge.net/COPYRIGHT"),
-    ("process.py", "See file", "http://starship.python.net/~tmick/"),
-    ("pysvn", "Apache License, Version 2.0", "http://pysvn.tigris.org/"),
-]
-
-if not ACTIVEGRID_BASE_IDE:    # add licenses for non-base IDE features such as database connections
-    licenseData += [
-        ("pydb2", "LGPL", "http://sourceforge.net/projects/pydb2"),
-        ("pysqlite", "Python License (CNRI)", "http://sourceforge.net/projects/pysqlite"),
-        ("mysql-python", "GPL, Python License (CNRI), Zope Public License", "http://sourceforge.net/projects/mysql-python"),
-        ("cx_Oracle", "Computronix", "http://www.computronix.com/download/License(cxOracle).txt"),
-        ("SQLite", "Public Domain", "http://www.sqlite.org/copyright.html"),
-        ("PyGreSQL", "BSD", "http://www.pygresql.org"),
-        ("pyXML", "CNRI Python License", "http://sourceforge.net/softwaremap/trove_list.php?form_cat=194"),
-        ("Zolera Soap Infrastructure", "Zope Public License 2.0", "http://www.zope.org/Resources/License/"),
-        ("python-ldap", "Python Software Foundation License", "http://python-ldap.sourceforge.net"),
-        ("Sarissa", "LGPL", "http://sourceforge.net/projects/sarissa/"),
-        ("Dynarch DHTML Calendar", "LGPL", "http://www.dynarch.com/projects/calendar/"),
-        ("python-dateutil", "Python Software Foundation License", "http://labix.org/python-dateutil"),        
-    ]
-
-if wx.Platform == '__WXMSW__':  # add Windows only licenses
-    licenseData += [("pywin32", "Python Software Foundation License", "http://sourceforge.net/projects/pywin32/")]
-
-class AboutDialog(wx.Dialog):
+class AboutDialog(ui_base.CommonModaldialog):
 
     def __init__(self, parent):
         """
         Initializes the about dialog.
         """
-        wx.Dialog.__init__(self, parent, -1, _("About ") + wx.GetApp().GetAppName(), style = wx.DEFAULT_DIALOG_STYLE)
+        ui_base.CommonModaldialog.__init__(self, parent)
+        title = _("About ") + GetApp().GetAppName()
+        self.resizable(height=tk.FALSE, width=tk.FALSE)
+        self.title(title)
+        self.main_frame.grid_forget()
+        self.main_frame.grid(sticky=tk.NSEW, ipadx=15, ipady=15)
+        self.main_frame.rowconfigure(0, weight=1)
+        self.main_frame.columnconfigure(0, weight=1)
+        
+        heading_font = tk.font.nametofont("TkHeadingFont").copy()
+        heading_font.configure(size=19, weight="bold")
+        heading_label = ttk.Label(
+            self.main_frame, text=GetApp().GetAppName() + ' '  + apputils.get_app_version(), font=heading_font
+        )
+        heading_label.grid()
+        
+        self.logo = imageutils.load_image("","logo.png")
+        ttk.Label(self.main_frame,image=self.logo).grid()
 
-        nb = wx.Notebook(self, -1)
+        url = "http://www.novalide.com"
+        url_font = tk.font.nametofont("TkDefaultFont").copy()
+        url_font.configure(underline=1)
+        url_label = ttk.Label(
+            self.main_frame, text=url, style="Url.TLabel", cursor="hand2", font=url_font
+        )
+        url_label.grid()
+        url_label.bind("<Button-1>", lambda _: webbrowser.open(url))
+        
 
-        aboutPage = wx.Panel(nb, -1)
-        sizer = wx.BoxSizer(wx.VERTICAL)
+        platform_label = ttk.Label(
+            self.main_frame,
+            justify=tk.CENTER,
+            text="Python "
+            + pyutils.get_python_version_string()
+            + "Tk "
+            + pyutils.get_tk_version_str()
+            + '\nMAIL wekay102200@sohu.com\nQQ 273655394\nWX w89730387'
+        )
+        platform_label.grid(pady=20)
 
-        if not ACTIVEGRID_BASE_IDE:
-            splash_bmp = getSplashBitmap()
-        else:
-            splash_bmp = getIDESplashBitmap()
-        version = sysutilslib.GetAppVersion()
-        image = wx.StaticBitmap(aboutPage, -1, splash_bmp, (0,0), (splash_bmp.GetWidth(), splash_bmp.GetHeight()))
-        sizer.Add(image, 0, wx.ALIGN_CENTER|wx.ALL, 0)
-        sizer.Add(wx.StaticText(aboutPage, -1, wx.GetApp().GetAppName() + _("\n%s\n\nCopyright (c) 2014-2018 Genetalks Incorporated and Contributors.  All rights reserved.") % version), 0, wx.ALIGN_LEFT|wx.ALL, 10)
-        sizer.Add(wx.StaticText(aboutPage, -1, _("http://www.novalide.com")), 0, wx.ALIGN_LEFT|wx.LEFT|wx.BOTTOM, 10)
-        aboutPage.SetSizer(sizer)
-        nb.AddPage(aboutPage, _("Copyright"))
+        credits_label = ttk.Label(
+            self.main_frame,
+            text="Based on the open source version →",
+            style="Url.TLabel",
+            cursor="hand2",
+            font=url_font,
+            justify="center",
+        )
+        credits_label.grid()
+        credits_label.bind(
+            "<Button-1>",
+            lambda _: webbrowser.open(
+                "https://gitee.com/wekay/NovalIDE"
+            ),
+        )
+        
+        
+        license_font = tk.font.nametofont("TkDefaultFont").copy()
+        license_font.configure(size=7)
+        license_label = ttk.Label(
+            self.main_frame,
+            text="Copyright © 2018-"
+            + str(datetime.datetime.now().year)
+            + " wukan\nAll rights reserved",
+            justify=tk.CENTER,
+            font=license_font,
+        )
+        license_label.grid(pady=20)
 
-        licensePage = wx.Panel(nb, -1)
-        grid = wx.grid.Grid(licensePage, -1)
-        grid.CreateGrid(len(licenseData), 2)
+        ok_button = ttk.Button(
+            self.main_frame, text=_("&OK"), command=self._ok, default="active"
+        )
+        ok_button.grid(pady=(0, 15))
+        ok_button.focus_set()
+        self.FormatTkButtonText(ok_button)
 
-        dc = wx.ClientDC(grid)
-        dc.SetFont(grid.GetLabelFont())
-        grid.SetColLabelValue(0, _("License"))
-        grid.SetColLabelValue(1, _("URL"))
-        w, h1 = dc.GetTextExtent(_("License"))
-        w, h2 = dc.GetTextExtent(_("URL"))
-        maxHeight = max(h1, h2)
-        grid.SetColLabelSize(maxHeight + 6)  # add a 6 pixel margin
 
-        maxW = 0
-        for row, data in enumerate(licenseData):
-            package = data[0]
-            license = data[1]
-            url = data[2]
-            if package:
-                grid.SetRowLabelValue(row, package)
-                w, h = dc.GetTextExtent(package)
-                if w > maxW:
-                    maxW = w
-            if license:
-                grid.SetCellValue(row, 0, license)
-            if url:
-                grid.SetCellValue(row, 1, url)
 
-        grid.EnableEditing(False)
-        grid.EnableDragGridSize(False)
-        grid.EnableDragColSize(False)
-        grid.EnableDragRowSize(False)
-        grid.SetRowLabelAlignment(wx.ALIGN_LEFT, wx.ALIGN_CENTRE)
-        grid.SetLabelBackgroundColour(wx.WHITE)
-        grid.AutoSizeColumn(0)
-        grid.AutoSizeColumn(1)
-        grid.SetRowLabelSize(maxW + 10)
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(grid, 1, wx.EXPAND|wx.ALL, 10)
-        licensePage.SetSizer(sizer)
-        nb.AddPage(licensePage, _("Licenses"))
-
-        creditsPage = wx.Panel(nb, -1)
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(wx.StaticText(creditsPage, -1, _("NovalIDE Developer:\n\nNAME:wukan\nMAIL:wekay102200@sohu.com\nQQ:273655394\nWX:w89730387")), 0, wx.ALIGN_LEFT|wx.ALL, 10)
-        creditsPage.SetSizer(sizer)
-        nb.AddPage(creditsPage, _("Credits"))
-
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(nb, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-        btn = wx.Button(self, wx.ID_OK)
-        sizer.Add(btn, 0, wx.ALIGN_CENTRE|wx.ALL, 5)
-
-        self.SetSizer(sizer)
-        self.Layout()
-        self.Fit()
-        grid.ForceRefresh()  # wxBug: Get rid of unnecessary scrollbars
+        
 
 

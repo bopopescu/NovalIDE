@@ -2935,7 +2935,7 @@ class Debugger:
         modify_docs = []
         docs = GetApp().GetDocumentManager().GetDocuments()
         for doc in docs:
-              if doc.IsModified() and (cur_project_document == GetApp().MainFrame().GetProjectView(show=False,generate_event=False).FindProjectFromMapping(doc) or\
+              if doc.IsModified() and (cur_project_document == GetApp().MainFrame.GetProjectView(show=False,generate_event=False).FindProjectFromMapping(doc) or\
                                      cur_project_document.GetModel().FindFile(doc.GetFilename())):
                 filesModified = True
                 modify_docs.append(doc)

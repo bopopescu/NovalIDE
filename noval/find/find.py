@@ -39,6 +39,17 @@ FR_WRAP = FR_REGEXP << 1
 _active_find_dialog = None
 _active_find_replace_dialog = None
 
+class FindtextCombo(ttk.Combobox):
+    def __init__(self,master,findString="",**kw):
+        if not findString:
+            findString = CURERNT_FIND_OPTION.findstr
+            #如果没有则从配置中查找存储的上次查找的文本
+            if not findString:
+                findString = utils.profile_get(FIND_MATCHPATTERN, "")
+
+        self.find_entry_var = tk.StringVar(value=findString)
+        ttk.Combobox.__init__(self,master,textvariable=self.find_entry_var,**kw)
+
 class FindOpt:
     def __init__(self,findstr,match_case=False,match_whole_word=False,wrap=True,down=True,regex=False):
         self.findstr = findstr
@@ -69,8 +80,6 @@ class FindDialog(tk.Toplevel):
         self.main_frame.grid(row=0, column=0, sticky="nsew")
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
-
-        self.codeview = master.GetView()
 
         # references to the current set of passive found tags e.g. all words that match the searched term but are not the active string
         self.passive_found_tags = set()
@@ -115,13 +124,13 @@ class FindDialog(tk.Toplevel):
                 findString = utils.profile_get(FIND_MATCHPATTERN, "")
 
         # Find text field
-        self.find_entry_var = tk.StringVar(value=findString)
-        self.find_entry = ttk.Combobox(self.main_frame, textvariable=self.find_entry_var)
+        self.find_entry = FindtextCombo(self.main_frame,findString)
+        self.find_entry_var = self.find_entry.find_entry_var
         self.find_entry.grid(
             column=1, row=0, padx=(0, consts.DEFAUT_CONTRL_PAD_X), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0)
         )
-        if FindDialog.last_searched_word is not None:
-            self.find_entry.insert(0, FindDialog.last_searched_word)
+        #if FindDialog.last_searched_word is not None:
+          #  self.find_entry.insert(0, FindDialog.last_searched_word)
 
         # Info text label (invisible by default, used to tell user that searched string was not found etc)
         self.infotext_label_var = tk.StringVar()
@@ -244,7 +253,11 @@ class FindDialog(tk.Toplevel):
         CURERNT_FIND_OPTION.down = self.direction_var.get()
         CURERNT_FIND_OPTION.wrap = self.wrap_var.get()
 
+    def GetCodeView(self) :
+        self.codeview = GetApp().GetDocumentManager().GetCurrentView()
+
     def _perform_find(self, event=None):
+        self.GetCodeView()
         self.GetFindTextOption()
         self.infotext_label_var.set("")  # reset the info label text
         tofind = self.find_entry.get()  # get the text to find
@@ -517,7 +530,9 @@ class FindReplaceDialog(FindDialog):
 
 
 
-def ShowFindReplaceDialog(master,findString="",replace=False):
+def ShowFindReplaceDialog(master,replace=False):
+    editor = GetApp().MainFrame.GetNotebook().get_current_editor()
+    findString = editor.GetView().GetCtrl().GetSelectionText()
     if replace:
         global _active_find_replace_dialog
         if _active_find_replace_dialog == None:
@@ -525,4 +540,4 @@ def ShowFindReplaceDialog(master,findString="",replace=False):
     else:
         global _active_find_dialog
         if _active_find_dialog == None:
-            _active_find_dialog = FindDialog(master)
+            _active_find_dialog = FindDialog(master,findString)
