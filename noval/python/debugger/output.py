@@ -1,50 +1,34 @@
-import wx
-from noval.tool import FindTextCtrl
-import noval.tool.service.FindService as FindService
-import noval.util.sysutils as sysutilslib
-import noval.tool.STCTextEditor as STCTextEditor
+# -*- coding: utf-8 -*-
+import tkinter as tk
+from tkinter import ttk
+from noval import _,NewId
+import noval.editor.text as texteditor
+#from noval.tool import FindTextCtrl
+import noval.ui_base as ui_base
+import noval.util.apputils as apputils
 import os
-import noval.util.constants as constants
-_ = wx.GetTranslation
+import noval.constants as constants
 
-class DebugOutputCtrl(FindTextCtrl.FindTextCtrl):
+class OutputCtrl(texteditor.TextCtrl):
     
-    TEXT_WRAP_ID = wx.NewId()
-    FIND_TEXT_ID = wx.NewId()
-    EXPORT_TEXT_ID = wx.NewId()
+    TEXT_WRAP_ID = NewId()
+    FIND_TEXT_ID = NewId()
+    EXPORT_TEXT_ID = NewId()
     ERROR_COLOR_STYLE = 2
     INPUT_COLOR_STYLE = 1
-    ItemIDs = [constants.ID_UNDO, constants.ID_REDO,None,constants.ID_CUT, constants.ID_COPY, constants.ID_PASTE, constants.ID_CLEAR,None, constants.ID_SELECTALL,TEXT_WRAP_ID,constants.ID_FIND,EXPORT_TEXT_ID]
-    
-    def __init__(self, parent, id=-1, style = wx.NO_FULL_REPAINT_ON_RESIZE,is_debug=False):
-        FindTextCtrl.FindTextCtrl.__init__(self, parent, id, style=style)
-        self.Bind(wx.EVT_RIGHT_UP, self.OnRightUp)
-        if sysutilslib.isLinux():
-            accelTbl = wx.AcceleratorTable([(wx.ACCEL_CTRL, ord('A'), wx.ID_SELECTALL),(wx.ACCEL_CTRL, ord('C'), wx.ID_COPY),(wx.ACCEL_CTRL, ord('V'), wx.ID_PASTE),(wx.ACCEL_CTRL, ord('F'), constants.ID_FIND)])  
-            self.SetAcceleratorTable(accelTbl)
-            
-        if wx.Platform == '__WXMSW__':
-            font = "Courier New"
-        else:
-            font = "Courier"
-        self._font = wx.Font(9, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = font)
-        self.SetFont(self._font)
-        self.SetFontColor(wx.BLACK)
-        
+  
+    def __init__(self, parent,is_debug=False,**kwargs):
+        texteditor.TextCtrl.__init__(self, parent,**kwargs)
         self._first_input = True
         self._input_start_pos = 0
         self._executor = None
         self._is_debug = is_debug
-        wx.EVT_MOUSE_CAPTURE_LOST(self,self.OnMouseCaptureLost)
-        wx.EVT_SET_FOCUS(self, self.OnFocus)
-        wx.stc.EVT_STC_DOUBLECLICK(self, self.GetId(), self.OnDoubleClick) 
+   #     wx.EVT_SET_FOCUS(self, self.OnFocus)
+    #    wx.stc.EVT_STC_DOUBLECLICK(self, self.GetId(), self.OnDoubleClick) 
         
-        wx.stc.EVT_STC_MODIFIED(self, self.GetId(), self.OnModify)    
-        wx.EVT_KEY_DOWN(self, self.OnKeyPressed)
-        
-    def OnMouseCaptureLost(self,event):
-        pass
-        
+     #   wx.stc.EVT_STC_MODIFIED(self, self.GetId(), self.OnModify)    
+      #  wx.EVT_KEY_DOWN(self, self.OnKeyPressed)
+            
     @property
     def IsFirstInput(self):
         return self._first_input
@@ -65,7 +49,7 @@ class DebugOutputCtrl(FindTextCtrl.FindTextCtrl):
         self.ActiveDebugView()
         self.PopupMenu(self.CreatePopupMenu(), event.GetPosition())
         
-    def CreatePopupMenu(self):
+    def CreatePopupMenu1111(self):
         menu = wx.Menu()
         frame = wx.GetApp().MainFrame
         menuBar = frame.GetMenuBar()
@@ -325,3 +309,25 @@ class DebugOutputCtrl(FindTextCtrl.FindTextCtrl):
         self.StyleSetSpec(self.INPUT_COLOR_STYLE, 'fore:#221dff, back:#FFFFFF,face:%s,size:%d' % \
                      (self._font.GetFaceName(),self._font.GetPointSize())) 
         
+
+class OutputView(ttk.Frame):
+    def __init__(self, master,is_debug=False):
+        ttk.Frame.__init__(self, master)
+        self.vert_scrollbar = ui_base.SafeScrollbar(self, orient=tk.VERTICAL)
+        self.vert_scrollbar.grid(row=0, column=1, sticky=tk.NSEW)
+        #设置查找结果文本字体为小一号的字体并且控件为只读状态
+        self.text = OutputCtrl(self,is_debug,font="SmallEditorFont",read_only=True,yscrollcommand=self.vert_scrollbar.set)
+        self.text.grid(row=0, column=0, sticky=tk.NSEW)
+        self.text.bind("<Double-Button-1>", self.JumptoLine, "+")
+        #关联垂直滚动条和文本控件
+        self.vert_scrollbar["command"] = self.text.yview
+        
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
+        
+
+    def JumptoLine(self,event):
+        pass
+        
+    def SetExecutor(self,executor):
+        self.text.SetExecutor(executor)

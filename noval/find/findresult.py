@@ -63,7 +63,7 @@ class FindResultsview(ttk.Frame):
             if not os.path.exists(filename):
                 messagebox.showerror(_("Open File Error"),_("The file '%s' doesn't exist and couldn't be opened!") % filename)
                 return
-        GetApp().GotoView(filename,lineNum)
+        GetApp().GotoView(filename,lineNum,load_outline=False)
 		
     def GetTextLineEndPosition(self,linenum):
         pos = 0

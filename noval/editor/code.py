@@ -351,7 +351,7 @@ class CodeCtrl(texteditor.TextCtrl):
 
     if utils.is_py2():
         DEFAULT_WORD_CHARS = string.letters + string.digits + '_'
-    elif utils.is_py3():
+    elif utils.is_py3_plus():
         DEFAULT_WORD_CHARS = string.ascii_letters + string.digits + '_'
             
     def __init__(self, master=None, cnf={}, **kw):

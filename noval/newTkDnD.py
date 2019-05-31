@@ -20,7 +20,7 @@ def _load_tkdnd(master):
     dnd_root_path = os.path.normpath(os.path.join(utils.get_app_path(),"tk/%s" % sys.platform))
     if utils.is_py2():
         tkdndlib = os.path.join(dnd_root_path,"tkdnd2.9")
-    elif utils.is_py3():
+    elif utils.is_py3_plus():
         tkdndlib = os.path.join(dnd_root_path,"tkdnd2.9")
     if tkdndlib:
         master.tk.eval('global auto_path; lappend auto_path {%s}' % tkdndlib)

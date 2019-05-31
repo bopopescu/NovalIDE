@@ -489,12 +489,8 @@
   <noval:file filePath="./tests/test_user_db.py" logicalFolder="tests" isStartup="false"/>
   <noval:file filePath="./tests/test_utils.py" logicalFolder="tests" isStartup="false"/>
   <noval:file filePath="./noval/python/debugger/__init__.py" logicalFolder="noval/python/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/python/debugger/BreakPoints.py" logicalFolder="noval/python/debugger" isStartup="false"/>
   <noval:file filePath="./noval/python/debugger/DebuggerHarness.py" logicalFolder="noval/python/debugger" isStartup="false"/>
   <noval:file filePath="./noval/python/debugger/DebuggerHarness3.py" logicalFolder="noval/python/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/python/debugger/DebugOutputCtrl.py" logicalFolder="noval/python/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/python/debugger/process.py" logicalFolder="noval/python/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/python/debugger/Watchs.py" logicalFolder="noval/python/debugger" isStartup="false"/>
   <noval:file filePath="./noval/python/syntax/lexer/_python.py" logicalFolder="noval/python/syntax/lexer" isStartup="false"/>
   <noval:file filePath="./noval/python/parser/__init__.py" logicalFolder="noval/python/parser" isStartup="false"/>
   <noval:file filePath="./noval/python/parser/codeparser.py" logicalFolder="noval/python/parser" isStartup="false"/>
@@ -611,12 +607,17 @@
   <noval:file filePath="./noval/autocomplete.py" logicalFolder="noval" isStartup="false"/>
   <noval:file filePath="./noval/ui_utils.py" logicalFolder="noval" isStartup="false"/>
   <noval:file filePath="./noval/python/interpreter/gerneralconfiguration.py" logicalFolder="noval/python/interpreter" isStartup="false"/>
-  <noval:file filePath="./noval/python/debugger/Debugger.py" logicalFolder="noval/python/debugger" isStartup="false"/>
   <noval:file filePath="./noval/ttkwidgets/listboxframe.py" logicalFolder="noval/ttkwidgets" isStartup="false"/>
   <noval:file filePath="./noval/docoption.py" logicalFolder="noval" isStartup="false"/>
   <noval:file filePath="./noval/python/pyutils.py" logicalFolder="noval/python" isStartup="false"/>
   <noval:file filePath="./noval/syntax/lexer/_c.py" logicalFolder="noval/syntax/lexer" isStartup="false"/>
   <noval:file filePath="./noval/syntax/lexer/_cpp.py" logicalFolder="noval/syntax/lexer" isStartup="false"/>
   <noval:file filePath="./noval/syntax/lexer/_h.py" logicalFolder="noval/syntax/lexer" isStartup="false"/>
+  <noval:file filePath="./noval/util/compat.py" logicalFolder="noval/util" isStartup="false"/>
+  <noval:file filePath="./noval/util/exceptions.py" logicalFolder="noval/util" isStartup="false"/>
+  <noval:file filePath="./noval/python/debugger/output.py" logicalFolder="noval/python/debugger" isStartup="false"/>
+  <noval:file filePath="./noval/python/debugger/watchs.py" logicalFolder="noval/python/debugger" isStartup="false"/>
+  <noval:file filePath="./noval/python/debugger/breakpoints.py" logicalFolder="noval/python/debugger" isStartup="false"/>
+  <noval:file filePath="./noval/python/debugger/debugger.py" logicalFolder="noval/python/debugger" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>

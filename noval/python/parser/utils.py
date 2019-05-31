@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
 import os
 import sys
+import functools
 
 def MakeDirs(dirname):
     dirname = os.path.abspath(dirname)
@@ -45,10 +47,10 @@ def strcmp(str1,str2):
                 return 1
             elif str2[i] == '_':
                 return -1
-            outcome = cmp(str1[i],str2[i])
+            outcome = py_cmp(str1[i],str2[i])
             return outcome
         i += 1
-    return cmp(len(str1),len(str2))
+    return py_cmp(len(str1),len(str2))
 
 def CmpMember(x,y):
     if strcmp(x.lower() , y.lower()) == 1:
@@ -135,3 +137,23 @@ def CompareDatabaseVersion(new_version,old_version):
     if CalcVersionValue(new_version) <= CalcVersionValue(old_version):
         return 0
     return 1
+
+def py_sorted(iter_obj,cmp_func):
+    if IsPython2():
+        sort_obj = sorted(iter_obj, cmp=cmp_func)
+    elif IsPython3():
+        sort_obj = sorted(iter_obj, key=functools.cmp_to_key(cmp_func))
+    return sort_obj
+
+def py3_cmp(l,r):
+    if r < l:
+        return 1
+    if l < r:
+        return -1
+    return 0
+    
+#python3没有cmp函数,自己实现一个
+if IsPython2():
+    py_cmp = cmp
+elif IsPython3():
+    py_cmp = py3_cmp

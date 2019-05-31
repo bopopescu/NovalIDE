@@ -251,7 +251,7 @@ class BaseFileBrowser(TreeViewFrame):
             if utils.is_windows():
                 if utils.is_py2():
                     name = GetDriveDisplayName(path).decode(utils.get_default_encoding())
-                elif utils.is_py3():
+                elif utils.is_py3_plus():
                     name = GetDriveDisplayName(path)
                 text = name
             else:

@@ -115,6 +115,28 @@ class PreferenceDialog(ui_base.CommonModaldialog):
             parent_item = parent_item.GetParent()
         item_names.reverse()
         return '/'.join(item_names)
+        
+    def _ok(self, event=None):
+        if not self.current_panel.Validate():
+            return
+        for name in self._optionsPanels:
+            optionsPanel = self._optionsPanels[name]
+            if not optionsPanel.OnOK(self):
+                return
+     #   sel = self.tree.GetSelection()
+       # if self.tree.GetChildrenCount(sel) > 0:
+            #(item, cookie) = self.tree.GetFirstChild(sel)
+            #sel = item
+        #text = self.GetSelectOptionName(sel)
+        #wx.ConfigBase_Get().Write("OptionName",text)
+        ui_base.CommonModaldialog._ok(self,event)
+        
+    def _cancel(self, event=None):
+        for name in self._optionsPanels:
+            optionsPanel = self._optionsPanels[name]
+            if hasattr(optionsPanel,"OnCancel") and not optionsPanel.OnCancel(self):
+                return
+        ui_base.CommonModaldialog._cancel(self,event)
 
 @singleton.Singleton
 class PreferenceManager:

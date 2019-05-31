@@ -32,6 +32,9 @@ def is_py2():
 
 def is_py3():
     return future.utils.PY3
+    
+def is_py3_plus():
+    return sys.version_info[0] >= 3
 
 def get_default_encoding():
     try:
@@ -136,7 +139,7 @@ def get_lang_config():
         
     if is_py2():
         from ConfigParser import ConfigParser
-    elif is_py3():
+    elif is_py3_plus():
         from configparser import ConfigParser
     cfg = ConfigParser()
     cfg.read(config_path)

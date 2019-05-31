@@ -214,6 +214,24 @@ class PythonProjectView(ProjectView):
             self._treeCtrl.SelectItem(item)
             self._treeCtrl.EnsureVisible(item)
             self.OnRename()
+            
+    def Run(self):
+        selected_file_path = self.GetSelectedFile()
+        if selected_file_path is None and not fileutils.is_python_file(selected_file_path):
+            return
+        GetApp().GetDebugger().Run(filetoRun = selected_file_path)
+        
+    def DebugRun(self):
+        selected_file_path = self.GetSelectedFile()
+        if selected_file_path is None and not fileutils.is_python_file(selected_file_path):
+            return
+        GetApp().GetDebugger().RunWithoutDebug(filetoRun = selected_file_path)
+        
+    def BreakintoDebugger(self):
+        selected_file_path = self.GetSelectedFile()
+        if selected_file_path is None and not fileutils.is_python_file(selected_file_path):
+            return
+        wx.GetApp().GetService(DebuggerService.DebuggerService).BreakIntoDebugger(selected_file_path)
         
 class DefaultProjectTemplateLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)

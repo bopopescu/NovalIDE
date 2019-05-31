@@ -115,7 +115,7 @@ def get_default_icon():
 def load_image_from_stream(image_data):
     if utils.is_py2():
         stream = StringIO.StringIO(image_data)
-    elif utils.is_py3():
+    elif utils.is_py3_plus():
         stream = StringIO.BytesIO(image_data)
     img = ImageTk.PhotoImage(Image.open(stream))
     return img

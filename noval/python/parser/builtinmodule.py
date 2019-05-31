@@ -22,10 +22,10 @@ class BuiltinModule(nodeast.BuiltinNode):
     def load(self,datas):
         for data in datas['childs']:
             builtin_node = nodeast.BuiltinNode(data['name'],data['type'],self)
-            if self.type_d.has_key(data['name']):
+            if data['name'] in self.type_d:
                 obj_type = self.type_d[data['name']]
                 self.type_objects[obj_type] = builtin_node
-            if data.has_key("childs"):
+            if "childs" in data:
                 for child in data['childs']:
                     child_node = nodeast.BuiltinNode(child['name'],child['type'],builtin_node)
                 

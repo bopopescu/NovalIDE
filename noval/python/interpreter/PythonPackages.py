@@ -21,6 +21,8 @@ import noval.consts as consts
 import noval.ttkwidgets.treeviewframe as treeviewframe
 import noval.editor.text as texteditor
 import noval.util.urlutils as urlutils
+import noval.python.parser.utils as parserutils
+import noval.constants as constants
 
 class ManagePackagesDialog(ui_base.CommonModaldialog):
     
@@ -55,15 +57,17 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
             _('SDUT'),
             _('Douban'),
         ]
-        ui_base.CommonModaldialog.__init__(self,parent)
+        row_no = 0
         if self._manage_action == ManagePackagesDialog.MANAGE_INSTALL_PACKAGE:
             row = ttk.Frame(self.main_frame)
             ttk.Label(row,text=_("We will use the pip source:")).pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-            self._pipSourceCombo = ttk.Combobox(row, values=self.SOURCE_NAME_LIST,value=self.SOURCE_NAME_LIST[0])
-            self._pipSourceCombo.pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+            self._pipSourceCombo = ttk.Combobox(row, values=self.SOURCE_NAME_LIST,state="readonly")
+            self._pipSourceCombo.current(0)
+            self._pipSourceCombo.pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),fill="x",expand=1)
             self.check_source_btn = ttk.Button(row, text= _("Check the best source"),command=self.CheckTheBestSource)
-            self.check_source_btn.pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-            row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+            self.check_source_btn.pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),padx=(consts.DEFAUT_CONTRL_PAD_X,0))
+            row.grid(row=row_no,column=0,padx=consts.DEFAUT_CONTRL_PAD_X,sticky=tk.EW,)
+            row_no += 1
         row = ttk.Frame(self.main_frame)
         if self._manage_action == ManagePackagesDialog.MANAGE_INSTALL_PACKAGE:
             ttk.Label(row,text=_("We will download and install it in the interpreter:")).pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
@@ -71,63 +75,80 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
             ttk.Label(row,text=_("We will uninstall it in the interpreter:")).pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         names = self.GetNames()
         self._interpreterCombo = ttk.Combobox(row,values=names,value=self.interpreter.Name,state="readonly")
-        self._interpreterCombo.pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-        row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
-    
+        self._interpreterCombo.pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),fill="x",expand=1,padx=(consts.DEFAUT_CONTRL_PAD_X,0))
+        row.grid(row=row_no,column=0,padx=consts.DEFAUT_CONTRL_PAD_X,sticky=tk.EW,)
+        row_no += 1
+        
         if self._manage_action == ManagePackagesDialog.MANAGE_INSTALL_PACKAGE:
-            ttk.Label(self.main_frame, text=_("Type the name of package to install:")).pack(pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+            label_1 = ttk.Label(self.main_frame, text=_("Type the name of package to install:"))
         else:
-            ttk.Label(self.main_frame,text= _("Type the name of package to uninstall:")).pack(pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-
+            label_1 = ttk.Label(self.main_frame,text= _("Type the name of package to uninstall:"))
+        label_1.grid(row=row_no,column=0,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),padx=consts.DEFAUT_CONTRL_PAD_X,sticky=tk.EW)
+        row_no += 1
         row = ttk.Frame(self.main_frame)
-        self.value_ctrl = ttk.Entry(row)
-        self.value_ctrl.pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-        if self._manage_action == ManagePackagesDialog.MANAGE_UNINSTALL_PACKAGE:
-            self.value_ctrl.SetValue(package_name)
+        self.value_var = tk.StringVar(value=package_name)
+        value_ctrl = ttk.Entry(row,textvariable=self.value_var)
+        value_ctrl.pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),fill="x",expand=1)
+        #if self._manage_action == ManagePackagesDialog.MANAGE_UNINSTALL_PACKAGE:
+         #   self.value_var.set()
         self.browser_btn = ttk.Button(row, text=_("Browse..."),command=self.BrowsePath)
-        self.browser_btn.pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-        row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+        self.browser_btn.pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),padx=(consts.DEFAUT_CONTRL_PAD_X,0))
+        row.grid(row=row_no,column=0,padx=consts.DEFAUT_CONTRL_PAD_X,sticky=tk.EW)
+        row_no += 1
     
         if self._manage_action == ManagePackagesDialog.MANAGE_INSTALL_PACKAGE:
-            ttk.Label(self.main_frame, text=_("To install the specific version,type \"xxx==1.0.1\"\nTo install more packages,please specific the path of requirements.txt"))
+            label_2 = ttk.Label(self.main_frame, text=_("To install the specific version,type \"xxx==1.0.1\"\nTo install more packages,please specific the path of requirements.txt"))
         else:
-            ttk.Label(self.main_frame, text=_("To uninstall more packages,please specific the path of requirements.txt"))
+            label_2 = ttk.Label(self.main_frame, text=_("To uninstall more packages,please specific the path of requirements.txt"))
+        label_2.grid(row=row_no,column=0,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),padx=consts.DEFAUT_CONTRL_PAD_X,sticky=tk.EW)
+        row_no += 1
+        
         self.output_ctrl = texteditor.TextCtrl(self.main_frame)
         self.output_ctrl['state'] = tk.DISABLED
+        self.detail_output_row = row_no
+        self.output_ctrl.grid(row=row_no,column=0,padx=consts.DEFAUT_CONTRL_PAD_X,sticky=tk.NSEW)
+        row_no += 1
         
-        self.detail_btn = ttk.Button(self.main_frame, text=_("Show Details") + "↓",command=self.ShowHideDetails)
+        self.bottom_frame = ttk.Frame(self.main_frame)
+        self.detail_btn = ttk.Button(self.bottom_frame, text=_("Show Details") + "↓",command=self.ShowHideDetails)
+        self.detail_btn.pack(side=tk.LEFT,pady=consts.DEFAUT_CONTRL_PAD_Y,padx=consts.DEFAUT_CONTRL_PAD_X)
         self._show_details = False
         self.AddokcancelButton()
+        self.bottom_frame.grid(row=row_no,column=0,sticky=tk.NSEW)
+        row_no += 1
         self._install_with_name = True
         if self._manage_action == ManagePackagesDialog.MANAGE_INSTALL_PACKAGE:
             if self.BEST_PIP_SOURCE is None:
                 self.CheckBestPipSource()
             else:
                 self.SelectBestPipSource()
+        self.columnconfigure(0, weight=1)
+        self.ShowHideDetails()
+                
+    def AddokcancelButton(self):
+        button_frame = ttk.Frame(self.bottom_frame)
+        button_frame.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        self.AppendokcancelButton(button_frame)
         
-    def ShowHideDetails(self,event):
-        if self._show_details:
-            self.detail_btn.SetLabel( _("Show Details") + "↓")
-            self.GetSizer().Hide(self.detailSizer)
-            self._show_details = False 
+    def ShowHideDetails(self):
+        if not self._show_details:
+            self.detail_btn.configure( text=_("Show Details") + "↓")
+            self.output_ctrl.grid_forget()
+            self._show_details = True 
         else:  
-            self.GetSizer().Show(self.detailSizer)  
-            self.detail_btn.SetLabel( _("Hide Details") + "↑") 
-            self._show_details = True   
-        self.GetSizer().Layout()
-        self.Fit()
+            self.output_ctrl.grid(row=self.detail_output_row,column=0,padx=consts.DEFAUT_CONTRL_PAD_X,sticky=tk.NSEW)
+            self.detail_btn.configure( text=_("Hide Details") + "↑") 
+            self._show_details = False   
         
-    def BrowsePath(self,event):
-        descr = _("Text File (*.txt)|*.txt")
+    def BrowsePath(self):
+        descrs = [(_("Text File"),".txt"),]
         title = _("Choose requirements.txt")
-        dlg = wx.FileDialog(self,title ,
-                       wildcard = descr,
-                       style=wx.OPEN|wx.FILE_MUST_EXIST|wx.CHANGE_DIR)
-        if dlg.ShowModal() != wx.ID_OK:
-            dlg.Destroy()
+        path = filedialog.askopenfilename(master=self,title=title ,
+                       filetypes = descrs,
+                       initialfile= "requirements.txt"
+                       )
+        if not path:
             return
-        path = dlg.GetPath()
-        dlg.Destroy()
         self.value_ctrl.SetValue(path)
         
     def ExecCommandAndOutput(self,command,dlg):
@@ -271,7 +292,7 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
         self.EnableCheckSourcButton(True)
         
     def SelectBestPipSource(self):
-        for i in range(self._pipSourceCombo.GetCount()):
+        for i in range(self._pipSourceCombo['values']):
             if self._pipSourceCombo.GetString(i).find(_("The Best Source")) != -1:
                 self._pipSourceCombo.Delete(i)
                 self._pipSourceCombo.Insert(self.SOURCE_NAME_LIST[i],i)
@@ -303,7 +324,8 @@ class PackagePanel(ttk.Frame):
         self.listview.pack(side=tk.LEFT,fill="both",expand=1)
         for column in columns:
             self.listview.tree.heading(column, text=_(column))
-        
+        #设置第一列可排序
+        self.listview.tree.heading(columns[0], command=lambda:self.treeview_sort_column(columns[0], False))
         padx = consts.DEFAUT_CONTRL_PAD_X/2
         pady = consts.DEFAUT_CONTRL_PAD_Y/2
         right_frame = ttk.Frame(self)
@@ -315,26 +337,41 @@ class PackagePanel(ttk.Frame):
         self.freeze_btn.pack(padx=padx,pady=(pady))
         right_frame.pack(side=tk.LEFT,fill="y")
         self.interpreter = None
+        
+    def SortNameAZ(self,l,r):
+        return parserutils.py_cmp(l[0].lower(),r[0].lower())
+        
+    def SortNameZA(self,l,r):
+        return parserutils.py_cmp(r[0].lower(),l[0].lower())
+        
+    def treeview_sort_column(self,col, reverse):
+        l = [(self.listview.tree.set(k, col), k) for k in self.listview.tree.get_children('')]
+        if reverse:
+            #倒序
+            l = parserutils.py_sorted(l,self.SortNameZA)
+        else:
+            l = parserutils.py_sorted(l,self.SortNameAZ)
+        #根据排序后索引移动
+        for index, (val, k) in enumerate(l):
+            self.listview.tree.move(k, '', index)
+        #重写标题,使之成为再点倒序的标题
+        self.listview.tree.heading(col, command=lambda: self.treeview_sort_column(col, not reverse))
 
     def InstallPip(self):
         dlg = ManagePackagesDialog(self,_("Install Package"),ManagePackagesDialog.MANAGE_INSTALL_PACKAGE,self.interpreter,self.master.master._interpreters)
         status = dlg.ShowModal()
-        if status == wx.ID_OK:
+        if status == constants.ID_OK:
             self.NotifyPackageConfigurationChange()
-        dlg.Destroy()
-        
         
     def UninstallPip(self):
-        index = self.dvlc.GetSelectedRow()
+        selections = self.listview.tree.selection()
         package_name = ""
-        if index != wx.NOT_FOUND:
-            package_name = self.dvlc.GetTextValue(index,0)
-        dlg = ManagePackagesDialog(self,-1,_("Uninstall Package"),ManagePackagesDialog.MANAGE_UNINSTALL_PACKAGE,self.interpreter,self.GetParent().GetParent()._interpreters,package_name=package_name)
-        dlg.CenterOnParent()
+        if selections:
+            package_name = self.listview.tree.item(selections[0])['values'][0]
+        dlg = ManagePackagesDialog(self,_("Uninstall Package"),ManagePackagesDialog.MANAGE_UNINSTALL_PACKAGE,self.interpreter,self.master.master._interpreters,package_name=package_name)
         status = dlg.ShowModal()
-        if status == wx.ID_OK:
+        if status == constants.ID_OK:
             self.NotifyPackageConfigurationChange()
-        dlg.Destroy()
         
     def LoadPackages(self,interpreter,force=False):
         self.interpreter = interpreter
@@ -391,7 +428,7 @@ class PackagePanel(ttk.Frame):
         default_ext = text_docTemplate.GetDefaultExtension()
         descrs = strutils.get_template_filter(text_docTemplate)
         filename = filedialog.asksaveasfilename(
-            master = GetApp(),
+            master = self,
             filetypes=[descrs],
             defaultextension=default_ext,
             initialdir=text_docTemplate.GetDirectory(),

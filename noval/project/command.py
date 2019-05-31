@@ -372,7 +372,7 @@ class ProjectRemoveFilesCommand(Command):
 
 
     def Do(self):
-        return self._projectDoc.RemoveFiles(files=self._files)
+        return self._projectDoc.RemoveFiles(filePaths=self._files)
 
 
     def Undo(self):
@@ -382,7 +382,7 @@ class ProjectRenameFileCommand(Command):
 
 
     def __init__(self, projectDoc, oldFilePath, newFilePath, isProject = False):
-        wx.lib.docview.Command.__init__(self, canUndo = True)
+        Command.__init__(self, canUndo = True)
         self._projectDoc = projectDoc
         self._oldFilePath = oldFilePath
         self._newFilePath = newFilePath
@@ -403,7 +403,7 @@ class ProjectRenameFileCommand(Command):
 
 class ProjectRenameFolderCommand(Command):
     def __init__(self, doc, oldFolderPath, newFolderPath):
-        wx.lib.docview.Command.__init__(self, canUndo = True)
+        Command.__init__(self, canUndo = True)
         self._doc = doc
         self._oldFolderPath = oldFolderPath
         self._newFolderPath = newFolderPath
@@ -470,7 +470,7 @@ class ProjectAddPackagefolderCommand(ProjectAddFolderCommand):
 
 class ProjectRemoveFolderCommand(Command):
     def __init__(self, view, doc, folderpath,delete_folder_files = False):
-        wx.lib.docview.Command.__init__(self, canUndo = True)
+        Command.__init__(self, canUndo = True)
         self._doc = doc
         self._view = view
         self._folderpath = folderpath

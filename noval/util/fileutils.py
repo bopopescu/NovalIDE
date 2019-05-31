@@ -22,6 +22,8 @@ import subprocess
 import noval.util.strutils as strutils
 import chardet
 import noval.util.txtutils as txtutils
+import noval.syntax.lang as lang
+import noval.syntax.syntax as syntax
 global fileutilsLogger
 fileutilsLogger = logging.getLogger("activegrid.util.fileutils")
 _Checker = txtutils.FileTypeChecker()
@@ -537,8 +539,8 @@ def detect(byte_str):
     return detector.close()
     
 def is_python_file(file_path):
-    lexer = syntax.LexerManager().GetLexer(lang.ID_LANG_PYTHON)
-    ext = strutils.GetFileExt(file_path)
+    lexer = syntax.SyntaxThemeManager().GetLexer(lang.ID_LANG_PYTHON)
+    ext = strutils.get_file_extension(file_path)
     return lexer.ContainExt(ext)
 
 def RemoveDir(dir_path):

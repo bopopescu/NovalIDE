@@ -373,20 +373,18 @@ class ProjectDocument(core.Document):
                         document.SetTitle(wx.lib.docview.FileNameFromPath(newFilePath))
                         document.UpdateAllViews(hint = ("rename", self, oldFilePath, newFilePath))
             else:
-                wx.CallAfter(self.UpdateFilePath,oldFilePath, newFilePath)
+                self.UpdateFilePath(oldFilePath, newFilePath)
                 if openDoc:
                     openDoc.SetFilename(newFilePath, notifyViews = True)
                     openDoc.UpdateAllViews(hint = ("rename", self, oldFilePath, newFilePath))
                     openDoc.FileWatcher.StartWatchFile(openDoc)
-                    openDoc.GetFirstView().DoLoadOutlineCallback(True)
+                    ###openDoc.GetFirstView().DoLoadOutlineCallback(True)
 
             return True
         except OSError as e:
             msgTitle = _("Rename File Error")
-            wx.MessageBox(_("Could not rename file '%s'.  '%s'") % (wx.lib.docview.FileNameFromPath(oldFilePath), e),
-                          msgTitle,
-                          wx.OK | wx.ICON_ERROR,
-                          wx.GetApp().GetTopWindow())
+            messagebox.showerror(msgTitle,_("Could not rename file '%s'.  '%s'") % (fileutils.get_filename_from_path(oldFilePath), e),
+                          parent=GetApp().GetTopWindow())
             return False
 
 
@@ -596,10 +594,7 @@ class ProjectDocument(core.Document):
             newFolderPath = os.path.join(self.GetModel().homeDir,newFolderLogicPath)
             os.rename(oldFolderPath, newFolderPath)
         except Exception as e:
-            wx.MessageBox(_("Could not rename folder '%s'.  '%s'") % (wx.lib.docview.FileNameFromPath(oldFolderPath), e),
-                          _("Rename Folder Error"),
-                          wx.OK | wx.ICON_ERROR,
-                          wx.GetApp().GetTopWindow())
+            messagebox.showerror(_("Rename Folder Error"),_("Could not rename folder '%s'.  '%s'") % (fileutils.get_filename_from_path(oldFolderPath), e),parent= GetApp().GetTopWindow())
             return False
         rename_files = []
         for file in self.GetModel()._files:
@@ -1309,15 +1304,15 @@ class ProjectView(misc.AlarmEventView):
                                 #the dest file is already in the project
                                 if project.FindFile(dest_path):
                                     project.RemoveFile(file)
-                                if DEFAULT_PROMPT_MESSAGE_ID == consts.PROMPT_OVERWRITE_YES or \
-                                            DEFAULT_PROMPT_MESSAGE_ID == consts.PROMPT_OVERWRITE_NO:
+                                if DEFAULT_PROMPT_MESSAGE_ID == constants.ID_YES or \
+                                            DEFAULT_PROMPT_MESSAGE_ID == constants.ID_NO:
                                     prompt_dlg = ProjectUI.PromptMessageDialog(wx.GetApp().GetTopWindow(),-1,_("Project File Exists"),\
                                             _("The file %s is already exist in project ,Do You Want to overwrite it?") % filePath)
                                     status = prompt_dlg.ShowModal()
                                     ProjectUI.PromptMessageDialog.DEFAULT_PROMPT_MESSAGE_ID = status
                                     prompt_dlg.Destroy()
-                            if DEFAULT_PROMPT_MESSAGE_ID == consts.PROMPT_OVERWRITE_YES_ALL or\
-                                DEFAULT_PROMPT_MESSAGE_ID == consts.PROMPT_OVERWRITE_YES:
+                            if DEFAULT_PROMPT_MESSAGE_ID == constants.ID_YESTOALL or\
+                                DEFAULT_PROMPT_MESSAGE_ID == constants.ID_YES:
                                 try:
                                     shutil.copyfile(filePath,dest_path)
                                 except Exception as e:
@@ -1478,30 +1473,13 @@ class ProjectView(misc.AlarmEventView):
             return
         if self._bold_item is not None:
             self._treeCtrl.SetItemBold(self._bold_item ,False)
-        pjfile = self._GetItemFile(item)
+        filePath = self._GetItemFile(item)
+        pjfile = self.GetDocument().GetModel().FindFile(filePath)
         self._treeCtrl.SetItemBold(item)
         self._bold_item = item
         self.GetDocument().GetModel().StartupFile = pjfile
         self.GetDocument().Modify(True)
         
-    def RunFile(self):
-        selected_file_path = self.GetSelectedFile()
-        if selected_file_path is None and not fileutils.is_python_file(selected_file_path):
-            return
-        wx.GetApp().GetService(DebuggerService.DebuggerService).Run(selected_file_path)
-        
-    def DebugRunFile(self):
-        selected_file_path = self.GetSelectedFile()
-        if selected_file_path is None and not fileutils.is_python_file(selected_file_path):
-            return
-        wx.GetApp().GetService(DebuggerService.DebuggerService).RunWithoutDebug(selected_file_path)
-        
-    def BreakintoDebugger(self):
-        selected_file_path = self.GetSelectedFile()
-        if selected_file_path is None and not fileutils.is_python_file(selected_file_path):
-            return
-        wx.GetApp().GetService(DebuggerService.DebuggerService).BreakIntoDebugger(selected_file_path)
-            
     def NewProject(self,event):
         docManager = wx.GetApp().GetDocumentManager()
         for template in docManager.GetTemplates():
@@ -1672,7 +1650,7 @@ class ProjectView(misc.AlarmEventView):
                 break
 
     def GetSelectedFile(self):
-        for item in self._treeCtrl.GetSelections():
+        for item in self._treeCtrl.selection():
             filePath = self._GetItemFilePath(item)
             if filePath:
                 return filePath
@@ -1733,7 +1711,7 @@ class ProjectView(misc.AlarmEventView):
                 
     def AddProjectRoot(self,document_or_name):
         self._prject_browser.clear()
-        if utils.is_py3():
+        if utils.is_py3_plus():
             basestring_ = str
         elif utils.is_py2():
             basestring_ = basestring
@@ -1947,54 +1925,48 @@ class ProjectView(misc.AlarmEventView):
                 try:
                     fileutils.RemoveDir(folder_local_path)
                 except Exception as e:
-                    wx.MessageBox("Could not delete '%s'.  %s" % (os.path.basename(folder_local_path), e),
-                                              _("Delete Folder"),
-                                              wx.OK | wx.ICON_ERROR,
-                                              self.GetFrame())
+                    messagebox.showerror( _("Delete Folder"),"Could not delete '%s'.  %s" % (os.path.basename(folder_local_path), e),
+                                              parent= self.GetFrame())
                     return
         item = self._treeCtrl.FindFolder(folderPath)
-        self._treeCtrl.Freeze()
         self.DeleteFolderItems(item)
-        self._treeCtrl.Delete(item)
-        self._treeCtrl.Thaw()
+        self._treeCtrl.delete(item)
         return True
         
     def DeleteFolderItems(self,folder_item):
         files = []
-        items = self._GetChildItems(folder_item)
+        items = self._treeCtrl.get_children(folder_item)
         for item in items:
-            if self._treeCtrl.GetChildrenCount(item, False):
+            if self._treeCtrl.GetChildrenCount(item):
                 self.DeleteFolderItems(item)
             else:
                 file = self._GetItemFile(item)
                 files.append(file)
         if files:
-            self.GetDocument().GetCommandProcessor().Submit(ProjectRemoveFilesCommand(self.GetDocument(), files))
+            self.GetDocument().GetCommandProcessor().Submit(projectcommand.ProjectRemoveFilesCommand(self.GetDocument(), files))
 
-    def OnAddFileToProject(self, event):
-        descr = strutils.GenFileFilters(ProjectDocument)
-        dialog = wx.FileDialog(self.GetFrame(), _("Add Files"), wildcard=descr, style=wx.OPEN|wx.MULTIPLE|wx.CHANGE_DIR)
-        # dialog.CenterOnParent()  # wxBug: caused crash with wx.FileDialog
-        if dialog.ShowModal() != wx.ID_OK:
-            dialog.Destroy()
+    def OnAddFileToProject(self):
+        project_template = self.GetDocumentManager().FindTemplateForTestPath(consts.PROJECT_EXTENSION)
+        descrs = strutils.gen_file_filters(project_template.GetDocumentType())
+        paths = filedialog.askopenfilename(
+                master=self._prject_browser,
+                filetypes=descrs,
+                initialdir=os.getcwd(),
+                multiple=True
+        )
+        if not paths:
             return
-        paths = dialog.GetPaths()
-        dialog.Destroy()
-        if len(paths):
-            
-            folderPath = None
-            if self.GetMode() == ProjectView.PROJECT_VIEW:
-                selections = self._treeCtrl.GetSelections()
-                if selections:
-                    item = selections[0]
-                    if not self._IsItemFile(item):
-                        folderPath = self._GetItemFolderPath(item)
-                        
-            self.GetDocument().GetCommandProcessor().Submit(ProjectAddFilesCommand(self.GetDocument(), paths, folderPath=folderPath))
+
+        folderPath = None
+        item = self._treeCtrl.GetSingleSelectItem()
+        if item:
+            if not self._IsItemFile(item):
+                folderPath = self._GetItemFolderPath(item)
+        self.GetDocument().GetCommandProcessor().Submit(projectcommand.ProjectAddFilesCommand(self.GetDocument(), paths, folderPath=folderPath))
         self.Activate()  # after add, should put focus on project editor
 
 
-    def OnAddDirToProject(self, event):
+    def OnAddDirToProject(self):
         frame = wx.Dialog(wx.GetApp().GetTopWindow(), -1, _("Add Directory Files to Project"), size= (320,200))
         contentSizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -2153,215 +2125,12 @@ class ProjectView(misc.AlarmEventView):
                     childFrame.Activate()
         event.Skip()
 
-
-    def OnLeftClick(self, event):
-        """ 
-            wxBug: We also spurious drag events on a single click of on item that is already selected,
-            so the solution was to consume the left click event.  But his broke the single click expand/collapse
-            of a folder, so if it is a folder, we do an event.Skip() to allow the expand/collapse,
-            otherwise we consume the event.
-        """          
-        # if folder let it collapse/expand
-        if wx.Platform == '__WXMSW__':
-            item, flags = self._treeCtrl.HitTest(event.GetPosition())
-            if item.IsOk() and self._treeCtrl.GetChildrenCount(item, False):
-                event.Skip()
-        else:
-            event.Skip()
-            
-
-    def GetPopupFileMenu(self):
-        menu = wx.Menu()
-        menu.Append(constants.ID_OPEN_SELECTION, _("&Open"), _("Opens the selection"))
-        menu.Enable(constants.ID_OPEN_SELECTION, True)
-        wx.EVT_MENU(self._GetParentFrame(), constants.ID_OPEN_SELECTION, self.OnOpenSelection)
-        
-        menu.Append(constants.ID_OPEN_SELECTION_WITH, _("&Open With..."), _("Opens the selection with specify editor"))
-        menu.Enable(constants.ID_OPEN_SELECTION_WITH, True)
-        wx.EVT_MENU(self._GetParentFrame(), constants.ID_OPEN_SELECTION_WITH, self.OnOpenSelectionWith)
-        
-        extService = wx.GetApp().GetService(ExtensionService.ExtensionService)
-        if extService and extService.GetExtensions():
-            firstItem = True
-            for ext in extService.GetExtensions():
-                if not ext.opOnSelectedFile:
-                    continue
-                if firstItem:
-                    menu.AppendSeparator()
-                    firstItem = False
-                menu.Append(ext.id, ext.menuItemName)
-                wx.EVT_MENU(self._GetParentFrame(), ext.id, extService.ProcessEvent)
-                wx.EVT_UPDATE_UI(self._GetParentFrame(), ext.id, extService.ProcessUpdateUIEvent)
-                
-        itemIDs = [None]
-        for item in self._treeCtrl.GetSelections():
-            if self._IsItemProcessModelFile(item):
-                itemIDs = [None, ProjectService.RUN_SELECTED_PM_ID, None]
-                break
-                
-        itemIDs.extend([wx.ID_UNDO, wx.ID_REDO, None, wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE,wx.ID_CLEAR,None, \
-                         wx.ID_SELECTALL,ProjectService.RENAME_ID , constants.ID_REMOVE_FROM_PROJECT, None])
-                         
-        self.GetCommonItemsMenu(menu,itemIDs)
-        tree_item = self._treeCtrl.GetSingleSelectItem()
-        filePath = self._GetItemFilePath(tree_item)
-        itemIDs = []
-        if self._IsItemFile(tree_item) and fileutils.is_python_file(filePath):
-            menuBar = wx.GetApp().GetTopWindow().GetMenuBar()
-            menu_item = menuBar.FindItemById(constants.ID_RUN)
-            item = wx.MenuItem(menu,constants.ID_START_RUN,_("&Run"), kind = wx.ITEM_NORMAL)
-            item.SetBitmap(menu_item.GetBitmap())
-            menu.AppendItem(item)
-            wx.EVT_MENU(self._treeCtrl, constants.ID_START_RUN, self.ProcessEvent)
-            
-            debug_menu = wx.Menu()
-            menu.AppendMenu(wx.NewId(), _("Debug"), debug_menu)
-
-            menu_item = menuBar.FindItemById(constants.ID_DEBUG)
-            item = wx.MenuItem(menu,constants.ID_START_DEBUG,_("&Debug"), kind = wx.ITEM_NORMAL)
-            item.SetBitmap(menu_item.GetBitmap())
-            debug_menu.AppendItem(item)
-            wx.EVT_MENU(self._treeCtrl, constants.ID_START_DEBUG, self.ProcessEvent)
-            
-            item = wx.MenuItem(menu,constants.ID_BREAK_INTO_DEBUGGER,_("&Break into Debugger"), kind = wx.ITEM_NORMAL)
-            debug_menu.AppendItem(item)
-            wx.EVT_MENU(self._treeCtrl, constants.ID_BREAK_INTO_DEBUGGER, self.ProcessEvent)
-            if tree_item != self._bold_item:
-                menu.Append(constants.ID_SET_PROJECT_STARTUP_FILE, _("Set as Startup File..."), _("Set the start script of project"))
-                wx.EVT_MENU(self._treeCtrl, constants.ID_SET_PROJECT_STARTUP_FILE, self.ProcessEvent)
-                wx.EVT_UPDATE_UI(self._treeCtrl, constants.ID_SET_PROJECT_STARTUP_FILE, self.ProcessUpdateUIEvent)
-            itemIDs.append(None)
-        itemIDs.append(Property.FilePropertiesService.PROPERTIES_ID)
-        self.GetCommonItemsMenu(menu,itemIDs)
-        menu.Append(constants.ID_OPEN_FOLDER_PATH, _("Open Path in Explorer"))
-        wx.EVT_MENU(self._treeCtrl, constants.ID_OPEN_FOLDER_PATH, self.ProcessEvent)
-        
-        menu.Append(constants.ID_OPEN_TERMINAL_PATH, _("Open Command Prompt here..."))
-        wx.EVT_MENU(self._treeCtrl, constants.ID_OPEN_TERMINAL_PATH, self.ProcessEvent)
-
-        menu.Append(constants.ID_COPY_PATH, _("Copy Full Path"))
-        wx.EVT_MENU(self._treeCtrl, constants.ID_COPY_PATH, self.ProcessEvent)
-        
-        return menu
-
-    def GetPopupFolderMenu(self):
-        menu = wx.Menu()
-        itemIDs = [constants.ID_IMPORT_FILES,constants.ID_ADD_FILES_TO_PROJECT, \
-                           constants.ID_ADD_DIR_FILES_TO_PROJECT,constants.ID_ADD_NEW_FILE,constants.ID_ADD_FOLDER, constants.ID_ADD_PACKAGE_FOLDER]
-        itemIDs.extend([None,wx.ID_UNDO, wx.ID_REDO, None, wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, wx.ID_CLEAR,None, \
-                            wx.ID_SELECTALL,ProjectService.RENAME_ID , constants.ID_REMOVE_FROM_PROJECT, None, Property.FilePropertiesService.PROPERTIES_ID])
-        self.GetCommonItemsMenu(menu,itemIDs)
-        
-        menu.Append(constants.ID_OPEN_FOLDER_PATH, _("Open Path in Explorer"))
-        wx.EVT_MENU(self._treeCtrl, constants.ID_OPEN_FOLDER_PATH, self.ProcessEvent)
-        
-        menu.Append(constants.ID_OPEN_TERMINAL_PATH, _("Open Command Prompt here..."))
-        wx.EVT_MENU(self._treeCtrl, constants.ID_OPEN_TERMINAL_PATH, self.ProcessEvent)
-
-        menu.Append(constants.ID_COPY_PATH, _("Copy Full Path"))
-        wx.EVT_MENU(self._treeCtrl, constants.ID_COPY_PATH, self.ProcessEvent)
-        return menu
-        
-    def GetPopupProjectMenu(self):
-        menu = wx.Menu()
-        itemIDs = [constants.ID_NEW_PROJECT,constants.ID_OPEN_PROJECT,constants.ID_CLOSE_PROJECT,constants.ID_SAVE_PROJECT, constants.ID_DELETE_PROJECT,\
-                        constants.ID_CLEAN_PROJECT,constants.ID_ARCHIVE_PROJECT]
-        itemIDs.extend([None,constants.ID_IMPORT_FILES,constants.ID_ADD_FILES_TO_PROJECT, \
-                           constants.ID_ADD_DIR_FILES_TO_PROJECT,None,constants.ID_ADD_NEW_FILE,constants.ID_ADD_FOLDER,constants.ID_ADD_PACKAGE_FOLDER])
-        itemIDs.extend([None, constants.ID_PROJECT_PROPERTIES])
-        itemIDs.append(ProjectService.RENAME_ID)
-        itemIDs.append(constants.ID_OPEN_PROJECT_PATH)
-        self.GetCommonItemsMenu(menu,itemIDs)
-
-        menu.Append(constants.ID_OPEN_TERMINAL_PATH, _("Open Command Prompt here..."))
-        wx.EVT_MENU(self._treeCtrl, constants.ID_OPEN_TERMINAL_PATH, self.ProcessEvent)
-
-        menu.Append(constants.ID_COPY_PATH, _("Copy Full Path"))
-        wx.EVT_MENU(self._treeCtrl, constants.ID_COPY_PATH, self.ProcessEvent)
-
-        return menu
-        
-    def GetCommonItemsMenu(self,menu,itemIDs):
-        menuBar = self._GetParentFrame().GetMenuBar()
-        svnIDs = [SVNService.SVNService.SVN_UPDATE_ID, SVNService.SVNService.SVN_CHECKIN_ID, SVNService.SVNService.SVN_REVERT_ID]
-        globalIDs = [wx.ID_UNDO, wx.ID_REDO, wx.ID_CLOSE, wx.ID_SAVE, wx.ID_SAVEAS]
-        for itemID in itemIDs:
-            if not itemID:
-                menu.AppendSeparator()
-            else:
-                if itemID == ProjectService.RUN_SELECTED_PM_ID and not ACTIVEGRID_BASE_IDE:
-                    webBrowserService = wx.GetApp().GetService(WebBrowserService.WebBrowserService)
-                    if webBrowserService:
-                        if wx.Platform == '__WXMSW__':
-                            menu.Append(ProjectService.RUN_SELECTED_PM_ID, _("Run Process"))
-                            wx.EVT_MENU(self._GetParentFrame(), ProjectService.RUN_SELECTED_PM_ID, self.ProjectServiceProcessEvent)
-
-                        if wx.Platform == '__WXMSW__':
-                            menuLabel = _("Run Process in External Browser")
-                        else:
-                            menuLabel = _("Run Process")
-                        menu.Append(ProjectService.RUN_SELECTED_PM_EXTERNAL_BROWSER_ID, menuLabel)
-                        wx.EVT_MENU(self._GetParentFrame(), ProjectService.RUN_SELECTED_PM_EXTERNAL_BROWSER_ID, self.ProjectServiceProcessEvent)
-                        
-                        if wx.Platform == '__WXMSW__':
-    
-                            if wx.GetApp().GetUseTabbedMDI():
-                                menuLabel = _("Run Process in new Tab")
-                            else:
-                                menuLabel = _("Run Process in new Window")
-                            menu.Append(ProjectService.RUN_SELECTED_PM_INTERNAL_WINDOW_ID, menuLabel)
-                            wx.EVT_MENU(self._GetParentFrame(), ProjectService.RUN_SELECTED_PM_INTERNAL_WINDOW_ID, self.ProjectServiceProcessEvent)
-                        
-                elif itemID == constants.ID_REMOVE_FROM_PROJECT:
-                    menu.Append(constants.ID_REMOVE_FROM_PROJECT, _("Remove from Project"))
-                    wx.EVT_MENU(self._GetParentFrame(), constants.ID_REMOVE_FROM_PROJECT, self.RemoveFromProject)
-                    wx.EVT_UPDATE_UI(self._GetParentFrame(), constants.ID_REMOVE_FROM_PROJECT, self._GetParentFrame().ProcessUpdateUIEvent)
-                else:
-                    item = menuBar.FindItemById(itemID)
-                    if item:
-                        if SVN_INSTALLED:
-                            svnService = wx.GetApp().GetService(SVNService.SVNService)
-                            
-                        if itemID in svnIDs:
-                            if SVN_INSTALLED and svnService:
-                                wx.EVT_MENU(self._GetParentFrame(), itemID, svnService.ProcessEvent)
-                        elif itemID in globalIDs:
-                            pass
-                        else:
-                            wx.EVT_MENU(self._treeCtrl, itemID, self.ProcessEvent)
-                        menu_item = wx.MenuItem(menu,itemID,item.GetLabel())
-                        bmp = item.GetBitmap()
-                        if bmp:
-                            menu_item.SetBitmap(bmp)
-                        menu.AppendItem(menu_item)
-
-    def OnRightClick(self, event):
-        self.Activate()
-        items = self._treeCtrl.GetSelections()
-        if not self.GetSelectedProject() or 0 == len(items):
-            return
-        if self._HasFilesSelected():  # Files context
-            menu = self.GetPopupFileMenu()
-        else:  # Project context
-            if items[0] == self._treeCtrl.GetRootItem():
-                menu = self.GetPopupProjectMenu()
-            else:
-                menu = self.GetPopupFolderMenu()
-        self._treeCtrl.PopupMenu(menu, wx.Point(event.GetX(), event.GetY()))
-        menu.Destroy()
-
-    def ProjectServiceProcessEvent(self, event):
-        projectService = wx.GetApp().GetService(ProjectService)
-        if projectService:
-            projectService.ProcessEvent(event)
-
-
     def OnRename(self, event=None):
         items = self._treeCtrl.selection()
         if not items:
             return
         item = items[0]
-        if wx.Platform == "__WXGTK__":
+        if utils.is_linux():
             dlg = wx.TextEntryDialog(self.GetFrame(), _("Enter New Name"), _("Enter New Name"))
             dlg.CenterOnParent()
             if dlg.ShowModal() == wx.ID_OK:
@@ -2371,33 +2140,22 @@ class ProjectView(misc.AlarmEventView):
             if items:
                 self._treeCtrl.EditLabel(item)
 
-
-    def OnBeginLabelEdit(self, event):
-        self._editingSoDontKillFocus = True
-        item = event.GetItem()
-        if self._IsItemFile(item):
-            file = self._GetItemFile(item)
-            if file.type == 'xform':
-                event.Veto()
-        if (self.GetMode() == ProjectView.RESOURCE_VIEW) and not self._IsItemFile(item):
-            event.Veto()
-
-
-    def OnEndLabelEdit(self, event):
-        self._editingSoDontKillFocus = False
-        item = event.GetItem()
-        newName = event.GetLabel()
+    def OnEndLabelEdit(self, item,newName):
         if item == self._treeCtrl.GetRootItem():
             if not newName:
                 #wx.MessageBox(_("project name could not be empty"),style=wx.OK|wx.ICON_ERROR)
-                event.Veto()
+                return
             else:
-                self.GetDocument().GetModel().Name = newName
-                self.GetDocument().Modify(True)
+                #检查项目名称是否改变
+                if self.GetDocument().GetModel().Name != newName:
+                    self.GetDocument().GetModel().Name = newName
+                    self.GetDocument().Modify(True)
+                    #修改节点文本
+                    self._treeCtrl.item(item,text=newName)
             return
         
         if not self.ChangeLabel(item, newName):
-            event.Veto()
+            return
             
 
     def ChangeLabel(self, item, newName):
@@ -2407,27 +2165,27 @@ class ProjectView(misc.AlarmEventView):
             oldFilePath = self._GetItemFilePath(item)
             newFilePath = os.path.join(os.path.dirname(oldFilePath), newName)
             doc = self.GetDocument()
-            if not doc.GetCommandProcessor().Submit(ProjectRenameFileCommand(doc, oldFilePath, newFilePath)):
+            parent_item = self._treeCtrl.parent(item)
+            if not doc.GetCommandProcessor().Submit(projectcommand.ProjectRenameFileCommand(doc, oldFilePath, newFilePath)):
                 return False
-            self._treeCtrl.SortChildren(self._treeCtrl.GetItemParent(item))
+            self._treeCtrl.SortChildren(self._treeCtrl.parent(parent_item))
         else:
             oldFolderPath = self._GetItemFolderPath(item)
             newFolderPath = os.path.dirname(oldFolderPath)
             if newFolderPath:
                 newFolderPath += "/"
             newFolderPath += newName
+            if newFolderPath == oldFolderPath:
+                return True
             if self._treeCtrl.FindFolder(newFolderPath):
-                wx.MessageBox(_("Folder '%s' already exists.") % newName,
-                            "Rename Folder",
-                            wx.OK | wx.ICON_EXCLAMATION,
-                            self.GetFrame())
+                messagebox.showwarning(_("Rename Folder"),_("Folder '%s' already exists.") % newName,parent=self.GetFrame())
                 return False
             doc = self.GetDocument()
-            if not doc.GetCommandProcessor().Submit(ProjectRenameFolderCommand(doc, oldFolderPath, newFolderPath)):
+            if not doc.GetCommandProcessor().Submit(projectcommand.ProjectRenameFolderCommand(doc, oldFolderPath, newFolderPath)):
                 return False
-            self._treeCtrl.SortChildren(self._treeCtrl.GetItemParent(item))
+            self._treeCtrl.SortChildren(self._treeCtrl.parent(item))
             #should delete the folder item ,other it will have double folder item
-            wx.CallAfter(self._treeCtrl.Delete,item)
+            self._treeCtrl.Delete(item)
 
         return True
         
@@ -2630,7 +2388,7 @@ class ProjectView(misc.AlarmEventView):
                         open_doc.Modify(False)  # make sure it doesn't ask to save the file
                         self.GetDocumentManager().CloseDocument(open_doc, True)
                 folderPath = self._GetItemFolderPath(item)
-                self.GetDocument().GetCommandProcessor().Submit(ProjectRemoveFolderCommand(self, self.GetDocument(), folderPath,True))
+                self.GetDocument().GetCommandProcessor().Submit(projectcommand.ProjectRemoveFolderCommand(self, self.GetDocument(), folderPath,True))
             
     def DeleteProject(self, noPrompt=False, closeFiles=True, delFiles=True):
         
@@ -2970,9 +2728,9 @@ class ProjectView(misc.AlarmEventView):
 
 
     def _GetItemFilePath(self, item):
-        file = self._GetItemFile(item)
-        if file:
-            return file.filePath
+        filePath = self._GetItemFile(item)
+        if filePath:
+            return filePath
         else:
             return None
 
@@ -3035,7 +2793,7 @@ class ProjectView(misc.AlarmEventView):
         
     def _GetFolderFileItems(self, parentItem):
         fileItems = []
-        childrenItems = self._GetChildItems(parentItem)
+        childrenItems = self._treeCtrl.get_children(parentItem)
         for childItem in childrenItems:
             if self._IsItemFile(childItem):
                 fileItems.append(childItem)
@@ -3066,12 +2824,45 @@ class ProjectView(misc.AlarmEventView):
         misc.AlarmEventView.check_for_external_changes(self)
                 
     def UpdateUI(self, command_id):
-        if command_id == constants.ID_CLOSE_PROJECT or command_id == constants.ID_SAVE_PROJECT \
-            or command_id == constants.ID_DELETE_PROJECT or command_id == constants.ID_CLEAN_PROJECT or \
-            command_id == constants.ID_ARCHIVE_PROJECT:
+        if command_id in[constants.ID_CLOSE_PROJECT,constants.ID_SAVE_PROJECT ,constants.ID_DELETE_PROJECT,constants.ID_CLEAN_PROJECT,\
+                         constants.ID_ARCHIVE_PROJECT,constants.ID_IMPORT_FILES,constants.ID_ADD_FILES_TO_PROJECT,constants.ID_ADD_DIR_FILES_TO_PROJECT,\
+                         constants.ID_PROPERTIES,constants.ID_OPEN_FOLDER_PATH]:
             return self.GetDocument() is not None
-            
+        elif command_id == constants.ID_ADD_CURRENT_FILE_TO_PROJECT:
+            return self.GetDocument() is not None and GetApp().MainFrame.GetNotebook().get_current_editor() is not None
         return False
+        
+    def OnAddCurrentFileToProject(self):
+        doc = self.GetDocumentManager().GetCurrentDocument()
+        filepath = doc.GetFilename()
+        projectDoc = self.GetDocument()
+        if projectDoc.IsFileInProject(filepath):
+            messagebox.showwarning(GetApp().GetAppName(),_("Current document is already in the project"))
+            return
+        folderPath = None
+        if self.GetView().GetMode() == ProjectView.PROJECT_VIEW:
+            selections = self.GetView()._treeCtrl.GetSelections()
+            if selections:
+                item = selections[0]
+                folderPath = self.GetView()._GetItemFolderPath(item)
+        if projectDoc.GetCommandProcessor().Submit(ProjectAddFilesCommand(projectDoc, [filepath],folderPath=folderPath)):
+            AddProjectMapping(doc, projectDoc)
+            self.GetView().Activate()  # after add, should put focus on project editor
+            if folderPath is None:
+                folderPath = ""
+            newFilePath = os.path.join(projectDoc.GetModel().homeDir,folderPath,os.path.basename(filepath))
+            if not os.path.exists(newFilePath):
+                return
+            if not parserutils.ComparePath(newFilePath,filepath):
+                openDoc = doc.GetOpenDocument(newFilePath)
+                if openDoc:
+                    wx.MessageBox(_("Project file is already opened"),style = wx.OK|wx.ICON_WARNING)
+                    openDoc.GetFirstView().GetFrame().SetFocus()
+                    return
+                doc.FileWatcher.StopWatchFile(doc)
+                doc.SetFilename(newFilePath)
+                doc.FileWatcher.StartWatchFile(doc)
+            doc.SetDocumentModificationDate()
 
 class ProjectFileDropTarget(newTkDnD.FileDropTarget):
 

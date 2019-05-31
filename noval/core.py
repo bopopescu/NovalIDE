@@ -211,7 +211,7 @@ class App(tk.Tk):
                     tfile.write("*")
                     tfile.seek(1024)
                     tfile.write(" ")
-                elif utils.is_py3():
+                elif utils.is_py3_plus():
                     tfile.write(bytes("*",'ascii'))
                     tfile.seek(1024)
                     tfile.write(bytes(" ",'ascii'))
@@ -269,7 +269,7 @@ class App(tk.Tk):
             self._sharedMemory.seek(0)
             if utils.is_py2():
                 self._sharedMemory.write_byte("*")
-            elif utils.is_py3():
+            elif utils.is_py3_plus():
                 self._sharedMemory.write_byte(ord("*"))     # finished reading, set buffer free marker
             self._sharedMemory.flush()
             args = pickle.loads(data)
@@ -1667,7 +1667,7 @@ class Document(object):
             #如果保存成功则删除备份文件
             if backupFilename:
                 os.remove(backupFilename)
-        except:
+        except Exception as e:
             # for debugging purposes
             import traceback
             traceback.print_exc()
@@ -1679,7 +1679,7 @@ class Document(object):
             if backupFilename and copied:
                 shutil.copy(backupFilename,filename)
                 os.remove(backupFilename)
-            messagebox.showerror(msgTitle,"Could not save '%s'.  %s" % (fileutils.get_filename_from_path(filename), sys.exc_value),parent=self.GetDocumentWindow())
+            messagebox.showerror(msgTitle,"Could not save '%s'.  %s" % (fileutils.get_filename_from_path(filename), str(e)),parent=self.GetDocumentWindow())
             return False
 
         self.SetDocumentModificationDate()
@@ -1706,7 +1706,7 @@ class Document(object):
 
         if utils.is_py2():
             fileObject = file(filename, 'r')
-        elif utils.is_py3():
+        elif utils.is_py3_plus():
             fileObject = open(filename)
         try:
             self.LoadObject(fileObject)

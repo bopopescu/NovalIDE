@@ -387,6 +387,30 @@ class PopupMenu(tk.Menu):
         self._items.append(menu_menu_item)
         self.add_cascade(label= text, menu=menu)
         
+    def InsertMenu(self,pos,id_, text,menu):
+        text = MenuBar.FormatMenuName(text)
+        self._submenus.append((id_,menu))
+        menu_menu_item = MenuItem(id_,text,None,None,None)
+        self._items.insert(pos,menu_menu_item)
+        self.insert(
+            pos,
+            "cascade",
+            label= text,
+            menu=menu
+        )
+        
+    def InsertMenuAfter(self,item_id,id_, text,menu):
+        pos = -1
+        for i,menu_item in enumerate(self._items):
+            if menu_item.id == item_id:
+                pos = i
+                break
+        if pos >-1:
+            mitem = self.InsertMenu(pos + 1, id_, text, menu)
+        else:
+            mitem = self.AppendMenu(id_, text,menu)
+        return mitem
+        
     def GetMenu(self,id_):
         for menu in self._submenus:
             if menu[0] == id_:

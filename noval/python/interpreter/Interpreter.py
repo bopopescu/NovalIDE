@@ -43,7 +43,7 @@ def GetCommandOutput(command,read_error=False):
         else:
             output = p.stdout.read()
         #PY3输出类型为bytes,需要转换为str类型
-        if utils.is_py3():
+        if utils.is_py3_plus():
             output = str(output,encoding = utils.get_default_encoding())
     except Exception as e:
         utils.get_logger().error("get command %s output error:%s",command,e)
@@ -57,7 +57,7 @@ class PythonEnvironment(object):
         self.environ = {}
         
     def Exist(self,key):
-        return self.environ.has_key(key)
+        return key in self.environ
         
     def GetEnviron(self):
         environ = {}

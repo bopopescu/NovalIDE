@@ -7,7 +7,7 @@ from noval import GetApp
 def profile_get(key,default_value=""):
     if is_py2():
         basestring_ = basestring
-    elif is_py3():
+    elif is_py3_plus():
         basestring_ = str
     if isinstance(default_value,basestring_):
         return GetApp().GetConfig().Read(key, default_value)
@@ -98,7 +98,7 @@ class Config(object):
             except:
                 if is_py2():
                     assert(isinstance(default,basestring))
-                elif is_py3():
+                elif is_py3_plus():
                     assert(isinstance(default,str))
                 return default
             
@@ -112,7 +112,7 @@ class Config(object):
             dest_key_reg,last_key = self.GetDestRegKey(key)
             try:
                 val_type = REG_SZ
-                if is_py3() and type(value) == bytes:
+                if is_py3_plus() and type(value) == bytes:
                     val_type = REG_BINARY
                 dest_key_reg.WriteValueEx(last_key,value,val_type=val_type)
             except Exception as e:
@@ -175,7 +175,7 @@ class Config(object):
             except:
                 if is_py2():
                     assert(isinstance(default,basestring))
-                elif is_py3():
+                elif is_py3_plus():
                     assert(isinstance(default,str))
                 return default
             
@@ -201,7 +201,7 @@ class Config(object):
                 value = int(value)
             assert(type(value) == int)
             #python3 configparser不支持写入整形变量,必须先转换为字符串
-            if is_py3():
+            if is_py3_plus():
                 value = str(value)
             self.cfg.set(section,last_key,value)
             
@@ -220,11 +220,3 @@ def call_after(func):
     def _wrapper(*args, **kwargs): 
         return GetApp().after(100,func, *args, **kwargs) 
     return _wrapper 
-    
-def py3_cmp(l,r):
-    if r < l:
-        return -1
-    if l < r:
-        return 1
-    return 0
-    

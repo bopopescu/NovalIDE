@@ -18,6 +18,7 @@ import noval.util.logger as logger
 import noval.util.apputils as sysutilslib
 from noval.consts import PROJECT_NAMESPACE_URL
 import noval.python.parser.utils as parserutils
+import noval.util.utils as utils
 
 #----------------------------------------------------------------------------
 # Constants
@@ -599,7 +600,7 @@ def load(fileObject):
 def save(fileObject, project, productionDeployment=False):
     if not project._projectDir:
         project._projectDir = os.path.dirname(fileObject.name)
-    if isinstance(project._projectDir,str):
+    if isinstance(project._projectDir,str) and utils.is_py2():
         project._projectDir = project._projectDir.decode("utf-8")
     project.AbsToRelativePath()  # temporarily change it to relative paths for saving
     savedHomeDir = project.homeDir

@@ -9,6 +9,7 @@ import noval.python.parser.utils as parserutils
 import noval.util.fileutils as fileutils
 import os
 import noval.ui_base as ui_base
+import noval.util.strutils as strutils
 
 class FileHistory(hiscache.CycleCache):
     '''
@@ -139,7 +140,7 @@ def update_system_path(env, value):
         env["PATH"] = value
 
 def get_environment_with_overrides(overrides):
-    env = os.environ.copy()
+    env = update_environment_with_overrides(os.environ)
     for key in overrides:
         if overrides[key] is None and key in env:
             del env[key]
@@ -151,6 +152,18 @@ def get_environment_with_overrides(overrides):
                 env[key] = overrides[key]
     return env
     
+def update_environment_with_overrides(overrides):
+    env = overrides.copy()
+    for key in env:
+        if utils.is_py2():
+            if isinstance(key,unicode):
+                key = str(key)
+                utils.get_logger().warn('enrironment key %s is unicode should convert to str',key)
+                env[key] = overrides[key]
+            if isinstance(overrides[key],unicode):
+                utils.get_logger().warn('enrironment key %s value %s is unicode should convert to str',key,overrides[key])
+                env[key] = str(overrides[key])
+    return env
 
 class FullScreenDialog(ui_base.CommonDialog):
     
@@ -247,7 +260,7 @@ class BaseConfigurationPanel(ttk.Frame):
     
     def __init__(self,master,**kw):
         ttk.Frame.__init__(self,master,**kw)
-        self._interprter_configuration_changed = False
+        self._configuration_changed = False
         
     def OnOK(self,optionsDialog):
         if not self.Validate():
@@ -255,12 +268,17 @@ class BaseConfigurationPanel(ttk.Frame):
         return True
         
     def OnCancel(self,optionsDialog):
-        if self._interprter_configuration_changed:
+        if self._configuration_changed:
             return False
         return True
         
-    def NotifyConfigurationChange(self):
-        self._interprter_configuration_changed = True
+    def NotifyConfigurationChanged(self):
+        self._configuration_changed = True
         
     def Validate(self):
         return True
+        
+def check_chardet_version():
+    import chardet
+    if strutils.compare_version(chardet.__version__,"3.0.4") <0:
+        raise RuntimeError(_("chardet version is less then 3.0.4,please use python pip to upgrade it first!"))

@@ -61,16 +61,15 @@ class NewVirtualEnvDialog(ui_base.CommonModaldialog):
     def __init__(self,parent,interpreter,title):
         ui_base.CommonModaldialog.__init__(self,parent)
         self.title(title)
-        wx.StaticText(self, -1, _("Name:"))
-        self.name_ctrl = wx.TextCtrl(self, -1, "", size=(-1,-1))
-        wx.StaticText(self, -1, _("Location:"))
-        self.path_ctrl = wx.TextCtrl(self, -1, "", size=(-1,-1))
-        self.path_ctrl.SetToolTipString(_("set the location of virtual env"))
-        self.browser_btn = wx.Button(self, -1, _("..."),size=(40,-1))
-        wx.EVT_BUTTON(self.browser_btn, -1, self.ChooseVirtualEnvPath)
-        self._interprterChoice = wx.combo.BitmapComboBox(self, -1, "",choices = self.GetChoices(),size=(-1,-1), style=wx.CB_READONLY)
+        ttk.Label(self, text=_("Name:"))
+        self.name_ctrl = ttk.Entry(self)
+        ttk.Label(self, text= _("Location:"))
+        path_ctrl = ttk.Entry(self)
+        misc.create_tooltip(path_ctrl,_("set the location of virtual env"))
+        self.browser_btn = ttk.Button(self, text= "...",command=self.ChooseVirtualEnvPath)
+        self._interprterChoice = ttk.Combobox(self,values = self.GetChoices(),state="readonly")
         wx.StaticText(parent, -1, "")
-        self._includeSitePackgaes = wx.CheckBox(self, -1, _("Inherited system site-packages from base interpreter"))
+        self._includeSitePackgaes = ttk.Checkbutton(self, text=_("Inherited system site-packages from base interpreter"))
         self.AddokcancelButton()
         self._interpreter = interpreter
         self.LoadInterpreters()
@@ -119,12 +118,14 @@ class NewVirtualEnvDialog(ui_base.CommonModaldialog):
         self.EndModal(wx.ID_OK)
 
 class AddInterpreterDialog(ui_base.CommonModaldialog):
-    def __init__(self,parent,title):
+    def __init__(self,parent,title,id_modify_dlg=False):
         ui_base.CommonModaldialog.__init__(self,parent)
+        self._id_modify_dlg = id_modify_dlg
         self.title(title)
         row = ttk.Frame(self.main_frame)
         ttk.Label(row,text=_("Interpreter Path:")).pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
-        self.path_ctrl = ttk.Entry(row,text="")
+        self.path_var = tk.StringVar()
+        self.path_ctrl = ttk.Entry(row,text="",textvariable=self.path_var)
         if sysutils.is_windows():
             misc.create_tooltip(self.path_ctrl,_("set the location of python.exe or pythonw.exe"))
         else:
@@ -135,8 +136,8 @@ class AddInterpreterDialog(ui_base.CommonModaldialog):
         row.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         row = ttk.Frame(self.main_frame)
         ttk.Label(row, text=_("Interpreter Name:")).pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
-        self.name = tk.StringVar()
-        self.name_ctrl = ttk.Entry(row,textvariable=self.name)
+        self.name_var = tk.StringVar()
+        self.name_ctrl = ttk.Entry(row,textvariable=self.name_var)
         self.name_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
         misc.create_tooltip(self.name_ctrl,_("set the name of python interpreter"))
         row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
@@ -154,9 +155,21 @@ class AddInterpreterDialog(ui_base.CommonModaldialog):
         )
         if not path:
             return
-        self.path_ctrl.SetValue(path)
-        self.name_ctrl.SetValue(path)
-        self.path_ctrl.SetInsertionPointEnd()
+        self.path_var.set(path)
+        self.name_var.set(path)
+        
+    def _ok(self, event=None):
+        if 0 == len(self.name_var.get()):
+            messagebox.showerror(_("Error"),_("Interpreter Name is empty"),parent=self)
+            return
+        if not self._id_modify_dlg:
+            if 0 == len(self.path_var.get()):
+                messagebox.showerror(_("Error"),_("Interpreter Path is empty"),parent=self)
+                return
+            elif not os.path.exists(self.path_ctrl.get()):
+                messagebox.showerror(_("Error"),_("Interpreter Path is not exist"),parent=self)
+                return
+        ui_base.CommonModaldialog._ok(self,event)
         
 class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
     def __init__(self,parent):
@@ -207,7 +220,6 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
         nb.add(self.builtin_panel, text=_("Builtin Modules"),image=self.builtin_icon,compound=tk.LEFT)
         self.environment_panel = Environment.EnvironmentPanel(nb)
         nb.add(self.environment_panel, text=_("Environment Variable"),image=self.environment_icon,compound=tk.LEFT)
-        self._interprter_configuration_changed = False
         self._interpreters = []
         self._current_interpreter = None
         self.ScanAllInterpreters()
@@ -280,7 +292,7 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
                     self.AddOneInterpreter(interpreter)
                     auto_generate_database = self.GetParent().GetOptionPanel(INTERPRETER_OPTION_NAME,GENERAL_ITEM_NAME).IsAutoGenerateDatabase()
                     self.SmartAnalyse(interpreter,auto_generate_database)
-                    self._interprter_configuration_changed = True
+                    self.NotifyConfigurationChanged()
                 except RuntimeError as e:
                     wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR,self)
             return True
@@ -375,46 +387,26 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
         interpreter_name = self.listview.tree.item(item)['values'][1]
         dlg.name_ctrl.insert('insert',interpreter_name)
         status = dlg.ShowModal()
-        passedCheck = False
-        if status == constants.ID_OK and not passedCheck:
-            if 0 == len(dlg.name.get()):
-                messagebox.showerror(_("Error"),_("Interpreter Name is empty"),parent=self)
-                status = dlg.ShowModal()
-            else:
-                name = dlg.name_ctrl.get()
-                if interpreter_name != name:
-                    self._interprter_configuration_changed = True
-                    self.dvlc.SetTextValue(name,index,0)
-                passedCheck = True
-        dlg.destroy()
+        if status == constants.ID_OK:
+            name = dlg.name_ctrl.get()
+            if interpreter_name != name:
+                self.NotifyConfigurationChanged()
+                self.dvlc.SetTextValue(name,index,0)
         
     def AddInterpreter(self):
         dlg = AddInterpreterDialog(self,_("Add Interpreter"))
         status = dlg.ShowModal()
-        passedCheck = False
-        while status == constants.ID_OK and not passedCheck:
-            if 0 == len(dlg.path_ctrl.GetValue()):
-                wx.MessageBox(_("Interpreter Path is empty"),_("Error"),wx.OK|wx.ICON_ERROR,self)
-                status = dlg.ShowModal()
-            elif 0 == len(dlg.name_ctrl.GetValue()):
-                wx.MessageBox(_("Interpreter Name is empty"),_("Error"),wx.OK|wx.ICON_ERROR,self)
-                status = dlg.ShowModal()
-            elif not os.path.exists(dlg.path_ctrl.GetValue()):
-                wx.MessageBox(_("Interpreter Path is not exist"),_("Error"),wx.OK|wx.ICON_ERROR,self)
-                status = dlg.ShowModal()
-            else:
-                try:
-                    interpreter = interpretermanager.InterpreterAdmin(self._interpreters).AddPythonInterpreter(dlg.path_ctrl.GetValue(),dlg.name_ctrl.GetValue())
-                    self.AddOneInterpreter(interpreter)
-                    self._interprter_configuration_changed = True
-                    auto_generate_database = self.GetParent().GetOptionPanel(INTERPRETER_OPTION_NAME,GENERAL_ITEM_NAME).IsAutoGenerateDatabase()
-                    self.SmartAnalyse(interpreter,auto_generate_database)
-                    passedCheck = True
-                except RuntimeError as e:
-                    wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR,self)
-                    status = dlg.ShowModal()     
+        if status == constants.ID_OK:
+            try:
+                interpreter = interpretermanager.InterpreterAdmin(self._interpreters).AddPythonInterpreter(dlg.path_var.get(),dlg.name_var.get())
+                self.AddOneInterpreter(interpreter)
+                self.NotifyConfigurationChanged()
+                auto_generate_database = self.GetParent().GetOptionPanel(INTERPRETER_OPTION_NAME,GENERAL_ITEM_NAME).IsAutoGenerateDatabase()
+                self.SmartAnalyse(interpreter,auto_generate_database)
+                passedCheck = True
+            except RuntimeError as e:
+                messagebox.showerror(_("Error"),e.msg,parent=self)
         self.UpdateUI()
-        dlg.Destroy()
         
     def AddOneInterpreter(self,interpreter):
         def GetDefaultFlag(is_default):
@@ -446,7 +438,7 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
             interpreter = interpretermanager.InterpreterAdmin(self._interpreters).GetInterpreterById(id)
             self._interpreters.remove(interpreter)
             self.listview.tree.delete(item)
-            self._interprter_configuration_changed = True
+            self.NotifyConfigurationChanged()
             
         self.UpdateUI()
         
@@ -464,7 +456,7 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
                 self.listview.tree.set(item, column=4, value=_(YES_FLAG))
             else:
                 self.listview.tree.set(child, column=4, value=_(NO_FLAG))
-        self._interprter_configuration_changed = True
+        self.NotifyConfigurationChanged()
         
     def SmartAnalyseIntreprter(self):
         index = self.dvlc.GetSelectedRow()
@@ -474,7 +466,7 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
         id = self.dvlc.GetItemData(item)
         interpreter = interpretermanager.InterpreterAdmin(self._interpreters).GetInterpreterById(id)
         self.SmartAnalyse(interpreter)
-        self._interprter_configuration_changed = True
+        self.NotifyConfigurationChanged()
 
     def SmartAnalyse(self,interpreter,auto_generate_database=True):
         if interpreter.IsBuiltIn:
@@ -539,14 +531,14 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
     def OnOK(self,optionsDialog):
         
         is_pythonpath_changed = self.path_panel.GetPythonPathList()
-        self._interprter_configuration_changed = self._interprter_configuration_changed or is_pythonpath_changed
+        self._configuration_changed = self._configuration_changed or is_pythonpath_changed
         try:
             is_environment_changed = self.environment_panel.GetEnviron()
-            self._interprter_configuration_changed = self._interprter_configuration_changed or is_environment_changed
+            self._configuration_changed = self._configuration_changed or is_environment_changed
         except PromptErrorException as e:
             wx.MessageBox(e.msg,_("Environment Variable Error"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
             return False
-        if self._interprter_configuration_changed:
+        if self._configuration_changed:
             self.SaveInterpreterConfiguration()
             
         current_interpreter = interpretermanager.InterpreterManager.GetCurrentInterpreter()
@@ -575,17 +567,13 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
         for interpreter in interpretermanager.InterpreterManager.interpreters:
             if interpreter.IsLoadingPackage:
                 interpreter.StopLoadingPackage()
-        self._interprter_configuration_changed = self._interprter_configuration_changed or self.path_panel.CheckPythonPath()
-        self._interprter_configuration_changed = self._interprter_configuration_changed or self.environment_panel.CheckEnviron()
-        if self._interprter_configuration_changed:
-            ret = wx.MessageBox(_("Interpreter configuration has already been modified outside,Do you want to save?"), _("Save interpreter configuration"),
-                           wx.YES_NO  | wx.ICON_QUESTION,self)
-            if ret == wx.YES:
+        self._configuration_changed = self._configuration_changed or self.path_panel.CheckPythonPath()
+        self._configuration_changed = self._configuration_changed or self.environment_panel.CheckEnviron()
+        if self._configuration_changed:
+            ret = messagebox.askyesno(_("Save interpreter configuration"),_("Interpreter configuration has already been modified outside,Do you want to save?"),parent=self)
+            if ret == True:
                 self.OnOK(optionsDialog)
         return True
-        
-    def NotifyConfigurationChange(self):
-        self._interprter_configuration_changed = True
         
 class AnalyseProgressDialog(ui_base.GenericProgressDialog):
     

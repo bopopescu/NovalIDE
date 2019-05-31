@@ -1,4 +1,4 @@
-from noval import _
+from noval import _,GetApp
 import tkinter as tk
 from tkinter import ttk
 import noval.consts as consts
@@ -30,10 +30,14 @@ class MultiStatusBar(ui_base.DockFrame):
         if width != 0:
             label.config(width=width)
         label.config(text=text)
+        return label
         
     def SetLineNumber(self, lineNumber):
         newText = _("Ln %i") % lineNumber
         self.set_label(consts.STATUS_BAR_LABEL_LINE,newText,side=tk.RIGHT)
+        
+    def GotoLine(self,event):
+        GetApp().MainFrame.GetNotebook().GotoLine()
 
     def SetColumnNumber(self, colNumber):
         newText = _("Col %i") % colNumber

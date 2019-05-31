@@ -14,6 +14,35 @@ import noval.menu as tkmenu
 import noval.misc as misc
 import threading
 from noval.project.command import ProjectAddProgressFilesCommand
+from noval.python.parser.utils import py_cmp,py_sorted
+import noval.terminal as terminal
+
+
+class EntryPopup(tk.Entry):
+
+    def __init__(self, parent, text, item,**kw):
+        ''' If relwidth is set, then width is ignored '''
+        tk.Entry.__init__(self,parent, **kw)
+        self.item = item
+
+        self.insert(0, text) 
+      #  self['state'] = 'readonly'
+        self['readonlybackground'] = 'white'
+        self['selectbackground'] = '#1BA1E2'
+        self['exportselection'] = False
+
+        self.focus_force()
+        self.bind("<Control-a>", self.selectAll)
+        self.bind("<Escape>", lambda *ignore: self.destroy())
+        self.bind("<Return>",self.master.FinishLabel)
+        self.selectAll()
+
+    def selectAll(self, *ignore):
+        ''' Set selection on the whole text '''
+        self.selection_range(0, 'end')
+
+        # returns 'break' to interrupt default key-bindings
+        return 'break'
 
 def AddProjectMapping(doc, projectDoc=None, hint=None):
     project_view = GetApp().MainFrame.GetProjectView()
@@ -32,7 +61,7 @@ class ProjectTreeCtrl(ttk.Treeview):
     
     #用来设置粗体节点,粗体节点用来表示项目启动文件
     BOLD_TAG = 'BoldItem'
-
+    NORMAL_TAG = 'NormalItem'
     #----------------------------------------------------------------------------
     # Overridden Methods
     #----------------------------------------------------------------------------
@@ -43,6 +72,13 @@ class ProjectTreeCtrl(ttk.Treeview):
         self._blankIconImage = imageutils.getBlankIcon()
         self._packageFolderImage = imageutils.getPackageFolderIcon()
         self._folderClosedImage = imageutils.getFolderClosedIcon()
+        
+        self.is_edit_state = False
+        self.entryPopup = None
+        
+        self.bind("<Escape>", self.EndLabel)
+        self.bind("<<TreeviewSelect>>", self.OnItemSelect)
+        self.bind("<Button-1>", self.FinishLabel)
         
     def SelectItem(self,node):
         self.selection_set(node)
@@ -57,9 +93,13 @@ class ProjectTreeCtrl(ttk.Treeview):
         
         
     #设置项目启动文件节点为粗体
-    def SetItemBold(self,node):
-        self.item(node, tags=(self.BOLD_TAG))
-        self.tag_configure(self.BOLD_TAG, font=consts.TREE_VIEW_BOLD_FONT)
+    def SetItemBold(self,node,bold=True):
+        if bold:
+            self.item(node, tags=(self.BOLD_TAG))
+            self.tag_configure(self.BOLD_TAG, font=consts.TREE_VIEW_BOLD_FONT)
+        else:
+            self.item(node, tags=(self.NORMAL_TAG))
+            self.tag_configure(self.NORMAL_TAG, font=consts.TREE_VIEW_FONT)
         
     def GetPyData(self,node):
         values = self.item(node)["values"]
@@ -70,12 +110,11 @@ class ProjectTreeCtrl(ttk.Treeview):
     def SortChildren(self,node):
         # update tree
         children = self.get_children(node)
-        if utils.is_py2():
-            ids_sorted_by_name = sorted(children, cmp=self.OnCompareItems)
-        elif utils.is_py3():
-            import functools
-            ids_sorted_by_name = sorted(children, key=functools.cmp_to_key(self.OnCompareItems))
+        ids_sorted_by_name = py_sorted(children, cmp_func=self.OnCompareItems)
         self.set_children(node, *ids_sorted_by_name)
+        
+    def GetChildrenCount(self,item):
+        return len(self.get_children(item))
         
     def DeleteChildren(self,node):
         for child_id in self.get_children(node):
@@ -89,16 +128,38 @@ class ProjectTreeCtrl(ttk.Treeview):
         if 0 == len(childs):
             return None
         return childs[0]
+        
+    def OnItemSelect(self,event):
+        self.FinishLabel(event)
+        
+    def EndLabel(self,event):
+        if not self.is_edit_state or self.entryPopup is None:
+            return
+        self.entryPopup.destroy()
+        self.entryPopup = None
+        self.is_edit_state = False
+                
+    def FinishLabel(self,event):
+        if not self.is_edit_state or self.entryPopup is None:
+            return
+        self.master.GetView().OnEndLabelEdit(self.entryPopup.item,self.entryPopup.get())
+        self.EndLabel(event)
+        
+    def EditLabel(self,item):
+        self.is_edit_state = True
+        x,y,width,height = self.bbox(item)
+        # y-axis offset
+        pady = height // 2
+        # place Entry popup properly         
+        text = self.item(item, 'text')
+        self.entryPopup = EntryPopup(self,text,item)
+        self.entryPopup.place( x=30, y=y+pady, anchor=tk.W, relwidth=1)
 
     def OnCompareItems(self, item1, item2):
         item1IsFolder = (self.GetPyData(item1) == None)
         item2IsFolder = (self.GetPyData(item2) == None)
         if (item1IsFolder == item2IsFolder):  # if both are folders or both not
-            #python3没有cmp函数,自己实现一个
-            if utils.is_py2():
-                return cmp(self.item(item1,"text").lower(), self.item(item2,"text").lower())
-            elif utils.is_py3():
-                return utils.py3_cmp(self.item(item1,"text").lower(), self.item(item2,"text").lower())
+            return py_cmp(self.item(item1,"text").lower(), self.item(item2,"text").lower())
         elif item1IsFolder and not item2IsFolder: # folders sort above non-folders
             return -1
         elif not item1IsFolder and item2IsFolder: # folders sort above non-folders
@@ -215,7 +276,7 @@ class ProjectTreeCtrl(ttk.Treeview):
         return None
 
     def GetSingleSelectItem(self):
-        items = self.GetSelections()
+        items = self.selection()
         if not items:
             return None
         return items[0]
@@ -259,6 +320,7 @@ class BaseProjectbrowser(ttk.Frame):
         self.rowconfigure(1, weight=1)
         #鼠标双击Tree控件事件
         self.tree.bind("<Double-Button-1>", self.on_double_click, "+")
+        self.tree.bind("<Return>",self.OnEnter)
         #展开节点时记住并保存子节点展开状态
         self.tree.bind("<<TreeviewOpen>>", self.OpenTreeItem)
         #软件启动时加载存储配置保存的历史项目列表,记住这个状态
@@ -305,8 +367,18 @@ class BaseProjectbrowser(ttk.Frame):
         if not file_path:
             return None
         return self.GetView().GetDocument().GetModel().FindFile(file_path)
+        
+    def OnEnter(self,event):
+        if self.tree.is_edit_state:
+            self.tree.FinishLabel(event)
+            return
+            
+        self.OpenSelection()
 
     def on_double_click(self, event):
+        self.OpenSelection()
+        
+    def OpenSelection(self):
         doc = None
         try:
             item = self.tree.selection()[0]
@@ -484,11 +556,12 @@ class BaseProjectbrowser(ttk.Frame):
         GetApp().AddCommand(constants.ID_DELETE_PROJECT,_("&Project"),_("Delete Project"),self.DeleteProject,image="project/trash.png",tester=lambda:self.GetView().UpdateUI(constants.ID_DELETE_PROJECT))
         GetApp().AddCommand(constants.ID_CLEAN_PROJECT,_("&Project"),_("Clean Project"),self.CleanProject,tester=lambda:self.GetView().UpdateUI(constants.ID_CLEAN_PROJECT))
         GetApp().AddCommand(constants.ID_ARCHIVE_PROJECT,_("&Project"),_("Archive Project"),self.ArchiveProject,image="project/archive.png",add_separator=True,tester=lambda:self.GetView().UpdateUI(constants.ID_ARCHIVE_PROJECT))
-        GetApp().AddCommand(constants.ID_IMPORT_FILES,_("&Project"),_("Import Files..."),None,image=GetApp().GetImage("project/import.png"))
-        GetApp().AddCommand(constants.ID_ADD_FILES_TO_PROJECT,_("&Project"),_("Add &Files to Project..."),None)
-        GetApp().AddCommand(constants.ID_ADD_CURRENT_FILE_TO_PROJECT,_("&Project"),_("Add Directory Files to Project..."),None,add_separator=True)
-        GetApp().AddCommand(constants.ID_NEW_PROJECT,_("&Project"),_("New Project"),None,image=GetApp().GetImage("project/new.png"))
-        
+        GetApp().AddCommand(constants.ID_IMPORT_FILES,_("&Project"),_("Import Files..."),None,image=GetApp().GetImage("project/import.png"),tester=lambda:self.GetView().UpdateUI(constants.ID_IMPORT_FILES))
+        GetApp().AddCommand(constants.ID_ADD_FILES_TO_PROJECT,_("&Project"),_("Add &Files to Project..."),handler=lambda:self.ProcessEvent(constants.ID_ADD_FILES_TO_PROJECT),tester=lambda:self.GetView().UpdateUI(constants.ID_ADD_FILES_TO_PROJECT))
+        GetApp().AddCommand(constants.ID_ADD_DIR_FILES_TO_PROJECT,_("&Project"),_("Add Directory Files to Project..."),handler=lambda:self.ProcessEvent(constants.ID_ADD_DIR_FILES_TO_PROJECT),tester=lambda:self.GetView().UpdateUI(constants.ID_ADD_DIR_FILES_TO_PROJECT))
+        GetApp().AddCommand(constants.ID_ADD_CURRENT_FILE_TO_PROJECT,_("&Project"),_("&Add Active File to Project..."),handler=lambda:self.ProcessEvent(constants.ID_ADD_CURRENT_FILE_TO_PROJECT),add_separator=True,tester=lambda:self.GetView().UpdateUI(constants.ID_ADD_CURRENT_FILE_TO_PROJECT))
+        GetApp().AddCommand(constants.ID_PROPERTIES,_("&Project"),_("Project Properties"),None,image=GetApp().GetImage("project/properties.png"),tester=lambda:self.GetView().UpdateUI(constants.ID_PROPERTIES))
+        GetApp().AddCommand(constants.ID_OPEN_FOLDER_PATH,_("&Project"),_("Open Project Path in Explorer"),handler=self.OpenProjectPath,tester=lambda:self.GetView().UpdateUI(constants.ID_OPEN_FOLDER_PATH))
 
     def NewProject(self):
         '''
@@ -510,6 +583,7 @@ class BaseProjectbrowser(ttk.Frame):
         )
         if not project_path:
             return
+        project_path = fileutils.opj(project_path)
         docs = GetApp().GetDocumentManager().CreateDocument(project_path, core.DOC_SILENT|core.DOC_OPEN_ONCE)
         if not docs:  # project already open
             self.SetProject(project_path)
@@ -543,82 +617,46 @@ class BaseProjectbrowser(ttk.Frame):
         return None
         
     def on_secondary_click(self, event):
-        node_id = self.tree.identify_row(event.y)
-        if node_id:
-            self.tree.selection_set(node_id)
-            self.tree.focus(node_id)
-            if not self.tree.parent(node_id):
-                menu = self.GetPopupProjectMenu()
-            else:
+        items = self.tree.selection()
+        if items:
+            if self.GetView()._HasFilesSelected():
                 menu = self.GetPopupFileMenu()
+            else:
+                if not self.tree.parent(items[0]):
+                    menu = self.GetPopupProjectMenu()
+                else:
+                    menu = self.GetPopupFolderMenu()
         menu["postcommand"] = lambda: menu._update_menu()
         menu.tk_popup(event.x_root, event.y_root)
 
     def GetPopupFileMenu(self):
         menu = tkmenu.PopupMenu(self,**misc.get_style_configuration("Menu"))
-        menu.Append(constants.ID_OPEN_SELECTION, _("&Open"))
+        menu.Append(constants.ID_OPEN_SELECTION, _("&Open"),handler=lambda:self.ProcessEvent(constants.ID_OPEN_SELECTION))
         common_item_ids = [None,consts.ID_UNDO,consts.ID_REDO,consts.ID_CUT,consts.ID_COPY,consts.ID_PASTE,consts.ID_CLEAR,None,consts.ID_SELECTALL]
         self.GetCommonItemsMenu(menu,common_item_ids)
         
         menu.Append(constants.ID_RENAME,_("&Rename"),handler=lambda:self.ProcessEvent(constants.ID_RENAME))
         menu.Append(constants.ID_REMOVE_FROM_PROJECT,_("Remove from Project"),handler=lambda:self.ProcessEvent(constants.ID_REMOVE_FROM_PROJECT))
-##        tree_item = self._treeCtrl.GetSingleSelectItem()
-##        filePath = self._GetItemFilePath(tree_item)
-##        itemIDs = []
-##        if self._IsItemFile(tree_item) and fileutils.is_python_file(filePath):
-##            menuBar = wx.GetApp().GetTopWindow().GetMenuBar()
-##            menu_item = menuBar.FindItemById(constants.ID_RUN)
-##            item = wx.MenuItem(menu,constants.ID_START_RUN,_("&Run"), kind = wx.ITEM_NORMAL)
-##            item.SetBitmap(menu_item.GetBitmap())
-##            menu.AppendItem(item)
-##            wx.EVT_MENU(self._treeCtrl, constants.ID_START_RUN, self.ProcessEvent)
-##            
-##            debug_menu = wx.Menu()
-##            menu.AppendMenu(wx.NewId(), _("Debug"), debug_menu)
-##
-##            menu_item = menuBar.FindItemById(constants.ID_DEBUG)
-##            item = wx.MenuItem(menu,constants.ID_START_DEBUG,_("&Debug"), kind = wx.ITEM_NORMAL)
-##            item.SetBitmap(menu_item.GetBitmap())
-##            debug_menu.AppendItem(item)
-##            wx.EVT_MENU(self._treeCtrl, constants.ID_START_DEBUG, self.ProcessEvent)
-##            
-##            item = wx.MenuItem(menu,constants.ID_BREAK_INTO_DEBUGGER,_("&Break into Debugger"), kind = wx.ITEM_NORMAL)
-##            debug_menu.AppendItem(item)
-##            wx.EVT_MENU(self._treeCtrl, constants.ID_BREAK_INTO_DEBUGGER, self.ProcessEvent)
-##            if tree_item != self._bold_item:
-##                menu.Append(constants.ID_SET_PROJECT_STARTUP_FILE, _("Set as Startup File..."), _("Set the start script of project"))
-##                wx.EVT_MENU(self._treeCtrl, constants.ID_SET_PROJECT_STARTUP_FILE, self.ProcessEvent)
-##                wx.EVT_UPDATE_UI(self._treeCtrl, constants.ID_SET_PROJECT_STARTUP_FILE, self.ProcessUpdateUIEvent)
-##            itemIDs.append(None)
-##        itemIDs.append(Property.FilePropertiesService.PROPERTIES_ID)
-##        self.GetCommonItemsMenu(menu,itemIDs)
-##        menu.Append(constants.ID_OPEN_FOLDER_PATH, _("Open Path in Explorer"))
-##        wx.EVT_MENU(self._treeCtrl, constants.ID_OPEN_FOLDER_PATH, self.ProcessEvent)
-##        
-##        menu.Append(constants.ID_OPEN_TERMINAL_PATH, _("Open Command Prompt here..."))
-##        wx.EVT_MENU(self._treeCtrl, constants.ID_OPEN_TERMINAL_PATH, self.ProcessEvent)
-##
-##        menu.Append(constants.ID_COPY_PATH, _("Copy Full Path"))
-##        wx.EVT_MENU(self._treeCtrl, constants.ID_COPY_PATH, self.ProcessEvent)
-        
+        self.AppendFileFoderCommonMenu(menu)
         return menu
-
+        
+    def AppendFileFoderCommonMenu(self,menu):
+        menu.add_separator()
+        menu.Append(constants.ID_PROPERTIES,_("&Properties"),handler=lambda:self.ProcessEvent(constants.ID_PROPERTIES))
+        menu.Append(constants.ID_OPEN_FOLDER_PATH,_("Open Path in Explorer"),handler=lambda:self.ProcessEvent(constants.ID_OPEN_FOLDER_PATH))
+        menu.Append(constants.ID_OPEN_TERMINAL_PATH,_("Open Command Prompt here..."),handler=lambda:self.ProcessEvent(constants.ID_OPEN_TERMINAL_PATH))
+        menu.Append(constants.ID_COPY_PATH,_("Copy Full Path"),handler=lambda:self.ProcessEvent(constants.ID_COPY_PATH))
+        
     def GetPopupFolderMenu(self):
-        menu = wx.Menu()
-        itemIDs = [constants.ID_IMPORT_FILES,constants.ID_ADD_FILES_TO_PROJECT, \
-                           constants.ID_ADD_DIR_FILES_TO_PROJECT,constants.ID_ADD_NEW_FILE,constants.ID_ADD_FOLDER, constants.ID_ADD_PACKAGE_FOLDER]
-        itemIDs.extend([None,wx.ID_UNDO, wx.ID_REDO, None, wx.ID_CUT, wx.ID_COPY, wx.ID_PASTE, wx.ID_CLEAR,None, \
-                            wx.ID_SELECTALL,ProjectService.RENAME_ID , constants.ID_REMOVE_FROM_PROJECT, None, Property.FilePropertiesService.PROPERTIES_ID])
-        self.GetCommonItemsMenu(menu,itemIDs)
+        menu = tkmenu.PopupMenu(self,**misc.get_style_configuration("Menu"))
+        menu["postcommand"] = lambda: menu._update_menu()
+        common_item_ids = [None,consts.ID_UNDO,consts.ID_REDO,consts.ID_CUT,consts.ID_COPY,consts.ID_PASTE,consts.ID_CLEAR,None,consts.ID_SELECTALL]
+        self.GetCommonItemsMenu(menu,common_item_ids)
         
-        menu.Append(constants.ID_OPEN_FOLDER_PATH, _("Open Path in Explorer"))
-        wx.EVT_MENU(self._treeCtrl, constants.ID_OPEN_FOLDER_PATH, self.ProcessEvent)
+        menu.Append(constants.ID_RENAME,_("&Rename"),handler=lambda:self.ProcessEvent(constants.ID_RENAME))
+        menu.Append(constants.ID_REMOVE_FROM_PROJECT,_("Remove from Project"),handler=lambda:self.ProcessEvent(constants.ID_REMOVE_FROM_PROJECT))
         
-        menu.Append(constants.ID_OPEN_TERMINAL_PATH, _("Open Command Prompt here..."))
-        wx.EVT_MENU(self._treeCtrl, constants.ID_OPEN_TERMINAL_PATH, self.ProcessEvent)
-
-        menu.Append(constants.ID_COPY_PATH, _("Copy Full Path"))
-        wx.EVT_MENU(self._treeCtrl, constants.ID_COPY_PATH, self.ProcessEvent)
+        self.AppendFileFoderCommonMenu(menu)
         return menu
         
     def GetPopupProjectMenu(self):
@@ -630,17 +668,12 @@ class BaseProjectbrowser(ttk.Frame):
                             constants.ID_CLEAN_PROJECT,constants.ID_ARCHIVE_PROJECT])
             common_item_ids.extend([None,constants.ID_IMPORT_FILES,constants.ID_ADD_FILES_TO_PROJECT, \
                                constants.ID_ADD_DIR_FILES_TO_PROJECT,None,constants.ID_ADD_NEW_FILE,constants.ID_ADD_FOLDER,constants.ID_ADD_PACKAGE_FOLDER])
-            common_item_ids.extend([None, constants.ID_PROJECT_PROPERTIES])
-       # itemIDs.append(ProjectService.RENAME_ID)
-        #itemIDs.append(constants.ID_OPEN_PROJECT_PATH)
+            common_item_ids.extend([None, constants.ID_PROPERTIES,constants.ID_OPEN_FOLDER_PATH])
         self.GetCommonItemsMenu(menu,common_item_ids)
-
-     #   menu.Append(constants.ID_OPEN_TERMINAL_PATH, _("Open Command Prompt here..."))
-      #  wx.EVT_MENU(self._treeCtrl, constants.ID_OPEN_TERMINAL_PATH, self.ProcessEvent)
-
-      #  menu.Append(constants.ID_COPY_PATH, _("Copy Full Path"))
-       # wx.EVT_MENU(self._treeCtrl, constants.ID_COPY_PATH, self.ProcessEvent)
-
+        if self.GetCurrentProject() is not None:
+            menu.Append(constants.ID_RENAME,_("&Rename"),handler=lambda:self.ProcessEvent(constants.ID_RENAME))
+            menu.Append(constants.ID_OPEN_TERMINAL_PATH,_("Open Command Prompt here..."),handler=lambda:self.ProcessEvent(constants.ID_OPEN_TERMINAL_PATH))
+            menu.Append(constants.ID_COPY_PATH,_("Copy Full Path"),handler=lambda:self.ProcessEvent(constants.ID_COPY_PATH))
         return menu
         
     def GetCommonItemsMenu(self,menu,menu_item_ids):
@@ -667,13 +700,14 @@ class BaseProjectbrowser(ttk.Frame):
     def ProcessEvent(self, id):
         view = self.GetView()
         if id == constants.ID_ADD_FILES_TO_PROJECT:
-            self.OnAddFileToProject(event)
+            view.OnAddFileToProject()
             return True
         elif id == constants.ID_ADD_DIR_FILES_TO_PROJECT:
-            self.OnAddDirToProject(event)
+            view.OnAddDirToProject()
             return True
         elif id == constants.ID_ADD_CURRENT_FILE_TO_PROJECT:
-            return False  # Implement this one in the service
+            view.OnAddCurrentFileToProject()
+            return True
         elif id == constants.ID_ADD_NEW_FILE:
             self.OnAddNewFile(event)
             return True
@@ -708,44 +742,65 @@ class BaseProjectbrowser(ttk.Frame):
             self.OnSelectAll(event)
             return True
         elif id == constants.ID_OPEN_SELECTION:
-            self.OnOpenSelection(event)
+            self.OpenSelection()
             return True
-        elif id == Property.FilePropertiesService.PROPERTIES_ID:
+        elif id == constants.ID_PROPERTIES:
             self.OnProperties(event)
             return True
-        elif id == constants.ID_PROJECT_PROPERTIES:
-            self.OnProjectProperties()
-            return True
+   #     elif id == constants.ID_PROJECT_PROPERTIES:
+    #        self.OnProjectProperties()
+     #       return True
         elif id == constants.ID_IMPORT_FILES:
             self.ImportFilesToProject(event)
             return True
-        elif id == constants.ID_OPEN_PROJECT_PATH:
-            self.OpenProjectPath(event)
-            return True
-        elif id == constants.ID_SET_PROJECT_STARTUP_FILE:
-            self.SetProjectStartupFile()
-            return True
-        elif id == constants.ID_START_RUN:
-            self.RunFile()
-            return True
-        elif id == constants.ID_START_DEBUG:
-            self.DebugRunFile()
-            return True
-        elif id == constants.ID_BREAK_INTO_DEBUGGER:
-            self.BreakintoDebugger()
-            return True
         elif id == constants.ID_OPEN_FOLDER_PATH:
-            self.OpenFolderPath(event)
+            self.OpenFolderPath()
             return True
         elif id == constants.ID_OPEN_TERMINAL_PATH:
-            self.OpenPromptPath(event)
+            self.OpenPromptPath()
             return True
         elif id == constants.ID_COPY_PATH:
-            self.CopyPath(event)
+            self.CopyPath()
             return True
         else:
             return False
             
+    def OpenProjectPath(self):
+        document = self.GetCurrentProject()
+        fileutils.open_file_directory(document.GetFilename())
+        
+    def OpenFolderPath(self):
+        document = self.GetCurrentProject()
+        project_path = os.path.dirname(document.GetFilename())
+        item = self.tree.GetSingleSelectItem()
+        filePath = self.GetItemPath(item)
+        fileutils.open_file_directory(filePath)
+        
+    def OpenPromptPath(self):
+        document = self.GetCurrentProject()
+        project_path = os.path.dirname(document.GetFilename())
+        item = self.tree.GetSingleSelectItem()
+        filePath = self.GetItemPath(item)
+        if self.GetView()._IsItemFile(item):
+            filePath = os.path.dirname(filePath)
+        terminal.open_system_shell(cwd=filePath)
+            
+    def CopyPath(self):
+        document = self.GetCurrentProject()
+        project_path = os.path.dirname(document.GetFilename())
+        item = self.tree.GetSingleSelectItem()
+        filePath = self.GetItemPath(item)
+        utils.CopyToClipboard(filePath)
+
+    def GetItemPath(self,item):
+        if self.GetView()._IsItemFile(item):
+            filePath = self.GetView()._GetItemFilePath(item)
+        else:
+            document = self.GetCurrentProject()
+            project_path = os.path.dirname(document.GetFilename())
+            filePath = fileutils.opj(os.path.join(project_path,self.GetView()._GetItemFolderPath(item)))
+        return filePath
+
     def StartCopyFilesToProject(self,progress_ui,file_list,src_path,dest_path):
         self.copy_thread = threading.Thread(target = self.CopyFilesToProject,args=(progress_ui,file_list,src_path,dest_path))
         self.copy_thread.start()

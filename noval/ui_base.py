@@ -16,6 +16,7 @@ import noval.util.utils as utils
 import noval.constants as constants
 from tkinter import font as tkfont
 import noval.consts as consts
+from noval.python.parser.utils import py_cmp,py_sorted
 
 class ClosableNotebook(ttk.Notebook):
     def __init__(self, master, style="ButtonNotebook.TNotebook", **kw):
@@ -731,12 +732,7 @@ class OutlineView(ttk.Frame):
     def SortNode(self,node):
         # update tree
         children = self.tree.get_children(node)
-        if utils.is_py2():
-            ids_sorted_by = sorted(children, cmp=self.OnCompareItems)
-        elif utils.is_py3():
-            import functools
-            ids_sorted_by = sorted(children, key=functools.cmp_to_key(self.OnCompareItems))
-      
+        ids_sorted_by = py_sorted(children, cmp_func=self.OnCompareItems)
         #根节点排序特殊,需要删除原先的根节点再插入
         if node is None:
             for node in ids_sorted_by:
@@ -753,26 +749,22 @@ class OutlineView(ttk.Frame):
             self.tree.set_children(node, *ids_sorted_by)
         
     def OnCompareItems(self, item1, item2):
-        #python3没有cmp函数,自己实现一个
-        if utils.is_py2():
-            cmp_ = cmp
-        elif utils.is_py3():
-            cmp_ =  utils.py3_cmp
         #按行号排序
         if self._sortOrder == self.SORT_BY_LINE:
             line_1 = self.tree.item(item1)["values"][0]
             line_2 = self.tree.item(item2)["values"][0]
-            return cmp_(line_1, line_2)  # sort A-Z
+            return py_cmp(line_1, line_2)  # sort A-Z
         #按名称排序
         elif self._sortOrder == self.SORT_BY_NAME:
-            return cmp_(self.tree.item(item1,"text").lower(), self.tree.item(item2,"text").lower()) # sort Z-A
+            return py_cmp(self.tree.item(item1,"text").lower(), self.tree.item(item2,"text").lower()) # sort Z-A
         #按类型排序
         elif self._sortOrder == self.SORT_BY_TYPE:
             type_1 = self.tree.item(item1)["values"][2]
             type_2 = self.tree.item(item2)["values"][2]
-            return cmp_(type_1, type_2)
+            return py_cmp(type_1, type_2)
         #未排序
         else:
+            return -1
             return (self.tree.item(item1)["values"][0] > self.tree.item(item2)["values"][0]) # unsorted
 
     def Sort(self,sortOrder,node=None):
@@ -914,7 +906,9 @@ class CommonModaldialog(CommonDialog):
     def AddokcancelButton(self):
         bottom_frame = ttk.Frame(self.main_frame)
         bottom_frame.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        self.AppendokcancelButton(bottom_frame)
         
+    def AppendokcancelButton(self,bottom_frame):
         space_label = ttk.Label(bottom_frame,text="")
         space_label.grid(column=0, row=0, sticky=tk.EW, padx=(consts.DEFAUT_CONTRL_PAD_X, consts.DEFAUT_CONTRL_PAD_X), pady=consts.DEFAUT_CONTRL_PAD_Y)
         self.ok_button = ttk.Button(bottom_frame, text=_("&OK"), command=self._ok,default=tk.ACTIVE)
@@ -975,17 +969,17 @@ class GenericProgressDialog(CommonModaldialog):
         CommonModaldialog.__init__(self, master, takefocus=1)
         self.title(title)
         self.label_var = tk.StringVar(value=info)
-        self.label_ctrl = ttk.Label(self,textvariable=self.label_var,width=30)
+        self.label_ctrl = ttk.Label(self.main_frame,textvariable=self.label_var,width=30)
         self.label_ctrl.pack(fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X, consts.DEFAUT_CONTRL_PAD_X), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         self.cur_val = tk.IntVar(value=0)
         if mode == "determinate":
-            self.mpb = ttk.Progressbar(self, orient="horizontal", length=length, mode=mode,variable=self.cur_val,maximum=maximum)
+            self.mpb = ttk.Progressbar(self.main_frame, orient="horizontal", length=length, mode=mode,variable=self.cur_val,maximum=maximum)
         else:
-            self.mpb = ttk.Progressbar(self, mode=mode, length=length)
+            self.mpb = ttk.Progressbar(self.main_frame, mode=mode, length=length)
         self.mpb.pack(fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X, consts.DEFAUT_CONTRL_PAD_X), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         
         self.cancel_button = ttk.Button(
-            self, text=_("Cancel"), command=self.Cancel
+            self.main_frame, text=_("Cancel"), command=self.Cancel
         )
         self.cancel_button.pack(side=tk.RIGHT,fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X,consts.DEFAUT_CONTRL_PAD_X), pady=(consts.DEFAUT_CONTRL_PAD_Y, consts.DEFAUT_CONTRL_PAD_Y))
         self.keep_going = True

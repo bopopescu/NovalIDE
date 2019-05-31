@@ -19,10 +19,11 @@ import noval.util.utils as utils
 
 class ToolBar(ui_base.DockFrame):
     toolbar_group = 100
-    def __init__(self,parent):
+    def __init__(self,parent,orient = tk.HORIZONTAL):
         ui_base.DockFrame.__init__(self,consts.DEFAULT_TOOL_BAR_ROW, parent,show=self.IsDefaultShown())
         #padx设置工具栏左边距
       #  self.grid(column=0, row=0, sticky=tk.EW, padx=0, pady=(5, 0))
+        self._orient = orient
 
     def AddButton(self,command_id,image,command_label,handler,accelerator=None,tester=None):
         
@@ -43,7 +44,10 @@ class ToolBar(ui_base.DockFrame):
             compound=None,
             pad=None,
         )
-        button.pack(side=tk.LEFT)
+        if self._orient == tk.HORIZONTAL:
+            button.pack(side=tk.LEFT)
+        elif self._orient == tk.VERTICAL:
+            button.pack(side=tk.TOP)
         button.tester = tester
         tooltip_text = MenuBar.FormatMenuName(command_label)
         if accelerator:

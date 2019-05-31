@@ -494,7 +494,7 @@ class PluginManager(object):
             if utils.is_py2():
                 paths = [ strutils.EncodeString(pname, sys.getfilesystemencoding())
                          for pname in path ]
-            elif utils.is_py3():
+            elif utils.is_py3_plus():
                 paths = path
             try:
                 env = pkg_resources.Environment(paths)

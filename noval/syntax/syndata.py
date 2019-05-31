@@ -1,5 +1,7 @@
 import noval.syntax.syntax as syntax
 import zlib
+import noval.util.compat as compat
+import noval.util.utils as utils
 
 class BaseLexer(object):
     """Syntax data container object base class"""
@@ -127,9 +129,15 @@ class BaseLexer(object):
                 decompress = zlib.decompressobj()
                 data = f.read(1024)
                 while data:
-                    content += decompress.decompress(data)
+                    if utils.is_py2():
+                        content += decompress.decompress(data)
+                    else:
+                        content += compat.ensure_string(decompress.decompress(data))
                     data = f.read(1024)
-                content += decompress.flush()
+                if utils.is_py2():
+                    content += decompress.flush()
+                else:
+                    content += compat.ensure_string(decompress.flush())
             return content
         
     def IsVisible(self):

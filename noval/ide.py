@@ -148,6 +148,11 @@ class IDEApplication(core.App):
                 core.TEMPLATE_NO_CREATE,
                 icon = imageutils.get_image_file_icon())
         docManager.AssociateTemplate(imageTemplate)
+        try:
+            ui_utils.check_chardet_version()
+        except RuntimeError as e:
+            messagebox.showerror(self.GetAppName(),str(e),parent=self)
+            return False
         #创建项目模板
         self.CreateProjectTemplate()
         #创建各种支持编程语言的模板
@@ -251,7 +256,7 @@ class IDEApplication(core.App):
     def MainFrame(self):
         return self.frame
                 
-    def GotoView(self,file_path,lineNum=-1,colno=-1,trace_track=True):
+    def GotoView(self,file_path,lineNum=-1,colno=-1,trace_track=True,load_outline=True):
         file_path = os.path.abspath(file_path)
         docs = self.GetDocumentManager().CreateDocument(file_path, core.DOC_SILENT|core.DOC_OPEN_ONCE)
         if docs == []:
@@ -272,7 +277,7 @@ class IDEApplication(core.App):
                     foundView.GetCtrl().GotoPos(lineNum,colno)
                 return
             #如果视图是允许在大纲显示的视图类型,则跳转到指定行并选中对应的语法行
-            if self.MainFrame.GetOutlineView().IsValidViewType(foundView):
+            if self.MainFrame.GetOutlineView().IsValidViewType(foundView) and load_outline:
                 self.MainFrame.GetOutlineView().LoadOutLine(foundView, lineNum=lineNum)
     
     @property

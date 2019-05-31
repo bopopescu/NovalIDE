@@ -108,7 +108,15 @@ source document and that should be marshalled as CDATA.
 __xmlcdatacontent__ = "messyContent"
 
 """
-
+try:
+    long
+    unicode
+    basestring
+except:
+    long = int
+    unicode = str
+    basestring = str
+    
 global xmlMarshallerLogger
 xmlMarshallerLogger = logging.getLogger("novalide.util.xmlmarshaller.marshal")
 def ag_className(obj):
@@ -782,7 +790,7 @@ class XMLMarshalWorker(object):
         else:
             prefix = DEFAULT_NAMESPACE_KEY
             name = elementName
-        for shortNs, longNs in nse.nameSpaces.iteritems():
+        for shortNs, longNs in nse.nameSpaces.items():
             if shortNs == prefix:
                 tagLongNs = longNs
                 break
@@ -803,7 +811,7 @@ class XMLMarshalWorker(object):
         nameSpaces = {}
         defaultLongNS = None
         for nse in self.nsstack:
-            for k, v in nse.nsMap.iteritems():
+            for k, v in nse.nsMap.items():
                 nameSpaces[k] = v
                 if k == DEFAULT_NAMESPACE_KEY:
                     defaultLongNS = v
@@ -811,7 +819,7 @@ class XMLMarshalWorker(object):
         nameSpaceAttrs = ""
         if hasattr(obj, "__xmlnamespaces__"):
             ns = getattr(obj, "__xmlnamespaces__")
-            keys = ns.keys()
+            keys = list(ns.keys())
             keys.sort()
             for nameSpaceKey in keys:
                 nameSpaceUrl = ns[nameSpaceKey]
@@ -841,12 +849,12 @@ class XMLMarshalWorker(object):
                 newNS.prefix = ''
             else:
                 try:
-                    for k, v in nameSpaces.iteritems():
+                    for k, v in nameSpaces.items():
                         if v == longPrefixNS:
                             newNS.prefix = k + ':'
                             break;
                 except:
-                    if (longPrefixNS in asDict(self.knownNamespaces)):
+                    if (longPrefixNS in self.knownNamespaces):
                         newNS.prefix = self.knownNamespaces[longPrefixNS] + ':'
                     else:
                         raise MarshallerException('Error marshalling __xmldefaultnamespace__ ("%s") not defined in namespace stack' % (longPrefixNS))
@@ -955,7 +963,7 @@ class XMLMarshalWorker(object):
                 # an XML attribute but is missing.
                 attrNameSpacePrefix = ""
                 if hasattr(obj, "__xmlattrnamespaces__"):
-                    for nameSpaceKey, nameSpaceAttributes in getattr(obj, "__xmlattrnamespaces__").iteritems():
+                    for nameSpaceKey, nameSpaceAttributes in getattr(obj, "__xmlattrnamespaces__").items():
                         if nameSpaceKey == nameSpacePrefix[:-1]: # Don't need to specify attribute namespace if it is the same as its element
                             continue
                         if attr in nameSpaceAttributes:
@@ -1088,11 +1096,11 @@ class XMLMarshalWorker(object):
                 else:
                     attrGroups = {}
                 # add the list of all attributes to attrGroups
-                eList = obj.__dict__.keys()    
+                eList = list(obj.__dict__.keys())   
                 eList.sort()
                 attrGroups["__nogroup__"] = eList
                 
-                for eName, eList in attrGroups.iteritems():
+                for eName, eList in attrGroups.items():
                     if (eName != "__nogroup__"):
                         prefix += increment*" "
                         indent += increment
@@ -1106,7 +1114,7 @@ class XMLMarshalWorker(object):
                             continue
                         subElementNameSpacePrefix = nameSpacePrefix
                         if hasattr(obj, "__xmlattrnamespaces__"):
-                            for nameSpaceKey, nameSpaceValues in getattr(obj, "__xmlattrnamespaces__").iteritems():
+                            for nameSpaceKey, nameSpaceValues in getattr(obj, "__xmlattrnamespaces__").items():
                                 if name in nameSpaceValues:
                                     subElementNameSpacePrefix = nameSpaceKey + ":"
                                     break

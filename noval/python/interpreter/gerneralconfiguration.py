@@ -1,6 +1,7 @@
 from noval import _,GetApp
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 import noval.consts as consts
 import noval.util.utils as utils
 import noval.python.interpreter.InterpreterManager as interpretermanager
@@ -33,19 +34,19 @@ class InterpreterGeneralConfigurationPanel(ui_utils.BaseConfigurationPanel):
         box_frame = ttk.LabelFrame(self, text=_("Intellisence database update interval"))
         box_frame.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
 
-        updateEveryStartupRadioBtn = ttk.Radiobutton(box_frame, text = _("Once when startup"))
+        self._update_interval_var = tk.IntVar(value=consts.UPDATE_ONCE_DAY)
+        updateEveryStartupRadioBtn = ttk.Radiobutton(box_frame, text = _("Once when startup"),value=consts.UPDATE_ONCE_STARTUP,variable=self._update_interval_var)
         updateEveryStartupRadioBtn.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
-        updateEveryDayRadioBtn = ttk.Radiobutton(box_frame, text = _("Once a day"))
+        updateEveryDayRadioBtn = ttk.Radiobutton(box_frame, text = _("Once a day"),value=consts.UPDATE_ONCE_DAY,variable=self._update_interval_var)
         updateEveryDayRadioBtn.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
-        updateEveryWeekRadioBtn = ttk.Radiobutton(box_frame,text = _("Once a week"))
+        updateEveryWeekRadioBtn = ttk.Radiobutton(box_frame,text = _("Once a week"),value=consts.UPDATE_ONCE_WEEK,variable=self._update_interval_var)
         updateEveryWeekRadioBtn.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
-        updateEveryMonthRadioBtn = ttk.Radiobutton(box_frame, text = _("Once a month"))
+        updateEveryMonthRadioBtn = ttk.Radiobutton(box_frame, text = _("Once a month"),value=consts.UPDATE_ONCE_MONTH,variable=self._update_interval_var)
         updateEveryMonthRadioBtn.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
-        neverUpdateRadioBtn = ttk.Radiobutton(box_frame,text = _("Never"))
+        neverUpdateRadioBtn = ttk.Radiobutton(box_frame,text = _("Never"),value=consts.NEVER_UPDATE_ONCE,variable=self._update_interval_var)
         neverUpdateRadioBtn.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
 
         if GetApp().GetDebug():
-            
             sbox = ttk.LabelFrame(self, text=_("Intellisence database location"))
             sbox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
             row = ttk.Frame(sbox)
@@ -62,7 +63,8 @@ class InterpreterGeneralConfigurationPanel(ui_utils.BaseConfigurationPanel):
             row = ttk.Frame(sbox)
             locationLabelText = ttk.Label(row, text=_("Database Location:"))
             locationLabelText.pack(side=tk.LEFT,fill="x")
-            locationControl = ttk.Entry(row)
+            self.location_var = tk.StringVar()
+            locationControl = ttk.Entry(row,textvariable=self.location_var)
             locationControl["state"] = tk.DISABLED
             locationControl.pack(side=tk.LEFT,fill="x",expand=1)
             row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
@@ -79,19 +81,17 @@ class InterpreterGeneralConfigurationPanel(ui_utils.BaseConfigurationPanel):
             clear_data_btn = ttk.Button(row,text=_("Clear data"),command=self.ClearIntellisenceData)
             clear_data_btn.pack(side=tk.LEFT,fill="x",padx=(0,consts.DEFAUT_CONTRL_PAD_X))
             row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
-           # self.OnSelectInterpreter(None)
+            self.OnSelectInterpreter()
        # self.SetUpdateIntervalOption()
         
     def IntoFileExplorer(self):
-        location = self.locationControl.GetValue()
-        err_code,msg = fileutils.open_file_directory(location)
-        if err_code != ERROR_OK:
-            wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
+        location = self.location_var.get()
+        fileutils.open_file_directory(location)
         
     def CopyDatabasePath(self):
-        path = self.locationControl.GetValue()
+        path = self.location_var.get()
         sysutilslib.CopyToClipboard(path)
-        wx.MessageBox(_("Copied to clipboard"))
+        messagebox.showinfo("",_("Copied to clipboard"))
         
     def GetDatabaseVersion(self):
         interpreter = self.GetCurrentInterpreter()
@@ -100,10 +100,10 @@ class InterpreterGeneralConfigurationPanel(ui_utils.BaseConfigurationPanel):
         try:
             intellisence_data_path = intellisence.IntellisenceManager().\
                         GetInterpreterIntellisenceDataPath(interpreter)
-            database_version = factory.LoadDatabaseVersion(intellisence_data_path)
-            wx.MessageBox(database_version)
+            database_version = pythonrun.LoadDatabaseVersion(intellisence_data_path)
+            messagebox.showinfo("",database_version)
         except Exception as e:
-            wx.MessageBox(str(e),style=wx.OK|wx.ICON_ERROR)
+            messagebox.showerror("",str(e))
         
     def GetLastUpdateTime(self):
         interpreter = self.GetCurrentInterpreter()
@@ -112,10 +112,10 @@ class InterpreterGeneralConfigurationPanel(ui_utils.BaseConfigurationPanel):
         try:
             intellisence_data_path = intellisence.IntellisenceManager().\
                         GetInterpreterIntellisenceDataPath(interpreter)
-            last_update_time = factory.GetLastUpdateTime(intellisence_data_path)
-            wx.MessageBox(last_update_time)
+            last_update_time = pythonrun.GetLastUpdateTime(intellisence_data_path)
+            messagebox.showinfo("",last_update_time)
         except Exception as e:
-            wx.MessageBox(str(e),style=wx.OK|wx.ICON_ERROR)
+            messagebox.showerror("",str(e))
         
     def ClearIntellisenceData(self):
         interpreter = self.GetCurrentInterpreter()
@@ -128,18 +128,18 @@ class InterpreterGeneralConfigurationPanel(ui_utils.BaseConfigurationPanel):
             os.remove(file_path)
         
     def GetCurrentInterpreter(self):
-        selection = self.interpreterCombo.GetSelection()
+        selection = self.interpreterCombo.current()
         if -1 == selection:
             return None
         interpreter = interpretermanager.InterpreterManager().interpreters[selection]
         return interpreter
         
-    def OnSelectInterpreter(self,event):
+    def OnSelectInterpreter(self,event=None):
         interpreter = self.GetCurrentInterpreter()
         if interpreter is None:
             return
         database_path = intellisence.IntellisenceManager().GetInterpreterDatabasePath(interpreter)
-        self.locationControl.SetValue(database_path)
+        self.location_var.set(database_path)
         
     def GetUpdateIntervalOption(self):
         if self.updateEveryDayRadioBtn.GetValue():

@@ -18,6 +18,8 @@ import noval.util.objutils as objutils
 import noval.util.xmlmarshaller as xmlmarshaller
 import noval.util.logger as logger
 from noval.consts import PROJECT_NAMESPACE_URL
+import noval.util.compat as compat
+import noval.util.utils as utils
 
 xmlLogger = logging.getLogger("novalide.util.xml")
     
@@ -65,7 +67,9 @@ def save(fileName, objectToSave, prettyPrint=True, marshalType=True, knownTypes=
         raise xmlmarshaller.MarshallerException('Error marshalling object to file "%s": object is marked "readOnly" and cannot be written' % (fileName))        
     timeStart = time.time()
     xml = marshal(objectToSave, prettyPrint=prettyPrint, marshalType=marshalType, knownTypes=knownTypes, knownNamespaces=knownNamespaces, encoding=encoding)
-    fileObject = file(fileName, 'w')
+    if utils.is_py3():
+        xml = compat.ensure_string(xml)
+    fileObject = open(fileName, 'w')
     try:
         fileObject.write(xml)
         fileObject.flush()

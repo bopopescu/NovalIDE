@@ -78,4 +78,9 @@ class ImageView(core.View):
             return True
         return core.View.UpdateUI(self,command_id)
 
+    def GotoLine(self):
+        '''
+            图片视图不能跳转到行,实现一个空方法
+        '''
+        pass
 

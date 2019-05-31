@@ -4,26 +4,26 @@ import shlex
 import noval.util.utils as utils
 if utils.is_py2():
     from noval.util.which import which
-elif utils.is_py3():
+elif utils.is_py3_plus():
     from shutil import which
 import subprocess
+import noval.ui_utils as ui_utils
 
-def run_in_terminal(cmd, cwd, env_overrides={}, keep_open=True, title=None):
+def run_in_terminal(cmd, cwd, env_overrides={}, keep_open=True, title=None,pause=False):
     from noval.ui_utils import get_environment_with_overrides
     env = get_environment_with_overrides(env_overrides)
             
     if platform.system() == "Windows":
-        _run_in_terminal_in_windows(cmd, cwd, env, keep_open, title)
+        _run_in_terminal_in_windows(cmd, cwd, env, keep_open, title,pause)
     elif platform.system() == "Linux":
-        _run_in_terminal_in_linux(cmd, cwd, env, keep_open)
+        _run_in_terminal_in_linux(cmd, cwd, env, keep_open,pause)
     elif platform.system() == "Darwin":
         _run_in_terminal_in_macos(cmd, cwd, env_overrides, keep_open)
     else:
         raise RuntimeError("Can't launch terminal in " + platform.system())
 
 def open_system_shell(cwd, env_overrides={}):
-    from thonny.running import get_environment_with_overrides
-    env = get_environment_with_overrides(env_overrides)
+    env = ui_utils.get_environment_with_overrides(env_overrides)
     
     if platform.system() == "Darwin":
         _run_in_terminal_in_macos([], cwd, env_overrides, True)
@@ -48,7 +48,7 @@ def _add_to_path(directory, path):
         return directory + os.pathsep + path
 
 
-def _run_in_terminal_in_windows(cmd, cwd, env, keep_open, title=None):
+def _run_in_terminal_in_windows(cmd, cwd, env, keep_open, title=None,pause=False):
     if keep_open:
         # Yes, the /K argument has weird quoting. Can't explain this, but it works
         quoted_args = " ".join(map(lambda s: s if s == "&" else '"' + s + '"', cmd))
@@ -58,12 +58,16 @@ def _run_in_terminal_in_windows(cmd, cwd, env, keep_open, title=None):
                             title='"' + title + '"' if title else ""))
     
         subprocess.Popen(cmd_line, cwd=cwd, env=env, shell=True)
+    elif pause:
+        command = u"cmd.exe /c call %s"  % (cmd)
+        command += " &pause"
+        subprocess.Popen(command,shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=cwd,env=env)
     else:
         subprocess.Popen(cmd, creationflags=subprocess.CREATE_NEW_CONSOLE,
                          cwd=cwd, env=env)
 
 
-def _run_in_terminal_in_linux(cmd, cwd, env, keep_open):
+def _run_in_terminal_in_linux(cmd, cwd, env, keep_open,pause=False):
     def _shellquote(s):
         return subprocess.list2cmdline([s])
     
@@ -77,6 +81,8 @@ def _run_in_terminal_in_linux(cmd, cwd, env, keep_open):
         # http://stackoverflow.com/a/4466566/261181
         core_cmd = "{cmd}; exec bash -i".format(cmd=cmd)
         in_term_cmd = "bash -c {core_cmd}".format(core_cmd=_shellquote(core_cmd))
+    elif pause:
+        in_term_cmd += ";echo 'Please enter any to continue';read"
     else:
         in_term_cmd = cmd
     

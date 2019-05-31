@@ -101,7 +101,7 @@ class ParenMatcher:
             tokens = []
             if utils.is_py2():
                 tokenize.tokenize(io.BytesIO(source.encode("utf-8")).readline,TokenParser(tokens))
-            elif utils.is_py3():
+            elif utils.is_py3_plus():
                 tokens = tokenize.tokenize(io.BytesIO(source.encode("utf-8")).readline)
             for token in tokens:
                 if token.string != "" and token.string in "()[]{}":

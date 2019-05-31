@@ -11,7 +11,7 @@ import time
 from noval.python.parser import fileparser
 from noval.python.parser import config
 from noval.python.parser import builtinmodule
-from noval.python.parser.utils import CmpMember
+from noval.python.parser.utils import CmpMember,py_sorted
 import glob
 from noval.python.parser import nodeast
 from noval.python.parser import scope
@@ -298,7 +298,7 @@ class IntellisenceDataLoader(object):
             if key.find(".") == -1:
                 if key not in self.import_list:
                     self.import_list.append(key)
-        self.import_list.sort(CmpMember)
+        self.import_list = py_sorted(self.import_list,CmpMember)
         
     @property
     def ImportList(self):
@@ -364,7 +364,8 @@ class IntellisenceManager(object):
             startupinfo.wShowWindow = subprocess.SW_HIDE
         else:
             startupinfo = None
-        self._process_obj = subprocess.Popen(cmd_list,startupinfo=startupinfo,cwd=os.path.join(utils.get_app_path(), "noval", "python","parser"))
+        env = os.environ.update(dict(PYTHONPATH=utils.get_app_path()))
+        self._process_obj = subprocess.Popen(cmd_list,startupinfo=startupinfo,cwd=os.path.join(utils.get_app_path(), "noval", "python","parser"),env=env)
         interpreter.Analysing = True
         utils.update_statusbar(_("Updating interpreter %s intellisence database") % interpreter.Name)
         self._is_running = interpreter.Analysing

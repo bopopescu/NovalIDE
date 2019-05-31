@@ -91,7 +91,7 @@ class FileTypeChecker(object):
         """
         if apputils.is_py2():
             return isinstance(txt, types.UnicodeType)
-        elif apputils.is_py3():
+        elif apputils.is_py3_plus():
             return isinstance(txt, str)
             
 

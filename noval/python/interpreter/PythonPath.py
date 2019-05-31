@@ -68,7 +68,10 @@ class PythonPathPanel(ttk.Frame,PythonPathMixin.BasePythonPathPanel):
         python_path_list = []
         for path in path_list:
             #process path contains chinese character
-            new_path = self.ConvertPath(path)
+            if utils.is_py2():
+                new_path = self.ConvertPath(path)
+            elif utils.is_py3_plus():
+                new_path = path
             if not parserutils.PathsContainPath(self._interpreter.SysPathList,new_path):
                 python_path_list.append(new_path)
         return python_path_list

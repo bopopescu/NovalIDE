@@ -345,6 +345,8 @@ class EditorNotebook(ui_base.ClosableNotebook):
         return None
         
     def GotoLine(self,event=None):
+        if self.get_current_editor() is None:
+            return
         text_view = self.get_current_editor().GetView()
         lineno = tkSimpleDialog.askinteger(_("Go to Line"),
                 _("Enter line number to go to:(1-%d)") % text_view.GetCtrl().GetLineCount(),parent=self.get_current_editor())

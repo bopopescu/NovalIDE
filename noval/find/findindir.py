@@ -148,7 +148,7 @@ class FindIndirService:
         regExpr = find_text_option.regex
         found_line = 0
         try:
-            _open(filename)
+            docFile=_open(filename)
         except IOError as e:
             utils.get_logger().warn("Warning, unable to read file: '%s'.  %s",filename, str(e))
             return found_line

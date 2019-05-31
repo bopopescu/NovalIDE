@@ -425,6 +425,7 @@ class TextView(misc.AlarmEventView):
     @docposition.jump
     def GotoLine(self,line):
         self.GetCtrl().GotoLine(line)
+        self.set_line_and_column()
         
     @docposition.jump
     def GotoPos(self,line,col):

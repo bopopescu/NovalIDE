@@ -96,8 +96,11 @@ class DocTabbedParentFrame(ttk.Frame):
         self.status_bar = statusbar.MultiStatusBar(self,height=16,borderwidth=1)
         self.status_bar.Show(self.status_bar.IsDefaultShown())
         #先创建状态栏文本控件,支撑状态栏高度
-        self.status_bar.set_label(consts.STATUS_BAR_LABEL_COL, 'Col: ?', side=tk.RIGHT)
-        self.status_bar.set_label(consts.STATUS_BAR_LABEL_LINE, 'Ln: ?', side=tk.RIGHT)
+        label = self.status_bar.set_label(consts.STATUS_BAR_LABEL_COL, 'Col: ?', side=tk.RIGHT)
+        #双击状态栏的行列弹出跳转到行对话框
+        label.bind("<Double-Button-1>", self.status_bar.GotoLine, True)
+        label = self.status_bar.set_label(consts.STATUS_BAR_LABEL_LINE, 'Ln: ?', side=tk.RIGHT)
+        label.bind("<Double-Button-1>", self.status_bar.GotoLine, True)
         #初始时将状态栏所有文本显示空
         self.status_bar.Reset()
        
@@ -230,7 +233,7 @@ class DocTabbedParentFrame(ttk.Frame):
         self.GetNotebook().get_current_editor().GetView().GetCtrl().OnDelete()
             
     def AddView(self,view_name,cls,label,default_location,default_position_key=None,create=True,\
-                visible_by_default=False,image_file=None):
+                visible_by_default=False,image_file=None,visible_in_menu=True,**kwargs):
         """Adds item to "View" menu for showing/hiding given view. 
         Args:
             view_class: Class or constructor for view. Should be callable with single
@@ -260,12 +263,15 @@ class DocTabbedParentFrame(ttk.Frame):
                 self.ShowView(view_name)
             else:
                 self.ShowView(view_name,False,hidden=True)
-        GetApp().InsertCommand(consts.ID_VIEW_STATUSBAR,view_name,main_menu_name=_("&View"),command_label=label,handler=toggle_view_visibility,\
-                        kind = consts.CHECK_MENU_ITEM_KIND,variable=visibility_flag)
+                
+        if visible_in_menu:
+            GetApp().InsertCommand(consts.ID_VIEW_STATUSBAR,view_name,main_menu_name=_("&View"),command_label=label,handler=toggle_view_visibility,\
+                            kind = consts.CHECK_MENU_ITEM_KIND,variable=visibility_flag)
         if create:
-            self.ShowView(view_name,hidden = not is_visibile)
+            self.ShowView(view_name,hidden = not is_visibile,**kwargs)
+        return self._views[view_name]
 
-    def ShowView(self, view_name, set_focus=True,hidden=False,toogle_visibility_flag = False,generate_event=True):
+    def ShowView(self, view_name, set_focus=True,hidden=False,toogle_visibility_flag = False,generate_event=True,**kwargs):
         """View must be already registered.
         
         Args:
@@ -274,7 +280,7 @@ class DocTabbedParentFrame(ttk.Frame):
 
         # NB! Don't forget that view.home_widget is added to notebook, not view directly
         # get or create
-        view = self.GetView(view_name)
+        view = self.GetView(view_name,**kwargs)
         notebook = view.home_widget.master  # type: ignore
         
         if not hidden:
@@ -284,8 +290,12 @@ class DocTabbedParentFrame(ttk.Frame):
             if self._views[view_name]["image"] is not None:
                 kw.update({'image':self._views[view_name]["image"],'compound':tk.LEFT})
             if view.hidden:  # type: ignore
+                if view.position_key is None:
+                    pos = "end"
+                else:
+                    pos = "auto"
                 notebook.insert(
-                    "auto",
+                    pos,
                     view.home_widget,  # type: ignore
                     **kw
                 )
@@ -312,7 +322,7 @@ class DocTabbedParentFrame(ttk.Frame):
             GetApp().event_generate("ShowView", view=view, view_name=view_name,show=not hidden)
         return view
         
-    def GetView(self, view_name):
+    def GetView(self, view_name,**kwargs):
         if "instance" not in self._views[view_name]:
             class_ = self._views[view_name]["class"]
             location = self._views[view_name]["location"]
@@ -320,7 +330,7 @@ class DocTabbedParentFrame(ttk.Frame):
             home_widget = ttk.Frame(master)
             # create the view
             view = class_(
-                home_widget
+                home_widget,**kwargs
             )  # View's master is workbench to allow making it maximized
             #设置视图在notebook中的位置顺序,如果放置在最后则设置为None
             view.position_key = self._views[view_name]["position_key"]

@@ -38,8 +38,10 @@ class Executable(object):
     def GetUnicodePath(self):
         default_encoding = apputils.get_default_encoding()
         assert(not strutils.is_none_or_empty(default_encoding))
-        unicode_path = self.Path.decode(default_encoding)
-        return unicode_path
+        if apputils.is_py2():
+            unicode_path = self.Path.decode(default_encoding)
+            return unicode_path
+        return self.Path
         
     def CheckPathEncoding(self):
         '''

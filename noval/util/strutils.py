@@ -168,7 +168,7 @@ def emphasis_path(path):
 def gen_file_filters(exclude_template_type = None):
     filters = []
     for temp in GetApp().GetDocumentManager().GetTemplates():
-        if exclude_template_type is not None and temp.GetDocumentType() == exclude_template_type:
+        if exclude_template_type is not None and (temp.GetDocumentType() == exclude_template_type):
             continue
         if temp.IsVisible():
             filter = get_template_filter(temp)

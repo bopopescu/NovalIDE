@@ -120,13 +120,11 @@ class BasePythonPathPanel:
         
     def GetPathList(self):
         path_list = []
-        root_item = self.tree_ctrl.GetRootItem()
-        (item, cookie) = self.tree_ctrl.GetFirstChild(root_item)
-        while item:
-            path = self.tree_ctrl.GetItemText(item)
-            #should avoid environment contain unicode string,such as u'xxx'
-            path_list.append(str(path))
-            (item, cookie) = self.tree_ctrl.GetNextChild(root_item, cookie)
+        root_item = self.GetRootItem()
+        items = self.treeview.tree.get_children(root_item)
+        for item in items:
+            path = self.treeview.tree.item(item,"text")
+            path_list.append(path)
         return path_list
 
     def RemovePath(self):

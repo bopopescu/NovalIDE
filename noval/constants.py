@@ -118,12 +118,9 @@ ID_ADD_PACKAGE_FOLDER           = NewId()
 ID_ADD_FILES_TO_PROJECT         = NewId()
 ID_ADD_CURRENT_FILE_TO_PROJECT  = NewId()
 ID_ADD_DIR_FILES_TO_PROJECT     = NewId()
-ID_PROJECT_PROPERTIES           = NewId()
-ID_OPEN_PROJECT_PATH            = NewId()
+ID_PROPERTIES                   = NewId()
 
 #project popup Menu IDs
-ID_START_DEBUG                  = NewId()
-ID_START_RUN                    = NewId()
 ID_OPEN_SELECTION               = NewId()
 ID_OPEN_SELECTION_WITH          = NewId()
 ID_REMOVE_FROM_PROJECT          = NewId()

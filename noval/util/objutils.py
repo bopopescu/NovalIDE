@@ -29,6 +29,30 @@ FUNCTION_GET_ATTR = '_getAttr'
 FUNCTION_SET_ATTR = '_setAttr'
 FUNCTION_DEL_ATTR = '_delAttr'
 
+try:
+    ClassType
+    DictionaryType
+    long
+    unicode
+    InstanceType
+    SliceType
+    TypeType
+    XRangeType
+    basestring
+except:
+    class _C:
+        def _m(self): pass
+    ClassType = type(_C)
+    DictionaryType = dict
+    long = int
+    unicode = str
+    _x = _C()
+    InstanceType = type(_x)
+    SliceType = slice
+    TypeType = type
+    XRangeType = range
+    basestring = str
+
 def hasRawAttr(obj, name):
     if obj == None:
         return False
@@ -175,9 +199,9 @@ def toDiffableRepr(value, maxLevel=None):
 ##        if (exclude == None):
 ##            exclude = []
 ##        s = "%s(%s)" % (type(value), toDiffableString(value.__dict__, exclude))
-    if (not isinstance(value, (BooleanType, ClassType, ComplexType, DictType, DictionaryType, 
-                               FloatType, IntType, ListType, LongType, StringType, TupleType, 
-                               UnicodeType, BufferType, BuiltinFunctionType, BuiltinMethodType,
+    if (not isinstance(value, (bool, ClassType, complex, dict, DictionaryType, 
+                               float, int, list, long, str, tuple, 
+                               unicode,  BuiltinFunctionType, BuiltinMethodType,
                                CodeType, FrameType, FunctionType, GeneratorType, InstanceType,
                                LambdaType, MethodType, ModuleType, SliceType, TracebackType,
                                TypeType, XRangeType))):

@@ -46,7 +46,7 @@ import noval.python.interpreter.InterpreterConfigruation as InterpreterConfigrua
 import noval.python.outline
 import noval.python.project.browser
 import noval.python.pyshell
-import noval.python.debugger.Debugger as Debugger
+import noval.python.debugger.debugger as Debugger
 import noval.ui_common as ui_common
 import noval.misc as misc
 _debugger = None
@@ -264,15 +264,17 @@ class PyIDEApplication(ide.IDEApplication):
                 cmd = [activate, "&"] + cmd
             else:
                 cmd = ["source", activate, ";"] + cmd 
-            
         return terminal.run_in_terminal(cmd, cwd, env_overrides, True)
 
     def Run(self):
         _debugger.Run()
         
     def DebugRun(self):
-        raise Exception("This method must be implemented in derived class")
+        _debugger.DebugRun()
         
+    def GetDebugger(self):
+        global _debugger
+        return _debugger
 
     def InsertEncodingDeclare(self,text_view = None):
         if text_view is None:
