@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #----------------------------------------------------------------------------
 # Name:         DebuggerService.py
 # Purpose:      Debugger Service for Python and PHP
@@ -38,11 +39,11 @@ import traceback
 import noval.util.apputils as sysutilslib
 import subprocess
 import shutil
-import noval.python.interpreter.Interpreter as Interpreter
+import noval.python.interpreter.interpreter as pythoninterpreter
 import noval.syntax.lang as lang
 import noval.python.debugger.output as debugoutput
 import noval.python.parser.intellisence as intellisence
-import noval.python.interpreter.InterpreterManager as interpretermanager
+import noval.python.interpreter.interpretermanager as interpretermanager
 import noval.util.strutils as strutils
 import noval.python.parser.utils as parserutils
 import noval.util.fileutils as fileutils
@@ -52,22 +53,23 @@ import noval.util.utils as utils
 #from noval.model import configuration
 import noval.python.debugger.breakpoints as breakpoints
 import pickle
-import noval.project.baserun as baserun
+import noval.project.baseconfig as baseconfig
 import noval.python.debugger.watchs as watchs
 import uuid
 import noval.constants as constants
 import noval.ui_base as ui_base
 import noval.ui_common as ui_common
 if utils.is_py2():
-    import noval.python.debugger.DebuggerHarness as DebuggerHarness
+    import noval.python.debugger.debuggerharness as debuggerharness
 elif utils.is_py3_plus():
-    import noval.python.debugger.DebuggerHarness3 as DebuggerHarness
+    import noval.python.debugger.debuggerharness3 as debuggerharness
     
 import noval.python.pyutils as pyutils
 from noval.util.exceptions import StartupPathNotExistError
 import noval.terminal as terminal
 import noval.toolbar as toolbar
 import noval.process as process
+import noval.menu as tkmenu
 #import sys
 #reload(sys)
 #sys.setdefaultencoding('utf-8')
@@ -75,6 +77,10 @@ import noval.process as process
 #VERBOSE mode will invoke threading.Thread _VERBOSE,which will print a lot of thread debug text on screen
 _VERBOSE = False
 _WATCHES_ON = True
+
+
+EVT_UPDATE_STDTEXT = "UpdateOutputText"
+EVT_UPDATE_ERRTEXT = "UpdateErrorText"
 
 class OutputReaderThread(threading.Thread):
     def __init__(self, file, callback_function, callbackOnExit=None, accumulate=True):
@@ -129,11 +135,13 @@ class OutputReaderThread(threading.Thread):
             except:
                 tp, val, tb = sys.exc_info()
                 print ("Exception in OutputReaderThread.run():", tp, val)
+                utils.get_logger().exception("")
                 self._keepGoing = False
         if self._callbackOnExit:
             try:
                 self._callbackOnExit()
-            except wx._core.PyDeadObjectError:
+            except Exception as e:
+                utils.get_logger().exception("")
                 pass
         if _VERBOSE: print ("Exiting OutputReaderThread")
 
@@ -182,12 +190,10 @@ class Executor(object):
             return ' \"' + text + '\"'
 
     def OutCall(self, text):
-        evt = UpdateTextEvent(value = text)
-        wx.PostEvent(self._wxComponent, evt)
+        GetApp().event_generate(EVT_UPDATE_STDTEXT,value=text)
 
     def ErrCall(self, text):
-        evt = UpdateErrorEvent(value = text)
-        wx.PostEvent(self._wxComponent, evt)
+        GetApp().event_generate(EVT_UPDATE_ERRTEXT,value=text)
 
     def Execute(self, arguments, startIn=None, environment=None):
         if not startIn:
@@ -291,27 +297,29 @@ class RunCommandUI(ttk.Frame):
         # GUI Initialization follows
         self._tb = tb = toolbar.ToolBar(self,orient=tk.VERTICAL)
         self._tb.pack(side=tk.LEFT,fill="y",expand=0)
-     #   close_bmp = getCloseBitmap()
-      #  tb.AddSimpleTool( self.CLOSE_TAB_ID, close_bmp, _('Close Window'))
-       # wx.EVT_TOOL(self, self.CLOSE_TAB_ID, self.OnToolClicked)
-
-        #stop_bmp = getStopBitmap()
-        #tb.AddSimpleTool(self.KILL_PROCESS_ID, stop_bmp, _("Stop the Run."))
-        #wx.EVT_TOOL(self, self.KILL_PROCESS_ID, self.OnToolClicked)
         self.terminate_all_image = GetApp().GetImage("python/debugger/terminate_all.png")
         self.restart_image = GetApp().GetImage("python/debugger/restart.png")
-        self._tb.AddButton(self.TERMINATE_ALL_PROCESS_ID,self.terminate_all_image,_("Stop All the Run."),self.OnToolClicked)
-        self._tb.AddButton(self.RESTART_PROCESS_ID,self.restart_image,_("Restart the Run."),self.OnToolClicked)
+        self.close_img = GetApp().GetImage("python/debugger/close.png")
+        self.stop_img = GetApp().GetImage("python/debugger/stop.png")
+        
+        self._tb.AddButton(self.CLOSE_TAB_ID,self.close_img,_("Close Window"),lambda:self.OnToolClicked(self.CLOSE_TAB_ID))
+        self._tb.AddButton(self.KILL_PROCESS_ID,self.stop_img,_("Stop the Run."),lambda:self.OnToolClicked(self.KILL_PROCESS_ID))
+        
+        self._tb.AddButton(self.TERMINATE_ALL_PROCESS_ID,self.terminate_all_image,_("Stop All the Run."),lambda:self.OnToolClicked(self.TERMINATE_ALL_PROCESS_ID))
+        self._tb.AddButton(self.RESTART_PROCESS_ID,self.restart_image,_("Restart the Run."),lambda:self.OnToolClicked(self.RESTART_PROCESS_ID))
 
         self._output = debugoutput.OutputView(self) #id)
         self._output.pack(side=tk.LEFT,fill="both",expand=1)
+        self._textCtrl = self._output.GetOutputCtrl()
         self._stopped = False
         # Executor initialization
         self._executor = Executor(self._run_parameter, self, callbackOnExit=self.ExecutorFinished)
-#        self.Bind(EVT_UPDATE_STDTEXT, self.AppendText)
- #       self.Bind(EVT_UPDATE_ERRTEXT, self.AppendErrorText)
+        self.evt_stdtext_binding = GetApp().bind(EVT_UPDATE_STDTEXT, self.AppendText,True)
+        self.evt_stdterr_binding = GetApp().bind(EVT_UPDATE_ERRTEXT, self.AppendErrorText,True)
         self._output.SetExecutor(self._executor)
         RunCommandUI.runners.append(self)
+        #重写关闭窗口事件,关闭窗口时检查进程是否在运行
+        self.master.close = self.Close
 
     def __del__(self):
         # See comment on PythonDebuggerUI.StopExecution
@@ -354,10 +362,11 @@ class RunCommandUI(ttk.Frame):
             self._tb.EnableTool(self.KILL_PROCESS_ID, False)
             self.UpdateFinishedPagePaneText()
             self._stopped = True
-            self._textCtrl.SetReadOnly(True)
+            self._textCtrl.set_read_only(True)
             self.UpdateAllRunnerTerminateAllUI()
-        except wx._core.PyDeadObjectError:
-            utils.GetLogger().warn("RunCommandUI object has been deleted, attribute access no longer allowed when finish executor")
+        except Exception as e:
+            utils.get_logger().exception("")
+         ###   utils.GetLogger().warn("RunCommandUI object has been deleted, attribute access no longer allowed when finish executor")
             return
         if self._restarted:
             wx.MilliSleep(250)
@@ -372,31 +381,26 @@ class RunCommandUI(ttk.Frame):
     def StopExecution(self,unbind_evt=False):
         if not self._stopped:
             if unbind_evt:
-                self.Unbind(EVT_UPDATE_STDTEXT)
-                self.Unbind(EVT_UPDATE_ERRTEXT)
+                GetApp().unbind(EVT_UPDATE_STDTEXT,self.evt_stdtext_binding)
+                GetApp().unbind(EVT_UPDATE_ERRTEXT,self.evt_stdterr_binding)
             self._executor.DoStopExecution()
-            self._textCtrl.SetReadOnly(True)
+            self._textCtrl.set_read_only(True)
 
     def AppendText(self, event):
-        self._textCtrl.AppendText(event.value)
+        self._textCtrl.AppendText(event.get('value'))
 
     def AppendErrorText(self, event):
-        self._textCtrl.AppendErrorText(event.value)
+        self._textCtrl.AppendErrorText(event.get('value'))
 
-    def StopAndRemoveUI(self, event):
+    def StopAndRemoveUI(self):
         if not self._stopped:
-            ret = wx.MessageBox(_("Process is still running,Do you want to kill the process and remove it?"), _("Process Running.."),
-                       wx.YES_NO  | wx.ICON_QUESTION ,self)
-            if ret == wx.NO:
+            ret = messagebox.askyesno(_("Process Running.."),_("Process is still running,Do you want to kill the process and remove it?"),parent=self)
+            if ret == False:
                 return False
 
         self.StopExecution(unbind_evt=True)
-        pane_info = self._service.AuiManager.GetPane(self)
-        pane_info.Show(False)
-        #destroy the window pane after close,but not destroy pane window
-        pane_info.DestroyOnClose()
-        self._service.AuiManager.ClosePane(pane_info,destroy_pane_window=False)
-        self._service.AuiManager.Update()
+        #关闭调试窗口,关闭notebook的子窗口
+        self.master.master.close_child(self.master)
         return True
         
     def RestartProcess(self):
@@ -425,23 +429,13 @@ class RunCommandUI(ttk.Frame):
         self.Execute()
         
     def UpdatePagePaneText(self,src_text,to_text):
-        nb = self._service.GetBottomTab()
-        pane_info = self._service.AuiManager.GetPane(self)
-        if nb is None:
-            text = pane_info.caption
-            newText = text.replace(src_text,to_text)
-            pane_info.Caption(newText)
-        else:
-            nb_pane_info = self._service.AuiManager.GetPane(nb)
-            for i in range(0,nb.GetPageCount()):
-                if self == nb.GetPage(i):
-                    text = nb.GetPageText(i)
-                    newText = text.replace(src_text,to_text)
-                    nb.SetPageText(i, newText)
-                    pane_info.Caption(newText)
-                    nb_pane_info.Caption(newText)
-                    break
-        self._service.AuiManager.Update()
+        nb = self.master.master
+        for index in range(0,len(nb.tabs())):
+            if self.master == nb.get_child_by_index(index):
+                text = nb.tab(nb.tabs()[index],"text")
+                newText = text.replace(src_text,to_text)
+                nb.tab(nb.tabs()[index], text=newText)
+                break
         
     #when restart process,update tag page text
     def UpdateRestartPagePaneText(self):
@@ -451,14 +445,12 @@ class RunCommandUI(ttk.Frame):
     # Event handling
     #-----------------------------------------------------------------------------
 
-    def OnToolClicked(self, event):
-        id = event.GetId()
-
+    def OnToolClicked(self, id):
         if id == self.KILL_PROCESS_ID:
             self.StopExecution()
 
         elif id == self.CLOSE_TAB_ID:
-            self.StopAndRemoveUI(event)
+            self.StopAndRemoveUI()
             
         elif id == self.TERMINATE_ALL_PROCESS_ID:
             self.ShutdownAllRunners()
@@ -471,6 +463,10 @@ class RunCommandUI(ttk.Frame):
         
     def ProcessEvent(self,event):
         return self._textCtrl.ProcessEvent(event)
+        
+
+    def Close(self):
+        self.StopAndRemoveUI()
 
 DEFAULT_PORT = 32032
 DEFAULT_HOST = 'localhost'
@@ -2098,9 +2094,59 @@ class Debugger:
         self.phpDbgParam = None
        # self.dbgLanguage = projectmodel.LANGUAGE_DEFAULT
         self._debugger_ui = None
-        
-        
+
+
+        self.bottomTab = GetApp().MainFrame._view_notebooks['s']
+        self.bottomTab.bind("<ButtonPress-3>", self._right_btn_press, True)
+        self._tabs_menu = None
+        self._popup_index = -1
         self._watch_separater = None
+
+
+    def _right_btn_press(self, event):
+        try:
+            index = self.bottomTab.index("@%d,%d" % (event.x, event.y))
+            self._popup_index = index
+            self.create_tab_menu()
+        except Exception:
+            utils.get_logger().exception("Opening tab menu")
+            
+
+    def GetBottomtabInstancePage(self,index):
+        tab_page = self.bottomTab.get_child_by_index(index)
+        page = tab_page.winfo_children()[0]
+        return page
+            
+    def create_tab_menu(self):
+        """
+        Handles right clicks for the notebook, enabling users to either close
+        a tab or select from the available documents if the user clicks on the
+        notebook's white space.
+        """
+        
+        def close_page():
+            if hasattr(page, 'StopAndRemoveUI'):
+                page.StopAndRemoveUI()
+                
+        def close_pages():
+            for i in range(self.bottomTab.GetPageCount()-1, 0, -1): # Go from len-1 to 1
+                page = self.GetBottomtabInstancePage(i)
+                if hasattr(page, 'StopAndRemoveUI'):
+                    page.StopAndRemoveUI()
+                    
+        if self._popup_index < 0:
+            return
+        page = self.GetBottomtabInstancePage(self._popup_index)
+        #只有运行调试页面才弹出菜单
+        if not hasattr(page, 'StopAndRemoveUI'):
+            return
+        if self._tabs_menu is None:
+            menu = tkmenu.PopupMenu(self.bottomTab.winfo_toplevel())
+            self._tabs_menu = menu
+            menu.Append(constants.ID_CLOSE,_("Close"),handler=close_page)
+            menu.Append(constants.ID_CLOSE_ALL,_("Close All"),handler=close_pages)
+        self._tabs_menu.tk_popup(*self.bottomTab.winfo_toplevel().winfo_pointerxy())
+
 
     def OnCloseFrame(self, event):
         # IS THIS THE RIGHT PLACE?
@@ -2675,20 +2721,9 @@ class Debugger:
             return
         fileToRun = run_parameter.FilePath
         shortFile = os.path.basename(fileToRun)
-    #    page = RunCommandUI(self,self._frame, fileToRun,run_parameter)
-        
         view = GetApp().MainFrame.AddView("Debugger"+ str(uuid.uuid1()).lower(),RunCommandUI,_("Running: ") + shortFile,"s",visible_by_default=True,\
                                    image_file="python/debugger/debug.ico",service=self, fileName=fileToRun,run_parameter=run_parameter,visible_in_menu=False)
         page = view['instance']
-##        notebook = GetApp().MainFrame._view_notebooks["s"]
-##        
-##        notebook.insert(
-##                    "auto",
-##                    page,  # type: ignore
-##                    text = _("Running: ") + shortFile,
-##                    image = GetApp().GetImage("python/debugger/debug.ico"),
-##                    compound=tk.LEFT
-##                )
         page.Execute(onWebServer = False)
         
     def SetExceptionBreakPoint(self):

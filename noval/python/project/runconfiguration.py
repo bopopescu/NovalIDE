@@ -1,12 +1,8 @@
-import wx
 from noval.util import utils
-import noval.tool.interpreter.InterpreterManager as interpretermanager
-from noval.util.exceptions import InterpreterNotExistError
+import noval.python.interpreter.interpretermanager as interpretermanager
 import os
-from noval.model import configuration
-import noval.tool.project as project
-import PythonVariables
-from noval.tool.consts import PYTHON_PATH_NAME
+import noval.project.basemodel as projectmodel
+import noval.project.variables as variablesutils
 
 class BaseConfiguration(object):
     
@@ -182,11 +178,11 @@ class RunConfiguration():
         
     @property
     def ProjectDocument(self):
-        return self._configurations.items()[0][1].ProjectDocument
+        return list(self._configurations.items())[0][1].ProjectDocument
         
     @property
     def MainModuleFile(self):
-        return self._configurations.items()[0][1].MainModuleFile
+        return list(self._configurations.items())[0][1].MainModuleFile
         
     def Clone(self):
         args = {
@@ -233,7 +229,6 @@ class FileConfiguration(BaseConfiguration):
         try:
             configuration_name_list = eval(value)
         except Exception as e:
-            print e
             return []
         return configuration_name_list
         
@@ -284,7 +279,6 @@ class ProjectConfiguration(BaseConfiguration):
         try:
             configuration_name_list = eval(value)
         except Exception as e:
-            print e
             return self._configuration_list
         for name in configuration_name_list:
             run_configuration = self.LoadConfiguration(name)
@@ -386,7 +380,7 @@ class ProjectConfiguration(BaseConfiguration):
         
     @staticmethod
     def LoadProjectInterpreter(pj_key):
-        interpreter_name = utils.ProfileGet(pj_key + "/Interpreter",interpretermanager.InterpreterManager.GetCurrentInterpreter().Name)
+        interpreter_name = utils.profile_get(pj_key + "/Interpreter",interpretermanager.InterpreterManager().GetCurrentInterpreter().Name)
         return interpreter_name
     
     @staticmethod

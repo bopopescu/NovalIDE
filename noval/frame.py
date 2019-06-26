@@ -340,9 +340,11 @@ class DocTabbedParentFrame(ttk.Frame):
             view.home_widget = home_widget
             view.home_widget.columnconfigure(0, weight=1)
             view.home_widget.rowconfigure(0, weight=1)
-          ###  view.home_widget.maximizable_widget = view  # type: ignore
             #关闭窗口事件,同时修改菜单选中状态
-            view.home_widget.close = lambda: self.ShowView(view_name,False,hidden=True,toogle_visibility_flag=True)  # type: ignore
+            if not hasattr(view.home_widget,'close'):
+                view.home_widget.close = lambda: self.ShowView(view_name,False,hidden=True,toogle_visibility_flag=True)  # type: ignore
+            else:
+                utils.get_logger().debug('view %s already has close method,will not attach close attr aggain',view_name)
             if hasattr(view, "position_key"):
                 view.home_widget.position_key = view.position_key  # type: ignore
 

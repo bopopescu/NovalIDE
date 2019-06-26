@@ -4,7 +4,7 @@ from tkinter import ttk
 from tkinter import messagebox
 import noval.consts as consts
 import noval.util.utils as utils
-import noval.python.interpreter.InterpreterManager as interpretermanager
+import noval.python.interpreter.interpretermanager as interpretermanager
 import noval.python.parser.intellisence as intellisence
 import noval.util.apputils as sysutilslib
 import noval.util.fileutils as fileutils

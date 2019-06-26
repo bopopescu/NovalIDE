@@ -41,9 +41,9 @@ from noval.util import utils
 #import noval.tool.project.RunConfiguration as RunConfiguration
 import noval.constants as constants
 import noval.consts as consts
-import noval.project.Wizard as Wizard
+import noval.project.wizard as projectwizard
 import noval.imageutils as imageutils
-import noval.project.baserun as baserun
+import noval.project.baseconfig as baseconfig
 import noval.project.command as projectcommand
 from noval.project.templatemanager import ProjectTemplateManager
 import noval.newTkDnD as newTkDnD
@@ -719,9 +719,9 @@ class ProjectDocument(core.Document):
         self._commandProcessor = processor
         
 
-class ProjectNameLocationPage(Wizard.BitmapTitledWizardPage):
+class ProjectNameLocationPage(projectwizard.BitmapTitledWizardPage):
     def __init__(self,master,add_bottom_page=True):
-        Wizard.BitmapTitledWizardPage.__init__(self,master,_("Enter the name and location for the project"),_("Name and Location"),"python_logo.png")
+        projectwizard.BitmapTitledWizardPage.__init__(self,master,_("Enter the name and location for the project"),_("Name and Location"),"python_logo.png")
         self.can_finish = True
         self.allowOverwriteOnPrompt = False
         sizer_frame = ttk.Frame(self)
@@ -750,14 +750,14 @@ class ProjectNameLocationPage(Wizard.BitmapTitledWizardPage):
         self.name_label.grid(column=0, row=0, sticky="nsew")
         self.name_var = tk.StringVar()
         self.name_entry = ttk.Entry(sizer_frame, textvariable=self.name_var)
-        self.name_entry.grid(column=1, row=0, sticky="nsew",padx=(consts.DEFAUT_CONTRL_PAD_X/2,0))
+        self.name_entry.grid(column=1, row=0, sticky="nsew",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0))
         sizer_frame.columnconfigure(1, weight=1)
         
         self.dir_label = ttk.Label(sizer_frame, text=_("Location:"))
         self.dir_label.grid(column=0, row=1, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         self.dir_entry_var = tk.StringVar()
         self.dir_entry = ttk.Combobox(sizer_frame, textvariable=self.dir_entry_var)
-        self.dir_entry.grid(column=1, row=1, sticky="nsew",padx=(consts.DEFAUT_CONTRL_PAD_X/2,0),pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
+        self.dir_entry.grid(column=1, row=1, sticky="nsew",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         self.browser_button = ttk.Button(
             sizer_frame, text=_("Browse..."), command=self.BrowsePath
         )
@@ -862,27 +862,27 @@ class ProjectNameLocationPage(Wizard.BitmapTitledWizardPage):
                     break
             os.remove(self._fullProjectPath)
    
-        self._project_configuration = self.GetPojectConfiguration()
-        utils.profile_set(PROJECT_DIRECTORY_KEY, self._project_configuration.Location)
+        self._new_project_configuration = self.GetNewPojectConfiguration()
+        utils.profile_set(PROJECT_DIRECTORY_KEY, self._new_project_configuration.Location)
         docManager = GetApp().GetDocumentManager()
         template = docManager.FindTemplateForTestPath(consts.PROJECT_EXTENSION)
         doc = template.CreateDocument(fullProjectPath, flags = core.DOC_NEW)
         #set project name
-        doc.GetModel().Name = self._project_configuration.Name
+        doc.GetModel().Name = self._new_project_configuration.Name
         doc.GetModel().Id = str(uuid.uuid1()).upper()
-        doc.GetModel().SetInterpreter(self._project_configuration.Interpreter)
+        doc.GetModel().SetInterpreter(self._new_project_configuration.Interpreter)
         doc.OnSaveDocument(fullProjectPath)
         view = GetApp().MainFrame.GetProjectView().GetView()
         view.AddProjectToView(doc)
         return True
         
-    def GetPojectConfiguration(self):
-        return baserun.BaseProjectConfiguration(self.name_var.get(),self.dir_entry_var.get(),self.project_dir_chkvar.get())
+    def GetNewPojectConfiguration(self):
+        return baseconfig.NewProjectConfiguration(self.name_var.get(),self.dir_entry_var.get(),self.project_dir_chkvar.get())
         
-class NewProjectWizard(Wizard.BaseWizard):
+class NewProjectWizard(projectwizard.BaseWizard):
     def __init__(self, parent):
         self._parent = parent
-        Wizard.BaseWizard.__init__(self, parent)
+        projectwizard.BaseWizard.__init__(self, parent)
         self._project_template_page = self.CreateProjectTemplatePage(self)
         self.template_pages = {
         }
@@ -891,7 +891,7 @@ class NewProjectWizard(Wizard.BaseWizard):
         self.LoadProjectTemplates()
         
     def CreateProjectTemplatePage(self,wizard):
-        page = Wizard.BitmapTitledWizardPage(wizard, _("New Project Wizard"),_("Welcom to new project wizard"),"python_logo.png")    
+        page = projectwizard.BitmapTitledWizardPage(wizard, _("New Project Wizard"),_("Welcom to new project wizard"),"python_logo.png")    
        # self.vert_scrollbar = SafeScrollbar(self, orient=tk.VERTICAL)
         #self.vert_scrollbar.grid(row=0, column=1, sticky=tk.NSEW)
 
@@ -1290,7 +1290,7 @@ class ProjectView(misc.AlarmEventView):
                         folderPath = file.logicalFolder
                         if folderPath:
                             if os.path.basename(filePath).lower() == self.PACKAGE_INIT_FILE:
-                                self._treeCtrl.AddFolder(folderPath,True)
+                                self._treeCtrl.AddPackageFolder(folderPath)
                             else:
                                 self._treeCtrl.AddFolder(folderPath)
                             folder = self._treeCtrl.FindFolder(folderPath)
@@ -1877,13 +1877,13 @@ class ProjectView(misc.AlarmEventView):
                 self.OnOpenSelection(None)
         frame.Destroy()
 
-    def OnAddFolder(self, event):
+    def OnAddFolder(self):
         if self.GetDocument():
-            items = self._treeCtrl.GetSelections()
+            items = self._treeCtrl.selection()
             if items:
                 item = items[0]
                 if self._IsItemFile(item):
-                    item = self._treeCtrl.GetItemParent(item)
+                    item = self._treeCtrl.parent(item)
                     
                 folderDir = self._GetItemFolderPath(item)
             else:
@@ -1901,16 +1901,17 @@ class ProjectView(misc.AlarmEventView):
             try:
                 os.mkdir(destfolderPath)
             except Exception as e:
-                wx.MessageBox(str(e),style=wx.OK|wx.ICON_ERROR)
+                messagebox.showerror(GetApp().GetAppName(),str(e),parent= self.GetFrame())
                 return
-            self.GetDocument().GetCommandProcessor().Submit(ProjectAddFolderCommand(self, self.GetDocument(), folderPath))
+            self.GetDocument().GetCommandProcessor().Submit(projectcommand.ProjectAddFolderCommand(self, self.GetDocument(), folderPath))
             #空文件夹下创建一个虚拟文件,防止空文件夹节点被删除
-            dummy_file = os.path.join(destfolderPath,DUMMY_NODE_TEXT)
-            self.GetDocument().GetCommandProcessor().Submit(ProjectAddFilesCommand(self.GetDocument(),[dummy_file],folderPath))
-            self._treeCtrl.UnselectAll()
+            dummy_file = os.path.join(destfolderPath,consts.DUMMY_NODE_TEXT)
+            self.GetDocument().GetCommandProcessor().Submit(projectcommand.ProjectAddFilesCommand(self.GetDocument(),[dummy_file],folderPath))
+           # self._treeCtrl.UnselectAll()
             item = self._treeCtrl.FindFolder(folderPath)
-            self._treeCtrl.SelectItem(item)
-            self._treeCtrl.EnsureVisible(item)
+            self._treeCtrl.selection_set(item)
+            self._treeCtrl.focus(item)
+            self._treeCtrl.see(item)
             self.OnRename()
 
     def AddFolder(self, folderPath):
@@ -2125,7 +2126,7 @@ class ProjectView(misc.AlarmEventView):
                     childFrame.Activate()
         event.Skip()
 
-    def OnRename(self, event=None):
+    def OnRename(self):
         items = self._treeCtrl.selection()
         if not items:
             return
@@ -2826,7 +2827,7 @@ class ProjectView(misc.AlarmEventView):
     def UpdateUI(self, command_id):
         if command_id in[constants.ID_CLOSE_PROJECT,constants.ID_SAVE_PROJECT ,constants.ID_DELETE_PROJECT,constants.ID_CLEAN_PROJECT,\
                          constants.ID_ARCHIVE_PROJECT,constants.ID_IMPORT_FILES,constants.ID_ADD_FILES_TO_PROJECT,constants.ID_ADD_DIR_FILES_TO_PROJECT,\
-                         constants.ID_PROPERTIES,constants.ID_OPEN_FOLDER_PATH]:
+                         constants.ID_PROPERTIES,constants.ID_OPEN_FOLDER_PATH,constants.ID_ADD_FOLDER,constants.ID_ADD_NEW_FILE]:
             return self.GetDocument() is not None
         elif command_id == constants.ID_ADD_CURRENT_FILE_TO_PROJECT:
             return self.GetDocument() is not None and GetApp().MainFrame.GetNotebook().get_current_editor() is not None

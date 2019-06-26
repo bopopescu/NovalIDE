@@ -1178,10 +1178,10 @@ class TextCtrl(ui_base.TweakableText):
 
     def direct_insert(self, index, chars, tags=None, **kw):
         try:
+            concrete_index = self.index(index)
             chars = self.check_convert_tabs_to_spaces(chars)
             ui_base.TweakableText.direct_insert(self,index, chars, tags, **kw)
         finally:
-            concrete_index = self.index(index)
             GetApp().event_generate(
                 "TextInsert",
                 index=concrete_index,

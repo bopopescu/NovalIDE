@@ -52,7 +52,7 @@ class ColorFontOptionsPanel(ui_utils.BaseConfigurationPanel):
         lexerCombo.pack(side=tk.LEFT,fill="x",expand=1)
         defaultButton = ttk.Button(row, text=_("Restore Default(D)"),command=self.SetDefaultValue)
         defaultButton.pack(side=tk.LEFT,fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X,0))
-        row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y/2))
+        row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_HALF_CONTRL_PAD_Y))
         
         row = ttk.Frame(self)
         lframe = ttk.Frame(row)
@@ -93,7 +93,7 @@ class ColorFontOptionsPanel(ui_utils.BaseConfigurationPanel):
         themCombo = ttk.Combobox(row,values = themes, state="readonly",textvariable=self.themeVal)
         themCombo.bind("<<ComboboxSelected>>",self.OnSelectTheme)
         themCombo.pack(side=tk.LEFT,fill="x")
-        row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y/2))
+        row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_HALF_CONTRL_PAD_Y))
 
         #默认文本控件高度超过面板高度了,这里指定一个小的高度,下面设置控件铺满面板
         self.code_sample_ctrl = CodeSampleCtrl(self,height=10)

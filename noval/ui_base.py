@@ -60,8 +60,9 @@ class ClosableNotebook(ttk.Notebook):
         finally:
             self.pressed_index = None
 
-
-
+    def GetPageCount(self):
+        return len(self.tabs())
+        
     def _close_tab_from_menu(self):
         self.close_tab(self._popup_index)
 
@@ -76,12 +77,19 @@ class ClosableNotebook(ttk.Notebook):
                 self.close_tab(tab_index)
 
     def close_tab(self, index):
+        '''
+            点击标签页关闭窗口事件,如何子类窗口实现了close方法,则调用子窗口关闭标签事件
+        '''
         child = self.get_child_by_index(index)
         if hasattr(child, "close"):
             child.close()
         else:
             self.forget(index)
             child.destroy()
+            
+    def close_child(self,child):
+        self.forget(child)
+        child.destroy()
 
     def get_child_by_index(self, index):
         tab_id = self.tabs()[index]

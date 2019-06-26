@@ -152,6 +152,7 @@ import types
 import pprint
 import noval.util.apputils as sysutilslib
 import noval.util.utils as utils
+import noval.util.compat as compat
 
 if sys.platform.startswith("win"):
     import msvcrt
@@ -661,6 +662,8 @@ class _FileWrapper:
                     #nBytesToGo = nBytes - len(self._lineBuf)
                     self._lineBuf = os.read(self._descriptor,
                                                    nBytes)
+                    if utils.is_py3_plus():
+                       self._lineBuf = compat.ensure_string(self._lineBuf)
                     #self._lineBuf = ""
             return self._lineBuf
         elif self._handle is not None:

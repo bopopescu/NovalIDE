@@ -1,5 +1,5 @@
 import noval.project.basemodel as basemodel
-import noval.python.interpreter.InterpreterManager as interpretermanager
+import noval.python.interpreter.interpretermanager as interpretermanager
 import noval.util.xmlutils as xmlutils
 from noval.consts import PROJECT_NAMESPACE_URL
 

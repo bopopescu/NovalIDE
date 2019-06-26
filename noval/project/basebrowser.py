@@ -16,7 +16,7 @@ import threading
 from noval.project.command import ProjectAddProgressFilesCommand
 from noval.python.parser.utils import py_cmp,py_sorted
 import noval.terminal as terminal
-
+import noval.project.property as projectproperty
 
 class EntryPopup(tk.Entry):
 
@@ -379,9 +379,12 @@ class BaseProjectbrowser(ttk.Frame):
         self.OpenSelection()
         
     def OpenSelection(self):
+        selections = self.tree.selection()
+        if not selections:
+            return
         doc = None
         try:
-            item = self.tree.selection()[0]
+            item = selections[0]
             filepath = self.GetItemFilePath(item)
             file_template = None
             if filepath:
@@ -560,7 +563,11 @@ class BaseProjectbrowser(ttk.Frame):
         GetApp().AddCommand(constants.ID_ADD_FILES_TO_PROJECT,_("&Project"),_("Add &Files to Project..."),handler=lambda:self.ProcessEvent(constants.ID_ADD_FILES_TO_PROJECT),tester=lambda:self.GetView().UpdateUI(constants.ID_ADD_FILES_TO_PROJECT))
         GetApp().AddCommand(constants.ID_ADD_DIR_FILES_TO_PROJECT,_("&Project"),_("Add Directory Files to Project..."),handler=lambda:self.ProcessEvent(constants.ID_ADD_DIR_FILES_TO_PROJECT),tester=lambda:self.GetView().UpdateUI(constants.ID_ADD_DIR_FILES_TO_PROJECT))
         GetApp().AddCommand(constants.ID_ADD_CURRENT_FILE_TO_PROJECT,_("&Project"),_("&Add Active File to Project..."),handler=lambda:self.ProcessEvent(constants.ID_ADD_CURRENT_FILE_TO_PROJECT),add_separator=True,tester=lambda:self.GetView().UpdateUI(constants.ID_ADD_CURRENT_FILE_TO_PROJECT))
-        GetApp().AddCommand(constants.ID_PROPERTIES,_("&Project"),_("Project Properties"),None,image=GetApp().GetImage("project/properties.png"),tester=lambda:self.GetView().UpdateUI(constants.ID_PROPERTIES))
+        
+        GetApp().AddCommand(constants.ID_ADD_NEW_FILE,_("&Project"),_("New File"),image=GetApp().GetImage("project/new_file.png"),handler=lambda:self.ProcessEvent(constants.ID_ADD_NEW_FILE),tester=lambda:self.GetView().UpdateUI(constants.ID_ADD_NEW_FILE))
+        GetApp().AddCommand(constants.ID_ADD_FOLDER,_("&Project"),_("New Folder"),image=GetApp().GetImage("project/folder.png"),handler=lambda:self.ProcessEvent(constants.ID_ADD_FOLDER),add_separator=True,tester=lambda:self.GetView().UpdateUI(constants.ID_ADD_FOLDER))
+        
+        GetApp().AddCommand(constants.ID_PROPERTIES,_("&Project"),_("Project Properties"),self.OnProjectProperties,image=GetApp().GetImage("project/properties.png"),tester=lambda:self.GetView().UpdateUI(constants.ID_PROPERTIES))
         GetApp().AddCommand(constants.ID_OPEN_FOLDER_PATH,_("&Project"),_("Open Project Path in Explorer"),handler=self.OpenProjectPath,tester=lambda:self.GetView().UpdateUI(constants.ID_OPEN_FOLDER_PATH))
 
     def NewProject(self):
@@ -650,31 +657,40 @@ class BaseProjectbrowser(ttk.Frame):
     def GetPopupFolderMenu(self):
         menu = tkmenu.PopupMenu(self,**misc.get_style_configuration("Menu"))
         menu["postcommand"] = lambda: menu._update_menu()
-        common_item_ids = [None,consts.ID_UNDO,consts.ID_REDO,consts.ID_CUT,consts.ID_COPY,consts.ID_PASTE,consts.ID_CLEAR,None,consts.ID_SELECTALL]
+        common_item_ids = self.GetPopupFolderItemIds()
         self.GetCommonItemsMenu(menu,common_item_ids)
         
         menu.Append(constants.ID_RENAME,_("&Rename"),handler=lambda:self.ProcessEvent(constants.ID_RENAME))
         menu.Append(constants.ID_REMOVE_FROM_PROJECT,_("Remove from Project"),handler=lambda:self.ProcessEvent(constants.ID_REMOVE_FROM_PROJECT))
-        
         self.AppendFileFoderCommonMenu(menu)
         return menu
+        
+    def GetPopupFolderItemIds(self):
+        folder_item_ids = [constants.ID_IMPORT_FILES,constants.ID_ADD_FILES_TO_PROJECT,constants.ID_ADD_DIR_FILES_TO_PROJECT,None,constants.ID_ADD_NEW_FILE,constants.ID_ADD_FOLDER,\
+                                None,consts.ID_UNDO,consts.ID_REDO,consts.ID_CUT,consts.ID_COPY,consts.ID_PASTE,consts.ID_CLEAR,None,consts.ID_SELECTALL]
+                                
+        return folder_item_ids
         
     def GetPopupProjectMenu(self):
         menu = tkmenu.PopupMenu(self,**misc.get_style_configuration("Menu"))
         menu["postcommand"] = lambda: menu._update_menu()
-        common_item_ids = [constants.ID_NEW_PROJECT,constants.ID_OPEN_PROJECT]
-        if self.GetCurrentProject() is not None:
-            common_item_ids.extend([constants.ID_CLOSE_PROJECT,constants.ID_SAVE_PROJECT, constants.ID_DELETE_PROJECT,\
-                            constants.ID_CLEAN_PROJECT,constants.ID_ARCHIVE_PROJECT])
-            common_item_ids.extend([None,constants.ID_IMPORT_FILES,constants.ID_ADD_FILES_TO_PROJECT, \
-                               constants.ID_ADD_DIR_FILES_TO_PROJECT,None,constants.ID_ADD_NEW_FILE,constants.ID_ADD_FOLDER,constants.ID_ADD_PACKAGE_FOLDER])
-            common_item_ids.extend([None, constants.ID_PROPERTIES,constants.ID_OPEN_FOLDER_PATH])
+        common_item_ids = self.GetPopupProjectItemIds()
         self.GetCommonItemsMenu(menu,common_item_ids)
         if self.GetCurrentProject() is not None:
             menu.Append(constants.ID_RENAME,_("&Rename"),handler=lambda:self.ProcessEvent(constants.ID_RENAME))
             menu.Append(constants.ID_OPEN_TERMINAL_PATH,_("Open Command Prompt here..."),handler=lambda:self.ProcessEvent(constants.ID_OPEN_TERMINAL_PATH))
             menu.Append(constants.ID_COPY_PATH,_("Copy Full Path"),handler=lambda:self.ProcessEvent(constants.ID_COPY_PATH))
         return menu
+        
+    def GetPopupProjectItemIds(self):
+        project_item_ids = [constants.ID_NEW_PROJECT,constants.ID_OPEN_PROJECT]
+        if self.GetCurrentProject() is not None:
+            project_item_ids.extend([constants.ID_CLOSE_PROJECT,constants.ID_SAVE_PROJECT, constants.ID_DELETE_PROJECT,\
+                            constants.ID_CLEAN_PROJECT,constants.ID_ARCHIVE_PROJECT])
+            project_item_ids.extend([None,constants.ID_IMPORT_FILES,constants.ID_ADD_FILES_TO_PROJECT, \
+                               constants.ID_ADD_DIR_FILES_TO_PROJECT,None,constants.ID_ADD_NEW_FILE,constants.ID_ADD_FOLDER])
+            project_item_ids.extend([None, constants.ID_PROPERTIES,constants.ID_OPEN_FOLDER_PATH])
+        return project_item_ids
         
     def GetCommonItemsMenu(self,menu,menu_item_ids):
         for item_id in menu_item_ids:
@@ -709,13 +725,10 @@ class BaseProjectbrowser(ttk.Frame):
             view.OnAddCurrentFileToProject()
             return True
         elif id == constants.ID_ADD_NEW_FILE:
-            self.OnAddNewFile(event)
+            view.OnAddNewFile(event)
             return True
         elif id == constants.ID_ADD_FOLDER:
-            self.OnAddFolder(event)
-            return True
-        elif id == constants.ID_ADD_PACKAGE_FOLDER:
-            self.OnAddPackageFolder(event)
+            view.OnAddFolder()
             return True
         elif id == constants.ID_RENAME:
             view.OnRename()
@@ -745,7 +758,7 @@ class BaseProjectbrowser(ttk.Frame):
             self.OpenSelection()
             return True
         elif id == constants.ID_PROPERTIES:
-            self.OnProperties(event)
+            self.OnProperties()
             return True
    #     elif id == constants.ID_PROJECT_PROPERTIES:
     #        self.OnProjectProperties()
@@ -764,6 +777,12 @@ class BaseProjectbrowser(ttk.Frame):
             return True
         else:
             return False
+            
+    def OnProperties(self):
+        projectproperty.PropertiesService().ShowPropertyDialog(self.tree.GetSingleSelectItem())
+
+    def OnProjectProperties(self):
+        projectproperty.PropertiesService().ShowPropertyDialog(self.tree.GetRootItem())
             
     def OpenProjectPath(self):
         document = self.GetCurrentProject()
@@ -851,4 +870,4 @@ class BaseProjectbrowser(ttk.Frame):
         
     def SaveProjectConfig(self):
         self.GetView().WriteProjectConfig()
-
+        

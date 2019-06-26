@@ -1,61 +1,58 @@
-import wx
-from noval.tool.consts import SPACE,HALF_SPACE,_
-import wx.dataview as dataview
-import noval.tool.images as images
+from noval import _,NewId
+import tkinter as tk
+from tkinter import ttk
 import os
-import noval.parser.utils as parserutils
-import noval.util.sysutils as sysutils
-import wx.lib.agw.flatmenu as flatmenu
-import noval.tool.project.PythonVariables as PythonVariables
-import ProjectDialog
-import BasePanel
+import noval.iface as iface
+import noval.plugin as plugin
+import noval.consts as consts
+import noval.python.parser.utils as parserutils
+import noval.util.apputils as sysutils
+#import noval.tool.project.PythonVariables as PythonVariables
+#import ProjectDialog
 import noval.util.utils as utils
-import EnvironmentMixin
-import noval.tool.interpreter.PythonPathMixin as PythonPathMixin
-import noval.tool.project.RunConfiguration as RunConfiguration
+import noval.ui_utils as ui_utils
+import noval.python.interpreter.pythonpathmixin as pythonpathmixin
+#import noval.tool.project.RunConfiguration as RunConfiguration
+import noval.ui_utils as ui_utils
+import noval.project.property as projectproperty
+import noval.imageutils as imageutils
+import noval.ttkwidgets.treeviewframe as treeviewframe
 
-class InternalPathPage(wx.Panel):
+class InternalPathPage(ttk.Frame):
     
-    ID_NEW_ZIP = wx.NewId()
-    ID_NEW_EGG = wx.NewId()
-    ID_NEW_WHEEL = wx.NewId()
+    ID_NEW_INTERNAL_ZIP = NewId()
+    ID_NEW_INTERNAL_EGG = NewId()
+    ID_NEW_INTERNAL_WHEEL = NewId()
     def __init__(self,parent,project_document):
-        wx.Panel.__init__(self, parent)
+        ttk.Frame.__init__(self, parent)
         self.current_project_document = project_document
-        self.Sizer = wx.BoxSizer()
         
-        left_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.tree_ctrl = wx.TreeCtrl(self,size=(300,-1),style=wx.TR_NO_LINES|wx.TR_HIDE_ROOT|wx.TR_DEFAULT_STYLE)
-        left_sizer.Add(self.tree_ctrl, 1,  wx.EXPAND)
-        self._useProjectPathCheckBox = wx.CheckBox(self, -1, _("Append project root path to PYTHONPATH"))
-        left_sizer.Add(self._useProjectPathCheckBox, 0,  wx.EXPAND|wx.TOP|wx.BOTTOM,HALF_SPACE)
-        self._useProjectPathCheckBox.SetValue(RunConfiguration.ProjectConfiguration.IsAppendProjectPath(self.current_project_document.GetKey()))
+        row = ttk.Frame(self)
+        self.treeview = treeviewframe.TreeViewFrame(row)
+        self.treeview.tree["show"] = ("tree",)
+        self.treeview.pack(side=tk.LEFT,fill="both",expand=1)
+        self.folder_bmp = imageutils.load_image("","packagefolder_obj.gif")
+     #   self.treeview.tree.bind("<3>", self.OnRightClick, True)
+        right_frame = ttk.Frame(row)
+        self.add_path_btn = ttk.Button(right_frame, text=_("Add Path.."),command=self.AddNewPath)
+        self.add_path_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
+
+        self.remove_path_btn = ttk.Button(right_frame, text=_("Remove Path..."),command=self.RemovePath)
+        self.remove_path_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
         
-        iconList = wx.ImageList(16, 16, initialCount = 1)
-        folder_bmp = images.load("packagefolder_obj.gif")
-        self.FolderIdx = iconList.Add(folder_bmp)
-        self.tree_ctrl.AssignImageList(iconList)
-        self.tree_ctrl.AddRoot("InternalPathList")
+        self.add_file_btn = ttk.Button(right_frame,text=_("Add File..."),command=self.AddNewPath)
+        self.add_file_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
         
-        right_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.add_path_btn = wx.Button(self, -1, _("Add Path.."))
-        wx.EVT_BUTTON(self.add_path_btn, -1, self.AddNewPath)
-        right_sizer.Add(self.add_path_btn, 0, wx.TOP|wx.EXPAND, SPACE*3)
+        right_frame.pack(side=tk.LEFT,fill="y")
+        row.pack(fill="both",expand=1)
         
-        self.add_file_btn = wx.Button(self, -1, _("Add File..."))
-        wx.EVT_BUTTON(self.add_file_btn, -1, self.AddNewFilePath)
-        right_sizer.Add(self.add_file_btn, 0, wx.TOP|wx.EXPAND, SPACE)
-        
-        self.remove_path_btn = wx.Button(self, -1, _("Remove Path..."))
-        wx.EVT_BUTTON(self.remove_path_btn, -1, self.RemovePath)
-        right_sizer.Add(self.remove_path_btn, 0, wx.TOP|wx.EXPAND, SPACE)
-        
-        self.Sizer.Add(left_sizer, 1, wx.EXPAND|wx.RIGHT,HALF_SPACE)
-        self.Sizer.Add(right_sizer, 0,wx.EXPAND|wx.LEFT|wx.RIGHT,HALF_SPACE)
-        
-        self.Fit()
-        self.AppendPathPath()
-        
+        row = ttk.Frame(self)
+        self._useProjectPathCheckVar = tk.IntVar(value=True)
+        ttk.Checkbutton(row, text= _("Append project root path to PYTHONPATH"),variable=self._useProjectPathCheckVar).pack(fill="x",side=tk.LEFT)
+        row.pack(fill="x")
+        #self._useProjectPathCheckBox.SetValue(RunConfiguration.ProjectConfiguration.IsAppendProjectPath(self.current_project_document.GetKey()))
+       # self.AppendPathPath()
+
     def AppendPathPath(self):
         python_path_list = RunConfiguration.ProjectConfiguration.LoadProjectInternalPath(self.GetParent().GetParent().ProjectDocument.GetKey())
         for path in python_path_list:
@@ -126,12 +123,12 @@ class InternalPathPage(wx.Panel):
            ### python_path_list.append(self.current_project_document.GetPath())
         return python_path_list
 
-class ExternalPathPage(wx.Panel,PythonPathMixin.BasePythonPathPanel):
+class ExternalPathPage(ttk.Frame,pythonpathmixin.PythonpathMixin):
     def __init__(self,parent):
-        wx.Panel.__init__(self, parent)
+        ttk.Frame.__init__(self, parent)
         self.InitUI(True)
-        self.tree_ctrl.AddRoot("ExternalPathList")
-        self.AppendPathPath()
+       # self.tree_ctrl.AddRoot("ExternalPathList")
+       # self.AppendPathPath()
         
     def AppendPathPath(self):
         python_path_list = RunConfiguration.ProjectConfiguration.LoadProjectExternalPath(self.GetParent().GetParent().ProjectDocument.GetKey())
@@ -143,51 +140,40 @@ class ExternalPathPage(wx.Panel,PythonPathMixin.BasePythonPathPanel):
         python_path_list = self.GetPathList()
         return python_path_list
 
-class EnvironmentPage(wx.Panel,EnvironmentMixin.BaseEnvironmentUI):
+class EnvironmentPage(ui_utils.BaseEnvironmentUI):
     def __init__(self,parent):
-        wx.Panel.__init__(self, parent)
-        self.InitUI()
-        self.LoadEnviron()
-        self.UpdateUI(None)
+        ui_utils.BaseEnvironmentUI.__init__(self, parent)
+      #  self.LoadEnviron()
+     #   self.UpdateUI(None)
         
     def LoadEnviron(self):
         environ = RunConfiguration.ProjectConfiguration.LoadProjectEnviron(self.GetParent().GetParent().ProjectDocument.GetKey())
         for env in environ:
             self.dvlc.AppendItem([env,environ[env]])
 
-class PythonPathPanel(BasePanel.BasePanel):
-    def __init__(self,filePropertiesService,parent,dlg_id,size,selected_item):
-        BasePanel.BasePanel.__init__(self,filePropertiesService, parent, dlg_id,size,selected_item)
-        box_sizer = wx.BoxSizer(wx.VERTICAL)
-        nb = wx.Notebook(self,-1,size = (-1,350))
-        iconList = wx.ImageList(16, 16, 3)
-        internal_path_icon = images.load_icon("project/openpath.gif")
-        InternalPathIconIndex = iconList.AddIcon(internal_path_icon)
-        external_path_icon = images.load_icon("jar_l_obj.gif")
-        ExternalPathIconIndex = iconList.AddIcon(external_path_icon)
-        environment_icon = images.load_icon("environment.png")
-        EnvironmentIconIndex = iconList.AddIcon(environment_icon)
-        nb.AssignImageList(iconList)
+class PythonPathPanel(ui_utils.BaseConfigurationPanel):
+    def __init__(self,parent,item,current_project):
+        ui_utils.BaseConfigurationPanel.__init__(self,parent)
+        self.current_project_document = current_project
+        nb = ttk.Notebook(self)
+
+        self.internal_path_icon = imageutils.load_image("","project/python/openpath.gif")
+        self.external_path_icon = imageutils.load_image("","python/jar_l_obj.gif")
+        self.environment_icon = imageutils.load_image("","environment.png")
+
+    
+        pythonpath_StaticText = ttk.Label(self,text=_("The final PYTHONPATH used for a launch is composed of paths defined here,joined with the paths defined by the selected interpreter.\n"))
+        pythonpath_StaticText.pack(fill="x")
         
-        pythonpath_StaticText = wx.StaticText(self, -1, _("The final PYTHONPATH used for a launch is composed of paths defined here,joined with the paths defined by the selected interpreter.\n"))
-        box_sizer.Add(pythonpath_StaticText,0,flag=wx.LEFT|wx.TOP,border=SPACE)
-        
-        count = nb.GetPageCount()
         self.internal_path_panel = InternalPathPage(nb,self.current_project_document)
-        nb.AddPage(self.internal_path_panel, _("Internal Path"))
-        nb.SetPageImage(count,InternalPathIconIndex)
-        count = nb.GetPageCount()
+        nb.add(self.internal_path_panel, text=_("Internal Path"),image=self.internal_path_icon,compound=tk.LEFT)
+
         self.external_path_panel = ExternalPathPage(nb)
-        nb.AddPage(self.external_path_panel, _("External Path"))
-        nb.SetPageImage(count,ExternalPathIconIndex)
-        count = nb.GetPageCount()
+        nb.add(self.external_path_panel, text=_("External Path"),image=self.external_path_icon,compound=tk.LEFT)
+
         self.environment_panel = EnvironmentPage(nb)
-        nb.AddPage(self.environment_panel, _("Environment"))
-        nb.SetPageImage(count,EnvironmentIconIndex)
-        box_sizer.Add(nb, 1, wx.LEFT|wx.RIGHT|wx.TOP|wx.EXPAND, SPACE)
-        self.SetSizer(box_sizer)
-        #should use Layout ,could not use Fit method
-        self.Layout()
+        nb.add(self.environment_panel, text=_("Environment"),image=self.environment_icon,compound=tk.LEFT)
+        nb.pack(fill="both",expand=1)
         
     def OnOK(self,optionsDialog):
         
@@ -207,3 +193,12 @@ class PythonPathPanel(BasePanel.BasePanel):
         python_path_list = self.internal_path_panel.GetPythonPathList()
         python_path_list.extend(self.external_path_panel.GetPythonPathList())
         return python_path_list
+        
+
+
+class PythonpathPageLoader(plugin.Plugin):
+    plugin.Implements(iface.CommonPluginI)
+    def Load(self):
+        projectproperty.PropertiesService().AddProjectOptionsPanel("PythonPath",PythonPathPanel)
+
+consts.DEFAULT_PLUGINS += ('noval.python.project.pythonpath.PythonpathPageLoader',)

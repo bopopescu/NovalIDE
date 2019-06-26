@@ -1,22 +1,26 @@
-import wx
-from noval.tool.consts import SPACE,HALF_SPACE,_,PROJECT_REFERENCE_ITEM_NAME,PYTHONPATH_ITEM_NAME,INTERPRETER_ITEM_NAME
-import noval.tool.images as images
+from noval import _
+import tkinter as tk
+from tkinter import ttk
 import os
 import noval.util.fileutils as fileutils
-import wx.dataview as dataview
-import noval.tool.interpreter.InterpreterManager as interpretermanager
-import noval.tool.project.PythonVariables as PythonVariables
-import ProjectDialog
-import noval.tool.project.RunConfiguration as RunConfiguration
+import noval.python.interpreter.interpretermanager as interpretermanager
+import noval.project.variables as variablesutils
+#import ProjectDialog
+import noval.python.project.runconfiguration as runconfiguration
 from noval.util import utils
-import BasePanel
-from noval.util.exceptions import PromptErrorException,InterpreterNotExistError
-import EnvironmentMixin
+#import noval.python.project.environmentmixin as environmentmixin
+import noval.iface as iface
+import noval.plugin as plugin
+import noval.consts as consts
+import noval.ui_utils as ui_utils
+import noval.project.property as projectproperty
+import noval.ui_base as ui_base
+import noval.imageutils as imageutils
       
-class BasePage(wx.Panel):
+class BasePage(ui_utils.BaseConfigurationPanel):
     
     def __init__(self,parent,run_configuration):
-        wx.Panel.__init__(self, parent)
+        ui_utils.BaseConfigurationPanel.__init__(self, parent)
         self.run_configuration = run_configuration
         
     def GetConfiguration(self):
@@ -32,100 +36,75 @@ class BasePage(wx.Panel):
 
 class StartupPage(BasePage):
     def __init__(self,parent,run_configuration):
-        super(StartupPage,self).__init__(parent,run_configuration)
-        box_sizer = wx.BoxSizer(wx.VERTICAL)
-        sbox = wx.StaticBox(self, -1, _("Project") + ":")
-        sboxSizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
+        BasePage.__init__(self,parent,run_configuration)
+        sbox = ttk.LabelFrame(self, text= _("Project") + ":")
+        ttk.Label(sbox, text= _('Project Name:')).pack(side=tk.LEFT)
+        self._projectNameControl = ttk.Entry(sbox, text=self.ProjectDocument.GetModel().Name)
         
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        projectLabelText = wx.StaticText(self, -1, _('Project Name:'))
-        lineSizer.Add(projectLabelText,0,flag=wx.LEFT,border=HALF_SPACE)
-        self._projectNameControl = wx.TextCtrl(self, -1,style=wx.TE_READONLY,value=self.ProjectDocument.GetModel().Name)
-        lineSizer.Add(self._projectNameControl,1,flag=wx.LEFT|wx.EXPAND|wx.RIGHT|wx.BOTTOM,border=HALF_SPACE) 
+        self._projectNameControl.pack(side=tk.LEFT,fill="x",expand=1)
         
-        sboxSizer.Add(lineSizer,0,flag=wx.EXPAND|wx.TOP|wx.BOTTOM, border=SPACE)
-        box_sizer.Add(sboxSizer,0,flag = wx.EXPAND|wx.RIGHT|wx.BOTTOM,border = HALF_SPACE)
+        sbox.pack(fill="x",expand=1)
+        sbox = ttk.LabelFrame(self, text= _("Startup Module:"))
+
+        ttk.Label(sbox, text=_('Main Module:')).pack(side=tk.LEFT)
+        self.main_module_var = tk.StringVar()
+        main_module_Control = ttk.Entry(sbox,textvariable=self.main_module_var)
         
-        sbox = wx.StaticBox(self, -1, _("Startup Module:"))
-        sboxSizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
-     
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        main_module_LabelText = wx.StaticText(self, -1, _('Main Module:'))
-        lineSizer.Add(main_module_LabelText,0,flag=wx.LEFT,border=HALF_SPACE)
-        self.main_module_Control = wx.TextCtrl(self, -1)
+        main_module_Control.pack(side=tk.LEFT,fill="x",expand=1)
         if self.MainModuleFile is not None:
             main_module_path = self.ProjectDocument.GetModel()\
                             .GetRelativePath(self.MainModuleFile)
-            main_module_path = os.path.join(PythonVariables.FormatVariableName(PythonVariables.PROJECT_DIR_VARIABLE) , \
+            main_module_path = os.path.join(variablesutils.FormatVariableName(variablesutils.PROJECT_DIR_VARIABLE) , \
                                             main_module_path)
-            self.main_module_Control.SetValue(main_module_path)
-        lineSizer.Add(self.main_module_Control,1,flag=wx.LEFT|wx.EXPAND|wx.BOTTOM,border=HALF_SPACE) 
-        self.main_module_btn = wx.Button(self, -1, _("Browse..."))
-        wx.EVT_BUTTON(self.main_module_btn, -1, self.BrowseMainModule)
-        lineSizer.Add(self.main_module_btn, 0,flag=wx.LEFT|wx.RIGHT, border=HALF_SPACE) 
-        sboxSizer.Add(lineSizer,0,flag=wx.EXPAND|wx.TOP|wx.BOTTOM, border=SPACE)
-        box_sizer.Add(sboxSizer,0,flag = wx.EXPAND|wx.RIGHT|wx.BOTTOM|wx.TOP,border = HALF_SPACE)
-        
-        sbox = wx.StaticBox(self, -1, _("Startup Directory:"))
-        sboxSizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
-        
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        
-        self._defaultRadioBtn = wx.RadioButton(self, -1,_("Default:"),style = wx.RB_GROUP)
-        ref_radio_btn_width = self._defaultRadioBtn.GetSize().GetWidth()
-        self.Bind(wx.EVT_RADIOBUTTON,self.CheckEnableStartupPath)
-        lineSizer.Add(self._defaultRadioBtn,0,flag=wx.LEFT,border=HALF_SPACE)
-        self.default_dirControl = wx.TextCtrl(self, -1,style=wx.TE_READONLY,value=PythonVariables.FormatVariableName(PythonVariables.PROJECT_DIR_VARIABLE))
-        lineSizer.Add(self.default_dirControl,1,flag=wx.EXPAND|wx.RIGHT,border=HALF_SPACE) 
-        sboxSizer.Add(lineSizer,0,flag=wx.EXPAND|wx.TOP, border=HALF_SPACE) 
-        
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        self._otherRadioBtn = wx.RadioButton(self, -1,_("Other:"),size=(ref_radio_btn_width,-1))
-        lineSizer.Add(self._otherRadioBtn,0,flag=wx.LEFT,border=HALF_SPACE)
-        self.other_dirControl = wx.TextCtrl(self, -1)
-        lineSizer.Add(self.other_dirControl,1,flag=wx.EXPAND|wx.RIGHT,border=HALF_SPACE) 
-        sboxSizer.Add(lineSizer,0,flag=wx.EXPAND|wx.TOP, border=HALF_SPACE)
-        
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.project_folder_btn = wx.Button(self, -1, _("Project Folder"))
-        wx.EVT_BUTTON(self.project_folder_btn, -1, self.BrowseProjectFolder)
-        lineSizer.Add(self.project_folder_btn, 0,flag=wx.LEFT, border=SPACE) 
-        
-        self.file_system_btn = wx.Button(self, -1, _("Local File System"))
-        wx.EVT_BUTTON(self.file_system_btn, -1, self.BrowseLocalPath)
-        lineSizer.Add(self.file_system_btn, 0,flag=wx.LEFT, border=SPACE) 
-        
-        self.variables_btn = wx.Button(self, -1, _("Variables"))
-        wx.EVT_BUTTON(self.variables_btn, -1, self.BrowseVariables)
-        lineSizer.Add(self.variables_btn, 0,flag=wx.LEFT, border=SPACE) 
-        
-        sboxSizer.Add(lineSizer,0,flag = wx.RIGHT|wx.ALIGN_RIGHT|wx.TOP|wx.BOTTOM,border = HALF_SPACE)
-        box_sizer.Add(sboxSizer,0,flag = wx.EXPAND|wx.RIGHT|wx.TOP,border = HALF_SPACE)
-
-        self.SetSizer(box_sizer)
-        self.Fit()
-        startup_configuration = run_configuration.GetChildConfiguration(RunConfiguration.StartupConfiguration.CONFIGURATION_NAME)
+            self.main_module_var.set(main_module_path)
+            ttk.Button(sbox, text= _("Browse..."),command=self.BrowseMainModule).pack(side=tk.LEFT)
+        sbox.pack(fill="x",expand=1)
+        sbox = ttk.LabelFrame(self, text=_("Startup Directory:"))
+        self._defaultVar = tk.IntVar()
+        row = ttk.Frame(sbox)    
+        defaultRadioBtn = ttk.Radiobutton(row, text=_("Default:"),variable=self._defaultVar,command=self.CheckEnableStartupPath)
+        defaultRadioBtn.pack(side=tk.LEFT)
+        self.default_dirControl = ttk.Entry(row, text=variablesutils.FormatVariableName(variablesutils.PROJECT_DIR_VARIABLE))
+        self.default_dirControl.pack(side=tk.LEFT,fill="x",expand=1)
+        row.pack(fill="x",expand=1)
+        row = ttk.Frame(sbox) 
+        self._otherRadioBtn = ttk.Radiobutton(row, text=_("Other:"))
+        self._otherRadioBtn.pack(side=tk.LEFT)
+        self.other_dirControl = ttk.Entry(row)
+        self.other_dirControl.pack(side=tk.LEFT,fill="x",expand=1)
+        row.pack(fill="x",expand=1)
+        row = ttk.Frame(sbox) 
+        self.project_folder_btn = ttk.Button(row,text= _("Project Folder"),command=self.BrowseProjectFolder)
+        self.project_folder_btn.pack(side=tk.LEFT)
+        self.file_system_btn = ttk.Button(row, text=_("Local File System"),command=self.BrowseLocalPath)
+        self.file_system_btn.pack(side=tk.LEFT)
+        self.variables_btn = ttk.Button(row, text=_("Variables"),command=self.BrowseVariables)
+        self.variables_btn.pack(side=tk.LEFT)
+        row.pack(fill="x",expand=1)
+        startup_configuration = run_configuration.GetChildConfiguration(runconfiguration.StartupConfiguration.CONFIGURATION_NAME)
         self._startup_path_pattern = startup_configuration.StartupPathPattern
-        if self._startup_path_pattern == RunConfiguration.StartupConfiguration.DEFAULT_PROJECT_DIR_PATH:
-            self._defaultRadioBtn.SetValue(True)
+        if self._startup_path_pattern == runconfiguration.StartupConfiguration.DEFAULT_PROJECT_DIR_PATH:
+            self._defaultVar.set(True)
         else:
             self._otherRadioBtn.SetValue(True)
             self.other_dirControl.SetValue(startup_configuration.StartupPath)
+        
+        sbox.pack(fill="x",expand=1)
         self.CheckEnableStartupPath(None)
         
     def CheckEnableStartupPath(self,event):
-        if self._defaultRadioBtn.GetValue():
-            self.other_dirControl.Enable(False)
-            self.project_folder_btn.Enable(False)
-            self.file_system_btn.Enable(False)
-            self.variables_btn.Enable(False)
-            self._startup_path_pattern = RunConfiguration.StartupConfiguration.DEFAULT_PROJECT_DIR_PATH
+        if self._defaultVar.get():
+            self.other_dirControl['state'] = tk.DISABLED
+            self.project_folder_btn['state'] = tk.DISABLED
+            self.file_system_btn['state'] = tk.DISABLED
+            self.variables_btn['state'] = tk.DISABLED
+            self._startup_path_pattern = runconfiguration.StartupConfiguration.DEFAULT_PROJECT_DIR_PATH
         else:
-            self.other_dirControl.Enable(True)
-            self.project_folder_btn.Enable(True)
-            self.file_system_btn.Enable(True)
-            self.variables_btn.Enable(True)
-            self._startup_path_pattern = RunConfiguration.StartupConfiguration.LOCAL_FILE_SYSTEM_PATH
+            self.other_dirControl['state'] = tk.NORMAL
+            self.project_folder_btn['state'] = tk.NORMAL
+            self.file_system_btn['state'] = tk.NORMAL
+            self.variables_btn['state'] = tk.NORMAL
+            self._startup_path_pattern = runconfiguration.StartupConfiguration.LOCAL_FILE_SYSTEM_PATH
             
     def BrowseLocalPath(self,event):
         
@@ -176,7 +155,7 @@ class StartupPage(BasePage):
             other_startup_path = self.other_dirControl.GetValue().strip()
             other_startup_path = python_variable_manager.EvalulateValue(other_startup_path)
             
-        except PromptErrorException,e:
+        except RuntimeError as e:
             wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR,self)
             return False
             
@@ -192,37 +171,19 @@ class StartupPage(BasePage):
         
 class ArgumentsPage(BasePage):
     def __init__(self,parent,run_configuration):
-        super(ArgumentsPage,self).__init__(parent,run_configuration)
-        box_sizer = wx.BoxSizer(wx.VERTICAL)
-        arguments_configuration = run_configuration.GetChildConfiguration(RunConfiguration.AugumentsConfiguration.CONFIGURATION_NAME)
-        
-        sbox = wx.StaticBox(self, -1, _("Program Arguments:"))
-        sboxSizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
-        
-        linesizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.program_argument_textctrl = wx.TextCtrl(self, -1, value=arguments_configuration.ProgramArgs, style = wx.TE_MULTILINE,size=(-1,150))
-        linesizer.Add(self.program_argument_textctrl, 1, wx.LEFT|wx.EXPAND, 0)
-        sboxSizer.Add(linesizer,0,flag=wx.EXPAND|wx.ALL, border=HALF_SPACE)
-        
-        linesizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.variables_btn = wx.Button(self, -1, _("Variables"))
-        wx.EVT_BUTTON(self.variables_btn, -1, self.BrowseVariables)
-        linesizer.Add(self.variables_btn, 0,flag=wx.LEFT, border=SPACE) 
-        sboxSizer.Add(linesizer,0,flag = wx.RIGHT|wx.ALIGN_RIGHT|wx.BOTTOM,border = HALF_SPACE)
-        
-        box_sizer.Add(sboxSizer,0,flag = wx.EXPAND|wx.RIGHT,border = HALF_SPACE)  
-
-        sbox = wx.StaticBox(self, -1, _("Interpreter Options:"))
-        sboxSizer = wx.StaticBoxSizer(sbox, wx.VERTICAL)
-        
-        linesizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.interpreter_option_textctrl = wx.TextCtrl(self, -1, value=arguments_configuration.InterpreterOption, style = wx.TE_MULTILINE,size=(-1,150))
-        linesizer.Add(self.interpreter_option_textctrl, 1, wx.LEFT|wx.EXPAND, 0)
-        sboxSizer.Add(linesizer,0,flag=wx.EXPAND|wx.ALL, border=HALF_SPACE)
-        box_sizer.Add(sboxSizer,0,flag = wx.EXPAND|wx.RIGHT,border = HALF_SPACE) 
-        
-        self.SetSizer(box_sizer)
-        self.Fit()
+        BasePage.__init__(self,parent,run_configuration)
+        arguments_configuration = run_configuration.GetChildConfiguration(runconfiguration.AugumentsConfiguration.CONFIGURATION_NAME)
+        sbox = ttk.LabelFrame(self, text=_("Program Arguments:"))
+        program_argument_textctrl = tk.Text(sbox,height=5,width=10)
+        #text=arguments_configuration.ProgramArgs
+        program_argument_textctrl.pack(fill="both",expand=1)
+        variables_btn = ttk.Button(sbox, text=_("Variables"),command=self.BrowseVariables)
+        sbox.pack(fill="x",expand=1)
+        sbox = ttk.LabelFrame(self, text=_("Interpreter Options:"))
+        interpreter_option_textctrl = tk.Text(sbox,height=5,width=10)
+        # text=arguments_configuration.InterpreterOption
+        interpreter_option_textctrl.pack(fill="both",expand=1)
+        sbox.pack(fill="x",expand=1)
         
     def BrowseVariables(self,event):
         variable_dlg = PythonVariables.VariablesDialog(self,-1,_("Select Variable"),self.ProjectDocument)
@@ -235,7 +196,7 @@ class ArgumentsPage(BasePage):
             arguments_text = self.program_argument_textctrl.GetValue().strip()
             python_variable_manager = PythonVariables.ProjectVariablesManager(self.ProjectDocument)
             arguments_text = python_variable_manager.EvalulateValue(arguments_text)
-        except PromptErrorException,e:
+        except PromptErrorException as e:
             wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR,self)
             return False
         return True
@@ -247,32 +208,21 @@ class ArgumentsPage(BasePage):
         
 class InterpreterConfigurationPage(BasePage):
     def __init__(self,parent,run_configuration):
-        super(InterpreterConfigurationPage,self).__init__(parent,run_configuration)
-        box_sizer = wx.BoxSizer(wx.VERTICAL)
-        lineSizer = wx.BoxSizer(wx.VERTICAL)
-        interpreter_configuration = run_configuration.GetChildConfiguration(RunConfiguration.InterpreterConfiguration.CONFIGURATION_NAME)
-        interpreter_staticLabel = wx.StaticText(self, -1, _("Interpreter:"))
-        lineSizer.Add(interpreter_staticLabel, 0, wx.BOTTOM|wx.EXPAND,HALF_SPACE)
-        box_sizer.Add(lineSizer,0,flag = wx.EXPAND|wx.RIGHT|wx.TOP,border = SPACE)
-        lineSizer = wx.BoxSizer(wx.VERTICAL)
+        BasePage.__init__(self,parent,run_configuration)
+        interpreter_configuration = run_configuration.GetChildConfiguration(runconfiguration.InterpreterConfiguration.CONFIGURATION_NAME)
+        ttk.Label(self, text=_("Interpreter:")).pack(fill="x")
         choices,default_selection = interpretermanager.InterpreterManager().GetChoices()
-        self.interpretersCombo = wx.ComboBox(self, -1,size=(-1,-1),\
-                        choices=choices, value="",style = wx.CB_DROPDOWN)
-        self.Bind(wx.EVT_TEXT,self.GetInterpreterPythonPath)
+        interpretersCombo = ttk.Combobox(self, values=choices)
+        interpretersCombo.pack(fill="x",expand=1)
+       # self.Bind(wx.EVT_TEXT,self.GetInterpreterPythonPath)
         if len(choices) > 0:
-            self.interpretersCombo.SetSelection(default_selection)
+            interpretersCombo.current(default_selection)
         
-        lineSizer.Add(self.interpretersCombo, 0, wx.LEFT|wx.EXPAND,0)
-        box_sizer.Add(lineSizer,0,flag = wx.EXPAND|wx.RIGHT,border = SPACE)
-        lineSizer = wx.BoxSizer(wx.VERTICAL)
-        lineSizer.Add(wx.StaticText(self, -1, _("PYTHONPATH that will be used in the run:")), 0, wx.BOTTOM|wx.EXPAND,HALF_SPACE)
-        self.listbox = wx.ListBox(self,-1,size=(-1,300))
-        lineSizer.Add(self.listbox, 1,  wx.EXPAND)
-        box_sizer.Add(lineSizer,0,flag = wx.EXPAND|wx.RIGHT|wx.TOP,border = SPACE)
-        self.SetSizer(box_sizer)
-        self.Fit()
-        self.SetCurrentInterpreterName(interpreter_configuration)
-        self.GetInterpreterPythonPath(None)
+        ttk.Label(self, text=_("PYTHONPATH that will be used in the run:")).pack(fill="x")
+        self.listbox = tk.Listbox(self)
+        self.listbox.pack(fill="both",expand=1)
+      #  self.SetCurrentInterpreterName(interpreter_configuration)
+       # self.GetInterpreterPythonPath(None)
         
     def SetCurrentInterpreterName(self,interpreter_configuration):
         interpreter_name = interpreter_configuration.InterpreterName
@@ -319,24 +269,23 @@ class InterpreterConfigurationPage(BasePage):
     def OnOK(self):
         try:
             return self.CheckInterpreterExist()
-        except PromptErrorException,e:
+        except PromptErrorException as e:
             wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR,self)
             return False
         
-class InputOutputPage(wx.Panel):
+class InputOutputPage(ui_utils.BaseConfigurationPanel):
     def __init__(self,parent,dlg_id,size):
-        wx.Panel.__init__(self, parent)
-        box_sizer = wx.BoxSizer(wx.VERTICAL)
+        ui_utils.BaseConfigurationPanel.__init__(self, parent)
         
-class EnvironmentPage(BasePage,EnvironmentMixin.BaseEnvironmentUI):
+class EnvironmentPage(BasePage,ui_utils.BaseEnvironmentUI):
     def __init__(self,parent,run_configuration):
         BasePage.__init__(self,parent,run_configuration)
         self.InitUI()
-        self.LoadEnvironments()
-        self.UpdateUI(None)
+     #   self.LoadEnvironments()
+      #  self.UpdateUI(None)
             
     def LoadEnvironments(self,):
-        environs = self.run_configuration.GetChildConfiguration(RunConfiguration.EnvironmentConfiguration.CONFIGURATION_NAME).Environ
+        environs = self.run_configuration.GetChildConfiguration(runconfiguration.EnvironmentConfiguration.CONFIGURATION_NAME).Environ
         self.dvlc.DeleteAllItems()
         for env in environs:
             self.dvlc.AppendItem([env,environs[env]])
@@ -348,90 +297,56 @@ class EnvironmentPage(BasePage,EnvironmentMixin.BaseEnvironmentUI):
         return RunConfiguration.EnvironmentConfiguration(self.ProjectDocument,main_module_file,\
                        environ)
         
-class RunConfigurationDialog(wx.Dialog):
-    def __init__(self,parent,dlg_id,title,run_configuration):
-        wx.Dialog.__init__(self, parent, dlg_id,title)
-        box_sizer = wx.BoxSizer(wx.VERTICAL)
-        top_sizer = wx.BoxSizer(wx.HORIZONTAL)
+class RunConfigurationDialog(ui_base.CommonModaldialog):
+    def __init__(self,parent,title,run_configuration):
+        ui_base.CommonModaldialog.__init__(self, parent)
+        self.title(title)
         self.current_project_document = run_configuration.ProjectDocument
         self.selected_project_file = run_configuration.MainModuleFile
+        sizer_frame = ttk.Frame(self.main_frame)
         if run_configuration.IsNewConfiguration:
-            st_text = wx.StaticText(self,label = _("New Debug/Run Configuration"))
+            st_text = ttk.Label(sizer_frame,text = _("New Debug/Run Configuration"))
         else:
-            st_text = wx.StaticText(self,label = _("Edit Debug/Run Configuration"))
-        st_text.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))
-        top_sizer.Add(st_text, 1,flag=wx.LEFT|wx.EXPAND,border = SPACE)  
-          
-        icon = wx.StaticBitmap(self,bitmap = images.load("project/run_wizard.png"))  
-        top_sizer.Add(icon,0,flag=wx.TOP|wx.RIGHT,border = HALF_SPACE)
-        box_sizer.Add(top_sizer,0,flag=wx.EXPAND|wx.ALL,border = HALF_SPACE)
-        
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        line = wx.StaticLine(self)
-        lineSizer.Add(line,1,flag = wx.LEFT|wx.EXPAND,border = 0)
-        box_sizer.Add(lineSizer,0,flag = wx.EXPAND|wx.BOTTOM,border = SPACE)
-        
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        dirLabelText = wx.StaticText(self, -1, _('Name:'))
-        lineSizer.Add(dirLabelText,0,flag=wx.LEFT,border=SPACE)
-        self.nameControl = wx.TextCtrl(self, -1,value=run_configuration.Name)
-        lineSizer.Add(self.nameControl,1,flag=wx.LEFT|wx.EXPAND,border=HALF_SPACE) 
-        box_sizer.Add(lineSizer,0,flag = wx.EXPAND|wx.RIGHT,border = SPACE) 
-        
-        bottom_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.nb = wx.Notebook(self,-1,size = (600,400))
-        iconList = wx.ImageList(16, 16, 4)
-        
-        startup_icon = images.load_icon("project/startup.png")
-        StartupIconIndex = iconList.AddIcon(startup_icon)
-        arguments_icon = images.load_icon("project/parameter.png")
-        ArgumentsIconIndex = iconList.AddIcon(arguments_icon)
-        interpreter_icon = images.load_icon("interpreter.ico")
-        InterpreterIconIndex = iconList.AddIcon(interpreter_icon)
-        environment_icon = images.load_icon("environment.png")
-        EnvironmentIconIndex = iconList.AddIcon(environment_icon)
-        self.nb.AssignImageList(iconList)
-                
-        count = self.nb.GetPageCount()
-        self.startup_panel = StartupPage(self.nb,run_configuration)
-        self.nb.AddPage(self.startup_panel, _("Startup"))
-        self.nb.SetPageImage(count,StartupIconIndex)
-        count = self.nb.GetPageCount()
-        self.arguments_panel = ArgumentsPage(self.nb,run_configuration)
-        self.nb.AddPage(self.arguments_panel, _("Arguments"))
-        self.nb.SetPageImage(count,ArgumentsIconIndex)
-        count = self.nb.GetPageCount()
-        self.interpreter_panel = InterpreterConfigurationPage(self.nb,run_configuration)
-        self.nb.AddPage(self.interpreter_panel, _("Interpreter"))
-        self.nb.SetPageImage(count,InterpreterIconIndex)
-        count = self.nb.GetPageCount()
-        self.environment_panel = EnvironmentPage(self.nb,run_configuration)
-        self.nb.AddPage(self.environment_panel, _("Environment"))
-        self.nb.SetPageImage(count,EnvironmentIconIndex)
-        bottom_sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND, 0)
-        
-##        self.environment_panel = environment.EnvironmentPanel(nb)
-##        nb.AddPage(self.environment_panel, _("Redirect"))
-        
-      ###  box_sizer.Add(top_sizer, 0, flag=wx.LEFT|wx.TOP|wx.BOTTOM|wx.EXPAND, border=SPACE)
-        box_sizer.Add(bottom_sizer, 0, wx.LEFT|wx.TOP|wx.BOTTOM|wx.EXPAND,SPACE)
+            st_text = ttk.Labe(sizer_frame,text = _("Edit Debug/Run Configuration"))
+       # st_text.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))
+        st_text.pack(side=tk.LEFT,fill="x",expand=1)
+        self.show_img = imageutils.load_image("","project/run_wizard.png")
+        ttk.Label(sizer_frame,image = self.show_img).pack(side=tk.LEFT)
+ 
+        sizer_frame.pack(fill="x",expand=1)       
+# line = wx.StaticLine(self)
 
-        bsizer = wx.StdDialogButtonSizer()
-        ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
-        wx.EVT_BUTTON(ok_btn, -1, self.OnOKClick)
-        #set ok button default focused
-        ok_btn.SetDefault()
-        bsizer.AddButton(ok_btn)
+        separator = ttk.Separator(self.main_frame, orient = tk.HORIZONTAL)
+        separator.pack(fill="x",expand=1) 
         
-        cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
-        bsizer.AddButton(cancel_btn)
-        bsizer.Realize()
-        box_sizer.Add(bsizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM|wx.TOP,SPACE)
+        row = ttk.Frame(self.main_frame)
+        ttk.Label(row, text=_('Name:')).pack(side=tk.LEFT)
 
-        self.SetSizer(box_sizer)
-        self.Fit()
+        self.nameControl = ttk.Entry(row, text=run_configuration.Name)
+        self.nameControl.pack(side=tk.LEFT,fill="x",expand=1)
+        row.pack(fill="x",expand=1)
+        nb = ttk.Notebook(self.main_frame)
+        self.startup_icon = imageutils.load_image("","project/python/startup.png")
+        self.arguments_icon = imageutils.load_image("","project/python/parameter.png")
+        self.interpreter_icon = imageutils.load_image("","python/interpreter.ico")
+        self.environment_icon = imageutils.load_image("","environment.png")
+
+        self.startup_panel = StartupPage(nb,run_configuration)
+        nb.add(self.startup_panel, text=_("Startup"),image=self.startup_icon,compound=tk.LEFT)
+
+    
+        self.arguments_panel = ArgumentsPage(nb,run_configuration)
+        nb.add(self.arguments_panel, text=_("Arguments"),image=self.arguments_icon,compound=tk.LEFT)
+
+        self.interpreter_panel = InterpreterConfigurationPage(nb,run_configuration)
+        nb.add(self.interpreter_panel, text=_("Interpreter"),image=self.interpreter_icon,compound=tk.LEFT)
+
+        self.environment_panel = EnvironmentPage(nb,run_configuration)
+        nb.add(self.environment_panel, text=_("Environment"),image=self.environment_icon,compound=tk.LEFT)
+        nb.pack(fill="both",expand=1)
+        self.AddokcancelButton()
         
-    def OnOKClick(self,event):
+    def _ok(self):
         if self.nameControl.GetValue().strip() == "":
             wx.MessageBox(_("A name is required for the configuration"),style = wx.OK|wx.ICON_ERROR)
             return
@@ -452,104 +367,83 @@ class RunConfigurationDialog(wx.Dialog):
     def GetMainModuleFile(self):
         return self.startup_panel.MainModuleFile
 
-class PyDebugRunProertyPanel(BasePanel.BasePanel):
+class DebugRunPanel(ui_utils.BaseConfigurationPanel):
     """description of class"""
-    def __init__(self,filePropertiesService,parent,dlg_id,size,selected_item):
-        BasePanel.BasePanel.__init__(self,filePropertiesService, parent, dlg_id,size,selected_item)
-        box_sizer = wx.BoxSizer(wx.VERTICAL)
+    def __init__(self,parent,item,current_project):
+        ui_utils.BaseConfigurationPanel.__init__(self,parent)
+
         self._configuration_list = []
+        self.current_project_document = current_project
         project_view = self.current_project_document.GetFirstView()
         self.select_project_file = None
         self.is_folder = False
-        if selected_item == project_view._treeCtrl.GetRootItem():
-            
-            lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-            lineSizer.Add(wx.StaticText(self, -1, _("Set the default startup file when run project.")), 0, wx.LEFT|wx.EXPAND,0)
-            box_sizer.Add(lineSizer,0,flag = wx.EXPAND|wx.TOP|wx.LEFT,border = SPACE)
-            
-            lineSizer = wx.BoxSizer(wx.HORIZONTAL)
+        if item == project_view._treeCtrl.GetRootItem():
+            ttk.Label(self, text=_("Set the default startup file when run project.")).pack(fill="x")
             startup_file_path = ''
             startup_file = self.current_project_document.GetModel().StartupFile
             if startup_file is not None:
                 startup_file_path = self.current_project_document.GetModel()\
                             .GetRelativePath(startup_file)
-                startup_file_path = os.path.join(PythonVariables.FormatVariableName(PythonVariables.PROJECT_DIR_VARIABLE) , startup_file_path)
-            self.filesCombo = wx.ComboBox(self, -1,size=(-1,-1),\
-                        choices=[], value=startup_file_path,style = wx.CB_DROPDOWN)
-            lineSizer.Add(self.filesCombo,1,flag=wx.LEFT|wx.EXPAND,border=SPACE)
-            self.set_startup_btn = wx.Button(self, -1, _("Select the startup file"))
-            lineSizer.Add(self.set_startup_btn,0,flag=wx.LEFT|wx.EXPAND|wx.RIGHT,border=HALF_SPACE)
-            wx.EVT_BUTTON(self.set_startup_btn, -1, self.SetStartupFile)
-            box_sizer.Add(lineSizer,0,flag = wx.EXPAND|wx.TOP,border = HALF_SPACE)
-        elif project_view._IsItemFile(selected_item):
-            self.select_project_file = project_view._GetItemFile(selected_item)
+                startup_file_path = os.path.join(variablesutils.FormatVariableName(variablesutils.PROJECT_DIR_VARIABLE) , startup_file_path)
+            row = ttk.Frame(self)
+            self.startup_path_var = tk.StringVar()
+            ttk.Combobox(row,textvariable=self.startup_path_var).pack(side=tk.LEFT,fill="x",expand=1)
+            ttk.Button(row, text= _("Select the startup file"),command=self.SetStartupFile).pack(side=tk.LEFT)
+            row.pack(fill="x")
+        elif project_view._IsItemFile(item):
+            self.select_project_file = project_view._GetItemFile(item)
         else:
             self.is_folder = True
             
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        manage_configuration_staticLabel = wx.StaticText(self, -1, _("You can manage launch run configurations and set default configuration as belows.\n"))
-        lineSizer.Add(manage_configuration_staticLabel, 0,wx.EXPAND, 0)
-        box_sizer.Add(lineSizer, 0, wx.TOP|wx.LEFT,SPACE)
-            
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        left_sizer = wx.BoxSizer(wx.VERTICAL)
-        configuration_staticLabel = wx.StaticText(self, -1, _("Set run configurations for project '%s':") % self.GetProjectName())
-        left_sizer.Add(configuration_staticLabel, 0, wx.EXPAND,0)
-        self.configuration_ListCtrl = wx.ListCtrl(self, -1, size=(-1,300),style = wx.LC_LIST)
-        wx.EVT_LIST_ITEM_SELECTED(self.configuration_ListCtrl, self.configuration_ListCtrl.GetId(), self.UpdateUI)
-        wx.EVT_LIST_ITEM_DESELECTED(self.configuration_ListCtrl, self.configuration_ListCtrl.GetId(), self.UpdateUI)
-        wx.EVT_LIST_ITEM_ACTIVATED(self.configuration_ListCtrl, self.configuration_ListCtrl.GetId(), self.EditRunConfiguration)
-        iconList = wx.ImageList(16, 16, initialCount = 1)
-        run_config_bmp = images.load("project/runconfig.png")
-        self.ConfigurationIconIndex = iconList.Add(run_config_bmp)
-        self.configuration_ListCtrl.AssignImageList(iconList,wx.IMAGE_LIST_SMALL)
-        left_sizer.Add(self.configuration_ListCtrl, 1, wx.TOP|wx.EXPAND,HALF_SPACE)
-        lineSizer.Add(left_sizer, 1, wx.LEFT|wx.EXPAND,SPACE)
-        
-        right_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.new_configuration_btn = wx.Button(self, -1, _("New"))
-        wx.EVT_BUTTON(self.new_configuration_btn, -1, self.NewRunConfiguration)
-        right_sizer.Add(self.new_configuration_btn, 0, wx.TOP|wx.EXPAND, configuration_staticLabel.GetSize().GetHeight()+HALF_SPACE)
-        
-        self.edit_configuration_btn = wx.Button(self, -1, _("Edit"))
-        wx.EVT_BUTTON(self.edit_configuration_btn, -1, self.EditRunConfiguration)
-        right_sizer.Add(self.edit_configuration_btn, 0, wx.TOP|wx.EXPAND, HALF_SPACE)
-        
-        self.remove_configuration_btn = wx.Button(self, -1, _("Remove"))
-        wx.EVT_BUTTON(self.remove_configuration_btn, -1, self.RemoveConfiguration)
-        right_sizer.Add(self.remove_configuration_btn, 0, wx.TOP|wx.EXPAND, HALF_SPACE)
-        
-        self.copy_configuration_btn = wx.Button(self, -1, _("Copy"))
-        wx.EVT_BUTTON(self.copy_configuration_btn, -1, self.CopyConfiguration)
-        right_sizer.Add(self.copy_configuration_btn, 0, wx.TOP|wx.EXPAND, HALF_SPACE)
-        lineSizer.Add(right_sizer, 0, wx.LEFT|wx.EXPAND,SPACE)
-        box_sizer.Add(lineSizer,1,flag = wx.EXPAND|wx.RIGHT,border = HALF_SPACE)
-        self.SetSizer(box_sizer)
+        manage_configuration_staticLabel = ttk.Label(self,text= _("You can manage launch run configurations and set default configuration as belows.\n"))
+        manage_configuration_staticLabel.pack(fill="x")
+        configuration_staticLabel = ttk.Label(self, text= _("Set run configurations for project '%s':") % self.GetProjectName())
+        configuration_staticLabel.pack(fill="x")
+        row = ttk.Frame(self)
+        self.configuration_ListCtrl = tk.Listbox(row)
+        self.configuration_ListCtrl.pack(side=tk.LEFT,fill="both",expand=1)
+     #   wx.EVT_LIST_ITEM_SELECTED(self.configuration_ListCtrl, self.configuration_ListCtrl.GetId(), self.UpdateUI)
+      #  wx.EVT_LIST_ITEM_DESELECTED(self.configuration_ListCtrl, self.configuration_ListCtrl.GetId(), self.UpdateUI)
+       # wx.EVT_LIST_ITEM_ACTIVATED(self.configuration_ListCtrl, self.configuration_ListCtrl.GetId(), self.EditRunConfiguration)
+        right = ttk.Frame(row)
+        self.run_config_img = imageutils.load_image("","project/python/runconfig.png")
+        self.new_configuration_btn = ttk.Button(right,text= _("New"),command=self.NewRunConfiguration)
+        self.edit_configuration_btn = ttk.Button(right, text=_("Edit"),command=self.EditRunConfiguration)
+        self.remove_configuration_btn = ttk.Button(right, text=_("Remove"),command=self.RemoveConfiguration)
+        self.copy_configuration_btn = ttk.Button(right, text=_("Copy"),command=self.CopyConfiguration)
+        self.new_configuration_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
+        self.edit_configuration_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
+        self.remove_configuration_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
+        self.copy_configuration_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
+        right.pack(side=tk.LEFT,fill="y")
+        row.pack(fill="both",expand=1)
         #should use Layout ,could not use Fit method
         #disable all buttons when file is not python file or is folder
         if not self.IsPythonFile() or self.is_folder:
-            self.edit_configuration_btn.Enable(False)
-            self.remove_configuration_btn.Enable(False)
-            self.new_configuration_btn.Enable(False)
-            self.copy_configuration_btn.Enable(False)
-        self.Layout()
-        self.UpdateUI(None)
+            self.edit_configuration_btn['state'] = tk.DISABLED
+            self.remove_configuration_btn['state'] = tk.DISABLED
+            self.new_configuration_btn['state'] = tk.DISABLED
+            self.copy_configuration_btn['state'] = tk.DISABLED
+     #   self.UpdateUI(None)
         #folder or package folder has no run configurations
-        if not self.is_folder:
-            self.LoadConfigurations()
+      #  if not self.is_folder:
+       #     self.LoadConfigurations()
+
+    def GetProjectName(self):
+        return os.path.basename(self.current_project_document.GetFilename())
         
     def IsPythonFile(self):
         if self.select_project_file is not None and \
-                    not fileutils.is_python_file(self.select_project_file.filePath):
+                    not fileutils.is_python_file(self.select_project_file):
             return False
         return True
         
     def GetStartupFile(self,prompt_error=True):
         try:
-            startup_file_path = self.filesCombo.GetValue().strip()
-            python_variable_manager = PythonVariables.ProjectVariablesManager(self.current_project_document)
+            startup_file_path = self.startup_path_var.get()
+            python_variable_manager = variablesutils.VariablesManager(self.current_project_document)
             startup_file_path = python_variable_manager.EvalulateValue(startup_file_path)
-        except PromptErrorException,e:
+        except RuntimeError as e:
             if prompt_error:
                 wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR,self)
             return None
@@ -640,7 +534,7 @@ class PyDebugRunProertyPanel(BasePanel.BasePanel):
         
     def GetConfigurationName(self,default_configuration_name = None):
         if default_configuration_name is None:
-            default_configuration_name = RunConfiguration.RunConfiguration.DEFAULT_CONFIGURATION_NAME
+            default_configuration_name = runconfiguration.RunConfiguration.DEFAULT_CONFIGURATION_NAME
         configuration_name = default_configuration_name
         i = 2
         while True:
@@ -659,11 +553,11 @@ class PyDebugRunProertyPanel(BasePanel.BasePanel):
                 return True
         return False
         
-    def NewRunConfiguration(self,event):
+    def NewRunConfiguration(self):
         run_file = self.select_project_file
         if not run_file:
             run_file = self.GetStartupFile(False)
-        run_configuration = RunConfiguration.RunConfiguration.CreateNewConfiguration(self.current_project_document,run_file,self.GetConfigurationName())
+        run_configuration = runconfiguration.RunConfiguration.CreateNewConfiguration(self.current_project_document,run_file,self.GetConfigurationName())
         init_configuration_name = run_configuration.Name
         if self.select_project_file is None:
             run_configuration.Name = "%s %s" % (self.GetProjectName(),init_configuration_name)
@@ -671,7 +565,7 @@ class PyDebugRunProertyPanel(BasePanel.BasePanel):
                 run_configuration.Name = "%s %s" % (self.GetProjectName(),self.GetProjectFilename(run_file))
             run_configuration.Name = self.GetConfigurationName(run_configuration.Name)
             
-        dlg = RunConfigurationDialog(self,-1,_("New Configuration"),run_configuration)
+        dlg = RunConfigurationDialog(self,_("New Configuration"),run_configuration)
         status = dlg.ShowModal()
         passedCheck = False
         while wx.ID_OK == status and not passedCheck:
@@ -752,3 +646,12 @@ class PyDebugRunProertyPanel(BasePanel.BasePanel):
             if selected_configuration_name == configuration.Name:
                 self.configuration_ListCtrl.Select(index)
             
+
+class DebugrunPageLoader(plugin.Plugin):
+    plugin.Implements(iface.CommonPluginI)
+    def Load(self):
+        projectproperty.PropertiesService().AddProjectOptionsPanel("Debug/Run",DebugRunPanel)
+        projectproperty.PropertiesService().AddFileOptionsPanel("Debug/Run",DebugRunPanel)
+        projectproperty.PropertiesService().AddFolderOptionsPanel("Debug/Run",DebugRunPanel)
+
+consts.DEFAULT_PLUGINS += ('noval.python.project.debugrun.DebugrunPageLoader',)

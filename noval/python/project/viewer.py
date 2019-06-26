@@ -10,14 +10,15 @@
 # Licence:     GPL-3.0
 #-------------------------------------------------------------------------------
 from noval import _,GetApp
+from tkinter import messagebox
 import noval.python.project.model as pyprojectlib
 from noval.project.baseviewer import *
 import tkinter as tk
 from tkinter import ttk
 import noval.consts as consts
 import noval.ttkwidgets.linklabel as linklabel
-import noval.python.interpreter.InterpreterManager as interpretermanager
-from noval.python.project.runconfig import PythonProjectConfiguration,PythonRunconfig
+import noval.python.interpreter.interpretermanager as interpretermanager
+from noval.python.project.runconfig import PythonNewProjectConfiguration,PythonRunconfig
 import os
 import noval.python.parser.utils as dirutils
 import noval.project.command as command
@@ -91,22 +92,22 @@ class PythonProjectNameLocationPage(ProjectNameLocationPage):
         
         sizer_frame = ttk.Frame(self)
         sizer_frame.grid(column=0, row=4, sticky="nsew")
-        self.pythonpath_chkvar = tk.IntVar(value=PythonProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH)
+        self.pythonpath_chkvar = tk.IntVar(value=PythonNewProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH)
         self.add_src_radiobutton = ttk.Radiobutton(
-            sizer_frame, text=_("Create %s Folder And Add it to the PYTHONPATH") % PythonProjectConfiguration.DEFAULT_PROJECT_SRC_PATH, variable=self.pythonpath_chkvar,\
-                        value=PythonProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH
+            sizer_frame, text=_("Create %s Folder And Add it to the PYTHONPATH") % PythonNewProjectConfiguration.DEFAULT_PROJECT_SRC_PATH, variable=self.pythonpath_chkvar,\
+                        value=PythonNewProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH
         )
         self.add_src_radiobutton.pack(fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         
         self.add_project_path_radiobutton = ttk.Radiobutton(
             sizer_frame, text=_("Add Project Directory to the PYTHONPATH"), variable=self.pythonpath_chkvar,\
-                        value=PythonProjectConfiguration.PROJECT_PATH_ADD_TO_PYTHONPATH
+                        value=PythonNewProjectConfiguration.PROJECT_PATH_ADD_TO_PYTHONPATH
         )
         self.add_project_path_radiobutton.pack(fill="x")
         
         self.configure_no_path_radiobutton = ttk.Radiobutton(
             sizer_frame, text=_("Don't Configure PYTHONPATH(later manually configure it)"), variable=self.pythonpath_chkvar,\
-                        value=PythonProjectConfiguration.NONE_PATH_ADD_TO_PYTHONPATH
+                        value=PythonNewProjectConfiguration.NONE_PATH_ADD_TO_PYTHONPATH
         )
         self.configure_no_path_radiobutton.pack(fill="x")
 
@@ -124,14 +125,14 @@ class PythonProjectNameLocationPage(ProjectNameLocationPage):
         self.interpreter_entry_var = tk.StringVar()
         self.interpreter_combo = ttk.Combobox(sizer_frame, textvariable=self.interpreter_entry_var)
         names = interpretermanager.InterpreterManager().GetInterpreterNames()
-        self.interpreter_combo.grid(column=1, row=2, sticky="nsew",padx=(consts.DEFAUT_CONTRL_PAD_X/2,0),pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
+        self.interpreter_combo.grid(column=1, row=2, sticky="nsew",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         self.interpreter_combo.state(['readonly'])
         self.interpreter_combo['values'] = names
         self.interpreter_combo.current(0)
             
         link_label = linklabel.LinkLabel(sizer_frame,text=_("Configuration"),normal_color='royal blue',hover_color='blue',clicked_color='purple')
         link_label.bind("<Button-1>", self.OpenInterpreterConfiguration)
-        link_label.grid(column=2, row=2, sticky="nsew",padx=(consts.DEFAUT_CONTRL_PAD_X/2,0),pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
+        link_label.grid(column=2, row=2, sticky="nsew",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         
 
     def OpenInterpreterConfiguration(self,*args):
@@ -142,20 +143,20 @@ class PythonProjectNameLocationPage(ProjectNameLocationPage):
             return False
         dirName = self.GetProjectLocation()
         #创建Src文件夹
-        if self.pythonpath_chkvar.get() == PythonProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH:
-            project_src_path = os.path.join(dirName,PythonProjectConfiguration.DEFAULT_PROJECT_SRC_PATH)
+        if self.pythonpath_chkvar.get() == PythonNewProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH:
+            project_src_path = os.path.join(dirName,PythonNewProjectConfiguration.DEFAULT_PROJECT_SRC_PATH)
             if not os.path.exists(project_src_path):
                 dirutils.MakeDirs(project_src_path)
             
-        if self._project_configuration.PythonpathMode == PythonProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH:
+        if self._new_project_configuration.PythonpathMode == PythonNewProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH:
             view = GetApp().MainFrame.GetProjectView().GetView()
             doc = view.GetDocument()
-            doc.GetCommandProcessor().Submit(command.ProjectAddFolderCommand(view, doc, PythonProjectConfiguration.DEFAULT_PROJECT_SRC_PATH))
+            doc.GetCommandProcessor().Submit(command.ProjectAddFolderCommand(view, doc, PythonNewProjectConfiguration.DEFAULT_PROJECT_SRC_PATH))
         
         return True
         
-    def GetPojectConfiguration(self):
-        return PythonProjectConfiguration(self.name_var.get(),self.dir_entry_var.get(),\
+    def GetNewPojectConfiguration(self):
+        return PythonNewProjectConfiguration(self.name_var.get(),self.dir_entry_var.get(),\
                                           self.interpreter_entry_var.get(),self.project_dir_chkvar.get(),self.pythonpath_chkvar.get())
 
 class PythonProjectView(ProjectView):
@@ -179,9 +180,9 @@ class PythonProjectView(ProjectView):
         return self._treeCtrl.AddPackageFolder(folderPath)
         
 
-    def OnAddPackageFolder(self,event):
+    def OnAddPackageFolder(self):
         if self.GetDocument():
-            items = self._treeCtrl.GetSelections()
+            items = self._treeCtrl.selection()
             if items:
                 item = items[0]
                 if self._IsItemFile(item):
@@ -203,16 +204,16 @@ class PythonProjectView(ProjectView):
             try:
                 os.mkdir(destpackagePath)
             except Exception as e:
-                wx.MessageBox(str(e),style=wx.OK|wx.ICON_ERROR)
+                messagebox.showerror(GetApp().GetAppName(),str(e),parent= self.GetFrame())
                 return
-            self.GetDocument().GetCommandProcessor().Submit(ProjectAddFolderCommand(self, self.GetDocument(), folderPath,True))
+            self.GetDocument().GetCommandProcessor().Submit(command.ProjectAddPackagefolderCommand(self, self.GetDocument(), folderPath))
             destpackageFile = os.path.join(destpackagePath,self.PACKAGE_INIT_FILE)
             with open(destpackageFile,"w") as f:
-                self.GetDocument().GetCommandProcessor().Submit(ProjectAddFilesCommand(self.GetDocument(),[destpackageFile],folderPath))
-            self._treeCtrl.UnselectAll()
+                self.GetDocument().GetCommandProcessor().Submit(command.ProjectAddFilesCommand(self.GetDocument(),[destpackageFile],folderPath))
             item = self._treeCtrl.FindFolder(folderPath)
-            self._treeCtrl.SelectItem(item)
-            self._treeCtrl.EnsureVisible(item)
+            self._treeCtrl.selection_set(item)
+            self._treeCtrl.focus(item)
+            self._treeCtrl.see(item)
             self.OnRename()
             
     def Run(self):
@@ -233,6 +234,16 @@ class PythonProjectView(ProjectView):
             return
         wx.GetApp().GetService(DebuggerService.DebuggerService).BreakIntoDebugger(selected_file_path)
         
+    def AddPackageFolder(self, folderPath):
+        self._treeCtrl.AddPackageFolder(folderPath)
+        return True
+
+    def UpdateUI(self, command_id):
+        if command_id in [constants.ID_ADD_PACKAGE_FOLDER,]:
+            return self.GetDocument() is not None
+        else:
+            return ProjectView.UpdateUI(self,command_id)
+            
 class DefaultProjectTemplateLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)
     def Load(self):

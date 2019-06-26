@@ -9,17 +9,17 @@ import threading
 import time
 #import ProjectUI
 import noval.util.strutils as strutils
-import noval.project.Wizard as Wizard
+import noval.project.wizard as projectwizard
 import noval.consts as consts
 import noval.ttkwidgets.checkboxtreeview as checkboxtreeview
 import noval.ttkwidgets.checklistbox as checklistbox
 import noval.ttkwidgets.treeviewframe as treeviewframe
 import noval.syntax.lang as lang
-import noval.project.baserun as baserun
+import noval.project.baseconfig as baseconfig
 
-class ImportfilesPage(Wizard.BitmapTitledWizardPage):
+class ImportfilesPage(projectwizard.BitmapTitledWizardPage):
     def __init__(self,master,add_bottom_page=True,filters=[],rejects=[]):
-        Wizard.BitmapTitledWizardPage.__init__(self,master,_("Import codes from File System"),_("Local File System"),"python_logo.png")
+        projectwizard.BitmapTitledWizardPage.__init__(self,master,_("Import codes from File System"),_("Local File System"),"python_logo.png")
         self.can_finish = True
         sizer_frame = ttk.Frame(self)
         sizer_frame.grid(column=0, row=1, sticky="nsew")
@@ -33,7 +33,7 @@ class ImportfilesPage(Wizard.BitmapTitledWizardPage):
         self.dir_entry_var = tk.StringVar()
         self.dir_entry = ttk.Entry(sizer_frame, textvariable=self.dir_entry_var)
         self.dir_entry_var.trace("w", self.ChangeDir)
-        self.dir_entry.grid(column=1, row=0, sticky="nsew",padx=(consts.DEFAUT_CONTRL_PAD_X/2,0),pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
+        self.dir_entry.grid(column=1, row=0, sticky="nsew",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         self.browser_button = ttk.Button(
             sizer_frame, text=_("Browse..."), command=self.BrowsePath
         )
@@ -166,9 +166,9 @@ class ImportfilesPage(Wizard.BitmapTitledWizardPage):
         dest_path = os.path.basename(project_path)
         prev_page = self.GetPrev()
         if GetApp().GetDefaultLangId() == lang.ID_LANG_PYTHON:
-            if prev_page._project_configuration.PythonpathMode == baserun.BaseProjectConfiguration.PROJECT_ADD_SRC_PATH:
+            if prev_page._project_configuration.PythonpathMode == baseconfig.NewProjectConfiguration.PROJECT_ADD_SRC_PATH:
                 #目的路径为Src路径
-                dest_path = os.path.join(dest_path,baserun.BaseProjectConfiguration.DEFAULT_PROJECT_SRC_PATH)
+                dest_path = os.path.join(dest_path,baseconfig.NewProjectConfiguration.DEFAULT_PROJECT_SRC_PATH)
         root_path = self.check_box_view.tree.item(self.root_item)["values"][0]
        # ProjectUI.PromptMessageDialog.DEFAULT_PROMPT_MESSAGE_ID = wx.ID_YESTOALL
         self.project_browser.StartCopyFilesToProject(self,file_list,root_path,dest_path)

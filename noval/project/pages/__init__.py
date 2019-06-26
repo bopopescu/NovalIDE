@@ -1,5 +1,0 @@
-from DebugRun import PyDebugRunProertyPanel
-from ProjectReferrence import ProjectReferrencePanel
-from PythonPath import PythonPathPanel
-from PythonInterpreter import PythonInterpreterPanel
-from Resource import FileProertyPanel

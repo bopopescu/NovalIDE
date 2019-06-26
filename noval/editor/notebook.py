@@ -124,8 +124,7 @@ class EditorNotebook(ui_base.ClosableNotebook):
             editor.GetView().GetDocument().DeleteAllViews()
 
     def close_editor(self, editor):
-        self.forget(editor)
-        editor.destroy()
+        self.close_child(editor)
         
     def SaveAllFilesEnabled(self):
         if self.get_current_editor() is None:
@@ -134,22 +133,6 @@ class EditorNotebook(ui_base.ClosableNotebook):
             if editor.GetView().GetDocument().IsModified():
                 return True
         return False
-
-    def _cmd_rename_file(self):
-        editor = self.get_current_editor()
-        old_filename = editor.get_filename()
-        assert old_filename is not None
-
-        self._cmd_save_file_as()
-
-        if editor.get_filename() != old_filename:
-            os.remove(old_filename)
-
-    def _cmd_rename_file_enabled(self):
-        return (
-            self.get_current_editor()
-            and self.get_current_editor().get_filename() is not None
-        )
 
     def close_single_untitled_unmodified_editor(self):
         editors = self.winfo_children()

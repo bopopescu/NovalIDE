@@ -358,23 +358,6 @@ class PromptmessageBox(tk.Toplevel):
     def OnNotoAll(self):
         self.status = constants.ID_NOTOALL
         self.destroy()
-        
-class EnvironmentVariableDialog(ui_base.CommonModaldialog):
-    def __init__(self,parent,title):
-        ui_base.CommonModaldialog.__init__(self,parent)
-        self.title(title)
-        row = ttk.Frame(self.main_frame)
-        ttk.Label(row, text=_("Key: ")).pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
-        self.key_ctrl = ttk.Entry(row,text="")
-        self.key_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
-        row.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-        
-        row = ttk.Frame(self.main_frame)
-        ttk.Label(row, text=_("Value:")).pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
-        self.value_ctrl = ttk.Entry(row,text="")
-        self.value_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
-        row.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-        self.AddokcancelButton()
 
 def ShowInterpreterConfigurationPage():
     preference_dlg = preference.PreferenceDialog(GetApp().GetTopWindow(),selection=preference.GetOptionName(preference.INTERPRETER_OPTION_NAME,preference.INTERPRETER_CONFIGURATIONS_ITEM_NAME))

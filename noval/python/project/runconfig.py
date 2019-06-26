@@ -1,13 +1,13 @@
-from noval.project.baserun import *
+from noval.project.baseconfig import *
 
-class PythonProjectConfiguration(BaseProjectConfiguration):
+class PythonNewProjectConfiguration(NewProjectConfiguration):
     
-    PROJECT_SRC_PATH_ADD_TO_PYTHONPATH = BaseProjectConfiguration.PROJECT_ADD_SRC_PATH
+    PROJECT_SRC_PATH_ADD_TO_PYTHONPATH = NewProjectConfiguration.PROJECT_ADD_SRC_PATH
     PROJECT_PATH_ADD_TO_PYTHONPATH = 2
     NONE_PATH_ADD_TO_PYTHONPATH = 3
     
     def __init__(self,name,location,interpreter,is_project_dir_created,pythonpath_mode):
-        BaseProjectConfiguration.__init__(self,name,location,is_project_dir_created)
+        NewProjectConfiguration.__init__(self,name,location,is_project_dir_created)
         self._interpreter = interpreter
         self._pythonpath_mode = pythonpath_mode
         

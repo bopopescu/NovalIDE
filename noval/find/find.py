@@ -216,7 +216,7 @@ class FindDialog(tk.Toplevel):
     def AddCancelButton(self,row=1):
         cancel_button = ttk.Button(self.right_frame, text=_("Cancel"), command=self._ok)
         cancel_button.grid(
-            column=0, row=row, sticky=tk.W + tk.E, pady=(consts.DEFAUT_CONTRL_PAD_Y/2, 0), padx=(0, consts.DEFAUT_CONTRL_PAD_X)
+            column=0, row=row, sticky=tk.W + tk.E, pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y, 0), padx=(0, consts.DEFAUT_CONTRL_PAD_X)
         )
 
     def focus_set(self):
@@ -402,7 +402,7 @@ class FindReplaceDialog(FindDialog):
         self.replace_and_find_button = ttk.Button(
             self.right_frame, text=_("Replace"), command=self._perform_replace_and_find
         )
-        self.replace_and_find_button.grid(column=0, row=1, sticky=tk.W + tk.E, padx=(0, consts.DEFAUT_CONTRL_PAD_X),pady=(consts.DEFAUT_CONTRL_PAD_Y/2, 0))
+        self.replace_and_find_button.grid(column=0, row=1, sticky=tk.W + tk.E, padx=(0, consts.DEFAUT_CONTRL_PAD_X),pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y, 0))
         self.replace_and_find_button.config(state="disabled")
 
         # Replace all button - replaces all occurrences
@@ -410,7 +410,7 @@ class FindReplaceDialog(FindDialog):
             self.right_frame, text=_("Replace All"), command=self._perform_replace_all
         )  # TODO - text to resources
         self.replace_all_button.grid(
-            column=0, row=2, sticky=tk.W + tk.E, padx=(0, consts.DEFAUT_CONTRL_PAD_X), pady=( consts.DEFAUT_CONTRL_PAD_Y/2,0)
+            column=0, row=2, sticky=tk.W + tk.E, padx=(0, consts.DEFAUT_CONTRL_PAD_X), pady=( consts.DEFAUT_HALF_CONTRL_PAD_Y,0)
         )
         if FindDialog.last_searched_word == None:
             self.replace_all_button.config(state="disabled")

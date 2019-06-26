@@ -260,6 +260,20 @@ class ShellSyntaxColorer(SyntaxColorer):
             self._update_uniline_tokens(start_index, end_index)
             self._update_multiline_tokens(start_index, end_index)
 
+class CodeViewSyntaxColorer(SyntaxColorer):
+    def _update_coloring(self):
+        for dirty_range in self._dirty_ranges:
+            self._update_uniline_tokens(*dirty_range)
+
+        # Multiline tokens need to be searched from the whole source
+        open_before = getattr(self.text, "number_of_open_multiline_strings", 0)
+        self._update_multiline_tokens("1.0", "end")
+        open_after = getattr(self.text, "number_of_open_multiline_strings", 0)
+
+        if open_after == 0 and open_before != 0:
+            # recolor uniline tokens after closing last open multiline string
+            self._update_uniline_tokens("1.0", "end")
+
 class SyntaxLexer(syndata.BaseLexer):
     """SyntaxData object for Python""" 
     #---- Syntax Style Specs ----#
@@ -326,7 +340,7 @@ class SyntaxLexer(syndata.BaseLexer):
 #-------------------------------------------------------------------------------
 '''
     def GetColorClass(self):
-        return SyntaxColorer
+        return CodeViewSyntaxColorer
         
     def GetShellColorClass(self):
         return ShellSyntaxColorer

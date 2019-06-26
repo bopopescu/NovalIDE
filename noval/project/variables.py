@@ -1,11 +1,11 @@
-import wx
-import wx.dataview as dataview
+from noval import GetApp
 import os
-import noval.tool.consts as consts
+import noval.consts as consts
 import re
-from noval.util.exceptions import PromptErrorException
+#from noval.util.exceptions import PromptErrorException
 import sys
 from noval.util import utils
+import noval.ui_base as ui_base
 
 PROJECT_NAME_VARIABLE = "ProjectName"
 PROJECT_PATH_VARIABLE = "ProjectPath"
@@ -17,7 +17,7 @@ PROJECT_EXT_VARIABLE = "ProjectExtension"
 def FormatVariableName(name):
     return "${%s}" % name
         
-class ProjectVariablesManager():
+class VariablesManager():
     
     def __init__(self,current_project):
         self._current_project = current_project
@@ -33,9 +33,9 @@ class ProjectVariablesManager():
         self.EmumSystemEnviroment()
         
         self._variables["Platform"] = sys.platform
-        self._variables["ApplicationName"] = wx.GetApp().GetAppName()
+        self._variables["ApplicationName"] = GetApp().GetAppName()
         self._variables["ApplicationPath"] = sys.executable
-        self._variables["InstallPath"] = utils.GetMainModulePath()
+        self._variables["InstallPath"] = utils.get_app_path()
         
     def GetVariable(self,name):
         return self._variables.get(name)
@@ -59,7 +59,7 @@ class ProjectVariablesManager():
         for env in os.environ:
             self._variables[env] = os.environ[env]
 
-class VariablesDialog(wx.Dialog):
+class VariablesDialog(ui_base.CommonDialog):
     def __init__(self,parent,dlg_id,title,current_project_document = None):
         wx.Dialog.__init__(self,parent,dlg_id,title)
         box_sizer = wx.BoxSizer(wx.VERTICAL)

@@ -1,6 +1,6 @@
 import os
 
-class BaseProjectConfiguration:
+class NewProjectConfiguration:
     PROJECT_ADD_SRC_PATH = 1
     DEFAULT_PROJECT_SRC_PATH = 'Src'
     def __init__(self,name,location,is_project_dir_created):

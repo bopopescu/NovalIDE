@@ -17,8 +17,8 @@ import noval.util.apputils as apputils
 import noval.util.appdirs as appdirs
 import noval.util.logger as logger
 import shutil
-import noval.python.interpreter.InterpreterManager as interpretermanager,\
-        noval.python.interpreter.Interpreter as Interpreter
+import noval.python.interpreter.interpretermanager as interpretermanager
+import noval.python.interpreter.interpreter as pythoninterpreter
 import noval.python.parser.intellisence as intellisence
 from noval.util import strutils
 import noval.python.parser.utils as parserutils
@@ -41,14 +41,20 @@ import noval.python.unittest as unittest
 import noval.python.pyeditor as pyeditor
 import noval.preference as preference
 import noval.python.interpreter.gerneralconfiguration as interpretergerneralconfiguration
-import noval.python.interpreter.InterpreterConfigruation as InterpreterConfigruation
+import noval.python.interpreter.interpreterconfigruation as interpreterconfigruation
+import noval.python.debugger.debugger as Debugger
+import noval.ui_common as ui_common
+import noval.misc as misc
 #这些导入模块未被引用,用于py2exe打包模块进library.zip里面去
 import noval.python.outline
 import noval.python.project.browser
 import noval.python.pyshell
-import noval.python.debugger.debugger as Debugger
-import noval.ui_common as ui_common
-import noval.misc as misc
+import noval.python.project.debugrun
+import noval.python.project.pythoninterpreter
+import noval.python.project.pythonpath
+import noval.python.project.projectreferrence
+#import noval.python.project.debugrun
+
 _debugger = None
 
 class PyIDEApplication(ide.IDEApplication):
@@ -88,7 +94,18 @@ class PyIDEApplication(ide.IDEApplication):
         self.AddMenuCommand(constants.ID_INSERT_DECLARE_ENCODING,insert_menu,_("Insert Encoding Declare"),self.InsertEncodingDeclare,default_tester=True,default_command=True)
         
         preference.PreferenceManager().AddOptionsPanel(preference.INTERPRETER_OPTION_NAME,preference.GENERAL_ITEM_NAME,interpretergerneralconfiguration.InterpreterGeneralConfigurationPanel)
-        preference.PreferenceManager().AddOptionsPanel(preference.INTERPRETER_OPTION_NAME,preference.INTERPRETER_CONFIGURATIONS_ITEM_NAME,InterpreterConfigruation.InterpreterConfigurationPanel)
+        preference.PreferenceManager().AddOptionsPanel(preference.INTERPRETER_OPTION_NAME,preference.INTERPRETER_CONFIGURATIONS_ITEM_NAME,interpreterconfigruation.InterpreterConfigurationPanel)
+        
+        self.AddCommand(constants.ID_START_WITHOUT_DEBUG,_("&Run"),_("&Start Without Debugging"),self.OnUnittestDlg,default_tester=True,default_command=True)
+
+        self.AddCommand(constants.ID_SET_EXCEPTION_BREAKPOINT,_("&Run"),_("&Exceptions..."),self.OnUnittestDlg,default_tester=True,default_command=True,add_separator=True)
+        self.AddCommand(constants.ID_STEP_INTO,_("&Run"),_("&Step Into"),self.OnUnittestDlg,default_tester=True,default_command=True,image=self.GetImage('python/debugger/step_into.png'))
+        self.AddCommand(constants.ID_STEP_NEXT,_("&Run"),_("&Step Over"),self.OnUnittestDlg,default_tester=True,default_command=True,add_separator=True,image=self.GetImage('python/debugger/step_next.png'))
+
+        self.AddCommand(constants.ID_CHECK_SYNTAX,_("&Run"),_("&Check Syntax..."),self.OnUnittestDlg,default_tester=True,default_command=True)
+        self.AddCommand(constants.ID_SET_PARAMETER_ENVIRONMENT,_("&Run"),_("&Set Parameter And Environment"),self.OnUnittestDlg,default_tester=True,default_command=True,image=self.GetImage('python/debugger/runconfig.png'))
+        self.AddCommand(constants.ID_RUN_LAST,_("&Run"),_("&Run Using Last Settings"),self.OnUnittestDlg,default_tester=True,default_command=True)
+        self.AddCommand(constants.ID_DEBUG_LAST,_("&Run"),_("&Debug Using Last Settings"),self.OnUnittestDlg,default_tester=True,default_command=True)     
         return True
         
     @misc.update_toolbar

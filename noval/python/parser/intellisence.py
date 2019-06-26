@@ -1,7 +1,7 @@
 from noval import _,GetApp
 import noval.util.appdirs as appdirs
-import noval.python.interpreter.Interpreter as Interpreter
-import noval.python.interpreter.InterpreterManager as interpretermanager
+import noval.python.interpreter.interpreter as pythoninterpreter
+import noval.python.interpreter.interpretermanager as interpretermanager
 import subprocess
 import noval.util.apputils as apputils
 from noval.util import singleton 

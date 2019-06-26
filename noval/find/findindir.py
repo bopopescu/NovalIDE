@@ -409,7 +409,7 @@ class FindIndirDialog(ui_base.CommonModaldialog):
         self.browser_button = ttk.Button(
             top_frame, text=_("Browse..."), command=self.BrowsePath
         )
-        self.browser_button.pack(side=tk.LEFT,fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X/2,0), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
+        self.browser_button.pack(side=tk.LEFT,fill="x",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         
         sizer_frame = ttk.Frame(self)
         sizer_frame.grid(column=0, row=1, sticky="nsew")
@@ -433,15 +433,15 @@ class FindIndirDialog(ui_base.CommonModaldialog):
         sizer_frame = ttk.Frame(self)
         sizer_frame.grid(column=0, row=3, sticky="nsew")
         self.find_label = ttk.Label(sizer_frame,text=_("Find what:"),)
-        self.find_label.pack(fill="x", side=tk.LEFT,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y/2, 0))
+        self.find_label.pack(fill="x", side=tk.LEFT,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y, 0))
 
         self.find_entry = findtext.FindtextCombo(sizer_frame,findString)
         self.find_entry_var = self.find_entry.find_entry_var
-        self.find_entry.pack(fill="x",side=tk.LEFT, padx=(0, consts.DEFAUT_CONTRL_PAD_X/2), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
+        self.find_entry.pack(fill="x",side=tk.LEFT, padx=(0, consts.DEFAUT_HALF_CONTRL_PAD_X), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         
 
         self.filetypes_label = ttk.Label(sizer_frame,text=_("File types:"))
-        self.filetypes_label.pack(fill="x", side=tk.LEFT,padx=(0,0),pady=(consts.DEFAUT_CONTRL_PAD_Y/2, 0))
+        self.filetypes_label.pack(fill="x", side=tk.LEFT,padx=(0,0),pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y, 0))
         
         self.filetypes_entry_var = tk.StringVar(value=self.default_extentsion)
         self.filetypes_entry = ttk.Entry(sizer_frame, textvariable=self.filetypes_entry_var,width=8)
@@ -474,12 +474,12 @@ class FindIndirDialog(ui_base.CommonModaldialog):
         self.search_button = ttk.Button(
             right_frame, text=_("Find"), command=self.FindIndir, default="active"
         )
-        self.search_button.pack(fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X/2,consts.DEFAUT_CONTRL_PAD_X/2), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
+        self.search_button.pack(fill="x",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,consts.DEFAUT_HALF_CONTRL_PAD_X), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         
         self.cancel_button = ttk.Button(
             right_frame, text=_("Cancel"), command=self.Close
         )
-        self.cancel_button.pack(fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X/2,consts.DEFAUT_CONTRL_PAD_X/2), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
+        self.cancel_button.pack(fill="x",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,consts.DEFAUT_HALF_CONTRL_PAD_X), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         self.bind("<Return>", self.FindIndir, True)
 
     def Close(self):
@@ -547,12 +547,12 @@ class FindInfileDialog(ui_base.CommonModaldialog):
         sizer_frame = ttk.Frame(self)
         sizer_frame.grid(column=0, row=0, sticky="nsew")
         self.find_label = ttk.Label(sizer_frame,text=_("Find what:"),)
-        self.find_label.pack(fill="x", side=tk.LEFT,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y/2, 0))
+        self.find_label.pack(fill="x", side=tk.LEFT,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y, 0))
 
         
         self.find_entry = findtext.FindtextCombo(sizer_frame,findString)
         self.find_entry_var = self.find_entry.find_entry_var
-        self.find_entry.pack(fill="x",side=tk.LEFT, padx=(0, consts.DEFAUT_CONTRL_PAD_X/2), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
+        self.find_entry.pack(fill="x",side=tk.LEFT, padx=(0, consts.DEFAUT_HALF_CONTRL_PAD_X), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
 
         sizer_frame = ttk.Frame(self)
         sizer_frame.grid(column=0, row=1, sticky="nsew")
@@ -580,12 +580,12 @@ class FindInfileDialog(ui_base.CommonModaldialog):
         self.search_button = ttk.Button(
             right_frame, text=_("Find"), command=self.FindText, default="active"
         )
-        self.search_button.pack(fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X/2,consts.DEFAUT_CONTRL_PAD_X/2), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
+        self.search_button.pack(fill="x",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,consts.DEFAUT_HALF_CONTRL_PAD_X), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         
         self.cancel_button = ttk.Button(
             right_frame, text=_("Cancel"), command=self.destroy
         )
-        self.cancel_button.pack(fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X/2,consts.DEFAUT_CONTRL_PAD_X/2), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
+        self.cancel_button.pack(fill="x",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,consts.DEFAUT_HALF_CONTRL_PAD_X), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         self.bind("<Return>", self.FindText, True)
         
     def UpdateTitle(self):

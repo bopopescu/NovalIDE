@@ -118,16 +118,14 @@ class BaseProject(object):
             for file in self._files:
                 if parserutils.ComparePath(file.filePath,filePath):
                     return file
-##                if sysutilslib.is_windows():
-##                    if file.filePath.lower() == filePath.lower():
-##                        return file
-##                else:
-##                    if file.filePath == filePath:
-##                        return file
         return None
         
     def GetRelativePath(self,pj_file):
-        return pj_file.filePath.replace(self.homeDir,"").lstrip(os.sep)
+        if isinstance(pj_file,ProjectFile):
+            filepath = pj_file.filePath
+        else:
+            filepath = pj_file
+        return filepath.replace(self.homeDir,"").lstrip(os.sep)
 
     def _GetFilePaths(self):
         return [file.filePath for file in self._files]

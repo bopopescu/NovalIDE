@@ -24,6 +24,7 @@ class ToolBar(ui_base.DockFrame):
         #padx设置工具栏左边距
       #  self.grid(column=0, row=0, sticky=tk.EW, padx=0, pady=(5, 0))
         self._orient = orient
+        self._commands = []
 
     def AddButton(self,command_id,image,command_label,handler,accelerator=None,tester=None):
         
@@ -53,6 +54,7 @@ class ToolBar(ui_base.DockFrame):
         if accelerator:
             tooltip_text += " (" + accelerator + ")"
         misc.create_tooltip(button, tooltip_text)
+        self._commands.append([command_id,button])
 
     def IsDefaultShown(self):
         toolbar_key = self.GetToolbarKey()
@@ -86,3 +88,12 @@ class ToolBar(ui_base.DockFrame):
         separator = ttk.Separator (group_frame, orient = tk.VERTICAL)
         separator.pack(side=tk.LEFT,expand=1,fill="y",pady = 3)
         return separator
+        
+    def EnableTool(self,button_id,enable=True):
+        for command_button in self._commands:
+            if command_button[0] == button_id:
+                button = command_button[1]
+                if enable:
+                    button["state"] = tk.NORMAL
+                else:
+                    button["state"] = tk.DISABLED

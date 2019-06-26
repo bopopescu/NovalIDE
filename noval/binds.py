@@ -25,4 +25,9 @@ DEFAULT_KEY_BINDS = {
     ID_CLEAR            :   "Ctrl+D",
     ID_SELECTALL        :   "Ctrl+A",
     ID_GOTO_DEFINITION  :   'F12',
+    ID_STEP_INTO        :   'F11',
+    ID_STEP_NEXT        :   'F10',
+    ID_CHECK_SYNTAX     :   'Ctrl+F3',
+    ID_RUN_LAST         :   'Ctrl+R',
+   # ID_DEBUG_LAST       :   'Ctrl+D',
 }

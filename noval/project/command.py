@@ -463,7 +463,7 @@ class ProjectAddFolderCommand(Command):
 
 class ProjectAddPackagefolderCommand(ProjectAddFolderCommand):
     def __init__(self, view, doc, folderpath):
-        ProjectAddFolderCommand.__init__(view,doc,folderpath)
+        ProjectAddFolderCommand.__init__(self,view,doc,folderpath)
         
     def AddFolder(self):
         return self._view.AddPackageFolder(self._folderpath)

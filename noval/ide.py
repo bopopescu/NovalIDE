@@ -30,7 +30,7 @@ from noval.syntax import synglob,syntax
 from noval.util import record
 import noval.menu as tkmenu
 import noval.editor.code as codeeditor
-from noval.python.interpreter import InterpreterManager
+from noval.python.interpreter import interpretermanager
 import noval.update as updateutils
 import noval.syntax.lang as lang
 import noval.preference as preference

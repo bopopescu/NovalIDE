@@ -230,25 +230,28 @@ class OutputCtrl(texteditor.TextCtrl):
         
 
     def AppendText(self, text,last_readonly=False):
-        self.SetReadOnly(False)
-        self.SetCurrentPos(self.GetTextLength())
+        self.set_read_only(False)
+    #    self.SetCurrentPos(self.GetTextLength())
         self.AddText(text)
-        self.ScrollToLine(self.GetLineCount())
+        self.ScrolltoEnd()
         #rember last position
         self.InputStartPos = self.GetCurrentPos()
         if last_readonly:
             self.SetReadOnly(True)
 
+    def AddText(self,txt):
+        self.insert(tk.END, txt)
+
     def AppendErrorText(self, text,last_readonly=False):
-        self.SetReadOnly(False)
-        self.SetCurrentPos(self.GetTextLength())
+        self.set_read_only(False)
+   #     self.SetCurrentPos(self.GetTextLength())
         self.StyleSetSpec(self.ERROR_COLOR_STYLE, 'fore:#ff0000, back:#FFFFFF,face:%s,size:%d' % \
                                     (self._font.GetFaceName(),self._font.GetPointSize())) 
         pos = self.GetCurrentPos()
         self.AddText(text)
         self.StartStyling(pos, 2)
         self.SetStyling(len(text), self.ERROR_COLOR_STYLE)
-        self.ScrollToLine(self.GetLineCount())
+        self.ScrolltoEnd()
         #rember last position
         self.InputStartPos = self.GetCurrentPos()
         if last_readonly:
@@ -331,3 +334,6 @@ class OutputView(ttk.Frame):
         
     def SetExecutor(self,executor):
         self.text.SetExecutor(executor)
+        
+    def GetOutputCtrl(self):
+        return self.text

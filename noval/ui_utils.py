@@ -10,6 +10,7 @@ import noval.util.fileutils as fileutils
 import os
 import noval.ui_base as ui_base
 import noval.util.strutils as strutils
+import noval.ttkwidgets.treeviewframe as treeviewframe
 
 class FileHistory(hiscache.CycleCache):
     '''
@@ -282,3 +283,135 @@ def check_chardet_version():
     import chardet
     if strutils.compare_version(chardet.__version__,"3.0.4") <0:
         raise RuntimeError(_("chardet version is less then 3.0.4,please use python pip to upgrade it first!"))
+        
+
+class EnvironmentVariableDialog(ui_base.CommonModaldialog):
+    def __init__(self,parent,title):
+        ui_base.CommonModaldialog.__init__(self,parent)
+        self.title(title)
+        row = ttk.Frame(self.main_frame)
+        ttk.Label(row, text=_("Key: ")).pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        self.key_ctrl = ttk.Entry(row,text="")
+        self.key_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        row.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        
+        row = ttk.Frame(self.main_frame)
+        ttk.Label(row, text=_("Value:")).pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        self.value_ctrl = ttk.Entry(row,text="")
+        self.value_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        row.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        self.AddokcancelButton()
+        
+
+class BaseEnvironmentUI(ttk.Frame):
+    """description of class"""
+    
+    def __init__(self,master):
+        ttk.Frame.__init__(self,master)
+        self.InitUI()
+
+    def InitUI(self):
+        ttk.Label(self, text=_("Set user defined environment variable:")).pack(fill="x")
+        columns = ['Key','Value']
+        
+        row = ttk.Frame(self)
+        self.listview = treeviewframe.TreeViewFrame(row,columns=columns,show="headings")
+        for column in columns:
+            self.listview.tree.heading(column, text=_(column))
+            
+        self.listview.pack(side=tk.LEFT,fill="both",expand=1)
+        
+        right_frame = ttk.Frame(row)
+        self.new_btn = ttk.Button(right_frame, text=_("New.."),command=self.NewVariable)
+        self.new_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
+        self.edit_btn = ttk.Button(right_frame, text=_("Edit"),command=self.EditVariable)
+        self.edit_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
+        self.remove_btn = ttk.Button(right_frame,text=_("Remove..."),command=self.RemoveVariable)
+        
+        self.remove_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
+        right_frame.pack(side=tk.LEFT,fill="y")
+        
+        row.pack(fill="both",expand=1)
+        
+    def UpdateUI(self):
+        selections = self.listview.tree.selection()
+        if selections == []:
+            self.remove_btn["state"] = tk.DISABLED
+            self.edit_btn["state"] = tk.DISABLED
+        else:
+            self.remove_btn["state"] = "normal"
+            self.edit_btn["state"] = "normal"
+        if self.interpreter is None:
+            self.edit_btn["state"] = tk.DISABLED
+        else:
+            self.new_btn["state"] = "normal"
+
+    def RemoveVariable(self,event):
+        index = self.dvlc.GetSelectedRow()
+        if index == wx.NOT_FOUND:
+            return
+        self.RemoveRowVariable(index)
+        self.UpdateUI(None)
+        
+    def RemoveRowVariable(self,row):
+        key = self.dvlc.GetTextValue(row,0)
+        ##self.interpreter.environments = filter(lambda e:not e.has_key(key),self.interpreter.environments)
+        self.dvlc.DeleteItem(row)
+        
+    def GetVariableRow(self,key):
+        count = self.dvlc.GetStore().GetCount()
+        for i in range(count):
+            if self.dvlc.GetTextValue(i,0) == key:
+                return i
+        return -1
+        
+    def AddVariable(self,key,value):
+        if self.CheckKeyExist(key):
+            ret = wx.MessageBox(_("Key name has already exist in environment variable,Do you wann't to overwrite it?"),_("Warning"),wx.YES_NO|wx.ICON_QUESTION,self)
+            if ret == wx.YES:
+                row = self.GetVariableRow(key)
+                assert(row != -1)
+                self.RemoveRowVariable(row)
+            else:
+                return
+        self.dvlc.AppendItem([key, value])
+        
+    def NewVariable(self):
+        dlg = EnvironmentVariableDialog(self,_("New Environment Variable"))
+        status = dlg.ShowModal()
+        key = dlg.key_ctrl.GetValue().strip()
+        value = dlg.value_ctrl.GetValue().strip()
+        if status == wx.ID_OK and key and value:
+            self.AddVariable(key,value)
+        self.UpdateUI(None)
+        dlg.Destroy()
+        
+    def EditVariable(self,event):
+        index = self.dvlc.GetSelectedRow()
+        if index == wx.NOT_FOUND:
+            return
+        dlg = EnvironmentVariableDialog.EnvironmentVariableDialog(self,-1,_("Edit Environment Variable"))
+        dlg.CenterOnParent()
+        old_key = self.dvlc.GetTextValue(index,0)
+        dlg.key_ctrl.SetValue(old_key)
+        dlg.value_ctrl.SetValue(self.dvlc.GetTextValue(index,1))
+        status = dlg.ShowModal()
+        key = dlg.key_ctrl.GetValue().strip()
+        value = dlg.value_ctrl.GetValue().strip()
+        if status == wx.ID_OK and key and value:
+            self.dvlc.SetTextValue(key,index,0)
+            self.dvlc.SetTextValue(value,index,1)
+        self.UpdateUI(None)
+        dlg.Destroy()
+    
+    def CheckKeyExist(self,key):
+        for row in range(self.dvlc.GetStore().GetCount()):
+            if self.dvlc.GetTextValue(row,0) == key:
+                return True
+        return False
+        
+    def GetEnviron(self):
+        dct = {}
+        for row in range(self.dvlc.GetStore().GetCount()):
+            dct[str(self.dvlc.GetTextValue(row,0))] = str(self.dvlc.GetTextValue(row,1))
+        return dct

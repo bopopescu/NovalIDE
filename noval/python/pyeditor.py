@@ -18,12 +18,12 @@ import keyword
 import sys
 import codecs
 import noval.python.parser.scope as scope
-import noval.python.interpreter.Interpreter as Interpreter
+import noval.python.interpreter.interpreter as pythoninterpreter
 import noval.python.parser.intellisence as intellisence
 import noval.python.parser.nodeast as nodeast
 import noval.util.strutils as strutils
 from noval.python.parser.utils import CmpMember
-import noval.python.interpreter.InterpreterManager as interpretermanager
+import noval.python.interpreter.interpretermanager as interpretermanager
 import noval.util.fileutils as fileutils
 import noval.python.parser.utils as parserutils
 import noval.consts as consts
