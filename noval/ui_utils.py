@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from noval import GetApp,_
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk,messagebox
 from noval.util import hiscache
 import noval.consts as consts
 from noval.util import utils
@@ -11,6 +11,7 @@ import os
 import noval.ui_base as ui_base
 import noval.util.strutils as strutils
 import noval.ttkwidgets.treeviewframe as treeviewframe
+import noval.constants as constants
 
 class FileHistory(hiscache.CycleCache):
     '''
@@ -291,14 +292,16 @@ class EnvironmentVariableDialog(ui_base.CommonModaldialog):
         self.title(title)
         row = ttk.Frame(self.main_frame)
         ttk.Label(row, text=_("Key: ")).pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
-        self.key_ctrl = ttk.Entry(row,text="")
-        self.key_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        self.key_var = tk.StringVar()
+        key_ctrl = ttk.Entry(row,textvariable=self.key_var)
+        key_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
         row.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         
         row = ttk.Frame(self.main_frame)
         ttk.Label(row, text=_("Value:")).pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
-        self.value_ctrl = ttk.Entry(row,text="")
-        self.value_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        self.value_var = tk.StringVar()
+        value_ctrl = ttk.Entry(row,textvariable=self.value_var)
+        value_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
         row.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         self.AddokcancelButton()
         
@@ -335,16 +338,12 @@ class BaseEnvironmentUI(ttk.Frame):
         
     def UpdateUI(self):
         selections = self.listview.tree.selection()
-        if selections == []:
+        if not selections:
             self.remove_btn["state"] = tk.DISABLED
             self.edit_btn["state"] = tk.DISABLED
         else:
             self.remove_btn["state"] = "normal"
             self.edit_btn["state"] = "normal"
-        if self.interpreter is None:
-            self.edit_btn["state"] = tk.DISABLED
-        else:
-            self.new_btn["state"] = "normal"
 
     def RemoveVariable(self,event):
         index = self.dvlc.GetSelectedRow()
@@ -367,46 +366,43 @@ class BaseEnvironmentUI(ttk.Frame):
         
     def AddVariable(self,key,value):
         if self.CheckKeyExist(key):
-            ret = wx.MessageBox(_("Key name has already exist in environment variable,Do you wann't to overwrite it?"),_("Warning"),wx.YES_NO|wx.ICON_QUESTION,self)
-            if ret == wx.YES:
+            ret = messagebox.askyesno(_("Warning"),_("Key name has already exist in environment variable,Do you wann't to overwrite it?"),parent=self)
+            if ret == True:
                 row = self.GetVariableRow(key)
                 assert(row != -1)
                 self.RemoveRowVariable(row)
             else:
                 return
-        self.dvlc.AppendItem([key, value])
+        self.listview.tree.insert("","end",values=(key,value))
         
     def NewVariable(self):
         dlg = EnvironmentVariableDialog(self,_("New Environment Variable"))
         status = dlg.ShowModal()
-        key = dlg.key_ctrl.GetValue().strip()
-        value = dlg.value_ctrl.GetValue().strip()
-        if status == wx.ID_OK and key and value:
+        key = dlg.key_var.get().strip()
+        value = dlg.value_var.get().strip()
+        if status == constants.ID_OK and key and value:
             self.AddVariable(key,value)
-        self.UpdateUI(None)
-        dlg.Destroy()
+        self.UpdateUI()
         
-    def EditVariable(self,event):
-        index = self.dvlc.GetSelectedRow()
-        if index == wx.NOT_FOUND:
+    def EditVariable(self):
+        selections = self.listview.tree.selection()
+        if not selections:
             return
-        dlg = EnvironmentVariableDialog.EnvironmentVariableDialog(self,-1,_("Edit Environment Variable"))
-        dlg.CenterOnParent()
-        old_key = self.dvlc.GetTextValue(index,0)
-        dlg.key_ctrl.SetValue(old_key)
-        dlg.value_ctrl.SetValue(self.dvlc.GetTextValue(index,1))
+        item = selections[0]
+        dlg = EnvironmentVariableDialog(self,_("Edit Environment Variable"))
+        old_key = self.listview.tree.item(item)['values'][0]
+        dlg.key_var.set(old_key)
+        dlg.value_var.set(self.listview.tree.item(item)['values'][1])
         status = dlg.ShowModal()
-        key = dlg.key_ctrl.GetValue().strip()
-        value = dlg.value_ctrl.GetValue().strip()
-        if status == wx.ID_OK and key and value:
-            self.dvlc.SetTextValue(key,index,0)
-            self.dvlc.SetTextValue(value,index,1)
-        self.UpdateUI(None)
-        dlg.Destroy()
+        key = dlg.key_var.get().strip()
+        value = dlg.value_var.get().strip()
+        if status == constants.ID_OK and key and value:
+            self.listview.tree.item(item)['values'] = (key,value)
+        self.UpdateUI()
     
     def CheckKeyExist(self,key):
-        for row in range(self.dvlc.GetStore().GetCount()):
-            if self.dvlc.GetTextValue(row,0) == key:
+        for child in self.listview.tree.get_children():
+            if self.listview.tree.item(child)['values'][0] == key:
                 return True
         return False
         
@@ -415,3 +411,49 @@ class BaseEnvironmentUI(ttk.Frame):
         for row in range(self.dvlc.GetStore().GetCount()):
             dct[str(self.dvlc.GetTextValue(row,0))] = str(self.dvlc.GetTextValue(row,1))
         return dct
+        
+
+class ThemedListbox(tk.Listbox):
+    def __init__(self, master=None, cnf={}, **kw):
+        tk.Listbox.__init__(self,master=master, cnf=cnf, **kw)
+
+        self._ui_theme_change_binding = self.bind(
+            "<<ThemeChanged>>", self._reload_theme_options, True
+        )
+        self._reload_theme_options()
+
+    def _reload_theme_options(self, event=None):
+        style = ttk.Style()
+
+        states = []
+        if self["state"] == "disabled":
+            states.append("disabled")
+
+        # Following crashes when a combobox is focused
+        # if self.focus_get() == self:
+        #    states.append("focus")
+        opts = {}
+        for key in [
+            "background",
+            "foreground",
+            "highlightthickness",
+            "highlightcolor",
+            "highlightbackground",
+        ]:
+            value = style.lookup(self.get_style_name(), key, states)
+            if value:
+                opts[key] = value
+
+        self.configure(opts)
+
+    def get_style_name(self):
+        return "Listbox"
+
+    def destroy(self):
+        self.unbind("<<ThemeChanged>>", self._ui_theme_change_binding)
+        tk.Listbox.destroy(self)
+        
+def no_implemented_yet(func): 
+    def _wrapper(*args, **kwargs): 
+        messagebox.showwarning(GetApp().GetAppName(),_("This function does not implemented yet!"))
+    return _wrapper 

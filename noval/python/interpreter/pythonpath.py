@@ -85,3 +85,9 @@ class PythonPathPanel(ttk.Frame,pythonpathmixin.PythonpathMixin):
             self.add_path_btn["state"] = "normal"
             self.add_file_btn["state"] = "normal"
             self.remove_path_btn["state"] = "normal"
+            
+    def destroy(self):
+        if self.menu is not None:
+            self.menu.destroy()
+        self.button_menu.destroy()
+        ttk.Frame.destroy(self)

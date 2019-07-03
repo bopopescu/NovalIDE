@@ -26,6 +26,7 @@ from noval.project.templatemanager import ProjectTemplateManager
 import noval.iface as iface
 import noval.plugin as plugin
 import noval.ui_common as ui_common
+import noval.ui_utils as ui_utils
 
 class PythonProjectDocument(ProjectDocument):
 
@@ -186,7 +187,7 @@ class PythonProjectView(ProjectView):
             if items:
                 item = items[0]
                 if self._IsItemFile(item):
-                    item = self._treeCtrl.GetItemParent(item)
+                    item = self._treeCtrl.parent(item)
                     
                 folderDir = self._GetItemFolderPath(item)
             else:
@@ -228,11 +229,13 @@ class PythonProjectView(ProjectView):
             return
         GetApp().GetDebugger().RunWithoutDebug(filetoRun = selected_file_path)
         
+    @ui_utils.no_implemented_yet
     def BreakintoDebugger(self):
-        selected_file_path = self.GetSelectedFile()
-        if selected_file_path is None and not fileutils.is_python_file(selected_file_path):
-            return
-        wx.GetApp().GetService(DebuggerService.DebuggerService).BreakIntoDebugger(selected_file_path)
+        pass
+        #selected_file_path = self.GetSelectedFile()
+        #if selected_file_path is None and not fileutils.is_python_file(selected_file_path):
+         #   return
+        #wx.GetApp().GetService(DebuggerService.DebuggerService).BreakIntoDebugger(selected_file_path)
         
     def AddPackageFolder(self, folderPath):
         self._treeCtrl.AddPackageFolder(folderPath)

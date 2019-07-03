@@ -5,6 +5,7 @@ from tkinter import ttk
 import noval.util.singleton as singleton
 import noval.consts as consts
 import noval.ui_base as ui_base
+import noval.ttkwidgets.treeviewframe as treeviewframe
 
 ENVIRONMENT_OPTION_NAME = "Environment"
 
@@ -29,7 +30,7 @@ def GetOptionName(caterory,name):
 class PreferenceDialog(ui_base.CommonModaldialog):
     
     def __init__(self, master,selection=ENVIRONMENT_OPTION_NAME+"/"+GENERAL_ITEM_NAME):
-        ui_base.CommonModaldialog.__init__(self, master, takefocus=1, background="pink")
+        ui_base.CommonModaldialog.__init__(self, master, takefocus=1)
         self.title(_("Options"))
         self.geometry("%dx%d" % (PREFERENCE_DLG_WIDITH,PREFERENCE_DLG_HEIGHT))
         
@@ -41,8 +42,9 @@ class PreferenceDialog(ui_base.CommonModaldialog):
         sizer_frame = ttk.Frame(top_frame)
         sizer_frame.pack(side=tk.LEFT,fill="y")
         #设置path列存储模板路径,并隐藏改列 
-        self.tree = ttk.Treeview(sizer_frame)
-        self.tree.pack(side=tk.LEFT,fill="both",expand=1,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        treeview = treeviewframe.TreeViewFrame(sizer_frame,show_scrollbar=False,borderwidth=1,relief="solid")
+        self.tree = treeview.tree
+        treeview.pack(side=tk.LEFT,fill="both",expand=1,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         self.tree.bind("<<TreeviewSelect>>", self._on_select, True)
 
         # configure the only tree column

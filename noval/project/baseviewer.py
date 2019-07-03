@@ -16,7 +16,6 @@ from tkinter import ttk,messagebox,filedialog
 import copy
 import os
 import os.path
-#import sets
 import sys
 import time
 import types
@@ -28,16 +27,12 @@ import noval.project.basemodel as projectlib
 import noval.util.apputils as sysutilslib
 import shutil
 import noval.python.parser.utils as parserutils
-##import ProjectUI
-#from noval.model import configuration
 import uuid
 import noval.filewatcher as filewatcher
 import pickle
 #import NewFile
-#import noval.tool.debugger.DebuggerService as DebuggerService
 import datetime
 from noval.util import utils
-#import Property
 #import noval.tool.project.RunConfiguration as RunConfiguration
 import noval.constants as constants
 import noval.consts as consts
@@ -50,6 +45,11 @@ import noval.newTkDnD as newTkDnD
 import noval.misc as misc
 import noval.ui_base as ui_base
 import noval.ui_utils as ui_utils
+import noval.ttkwidgets.treeviewframe as treeviewframe
+try:
+    import tkSimpleDialog
+except ImportError:
+    import tkinter.simpledialog as tkSimpleDialog
     
 #----------------------------------------------------------------------------
 # Constants
@@ -59,7 +59,6 @@ PROJECT_KEY = "/NOV_Projects"
 PROJECT_DIRECTORY_KEY = "NewProjectDirectory"
 
 NEW_PROJECT_DIRECTORY_DEFAULT = appdirs.getSystemDir()
-#DF_COPY_FILENAME = wx.CustomDataFormat("copy_file_names")
 
 #添加项目文件覆盖已有文件时默认处理方式
 DEFAULT_PROMPT_MESSAGE_ID = constants.ID_YES
@@ -892,17 +891,13 @@ class NewProjectWizard(projectwizard.BaseWizard):
         
     def CreateProjectTemplatePage(self,wizard):
         page = projectwizard.BitmapTitledWizardPage(wizard, _("New Project Wizard"),_("Welcom to new project wizard"),"python_logo.png")    
-       # self.vert_scrollbar = SafeScrollbar(self, orient=tk.VERTICAL)
-        #self.vert_scrollbar.grid(row=0, column=1, sticky=tk.NSEW)
-
         # init and place tree
-        
         sizer_frame = ttk.Frame(page)
         sizer_frame.grid(column=0, row=1, sticky="nsew")
         #设置path列存储模板路径,并隐藏改列 
-        self.tree = ttk.Treeview(sizer_frame)
-        self.tree.pack(side=tk.LEFT,fill="both",expand=1)
-      #  self.vert_scrollbar["command"] = self.tree.yview
+        treeview = treeviewframe.TreeViewFrame(sizer_frame,show_scrollbar=False,borderwidth=1,relief="solid")
+        self.tree = treeview.tree
+        treeview.pack(side=tk.LEFT,fill="both",expand=1)
         page.columnconfigure(0, weight=1)
         page.rowconfigure(1, weight=1)
         # init tree events
@@ -1064,12 +1059,6 @@ class ProjectView(misc.AlarmEventView):
 
     def GetDocumentManager(self):  # Overshadow this since the superclass uses the view._viewDocument attribute directly, which the project editor doesn't use since it hosts multiple docs
         return GetApp().GetDocumentManager()
-
-    def Destroy(self):
-        projectService = wx.GetApp().GetService(ProjectService)
-        if projectService:
-            projectService.SetView(None)
-        wx.lib.docview.View.Destroy(self)
         
     @property
     def IsImportStop(self):
@@ -1114,12 +1103,6 @@ class ProjectView(misc.AlarmEventView):
         else:
             filename = ''
        # self._projectChoice.SetToolTipString(filename)
-
-
-    def OnSize(self, event):
-        event.Skip()
-        wx.CallAfter(self.GetFrame().Layout)
-
 
     def OnBeginDrag(self, event):
         if self.GetMode() == ProjectView.RESOURCE_VIEW:
@@ -1192,10 +1175,6 @@ class ProjectView(misc.AlarmEventView):
 
         # We don't need to delete the window since it is a floater/embedded
         return True
-
-
-    def _GetParentFrame(self):
-        return wx.GetTopLevelParent(self.GetFrame())
         
     def AddProgressFiles(self,newFilePaths,range_value,projectDoc,progress_ui):
         global DEFAULT_PROMPT_MESSAGE_ID
@@ -1440,21 +1419,22 @@ class ProjectView(misc.AlarmEventView):
         projectDoc = self.GetDocument()
         if projectDoc:
             openDocs = self.GetDocumentManager().GetDocuments()
-            #close all open documents of this project first
+            #先关闭所有项目打开文档
             for openDoc in openDocs[:]:  # need to make a copy, as each file closes we're off by one
                 if projectDoc == openDoc:  # close project last
                     continue
                     
                 if projectDoc == self._prject_browser.FindProjectFromMapping(openDoc):
-                    self.GetDocumentManager().CloseDocument(openDoc, False)
+                    if not self.GetDocumentManager().CloseDocument(openDoc, False):
+                        return
                     
                     self._prject_browser.RemoveProjectMapping(openDoc)
                     if hasattr(openDoc, "GetModel"):
                         self._prject_browser.RemoveProjectMapping(openDoc.GetModel())
             #delete project regkey config
            ## wx.ConfigBase_Get().DeleteGroup(getProjectKeyName(projectDoc.GetModel().Id))
-            projectDoc.document_watcher.RemoveFileDoc(projectDoc)
             if self.GetDocumentManager().CloseDocument(projectDoc, False):
+                projectDoc.document_watcher.RemoveFileDoc(projectDoc)
                 self.RemoveCurrentDocumentUpdate()
             if not self.GetDocument():
                 self.AddProjectRoot(_("Projects"))
@@ -1551,44 +1531,6 @@ class ProjectView(misc.AlarmEventView):
             messagebox.showerror(_("Archive Error"),msg)
             GetApp().GetTopWindow().PushStatusText(_("Archive Error"))
         GetApp().configure(cursor="")
-                
-    def OpenProjectPath(self,event):
-        document = self.GetDocument()
-        fileutils.open_file_directory(document.GetFilename())
-        
-    def OpenFolderPath(self,event):
-        document = self.GetDocument()
-        project_path = os.path.dirname(document.GetFilename())
-        item = self._treeCtrl.GetSingleSelectItem()
-        if self._IsItemFile(item):
-            filePath = self._GetItemFilePath(item)
-        else:
-            filePath = fileutils.opj(os.path.join(project_path,self._GetItemFolderPath(item)))
-        err_code,msg = fileutils.open_file_directory(filePath)
-        if err_code != ERROR_OK:
-            wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
-        
-    def OpenPromptPath(self,event):
-        document = self.GetDocument()
-        project_path = os.path.dirname(document.GetFilename())
-        item = self._treeCtrl.GetSingleSelectItem()
-        if self._IsItemFile(item):
-            filePath = os.path.dirname(self._GetItemFilePath(item))
-        else:
-            filePath = fileutils.opj(os.path.join(project_path,self._GetItemFolderPath(item)))
-        err_code,msg = fileutils.open_path_in_terminator(filePath)
-        if err_code != ERROR_OK:
-            wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
-            
-    def CopyPath(self,event):
-        document = self.GetDocument()
-        project_path = os.path.dirname(document.GetFilename())
-        item = self._treeCtrl.GetSingleSelectItem()
-        if self._IsItemFile(item):
-            filePath = self._GetItemFilePath(item)
-        else:
-            filePath = fileutils.opj(os.path.join(project_path,self._GetItemFolderPath(item)))
-        sysutilslib.CopyToClipboard(filePath)
 
     def ImportFilesToProject(self,event):
         items = self._treeCtrl.GetSelections()
@@ -1968,72 +1910,55 @@ class ProjectView(misc.AlarmEventView):
 
 
     def OnAddDirToProject(self):
-        frame = wx.Dialog(wx.GetApp().GetTopWindow(), -1, _("Add Directory Files to Project"), size= (320,200))
-        contentSizer = wx.BoxSizer(wx.VERTICAL)
+        class AddDirProjectDialog(ui_base.CommonModaldialog):
+            
+            def __init__(self, parent,view):
+                self._view = view
+                ui_base.CommonModaldialog.__init__(self, parent)
+                self.title(_("Add Directory Files to Project"))
+                row = ttk.Frame(self.main_frame)
+                ttk.Label(row, text=_("Directory:")).pack(side=tk.LEFT)
+                dirCtrl = ttk.Entry(row, text=os.path.dirname(self._view.GetDocument().GetFilename()))
+                dirCtrl.pack(side=tk.LEFT,fill="x",expand=1)
+               # dirCtrl.SetToolTipString(dirCtrl.GetValue())
+                findDirButton = ttk.Button(row,text=_("Browse..."),command=self.OnBrowseButton)
+                findDirButton.pack(side=tk.LEFT,padx=(consts.DEFAUT_CONTRL_PAD_X,0))
+                row.pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+                visibleTemplates = []
+                for template in self._view.GetDocumentManager()._templates:
+                    if template.IsVisible() and not isinstance(template,ProjectTemplate):
+                        visibleTemplates.append(template)
 
-        flexGridSizer = wx.FlexGridSizer(cols = 2, vgap=HALF_SPACE, hgap=HALF_SPACE)
-        flexGridSizer.Add(wx.StaticText(frame, -1, _("Directory:")), 0, wx.ALIGN_CENTER_VERTICAL, 0)
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        dirCtrl = wx.TextCtrl(frame, -1, os.path.dirname(self.GetDocument().GetFilename()), size=(250,-1))
-        dirCtrl.SetToolTipString(dirCtrl.GetValue())
-        lineSizer.Add(dirCtrl, 1, wx.ALIGN_CENTER_VERTICAL|wx.EXPAND)
-        findDirButton = wx.Button(frame, -1, _("Browse..."))
-        lineSizer.Add(findDirButton, 0, wx.LEFT|wx.ALIGN_CENTER_VERTICAL, HALF_SPACE)
-        flexGridSizer.Add(lineSizer, 1, wx.EXPAND)
+                choices = []
+                descr = ''
+                for template in visibleTemplates:
+                    if len(descr) > 0:
+                        descr = descr + _('|')
+                    descr = _(template.GetDescription()) + " (" + template.GetFileFilter() + ")"
+                    choices.append(descr)
+                choices.insert(0, _("All Files") + "(*.*)")  # first item
+                row = ttk.Frame(self.main_frame)
+                ttk.Label(row,text=_("Files of type:")).pack(side=tk.LEFT)
+                filterChoice = ttk.Combobox(row,  values=choices)
+                filterChoice.current(0)
+                filterChoice['state'] = 'readonly'
+                filterChoice.pack(side=tk.LEFT,fill="x",expand=1)
+                row.pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+                misc.create_tooltip(filterChoice,_("Select file type filter."))
+                ttk.Checkbutton(self.main_frame, text=_("Add files from subdirectories")).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+               # subfolderCtrl.SetValue(True)
+                self.AddokcancelButton()
 
-        def OnBrowseButton(event):
-            dlg = wx.DirDialog(frame, _("Choose a directory:"), style=wx.DD_DEFAULT_STYLE)
-            dir = dirCtrl.GetValue()
-            if len(dir):
-                dlg.SetPath(dir)
-            dlg.CenterOnParent()
-            if dlg.ShowModal() == wx.ID_OK:
-                dirCtrl.SetValue(dlg.GetPath())
-                dirCtrl.SetToolTipString(dirCtrl.GetValue())
-                dirCtrl.SetInsertionPointEnd()
-            dlg.Destroy()
-        wx.EVT_BUTTON(findDirButton, -1, OnBrowseButton)
+            def OnBrowseButton(self):
+                path = filedialog.askdirectory(title=_("Choose a directory:"))
+                if not path:
+                    return
+                self.path_var.set(fileutils.opj(path))
 
-        visibleTemplates = []
-        for template in self.GetDocumentManager()._templates:
-            if template.IsVisible():
-                visibleTemplates.append(template)
-
-        choices = []
-        descr = ''
-        for template in visibleTemplates:
-            if len(descr) > 0:
-                descr = descr + _('|')
-            descr = _(template.GetDescription()) + " (" + template.GetFileFilter() + ")"
-            choices.append(descr)
-        choices.insert(0, _("All Files") + "(*.*)")  # first item
-        filterChoice = wx.Choice(frame, -1, size=(250, -1), choices=choices)
-        filterChoice.SetSelection(0)
-        filterChoice.SetToolTipString(_("Select file type filter."))
-        flexGridSizer.Add(wx.StaticText(frame, -1, _("Files of type:")), 0, wx.ALIGN_CENTER_VERTICAL)
-        flexGridSizer.Add(filterChoice, 1, wx.EXPAND)
-
-        contentSizer.Add(flexGridSizer, 0, wx.ALL|wx.EXPAND, SPACE)
-
-        subfolderCtrl = wx.CheckBox(frame, -1, _("Add files from subdirectories"))
-        subfolderCtrl.SetValue(True)
-        contentSizer.Add(subfolderCtrl, 0, wx.LEFT|wx.ALIGN_CENTER_VERTICAL, SPACE)
-
-        buttonSizer = wx.BoxSizer(wx.HORIZONTAL)
-        findBtn = wx.Button(frame, wx.ID_OK, _("Add"))
-        findBtn.SetDefault()
-        buttonSizer.Add(findBtn, 0, wx.RIGHT, HALF_SPACE)
-        buttonSizer.Add(wx.Button(frame, wx.ID_CANCEL), 0)
-        contentSizer.Add(buttonSizer, 0, wx.ALL|wx.ALIGN_RIGHT, SPACE)
-
-        frame.SetSizer(contentSizer)
-        frame.Fit()
-
-        frame.CenterOnParent()
-        status = frame.ShowModal()
-
+        dlg = AddDirProjectDialog(GetApp().GetTopWindow(),self)
+        status = dlg.ShowModal()
         passedCheck = False
-        while status == wx.ID_OK and not passedCheck:
+        while status == constants.ID_OK and not passedCheck:
             if not os.path.exists(dirCtrl.GetValue()):
                 dlg = wx.MessageDialog(frame,
                                        _("'%s' does not exist.") % dirCtrl.GetValue(),
@@ -2048,9 +1973,7 @@ class ProjectView(misc.AlarmEventView):
             else:
                 passedCheck = True
 
-        frame.Destroy()
-
-        if status == wx.ID_OK:
+        if status == constants.ID_OK:
             wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
 
             try:
@@ -2107,36 +2030,21 @@ class ProjectView(misc.AlarmEventView):
         # method used by Drag-n-Drop to add files to current Project
         self.GetDocument().GetCommandProcessor().Submit(ProjectAddFilesCommand(self.GetDocument(), filePaths, folderPath))
 
-
-    def OnFocus(self, event):
-        self.GetDocumentManager().ActivateView(self)
-        event.Skip()
-
-
-    def OnKillFocus(self, event):
-        # Get the top MDI window and "activate" it since it is already active from the perspective of the MDIParentFrame
-        # wxBug: Would be preferable to call OnActivate, but have casting problem, so added Activate method to docview.DocMDIChildFrame
-        if not self._editingSoDontKillFocus:  # wxBug: This didn't used to happen, but now when you start to edit an item in a wxTreeCtrl it puts out a KILL_FOCUS event, so we need to detect it
-            topWindow = wx.GetApp().GetTopWindow()
-            # wxBug: On Mac, this event can fire during shutdown, even after GetTopWindow()
-            # is set to NULL. So make sure we have a TLW before getting the active child.
-            if topWindow:
-                childFrame = topWindow.GetActiveChild()
-                if childFrame:
-                    childFrame.Activate()
-        event.Skip()
-
     def OnRename(self):
         items = self._treeCtrl.selection()
         if not items:
             return
         item = items[0]
         if utils.is_linux():
-            dlg = wx.TextEntryDialog(self.GetFrame(), _("Enter New Name"), _("Enter New Name"))
-            dlg.CenterOnParent()
-            if dlg.ShowModal() == wx.ID_OK:
-                text = dlg.GetValue()
-                self.ChangeLabel(item, text)
+            text = tkSimpleDialog.askstring(
+                _("Enter New Name"),
+                _("Enter New Name"),
+                # selection_range=(0, len(initial_name)-3)
+                parent=self.GetFrame()
+            )
+            if not text:
+                return
+            self.ChangeLabel(item, text)
         else:
             if items:
                 self._treeCtrl.EditLabel(item)
@@ -2189,43 +2097,36 @@ class ProjectView(misc.AlarmEventView):
             self._treeCtrl.Delete(item)
 
         return True
-        
 
     def CanPaste(self):
-        # wxBug: Should be able to use IsSupported/IsSupportedFormat here
-        #fileDataObject = wx.FileDataObject()
-        #hasFilesInClipboard = wx.TheClipboard.IsSupportedFormat(wx.FileDataObject)
         hasFilesInClipboard = False
-        if not wx.TheClipboard.IsOpened():
-            if wx.TheClipboard.Open():
-                fileDataObject = wx.CustomDataObject(DF_COPY_FILENAME)
-                hasFilesInClipboard = wx.TheClipboard.GetData(fileDataObject)
-                wx.TheClipboard.Close()
+        if not GetApp().TheClipboard.IsOpened():
+            return hasFilesInClipboard
+            
+        fileDataObject = core.JsonDataobject()
+        hasFilesInClipboard = GetApp().TheClipboard.GetData(fileDataObject)
         return hasFilesInClipboard
         
-    def CopyFileItem(self,actionType):
-        
-        fileDataObject = wx.CustomDataObject(DF_COPY_FILENAME)
-        items = self._treeCtrl.GetSelections()
+    def CopyFileItem(self,action):
+        fileDataObject = core.JsonDataobject()
+        items = self._treeCtrl.selection()
         file_items = []
         for item in items:
             filePath = self._GetItemFilePath(item)
             if filePath:
                 d = {
                     'filePath':filePath,
-                    'actionType':actionType
+                    'action':action,
+                    'fileType':'file'
                 }
                 file_items.append(d)
-        share_data = cPickle.dumps(file_items)
-        fileDataObject.SetData(share_data)
-        if fileDataObject.GetSize() > 0 and wx.TheClipboard.Open():
-            wx.TheClipboard.SetData(fileDataObject)
-            wx.TheClipboard.Close()
-
+        fileDataObject.SetData(file_items)
+        if fileDataObject.GetDataSize() > 0 and GetApp().TheClipboard.Open():
+            GetApp().TheClipboard.SetData(fileDataObject)
 
     def OnCut(self):
         self.CopyFileItem(self.CUT_FILE_TYPE)
-        self.RemoveFromProject(event)
+        self.RemoveFromProject()
 
     def OnCopy(self):
         self.CopyFileItem(self.COPY_FILE_TYPE)
@@ -2241,21 +2142,19 @@ class ProjectView(misc.AlarmEventView):
         src_dir_path = os.path.dirname(src_path)
         if not parserutils.ComparePath(src_dir_path,dest_path):
             if action_type == self.COPY_FILE_TYPE:
-                ret = wx.MessageBox(_("Dest file is already exist,Do you want to overwrite it?"),_("Copy File"),\
-                              wx.YES_NO|wx.ICON_QUESTION,self._GetParentFrame())
-                if ret == wx.YES:
+                ret = messagebox.askyesno(_("Copy File"),_("Dest file is already exist,Do you want to overwrite it?"),parent=self.GetFrame())
+                if ret == True:
                     shutil.copy(src_path,dest_file_path)
             elif action_type == self.CUT_FILE_TYPE:
-                ret = wx.MessageBox(_("Dest file is already exist,Do you want to overwrite it?"),_("Move File"),\
-                              wx.YES_NO|wx.ICON_QUESTION,self._GetParentFrame())
-                if ret == wx.YES:
+                ret = messagebox.askyesno(_("Move File"),_("Dest file is already exist,Do you want to overwrite it?"),parent=self.GetFrame())
+                if ret == True:
                     shutil.move(src_path,dest_file_path)
             return dest_file_path
         if action_type == self.CUT_FILE_TYPE:
             return dest_file_path
-        file_ext = strutils.GetFileExt(file_name)
-        filename_without_ext = strutils.GetFilenameWithoutExt(file_name)
-        if sysutilslib.isWindows():
+        file_ext = strutils.get_file_extension(file_name)
+        filename_without_ext = strutils.get_filename_without_ext(file_name)
+        if sysutilslib.is_windows():
             dest_file_name = _("%s - Copy.%s") % (filename_without_ext,file_ext)
             dest_file_path = os.path.join(dest_path,dest_file_name)
             if os.path.exists(dest_file_path):
@@ -2281,41 +2180,42 @@ class ProjectView(misc.AlarmEventView):
         shutil.copy(src_path,dest_file_path)
         return dest_file_path
 
-    def OnPaste(self, event):
-        if wx.TheClipboard.Open():
-            fileDataObject = wx.CustomDataObject(DF_COPY_FILENAME)
-            if wx.TheClipboard.GetData(fileDataObject):
+    def OnPaste(self):
+        if GetApp().TheClipboard.Open():
+            paste_items = []
+            fileDataObject = core.JsonDataobject()
+            if GetApp().TheClipboard.GetData(fileDataObject):
                 folderPath = None
                 dest_files = []
-                if self.GetMode() == ProjectView.PROJECT_VIEW:
-                    items = self._treeCtrl.GetSelections()
-                    if items:
-                        item = items[0]
-                        if item:
-                            folderPath = self._GetItemFolderPath(item)
+                item = self._treeCtrl.GetSingleSelectItem()
+                if item:
+                    folderPath = self._GetItemFolderPath(item)
                 destFolderPath = os.path.join(self.GetDocument().GetModel().homeDir,folderPath)
-                for src_file in cPickle.loads(fileDataObject.GetData()):
+                for src_file in fileDataObject.GetData():
                     filepath =  src_file['filePath']
-                    actionType = src_file['actionType']
+                    action = src_file['action']
                     filename = os.path.basename(filepath)
                     if not os.path.exists(filepath):
-                        wx.MessageBox(_("The item '%s' does not exist in the project directory.It may have been moved,renamed or deleted.") % filename,style=wx.OK|wx.ICON_ERROR)
+                        messagebox.showerror(GetApp().GetAppName(),_("The item '%s' does not exist in the project directory.It may have been moved,renamed or deleted.") % filename,parent= self.GetFrame())
                         return
                     try:
-                        if actionType == self.COPY_FILE_TYPE:
+                        if action == self.COPY_FILE_TYPE:
                             dest_file_path = self.CopyToDest(filepath,filename,destFolderPath,self.COPY_FILE_TYPE)
                             dest_files.append(dest_file_path)
-                        elif actionType == self.CUT_FILE_TYPE:
+                        elif action == self.CUT_FILE_TYPE:
                             dest_file_path = self.CopyToDest(filepath,filename,destFolderPath,self.CUT_FILE_TYPE)
                             dest_files.append(dest_file_path)
                         else:
                             assert(False)
                     except Exception as e:
-                        wx.MessageBox(str(e),style=wx.OK|wx.ICON_ERROR)
+                        messagebox.showerror(GetApp().GetAppName(),str(e),parent= self.GetFrame())
                         return
-                self.GetDocument().GetCommandProcessor().Submit(ProjectAddFilesCommand(self.GetDocument(), dest_files, folderPath))
-            wx.TheClipboard.Close()
-
+                self.GetDocument().GetCommandProcessor().Submit(projectcommand.ProjectAddFilesCommand(self.GetDocument(), dest_files, folderPath))
+                paste_item = self._treeCtrl.GetSingleSelectItem()
+                paste_items.append(paste_item)
+            GetApp().TheClipboard.Close()
+           # for select_item in paste_items:
+             #   self._treeCtrl.selection_set(select_item)
 
     def RemoveFromProject(self):
         items = self._treeCtrl.selection()
@@ -2531,11 +2431,6 @@ class ProjectView(misc.AlarmEventView):
                 self.DoSelectAll(child)
             (child, cookie) = self._treeCtrl.GetNextChild(parentItem, cookie)
 
-
-    def OnOpenSelectionSDI(self, event):
-        # Do a call after so that the second mouseclick on a doubleclick doesn't reselect the project window
-        wx.CallAfter(self.OnOpenSelection, None)
-
     def GetOpenDocumentTemplate(self,project_file):
         template = None
         document_template_name = utils.profile_get(self.GetDocument().GetFileKey(project_file,"Open"),"")
@@ -2607,88 +2502,6 @@ class ProjectView(misc.AlarmEventView):
                     self._treeCtrl.SetItemImage(item, icon_index, wx.TreeItemIcon_Expanded)
             self.ChangeItemsImageWithFilename(item,filename,icon_index)
             (item, cookie) = self._treeCtrl.GetNextChild(parent_item, cookie)
-        
-    def ChangeItemsImageWithExtension(self,parent_item,extension,icon_index):
-        if parent_item is None:
-            return
-        (item, cookie) = self._treeCtrl.GetFirstChild(parent_item)
-        while item:
-            if self._IsItemFile(item):
-                file_name = self._treeCtrl.GetItemText(item)
-                if strutils.GetFileExt(file_name) == extension:
-                    self._treeCtrl.SetItemImage(item, icon_index, wx.TreeItemIcon_Normal)
-                    self._treeCtrl.SetItemImage(item, icon_index, wx.TreeItemIcon_Expanded)
-            self.ChangeItemsImageWithExtension(item,extension,icon_index)
-            (item, cookie) = self._treeCtrl.GetNextChild(parent_item, cookie)
-        
-    def OnOpenSelection(self, event):
-        if self.GetMode() == ProjectView.RESOURCE_VIEW:
-            item = event.GetItem()
-            ResourceView.ResourceView(self).OpenSelection(item)
-            event.Skip()
-            return
-        doc = None
-        try:
-            items = self._treeCtrl.GetSelections()[:]
-            for item in items:
-                filepath = self._GetItemFilePath(item)
-                file_template = None
-                if filepath:
-                    if not os.path.exists(filepath):
-                        msgTitle = wx.GetApp().GetAppName()
-                        if not msgTitle:
-                            msgTitle = _("File Not Found")
-                        yesNoMsg = wx.MessageDialog(self.GetFrame(),
-                                      _("The file '%s' was not found in '%s'.\n\nWould you like to browse for the file?") % (wx.lib.docview.FileNameFromPath(filepath), wx.lib.docview.PathOnly(filepath)),
-                                      msgTitle,
-                                      wx.YES_NO|wx.ICON_QUESTION
-                                      )
-                        yesNoMsg.CenterOnParent()
-                        status = yesNoMsg.ShowModal()
-                        yesNoMsg.Destroy()
-                        if status == wx.ID_NO:
-                            continue
-                        findFileDlg = wx.FileDialog(self.GetFrame(),
-                                                 _("Choose a file"),
-                                                 defaultFile=wx.lib.docview.FileNameFromPath(filepath),
-                                                 style=wx.OPEN|wx.FILE_MUST_EXIST|wx.CHANGE_DIR
-                                                )
-                        # findFileDlg.CenterOnParent()  # wxBug: caused crash with wx.FileDialog
-                        if findFileDlg.ShowModal() == wx.ID_OK:
-                            newpath = findFileDlg.GetPath()
-                        else:
-                            newpath = None
-                        findFileDlg.Destroy()
-                        if newpath:
-                            # update Project Model with new location
-                            self.GetDocument().UpdateFilePath(filepath, newpath)
-                            filepath = newpath
-                        else:
-                            continue
-                    else:        
-                        project_file = self._treeCtrl.GetPyData(item)
-                        file_template = self.GetOpenDocumentTemplate(project_file)
-                    if file_template:
-                        doc = self.GetDocumentManager().CreateTemplateDocument(file_template,filepath, wx.lib.docview.DOC_SILENT|wx.lib.docview.DOC_OPEN_ONCE)
-                    else:
-                        doc = self.GetDocumentManager().CreateDocument(filepath, wx.lib.docview.DOC_SILENT|wx.lib.docview.DOC_OPEN_ONCE)
-                    if not doc and filepath.endswith(PROJECT_EXTENSION):  # project already open
-                        self.SetProject(filepath)
-                    elif doc:
-                        AddProjectMapping(doc)
-                        
-
-        except IOError as e:
-            msgTitle = wx.GetApp().GetAppName()
-            if not msgTitle:
-                msgTitle = _("File Error")
-            wx.MessageBox("Could not open '%s'." % wx.lib.docview.FileNameFromPath(filepath),
-                          msgTitle,
-                          wx.OK | wx.ICON_EXCLAMATION,
-                          self.GetFrame())
-        if event is None:
-            return
-        event.Skip()
 
     #----------------------------------------------------------------------------
     # Convenience methods
@@ -2742,7 +2555,7 @@ class ProjectView(misc.AlarmEventView):
             return ""
             
         if self._IsItemFile(item):
-            item = self._treeCtrl.GetItemParent(item)
+            item = self._treeCtrl.parent(item)
         
         folderPath = ""
         while item != rootItem:

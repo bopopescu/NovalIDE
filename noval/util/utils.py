@@ -210,10 +210,7 @@ class Config(object):
                 self.cfg.write(f)
                 
         def DeleteEntry(self,key):
-            
-            reg = registry.Registry()
-            child_reg = reg.Open(r"SOFTWARE\NovalIDEDebug")
-            child_reg.DeleteKey('xxxx/yyy/zzz/ddd')
+            print ('delete key entry',key)
             
 
 def call_after(func): 

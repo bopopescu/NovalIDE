@@ -72,7 +72,7 @@ elif sys.platform.find('linux') != -1:
     with open("version.txt") as f:
         version = f.read()
 
-    install_requires = ["watchdog","chardet","pyperclip","psutil","requests","pycryptodome"]
+    install_requires = ["watchdog","chardet","pyperclip","psutil","requests","pycryptodome",'mss','pillow']
     setup(name='NovalIDE',
             version = version,
             description='''NovalIDE is a cross platform Python IDE''',

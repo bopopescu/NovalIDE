@@ -82,7 +82,7 @@ def _run_in_terminal_in_linux(cmd, cwd, env, keep_open,pause=False):
         core_cmd = "{cmd}; exec bash -i".format(cmd=cmd)
         in_term_cmd = "bash -c {core_cmd}".format(core_cmd=_shellquote(core_cmd))
     elif pause:
-        in_term_cmd += ";echo 'Please enter any to continue';read"
+        in_term_cmd = cmd + ";echo 'Please enter any to continue';read"
     else:
         in_term_cmd = cmd
     
@@ -91,12 +91,14 @@ def _run_in_terminal_in_linux(cmd, cwd, env, keep_open,pause=False):
         whole_cmd = "{term_cmd} --command={in_term_cmd}".format(
             term_cmd=term_cmd, in_term_cmd=_shellquote(in_term_cmd)
         )
-    else:
-        whole_cmd = "{term_cmd} -e {in_term_cmd}".format(
+    elif term_cmd == "gnome-terminal":
+        whole_cmd = "{term_cmd} -x bash -c {in_term_cmd}".format(
             term_cmd=term_cmd, in_term_cmd=_shellquote(in_term_cmd)
         )
-        
-
+    else:
+        whole_cmd = "{term_cmd} {in_term_cmd}".format(
+            term_cmd=term_cmd, in_term_cmd=_shellquote(in_term_cmd)
+        )
     subprocess.Popen(whole_cmd, cwd=cwd, env=env, shell=True)
 
 

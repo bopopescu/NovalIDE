@@ -3,6 +3,14 @@ import sys
 import os
 import noval.consts as consts
 import noval.ui_utils as ui_utils
+import noval.ttkwidgets.treeviewframe as treeviewframe
+import noval.ui_base as ui_base
+import noval.syntax.syntax as syntax
+import noval.syntax.lang as lang
+import noval.imageutils as imageutils
+import noval.util.strutils as strutils
+import noval.util.fileutils as fileutils
+from noval.project.basebrowser import ProjectTreeCtrl
 
 def get_tk_version_str():
     tkVer = GetApp().call('info', 'patchlevel')
@@ -55,4 +63,95 @@ def get_override_runparameter(run_parameter):
         cp_run_parameter.Environment = environment
         run_parameter.Interpreter = save_interpreter
         return cp_run_parameter
+
+class ProjectFolderPathDialog(ui_base.CommonModaldialog):
+    def __init__(self,parent,title,project_model):
+        ui_base.CommonModaldialog.__init__(self,parent)
+        self.title(title)
+        self._current_project = project_model
+        rootPath = project_model.homeDir
+        self.treeview = treeviewframe.TreeViewFrame(self.main_frame,treeview_class=ProjectTreeCtrl)
+        self.treeview.tree["show"] = ("tree",)
+        self.treeview.pack(fill="both",expand=1)
+        self.folder_bmp = imageutils.load_image("","packagefolder_obj.gif")
+        root_item = self.treeview.tree.insert("","end",text=os.path.basename(rootPath),image=self.folder_bmp)
+        #self._treeCtrl.SetPyData(root_item,rootPath)
+        self.ListDirItem(root_item,rootPath)
+        self.treeview.tree.item(root_item,open=True)
+        self.AddokcancelButton()
+
+    def ListDirItem(self,parent_item,path):
+        if not os.path.exists(path):
+            return
+        files = os.listdir(path)
+        for f in files:
+            file_path = os.path.join(path, f)
+            if os.path.isdir(file_path) and not fileutils.is_path_hidden(file_path):
+                item = self.treeview.tree.insert(parent_item,"end",text=f,image=self.folder_bmp)
+                self.ListDirItem(item,file_path)
+             #   self._treeCtrl.SetPyData(item,file_path)
+
+    def _ok(self):
+        path = fileutils.getRelativePath(self._treeCtrl.\
+                    GetPyData(self._treeCtrl.GetSelection()),\
+                            self._current_project.homeDir)
+        self.selected_path = path
+        self.EndModal(wx.ID_OK)
+
+class SelectModuleFileDialog(ui_base.CommonModaldialog):
+    def __init__(self,parent,title,project_model,is_startup=False,filters=[]):
+        ui_base.CommonModaldialog.__init__(self,parent)
+        self.title(title)
+        self.module_file = None
+        if filters == []:
+            filters = syntax.SyntaxThemeManager().GetLexer(lang.ID_LANG_PYTHON).Exts
+        self.filters = filters
+        self.is_startup = is_startup
+        self._current_project = project_model
+        rootPath = project_model.homeDir        
+        self.treeview = treeviewframe.TreeViewFrame(self.main_frame,treeview_class=ProjectTreeCtrl)
+        self.treeview.tree["show"] = ("tree",)
+        self.treeview.pack(fill="both",expand=1)
+        
+   #     wx.EVT_TREE_ITEM_ACTIVATED(self._treeCtrl, self._treeCtrl.GetId(), self.OnOKClick)
+        self.folder_bmp = imageutils.load_image("","packagefolder_obj.gif")
+        self.python_file_bmp = imageutils.load_image("","file/python_module.png")
+        
+        self.zip_file_bmp = imageutils.load_image("","project/zip.png")
+        root_item = self.treeview.tree.insert("","end",text=os.path.basename(rootPath),image=self.folder_bmp)
+        self.ListDirItem(root_item,rootPath)
+        self.treeview.tree.item(root_item,open=True)
+        self.AddokcancelButton()
+
+    def ListDirItem(self,parent_item,path):
+        if not os.path.exists(path):
+            return
+        files = os.listdir(path)
+        for f in files:
+            file_path = os.path.join(path, f)
+            if os.path.isfile(file_path) and self.IsFileFiltered(file_path):
+                pj_file = self._current_project.FindFile(file_path)
+                if pj_file:
+                    if fileutils.is_python_file(file_path):
+                        item = self.treeview.tree.insert(parent_item,"end",text=f,image=self.python_file_bmp)
+                    else:
+                        item = self.treeview.tree.insert(parent_item,"end",text=f,image=self.zip_file_bmp)
+                    #self._treeCtrl.SetPyData(item,pj_file)
+                    if pj_file.IsStartup and self.is_startup:
+                        self.treeview.tree.SetItemBold(item)
+            elif os.path.isdir(file_path) and not fileutils.is_path_hidden(file_path):
+                item = self.treeview.tree.insert(parent_item,"end",text=f,image=self.folder_bmp)
+                self.ListDirItem(item,file_path)
+
+    def _ok(self):
+        pj_file = self._treeCtrl.GetPyData(self._treeCtrl.GetSelection())
+        if pj_file is None:
+            wx.MessageBox(_("Please select a file"))
+            return
+        self.module_file = pj_file
+        self.EndModal(wx.ID_OK)
+        
+    def IsFileFiltered(self,file_path):
+        file_ext = strutils.get_file_extension(file_path)
+        return file_ext in self.filters
     

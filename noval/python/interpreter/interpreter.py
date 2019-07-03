@@ -47,6 +47,7 @@ def GetCommandOutput(command,read_error=False):
             output = str(output,encoding = utils.get_default_encoding())
     except Exception as e:
         utils.get_logger().error("get command %s output error:%s",command,e)
+        utils.get_logger().exception("")
     return output
     
 #this class should inherit from object class
@@ -341,8 +342,10 @@ class PythonInterpreter(BuiltinPythonInterpreter):
         
     def CheckSyntax(self,script_path):
         check_cmd ="\"%s\" -c \"import py_compile;py_compile.compile(r'%s')\"" % (self.Path,script_path)
-        sys_encoding = locale.getdefaultlocale()[1]
-        output = GetCommandOutput(check_cmd.encode(sys_encoding),True).strip()
+        if utils.is_py2():
+            sys_encoding = locale.getdefaultlocale()[1]
+            check_cmd = check_cmd.encode(sys_encoding)
+        output = GetCommandOutput(check_cmd,True).strip()
         if 0 == len(output):
             return True,-1,''
         lower_output = output.lower()

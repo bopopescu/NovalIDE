@@ -23,6 +23,7 @@ import noval.editor.text as texteditor
 import noval.util.urlutils as urlutils
 import noval.python.parser.utils as parserutils
 import noval.constants as constants
+import noval.ttkwidgets.textframe as textframe
 
 class ManagePackagesDialog(ui_base.CommonModaldialog):
     
@@ -103,10 +104,12 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
         label_2.grid(row=row_no,column=0,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),padx=consts.DEFAUT_CONTRL_PAD_X,sticky=tk.EW)
         row_no += 1
         
-        self.output_ctrl = texteditor.TextCtrl(self.main_frame)
+
+        self.text_frame = textframe.TextFrame(self.main_frame,borderwidth=1,relief="solid",text_class=texteditor.TextCtrl)
+        self.output_ctrl = self.text_frame.text
         self.output_ctrl['state'] = tk.DISABLED
         self.detail_output_row = row_no
-        self.output_ctrl.grid(row=row_no,column=0,padx=consts.DEFAUT_CONTRL_PAD_X,sticky=tk.NSEW)
+        self.text_frame.grid(row=row_no,column=0,padx=consts.DEFAUT_CONTRL_PAD_X,sticky=tk.NSEW)
         row_no += 1
         
         self.bottom_frame = ttk.Frame(self.main_frame)
@@ -133,10 +136,10 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
     def ShowHideDetails(self):
         if not self._show_details:
             self.detail_btn.configure( text=_("Show Details") + "↓")
-            self.output_ctrl.grid_forget()
+            self.text_frame.grid_forget()
             self._show_details = True 
         else:  
-            self.output_ctrl.grid(row=self.detail_output_row,column=0,padx=consts.DEFAUT_CONTRL_PAD_X,sticky=tk.NSEW)
+            self.text_frame.grid(row=self.detail_output_row,column=0,padx=consts.DEFAUT_CONTRL_PAD_X,sticky=tk.NSEW)
             self.detail_btn.configure( text=_("Hide Details") + "↑") 
             self._show_details = False   
         

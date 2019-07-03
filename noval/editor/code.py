@@ -342,7 +342,7 @@ class CodeView(texteditor.TextView):
             return True
         return texteditor.TextView.UpdateUI(self,command_id)
 
-class CodeCtrl(texteditor.TextCtrl):
+class CodeCtrl(texteditor.SyntaxTextCtrl):
     CURRENT_LINE_MARKER_NUM = 2
     BREAKPOINT_MARKER_NUM = 1
     CURRENT_LINE_MARKER_MASK = 0x4
@@ -355,11 +355,10 @@ class CodeCtrl(texteditor.TextCtrl):
         DEFAULT_WORD_CHARS = string.ascii_letters + string.digits + '_'
             
     def __init__(self, master=None, cnf={}, **kw):
-        texteditor.TextCtrl.__init__(self, master, cnf=cnf, **kw)
+        texteditor.SyntaxTextCtrl.__init__(self, master, cnf=cnf, **kw)
         self._lang_lexer = None
         #允许绑定所有CodeCtrl类文件控件事件
         self.bindtags(self.bindtags() + ("CodeCtrl",))
-        self.UpdateSyntaxTheme()
         #设置单词列表
         self.fixwordbreaks(GetApp())
 
@@ -386,9 +385,6 @@ class CodeCtrl(texteditor.TextCtrl):
         
     def SetLangLexer(self,lexer):
         self._lang_lexer = lexer
-
-    def UpdateSyntaxTheme(self):
-        self.SetSyntax(syntax.SyntaxThemeManager().SYNTAX_THEMES)
         
     def SetSyntax(self,syntax_options):
         # apply new options
@@ -398,10 +394,7 @@ class CodeCtrl(texteditor.TextCtrl):
             else:
                 self.tag_configure(tag_name, **syntax_options[tag_name])
 
-        if "current_line" in syntax_options:
-            self.tag_lower("current_line")
-
-        self.tag_raise("sel")
+        self.SetOtherOptions(syntax_options)
         
     def GetColorClass(self):
         lexer = self.GetLangLexer()

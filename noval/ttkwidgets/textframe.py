@@ -1,14 +1,14 @@
 import tkinter as tk
 from tkinter import ttk
 
-class ListboxFrame(ttk.Frame):
+class TextFrame(ttk.Frame):
     def __init__(
         self,
         master,
         show_scrollbar=True,
         borderwidth=0,
         relief="flat",
-        listbox_class = tk.Listbox,
+        text_class = tk.Text,
         **kw
     ):
         ttk.Frame.__init__(self, master, borderwidth=borderwidth, relief=relief)
@@ -18,7 +18,7 @@ class ListboxFrame(ttk.Frame):
         )
         if show_scrollbar:
             self.vert_scrollbar.grid(row=0, column=1, sticky=tk.NSEW)
-        self.listbox = listbox_class(
+        self.text = text_class(
             self,
             yscrollcommand=self.vert_scrollbar.set,
             selectborderwidth=0,
@@ -26,7 +26,7 @@ class ListboxFrame(ttk.Frame):
             **kw
         )
 
-        self.listbox.grid(row=0, column=0, sticky=tk.NSEW)
-        self.vert_scrollbar["command"] = self.listbox.yview
+        self.text.grid(row=0, column=0, sticky=tk.NSEW)
+        self.vert_scrollbar["command"] = self.text.yview
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)

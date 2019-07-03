@@ -94,7 +94,7 @@ class InterpreterManager:
                             try:
                                 child_key = open_key.Open(name)
                                 install_path = child_key.Read("InstallPath")
-                                interpreter = Interpreter.PythonInterpreter(name,os.path.join(install_path,Interpreter.PythonInterpreter.CONSOLE_EXECUTABLE_NAME))
+                                interpreter = pythoninterpreter.PythonInterpreter(name,os.path.join(install_path,pythoninterpreter.PythonInterpreter.CONSOLE_EXECUTABLE_NAME))
                                 if not interpreter.IsValidInterpreter:
                                     utils.get_logger().error("load interpreter name %s path %s version %s is not a valid interpreter",interpreter.Name,interpreter.Path,interpreter.Version)
                                     continue
@@ -121,7 +121,7 @@ class InterpreterManager:
                 targets.append(("default",executable_path))
                     
             for cmd,target in targets:
-                interpreter = Interpreter.PythonInterpreter(cmd,target)
+                interpreter = pythoninterpreter.PythonInterpreter(cmd,target)
                 self.interpreters.append(interpreter)
 
     def LoadPythonInterpretersFromConfig(self):
@@ -191,7 +191,7 @@ class InterpreterManager:
                 builtins = config.Read("%s/%s/Builtins" % (prefix,id))
                 environ = json.loads(config.Read("%s/%s/Environ" % (prefix,id),"{}"))
                 packages = json.loads(config.Read("%s/%s/Packages" % (prefix,id),"{}"))
-                interpreter = Interpreter.PythonInterpreter(name,path,id,True)
+                interpreter = pythoninterpreter.PythonInterpreter(name,path,id,True)
                 interpreter.Default = is_default
                 interpreter.Environ.SetEnviron(environ)
                 interpreter.Packages = interpreter.LoaPackagesFromDict(packages)
@@ -285,7 +285,7 @@ class InterpreterManager:
     def GenerateId(cls):
         id = NewId()
         while cls.CheckIdExist(id):
-            id = wx.NewId()
+            id = NewId()
         return id
 
     def IsInterpreterAnalysing(self):
@@ -307,7 +307,7 @@ class InterpreterManager:
         return cls.CurrentInterpreter
 
     def LoadBuiltinInterpreter(self):
-        builtin_interpreter = Interpreter.BuiltinPythonInterpreter(BUILTIN_INTERPRETER_NAME,sys.executable)
+        builtin_interpreter = pythoninterpreter.BuiltinPythonInterpreter(BUILTIN_INTERPRETER_NAME,sys.executable)
         self.interpreters.append(builtin_interpreter)
         
     @classmethod

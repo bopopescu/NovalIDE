@@ -1,14 +1,12 @@
 from noval import _
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk,filedialog
 import os
 import noval.util.fileutils as fileutils
 import noval.python.interpreter.interpretermanager as interpretermanager
 import noval.project.variables as variablesutils
-#import ProjectDialog
 import noval.python.project.runconfiguration as runconfiguration
 from noval.util import utils
-#import noval.python.project.environmentmixin as environmentmixin
 import noval.iface as iface
 import noval.plugin as plugin
 import noval.consts as consts
@@ -16,6 +14,11 @@ import noval.ui_utils as ui_utils
 import noval.project.property as projectproperty
 import noval.ui_base as ui_base
 import noval.imageutils as imageutils
+import noval.editor.text as texteditor
+import noval.ttkwidgets.treeviewframe as treeviewframe
+import noval.ttkwidgets.textframe as textframe
+import noval.python.pyutils as pyutils
+import noval.constants as constants
       
 class BasePage(ui_utils.BaseConfigurationPanel):
     
@@ -38,17 +41,19 @@ class StartupPage(BasePage):
     def __init__(self,parent,run_configuration):
         BasePage.__init__(self,parent,run_configuration)
         sbox = ttk.LabelFrame(self, text= _("Project") + ":")
-        ttk.Label(sbox, text= _('Project Name:')).pack(side=tk.LEFT)
-        self._projectNameControl = ttk.Entry(sbox, text=self.ProjectDocument.GetModel().Name)
-        
-        self._projectNameControl.pack(side=tk.LEFT,fill="x",expand=1)
-        
-        sbox.pack(fill="x",expand=1)
+        row = ttk.Frame(sbox)
+        ttk.Label(row, text= _('Project Name:')).pack(side=tk.LEFT)
+        self.projectVar = tk.StringVar(value=self.ProjectDocument.GetModel().Name)
+        projectNameControl = ttk.Entry(row, textvariable=self.projectVar)
+        projectNameControl.pack(side=tk.LEFT,fill="x",expand=1,padx=(0,consts.DEFAUT_HALF_CONTRL_PAD_X))
+        projectNameControl['state'] = "readonly"
+        row.pack(fill="x",pady=consts.DEFAUT_CONTRL_PAD_Y)
+        sbox.pack(fill="x")
         sbox = ttk.LabelFrame(self, text= _("Startup Module:"))
-
-        ttk.Label(sbox, text=_('Main Module:')).pack(side=tk.LEFT)
+        row = ttk.Frame(sbox)
+        ttk.Label(row, text=_('Main Module:')).pack(side=tk.LEFT)
         self.main_module_var = tk.StringVar()
-        main_module_Control = ttk.Entry(sbox,textvariable=self.main_module_var)
+        main_module_Control = ttk.Entry(row,textvariable=self.main_module_var)
         
         main_module_Control.pack(side=tk.LEFT,fill="x",expand=1)
         if self.MainModuleFile is not None:
@@ -57,43 +62,55 @@ class StartupPage(BasePage):
             main_module_path = os.path.join(variablesutils.FormatVariableName(variablesutils.PROJECT_DIR_VARIABLE) , \
                                             main_module_path)
             self.main_module_var.set(main_module_path)
-            ttk.Button(sbox, text= _("Browse..."),command=self.BrowseMainModule).pack(side=tk.LEFT)
-        sbox.pack(fill="x",expand=1)
+            ttk.Button(row, text= _("Browse..."),command=self.BrowseMainModule).pack(side=tk.LEFT,padx=consts.DEFAUT_HALF_CONTRL_PAD_X)
+        row.pack(fill="x",pady=consts.DEFAUT_CONTRL_PAD_Y)
+        sbox.pack(fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         sbox = ttk.LabelFrame(self, text=_("Startup Directory:"))
-        self._defaultVar = tk.IntVar()
-        row = ttk.Frame(sbox)    
-        defaultRadioBtn = ttk.Radiobutton(row, text=_("Default:"),variable=self._defaultVar,command=self.CheckEnableStartupPath)
+        self._defaultVar = tk.IntVar(value=0)
+        row = ttk.Frame(sbox)
+        defaultRadioBtn = ttk.Radiobutton(row, text=_("Default:"),variable=self._defaultVar,command=self.CheckDefaultPath,value=0)
         defaultRadioBtn.pack(side=tk.LEFT)
-        self.default_dirControl = ttk.Entry(row, text=variablesutils.FormatVariableName(variablesutils.PROJECT_DIR_VARIABLE))
-        self.default_dirControl.pack(side=tk.LEFT,fill="x",expand=1)
-        row.pack(fill="x",expand=1)
+        self.default_var = tk.StringVar(value=variablesutils.FormatVariableName(variablesutils.PROJECT_DIR_VARIABLE))
+        self.default_dirControl = ttk.Entry(row, textvariable=self.default_var)
+        self.default_dirControl.pack(side=tk.LEFT,fill="x",expand=1,padx=(0,consts.DEFAUT_HALF_CONTRL_PAD_X))
+        row.pack(fill="x",expand=1,pady=consts.DEFAUT_CONTRL_PAD_Y)
         row = ttk.Frame(sbox) 
-        self._otherRadioBtn = ttk.Radiobutton(row, text=_("Other:"))
+        self._otherRadioBtn = ttk.Radiobutton(row, text=_("Other:"),value=1,variable=self._defaultVar,command=self.CheckOtherPath)
         self._otherRadioBtn.pack(side=tk.LEFT)
         self.other_dirControl = ttk.Entry(row)
-        self.other_dirControl.pack(side=tk.LEFT,fill="x",expand=1)
-        row.pack(fill="x",expand=1)
-        row = ttk.Frame(sbox) 
+        self.other_dirControl.pack(side=tk.LEFT,fill="x",expand=1,padx=(0,consts.DEFAUT_HALF_CONTRL_PAD_X))
+        row.pack(fill="x",expand=1,pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+        row = ttk.Frame(sbox)
+        ttk.Label(row).pack(side=tk.LEFT,fill="x",expand=1)
         self.project_folder_btn = ttk.Button(row,text= _("Project Folder"),command=self.BrowseProjectFolder)
         self.project_folder_btn.pack(side=tk.LEFT)
         self.file_system_btn = ttk.Button(row, text=_("Local File System"),command=self.BrowseLocalPath)
-        self.file_system_btn.pack(side=tk.LEFT)
+        self.file_system_btn.pack(side=tk.LEFT,padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0))
         self.variables_btn = ttk.Button(row, text=_("Variables"),command=self.BrowseVariables)
-        self.variables_btn.pack(side=tk.LEFT)
-        row.pack(fill="x",expand=1)
+        self.variables_btn.pack(side=tk.LEFT,padx=consts.DEFAUT_HALF_CONTRL_PAD_X)
+        row.pack(fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
         startup_configuration = run_configuration.GetChildConfiguration(runconfiguration.StartupConfiguration.CONFIGURATION_NAME)
         self._startup_path_pattern = startup_configuration.StartupPathPattern
         if self._startup_path_pattern == runconfiguration.StartupConfiguration.DEFAULT_PROJECT_DIR_PATH:
-            self._defaultVar.set(True)
+            self._defaultVar.set(0)
         else:
-            self._otherRadioBtn.SetValue(True)
+            self._defaultVar.set(1)
             self.other_dirControl.SetValue(startup_configuration.StartupPath)
         
-        sbox.pack(fill="x",expand=1)
-        self.CheckEnableStartupPath(None)
+        sbox.pack(fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        self.UpdateButtonUI()
         
-    def CheckEnableStartupPath(self,event):
-        if self._defaultVar.get():
+    def CheckDefaultPath(self):
+        self._defaultVar.set(0)
+        self.UpdateButtonUI()
+        
+    def CheckOtherPath(self):
+        self._defaultVar.set(1)
+        self.UpdateButtonUI()
+        
+    def UpdateButtonUI(self):
+        if self._defaultVar.get() == 0:
+            self.default_dirControl['state'] = tk.NORMAL
             self.other_dirControl['state'] = tk.DISABLED
             self.project_folder_btn['state'] = tk.DISABLED
             self.file_system_btn['state'] = tk.DISABLED
@@ -101,26 +118,23 @@ class StartupPage(BasePage):
             self._startup_path_pattern = runconfiguration.StartupConfiguration.DEFAULT_PROJECT_DIR_PATH
         else:
             self.other_dirControl['state'] = tk.NORMAL
+            self.default_dirControl['state'] = tk.DISABLED
             self.project_folder_btn['state'] = tk.NORMAL
             self.file_system_btn['state'] = tk.NORMAL
             self.variables_btn['state'] = tk.NORMAL
             self._startup_path_pattern = runconfiguration.StartupConfiguration.LOCAL_FILE_SYSTEM_PATH
             
-    def BrowseLocalPath(self,event):
-        
-        dlg = wx.DirDialog(self,
-                        _("Select the startup path"), 
-                        style=wx.DD_DEFAULT_STYLE|wx.DD_NEW_DIR_BUTTON)
-        if dlg.ShowModal() != wx.ID_OK:
-            dlg.Destroy()
+    def BrowseLocalPath(self):
+        path = filedialog.askdirectory(title=_("Select the startup path"))
+        if not path:
             return
-        path = dlg.GetPath()
+        self.path_var.set(fileutils.opj(path))
         self._startup_path_pattern = RunConfiguration.StartupConfiguration.LOCAL_FILE_SYSTEM_PATH
         self.other_dirControl.SetValue(path)
         
-    def BrowseProjectFolder(self,event):
-        dlg = ProjectDialog.ProjectFolderPathDialog(self,-1,_("Select Project Folder"),self.ProjectDocument.GetModel())
-        if dlg.ShowModal() == wx.ID_OK:
+    def BrowseProjectFolder(self):
+        dlg = pyutils.ProjectFolderPathDialog(self,_("Select Project Folder"),self.ProjectDocument.GetModel())
+        if dlg.ShowModal() == constants.ID_OK:
             selected_path = dlg.selected_path
             if selected_path is not None:
                 selected_path = os.path.join(PythonVariables.FormatVariableName(PythonVariables.PROJECT_DIR_VARIABLE) , selected_path)
@@ -128,25 +142,22 @@ class StartupPage(BasePage):
                 selected_path = PythonVariables.FormatVariableName(PythonVariables.PROJECT_DIR_VARIABLE)
             self.other_dirControl.SetValue(selected_path)
             self._startup_path_pattern = RunConfiguration.StartupConfiguration.PROJECT_CHILD_FOLDER_PATH
-        dlg.Destroy()
         
-    def BrowseVariables(self,event):
-        variable_dlg = PythonVariables.VariablesDialog(self,-1,_("Select Variable"),self.ProjectDocument)
-        if variable_dlg.ShowModal() == wx.ID_OK:
+    def BrowseVariables(self):
+        variable_dlg = variablesutils.VariablesDialog(self,_("Select Variable"),self.ProjectDocument)
+        if variable_dlg.ShowModal() == constants.ID_OK:
             self.other_dirControl.WriteText(variable_dlg.selected_variable_name)
             self._startup_path_pattern = RunConfiguration.StartupConfiguration.EXPRESSION_VALIABLE_PATH
-        variable_dlg.Destroy()
             
-    def BrowseMainModule(self,event):
-        dlg = ProjectDialog.SelectModuleFileDialog(self,-1,_("Select Main Module"),self.ProjectDocument.GetModel())
-        if dlg.ShowModal() == wx.ID_OK:
+    def BrowseMainModule(self):
+        dlg = pyutils.SelectModuleFileDialog(self,_("Select Main Module"),self.ProjectDocument.GetModel())
+        if dlg.ShowModal() == constants.ID_OK:
             main_module_path = os.path.join(PythonVariables.FormatVariableName(PythonVariables.PROJECT_DIR_VARIABLE) , self.ProjectDocument.\
                     GetModel().GetRelativePath(dlg.module_file))
             self.main_module_Control.SetValue(main_module_path)
             self.run_configuration.MainModuleFile = dlg.module_file
-        dlg.Destroy()
         
-    def OnOK(self):
+    def _ok(self):
         try:
             main_module_path = self.main_module_Control.GetValue().strip()
             python_variable_manager = PythonVariables.ProjectVariablesManager(self.ProjectDocument)
@@ -173,25 +184,30 @@ class ArgumentsPage(BasePage):
     def __init__(self,parent,run_configuration):
         BasePage.__init__(self,parent,run_configuration)
         arguments_configuration = run_configuration.GetChildConfiguration(runconfiguration.AugumentsConfiguration.CONFIGURATION_NAME)
+        
         sbox = ttk.LabelFrame(self, text=_("Program Arguments:"))
-        program_argument_textctrl = tk.Text(sbox,height=5,width=10)
+        text_frame = textframe.TextFrame(sbox,borderwidth=1,relief="solid",text_class=texteditor.TextCtrl,height=7,width=10,show_scrollbar=False)
+        program_argument_textctrl = text_frame.text
         #text=arguments_configuration.ProgramArgs
-        program_argument_textctrl.pack(fill="both",expand=1)
+        text_frame.pack(fill="both",expand=1)
         variables_btn = ttk.Button(sbox, text=_("Variables"),command=self.BrowseVariables)
-        sbox.pack(fill="x",expand=1)
+        ttk.Label(sbox).pack(side=tk.LEFT,fill="x",expand=1)
+        variables_btn.pack(side=tk.LEFT,fill="x",padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=consts.DEFAUT_HALF_CONTRL_PAD_Y)
+        sbox.pack(fill="both",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        
         sbox = ttk.LabelFrame(self, text=_("Interpreter Options:"))
-        interpreter_option_textctrl = tk.Text(sbox,height=5,width=10)
+        text_frame = textframe.TextFrame(sbox,borderwidth=1,relief="solid",text_class=texteditor.TextCtrl,height=7,width=10,show_scrollbar=False)
+        interpreter_option_textctrl = text_frame.text
         # text=arguments_configuration.InterpreterOption
-        interpreter_option_textctrl.pack(fill="both",expand=1)
-        sbox.pack(fill="x",expand=1)
+        text_frame.pack(fill="both",expand=1)
+        sbox.pack(fill="both",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         
-    def BrowseVariables(self,event):
-        variable_dlg = PythonVariables.VariablesDialog(self,-1,_("Select Variable"),self.ProjectDocument)
-        if variable_dlg.ShowModal() == wx.ID_OK:
+    def BrowseVariables(self):
+        variable_dlg = variablesutils.VariablesDialog(self,_("Select Variable"),self.ProjectDocument)
+        if variable_dlg.ShowModal() == constants.ID_OK:
             self.program_argument_textctrl.WriteText(variable_dlg.selected_variable_name)
-        variable_dlg.Destroy()
         
-    def OnOK(self):
+    def _ok(self):
         try:
             arguments_text = self.program_argument_textctrl.GetValue().strip()
             python_variable_manager = PythonVariables.ProjectVariablesManager(self.ProjectDocument)
@@ -213,14 +229,15 @@ class InterpreterConfigurationPage(BasePage):
         ttk.Label(self, text=_("Interpreter:")).pack(fill="x")
         choices,default_selection = interpretermanager.InterpreterManager().GetChoices()
         interpretersCombo = ttk.Combobox(self, values=choices)
-        interpretersCombo.pack(fill="x",expand=1)
+        interpretersCombo.pack(fill="x")
        # self.Bind(wx.EVT_TEXT,self.GetInterpreterPythonPath)
         if len(choices) > 0:
             interpretersCombo.current(default_selection)
         
         ttk.Label(self, text=_("PYTHONPATH that will be used in the run:")).pack(fill="x")
-        self.listbox = tk.Listbox(self)
-        self.listbox.pack(fill="both",expand=1)
+        listbox_view =treeviewframe.TreeViewFrame(self,borderwidth=1,relief="solid",show_scrollbar=False)
+        self.listbox = listbox_view.tree
+        listbox_view.pack(fill="both",expand=1)
       #  self.SetCurrentInterpreterName(interpreter_configuration)
        # self.GetInterpreterPythonPath(None)
         
@@ -282,7 +299,7 @@ class EnvironmentPage(BasePage,ui_utils.BaseEnvironmentUI):
         BasePage.__init__(self,parent,run_configuration)
         self.InitUI()
      #   self.LoadEnvironments()
-      #  self.UpdateUI(None)
+        self.UpdateUI()
             
     def LoadEnvironments(self,):
         environs = self.run_configuration.GetChildConfiguration(runconfiguration.EnvironmentConfiguration.CONFIGURATION_NAME).Environ
@@ -307,24 +324,23 @@ class RunConfigurationDialog(ui_base.CommonModaldialog):
         if run_configuration.IsNewConfiguration:
             st_text = ttk.Label(sizer_frame,text = _("New Debug/Run Configuration"))
         else:
-            st_text = ttk.Labe(sizer_frame,text = _("Edit Debug/Run Configuration"))
+            st_text = ttk.Label(sizer_frame,text = _("Edit Debug/Run Configuration"))
        # st_text.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD))
         st_text.pack(side=tk.LEFT,fill="x",expand=1)
         self.show_img = imageutils.load_image("","project/run_wizard.png")
-        ttk.Label(sizer_frame,image = self.show_img).pack(side=tk.LEFT)
+        ttk.Label(sizer_frame,image = self.show_img).pack(side=tk.LEFT,fill="x")
  
-        sizer_frame.pack(fill="x",expand=1)       
-# line = wx.StaticLine(self)
-
+        sizer_frame.pack(fill="x")       
         separator = ttk.Separator(self.main_frame, orient = tk.HORIZONTAL)
-        separator.pack(fill="x",expand=1) 
+        separator.pack(fill="x") 
         
         row = ttk.Frame(self.main_frame)
-        ttk.Label(row, text=_('Name:')).pack(side=tk.LEFT)
+        ttk.Label(row, text=_('Name:')).pack(side=tk.LEFT,fill="x")
 
-        self.nameControl = ttk.Entry(row, text=run_configuration.Name)
-        self.nameControl.pack(side=tk.LEFT,fill="x",expand=1)
-        row.pack(fill="x",expand=1)
+        self.nameVar = tk.StringVar(value=run_configuration.Name)
+        nameControl = ttk.Entry(row, textvariable=self.nameVar)
+        nameControl.pack(side=tk.LEFT,fill="x",expand=1)
+        row.pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         nb = ttk.Notebook(self.main_frame)
         self.startup_icon = imageutils.load_image("","project/python/startup.png")
         self.arguments_icon = imageutils.load_image("","project/python/parameter.png")
@@ -333,7 +349,6 @@ class RunConfigurationDialog(ui_base.CommonModaldialog):
 
         self.startup_panel = StartupPage(nb,run_configuration)
         nb.add(self.startup_panel, text=_("Startup"),image=self.startup_icon,compound=tk.LEFT)
-
     
         self.arguments_panel = ArgumentsPage(nb,run_configuration)
         nb.add(self.arguments_panel, text=_("Arguments"),image=self.arguments_icon,compound=tk.LEFT)
@@ -343,7 +358,7 @@ class RunConfigurationDialog(ui_base.CommonModaldialog):
 
         self.environment_panel = EnvironmentPage(nb,run_configuration)
         nb.add(self.environment_panel, text=_("Environment"),image=self.environment_icon,compound=tk.LEFT)
-        nb.pack(fill="both",expand=1)
+        nb.pack(fill="both",expand=1,padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         self.AddokcancelButton()
         
     def _ok(self):
@@ -386,9 +401,9 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
                             .GetRelativePath(startup_file)
                 startup_file_path = os.path.join(variablesutils.FormatVariableName(variablesutils.PROJECT_DIR_VARIABLE) , startup_file_path)
             row = ttk.Frame(self)
-            self.startup_path_var = tk.StringVar()
+            self.startup_path_var = tk.StringVar(value=startup_file_path)
             ttk.Combobox(row,textvariable=self.startup_path_var).pack(side=tk.LEFT,fill="x",expand=1)
-            ttk.Button(row, text= _("Select the startup file"),command=self.SetStartupFile).pack(side=tk.LEFT)
+            ttk.Button(row, text= _("Select the startup file"),command=self.SetStartupFile).pack(side=tk.LEFT,padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0))
             row.pack(fill="x")
         elif project_view._IsItemFile(item):
             self.select_project_file = project_view._GetItemFile(item)
@@ -400,8 +415,10 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
         configuration_staticLabel = ttk.Label(self, text= _("Set run configurations for project '%s':") % self.GetProjectName())
         configuration_staticLabel.pack(fill="x")
         row = ttk.Frame(self)
-        self.configuration_ListCtrl = tk.Listbox(row)
-        self.configuration_ListCtrl.pack(side=tk.LEFT,fill="both",expand=1)
+        
+        listbox_view =treeviewframe.TreeViewFrame(row,borderwidth=1,relief="solid",show_scrollbar=False)
+        self.configuration_ListCtrl = listbox_view.tree
+        listbox_view.pack(side=tk.LEFT,fill="both",expand=1)
      #   wx.EVT_LIST_ITEM_SELECTED(self.configuration_ListCtrl, self.configuration_ListCtrl.GetId(), self.UpdateUI)
       #  wx.EVT_LIST_ITEM_DESELECTED(self.configuration_ListCtrl, self.configuration_ListCtrl.GetId(), self.UpdateUI)
        # wx.EVT_LIST_ITEM_ACTIVATED(self.configuration_ListCtrl, self.configuration_ListCtrl.GetId(), self.EditRunConfiguration)
@@ -411,10 +428,10 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
         self.edit_configuration_btn = ttk.Button(right, text=_("Edit"),command=self.EditRunConfiguration)
         self.remove_configuration_btn = ttk.Button(right, text=_("Remove"),command=self.RemoveConfiguration)
         self.copy_configuration_btn = ttk.Button(right, text=_("Copy"),command=self.CopyConfiguration)
-        self.new_configuration_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
-        self.edit_configuration_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
-        self.remove_configuration_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
-        self.copy_configuration_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
+        self.new_configuration_btn.pack(padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0),pady=(0,consts.DEFAUT_HALF_CONTRL_PAD_Y))
+        self.edit_configuration_btn.pack(padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0),pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
+        self.remove_configuration_btn.pack(padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0),pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
+        self.copy_configuration_btn.pack(padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0),pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
         right.pack(side=tk.LEFT,fill="y")
         row.pack(fill="both",expand=1)
         #should use Layout ,could not use Fit method
@@ -424,7 +441,7 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
             self.remove_configuration_btn['state'] = tk.DISABLED
             self.new_configuration_btn['state'] = tk.DISABLED
             self.copy_configuration_btn['state'] = tk.DISABLED
-     #   self.UpdateUI(None)
+        self.UpdateUI()
         #folder or package folder has no run configurations
       #  if not self.is_folder:
        #     self.LoadConfigurations()
@@ -523,14 +540,12 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
                 utils.ProfileSet(pj_file_key + "/RunConfigurationName",selected_configuration_name)
         return True
         
-    def SetStartupFile(self,event):
-        dlg = ProjectDialog.SelectModuleFileDialog(self,-1,_("Select the startup file"),\
-                    self.current_project_document.GetModel(),True)
-        if wx.ID_OK == dlg.ShowModal():
+    def SetStartupFile(self):
+        dlg = pyutils.SelectModuleFileDialog(self,_("Select the startup file"),self.current_project_document.GetModel(),True)
+        if constants.ID_OK == dlg.ShowModal():
             startup_path = os.path.join(PythonVariables.FormatVariableName(PythonVariables.PROJECT_DIR_VARIABLE) , self.current_project_document.\
                     GetModel().GetRelativePath(dlg.module_file))
             self.filesCombo.SetValue(startup_path)
-        dlg.Destroy()
         
     def GetConfigurationName(self,default_configuration_name = None):
         if default_configuration_name is None:
@@ -562,7 +577,7 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
         if self.select_project_file is None:
             run_configuration.Name = "%s %s" % (self.GetProjectName(),init_configuration_name)
             if run_file is not None:
-                run_configuration.Name = "%s %s" % (self.GetProjectName(),self.GetProjectFilename(run_file))
+                run_configuration.Name = "%s %s" % (self.GetProjectName(),os.path.basename(run_file.filePath))
             run_configuration.Name = self.GetConfigurationName(run_configuration.Name)
             
         dlg = RunConfigurationDialog(self,_("New Configuration"),run_configuration)
@@ -618,16 +633,16 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
         self.configuration_ListCtrl.SetItemData(index,index)
         self._configuration_list.append(copy_run_configuration)
         
-    def UpdateUI(self,event):
-        select_item = self.configuration_ListCtrl.GetFirstSelected()
-        if select_item == -1:
-            self.remove_configuration_btn.Enable(False)
-            self.edit_configuration_btn.Enable(False)
-            self.copy_configuration_btn.Enable(False)
+    def UpdateUI(self):
+        selections = self.configuration_ListCtrl.selection()
+        if not selections:
+            self.remove_configuration_btn["state"] = tk.DISABLED
+            self.edit_configuration_btn["state"] = tk.DISABLED
+            self.copy_configuration_btn["state"] = tk.DISABLED
         else:
-            self.remove_configuration_btn.Enable(True)
-            self.edit_configuration_btn.Enable(True)
-            self.copy_configuration_btn.Enable(True)
+            self.remove_configuration_btn["state"] = "normal"
+            self.edit_configuration_btn["state"] = "normal"
+            self.copy_configuration_btn["state"] = "normal"
             
     def LoadConfigurations(self):
         if self.select_project_file is not None:

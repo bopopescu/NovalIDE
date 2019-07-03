@@ -10,6 +10,7 @@ import noval.consts as consts
 import noval.project.property as projectproperty
 import noval.ui_utils as ui_utils
 import noval.ttkwidgets.linklabel as linklabel
+import noval.ui_common as ui_common
 
 
 class PythonInterpreterPanel(ui_utils.BaseConfigurationPanel):
@@ -20,18 +21,14 @@ class PythonInterpreterPanel(ui_utils.BaseConfigurationPanel):
         interpreterLabelText = ttk.Label(row, text=_("Interpreter:")).pack(fill="x",side=tk.LEFT)
         choices,default_selection = interpretermanager.InterpreterManager().GetChoices()
         self.interpreterCombo = ttk.Combobox(row,values=choices)
-        
+        self.interpreterCombo['state'] = 'readonly'
         self.interpreterCombo.pack(fill="x",side=tk.LEFT,expand=1)
-
         row.pack(fill="x")
- #       if len(choices) > 0:
-  #          self.interpreterCombo.select(default_selection)
-        
-
+        if len(choices) > 0:
+            self.interpreterCombo.current(default_selection)
         hyperLinkCtrl = linklabel.LinkLabel(self,text=_("Click to configure interpreters not listed"),normal_color='royal blue',hover_color='blue',clicked_color='purple')
         hyperLinkCtrl.bind("<Button-1>", self.GotoInterpreterConfiguration)
-        
-        hyperLinkCtrl.pack(fill="x")
+        hyperLinkCtrl.pack(fill="x",pady=consts.DEFAUT_HALF_CONTRL_PAD_Y)
         #project_interpreter_name = RunConfiguration.ProjectConfiguration.LoadProjectInterpreter(current_project.GetKey())
         #if project_interpreter_name:
          #   self.interpreterCombo.SetValue(project_interpreter_name)
@@ -41,7 +38,8 @@ class PythonInterpreterPanel(ui_utils.BaseConfigurationPanel):
         return True
         
     def GotoInterpreterConfiguration(self,event):
-        UICommon.ShowInterpreterOptionPage()
+        if not ui_common.ShowInterpreterConfigurationPage():
+            return
         choices,default_selection = interpretermanager.InterpreterManager().GetChoices()
         self.interpreterCombo.Clear()
         if len(choices) > 0:

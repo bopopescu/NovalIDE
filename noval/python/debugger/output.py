@@ -154,9 +154,9 @@ class OutputCtrl(texteditor.TextCtrl):
             wx.GetApp().GetDocumentManager().ActivateView(self.GetParent().GetParent().GetParent()._service.GetView())
         
     def ClearOutput(self):
-        self.SetReadOnly(False)
-        self.ClearAll()
-        self.SetReadOnly(True)
+        self.set_read_only(False)
+        self.delete("1.0","end")
+        self.set_read_only(True)
         
     def DoFindText(self,forceFindNext = False, forceFindPrevious = False):
         findService = wx.GetApp().GetService(FindService.FindService)
@@ -319,7 +319,7 @@ class OutputView(ttk.Frame):
         self.vert_scrollbar = ui_base.SafeScrollbar(self, orient=tk.VERTICAL)
         self.vert_scrollbar.grid(row=0, column=1, sticky=tk.NSEW)
         #设置查找结果文本字体为小一号的字体并且控件为只读状态
-        self.text = OutputCtrl(self,is_debug,font="SmallEditorFont",read_only=True,yscrollcommand=self.vert_scrollbar.set)
+        self.text = OutputCtrl(self,is_debug,font="SmallEditorFont",read_only=True,yscrollcommand=self.vert_scrollbar.set,borderwidth=0)
         self.text.grid(row=0, column=0, sticky=tk.NSEW)
         self.text.bind("<Double-Button-1>", self.JumptoLine, "+")
         #关联垂直滚动条和文本控件

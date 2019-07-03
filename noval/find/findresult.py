@@ -9,20 +9,17 @@ import noval.consts as consts
 from tkinter import ttk
 import noval.editor.text as texteditor
 from noval.find.findindir import FILENAME_MARKER,PROJECT_MARKER,FILE_MARKER,FindIndirService
+import noval.ttkwidgets.textframe as textframe
 import noval.ui_base as ui_base
 
 class FindResultsview(ttk.Frame):
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
-        self.vert_scrollbar = ui_base.SafeScrollbar(self, orient=tk.VERTICAL)
-        self.vert_scrollbar.grid(row=0, column=1, sticky=tk.NSEW)
         #设置查找结果文本字体为小一号的字体并且控件为只读状态
-        self.text = texteditor.TextCtrl(self,font="SmallEditorFont",read_only=True,yscrollcommand=self.vert_scrollbar.set)
-        self.text.grid(row=0, column=0, sticky=tk.NSEW)
+        text_frame = textframe.TextFrame(self,borderwidth=0,text_class=texteditor.TextCtrl,font="SmallEditorFont",read_only=True,)
+        self.text = text_frame.text
+        text_frame.grid(row=0, column=0, sticky=tk.NSEW)
         self.text.bind("<Double-Button-1>", self.OnJumptoFoundLine, "+")
-        #关联垂直滚动条和文本控件
-        self.vert_scrollbar["command"] = self.text.yview
-        
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
         

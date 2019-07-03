@@ -110,7 +110,7 @@ class ClosableNotebook(ttk.Notebook):
         if editor:
             editor.focus_set()
         else:
-            super().focus_set()
+            ttk.Notebook.focus_set(self)
 
     def _check_update_style(self):
         style = ttk.Style()
@@ -187,7 +187,7 @@ def get_text_font(text):
     else:
         return font
 
-class TextFrame(ttk.Frame):
+class TextviewFrame(ttk.Frame):
     "Decorates text with scrollbars, line numbers and print margin"
 
     def __init__(
@@ -887,6 +887,9 @@ class CommonModaldialog(CommonDialog):
             self.master = tk._default_root or GetApp()
         assert(self.master is not None)
         focused_widget = self.master.focus_get()
+        if utils.is_linux():
+            #在linux系统点击工具栏新建按钮后,提示信息会一直存在不会消失,手动隐藏提示信息
+            focused_widget.event_generate("<Leave>")
         #隐藏最小化按钮
         self.transient(self.master)
         self.grab_set()
@@ -929,7 +932,7 @@ class CommonModaldialog(CommonDialog):
 
 class SingleChoiceDialog(CommonModaldialog):
     def __init__(self, master,title,label,choices = [],selection=-1):
-        CommonModaldialog.__init__(self, master, takefocus=1, background="pink")
+        CommonModaldialog.__init__(self, master, takefocus=1)
         self.title(title)
         #禁止对话框改变大小
         self.resizable(height=tk.FALSE, width=tk.FALSE)

@@ -8,8 +8,7 @@
 # Copyright:   (c) wukan 2019
 # Licence:     GPL-3.0
 #-------------------------------------------------------------------------------
-
-
+from noval import GetApp
 import sys
 import os
 import time
@@ -17,7 +16,6 @@ import pyperclip
 import psutil
 import locale
 import future.utils
-from noval import GetApp
 
 MAINMODULE_DIR = "NOVAL_MAINMODULE_DIR"
 
@@ -94,7 +92,11 @@ def getCurrentTimeAsFloat():
 systemStartTime = getCurrentTimeAsFloat()
 
 def CopyToClipboard(str):
-    pyperclip.copy(str)
+    if is_windows():
+        pyperclip.copy(str)
+    else:
+        GetApp().clipboard_clear()
+        GetApp().clipboard_append(str)
 
 def GetSupportableExtList():
     exts = []

@@ -33,6 +33,9 @@ class PythonText(CodeCtrl):
             self._lang_lexer = syntax.SyntaxThemeManager().GetLexer(lang.ID_LANG_PYTHON)
         return self._lang_lexer
         
+    def _reload_theme_options(self,force=False):
+        texteditor.TextCtrl._reload_theme_options(self,force)
+        
     def CanPaste(self):
         return True
         

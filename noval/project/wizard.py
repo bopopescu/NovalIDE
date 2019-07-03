@@ -21,7 +21,7 @@ import noval.consts as consts
 
 class BaseWizard(ui_base.CommonModaldialog):
     def __init__(self, master):
-        ui_base.CommonModaldialog.__init__(self, master, takefocus=1, background="pink")
+        ui_base.CommonModaldialog.__init__(self, master, takefocus=1)
         self.current_page = None
         self.content_page = ttk.Frame(self)
         self.content_page.grid(column=0, row=0, sticky=tk.NSEW, padx=0, pady=0)

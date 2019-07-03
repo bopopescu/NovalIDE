@@ -75,7 +75,7 @@ class FindDialog(tk.Toplevel):
     last_searched_word = None
     
     def __init__(self, master,findString="",replace=False):
-        tk.Toplevel.__init__(self, master, takefocus=1, background="pink")
+        tk.Toplevel.__init__(self, master, takefocus=1)
         self.main_frame = ttk.Frame(self)
         self.main_frame.grid(row=0, column=0, sticky="nsew")
         self.columnconfigure(0, weight=1)

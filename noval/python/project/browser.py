@@ -79,7 +79,7 @@ class ProjectBrowser(BaseProjectbrowser):
         self.GetView().DebugRun()
         
     def BreakintoDebugger(self):
-        pass
+        self.GetView().BreakintoDebugger()
 
     def GetPopupFileMenu(self):
         menu = BaseProjectbrowser.GetPopupFileMenu(self)
@@ -171,6 +171,10 @@ class ProjectBrowser(BaseProjectbrowser):
             project_item_ids.insert(i+1,constants.ID_ADD_PACKAGE_FOLDER)
         return project_item_ids
         
+    def OpenPromptPath(self):
+        item = self.tree.GetSingleSelectItem()
+        filePath = self.GetItemPath(item)
+        GetApp().OpenTerminator(filename=filePath)
     
 class ProjectViewLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)

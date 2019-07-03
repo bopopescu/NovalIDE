@@ -144,15 +144,6 @@
   <noval:file filePath="./noval/bmp_source/project/ViewLarge.ico" logicalFolder="noval/bmp_source/project" isStartup="false"/>
   <noval:file filePath="./noval/bmp_source/project/ViewSmall.ico" logicalFolder="noval/bmp_source/project" isStartup="false"/>
   <noval:file filePath="./noval/bmp_source/project/zip.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/data/styles/BlackBoard.ess" logicalFolder="noval/data/styles" isStartup="false"/>
-  <noval:file filePath="./noval/data/styles/Blue.ess" logicalFolder="noval/data/styles" isStartup="false"/>
-  <noval:file filePath="./noval/data/styles/BlueMonday.ess" logicalFolder="noval/data/styles" isStartup="false"/>
-  <noval:file filePath="./noval/data/styles/Cream.ess" logicalFolder="noval/data/styles" isStartup="false"/>
-  <noval:file filePath="./noval/data/styles/Default.ess" logicalFolder="noval/data/styles" isStartup="false"/>
-  <noval:file filePath="./noval/data/styles/Dessert.ess" logicalFolder="noval/data/styles" isStartup="false"/>
-  <noval:file filePath="./noval/data/styles/Guepardo.ess" logicalFolder="noval/data/styles" isStartup="false"/>
-  <noval:file filePath="./noval/data/styles/Midnight.ess" logicalFolder="noval/data/styles" isStartup="false"/>
-  <noval:file filePath="./noval/data/styles/Mocha.ess" logicalFolder="noval/data/styles" isStartup="false"/>
   <noval:file filePath="./noval/bmp_source/toolbar/about.png" logicalFolder="noval/bmp_source/toolbar" isStartup="false"/>
   <noval:file filePath="./noval/bmp_source/toolbar/copy.png" logicalFolder="noval/bmp_source/toolbar" isStartup="false"/>
   <noval:file filePath="./noval/bmp_source/toolbar/cut.png" logicalFolder="noval/bmp_source/toolbar" isStartup="false"/>
@@ -595,7 +586,6 @@
   <noval:file filePath="./noval/python/debugger/watchs.py" logicalFolder="noval/python/debugger" isStartup="false"/>
   <noval:file filePath="./noval/python/debugger/breakpoints.py" logicalFolder="noval/python/debugger" isStartup="false"/>
   <noval:file filePath="./noval/python/debugger/debugger.py" logicalFolder="noval/python/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/python/project/ProjectDialog.py" logicalFolder="noval/python/project" isStartup="false"/>
   <noval:file filePath="./noval/project/property.py" logicalFolder="noval/project" isStartup="false"/>
   <noval:file filePath="./noval/project/resource.py" logicalFolder="noval/project" isStartup="false"/>
   <noval:file filePath="./noval/python/project/debugrun.py" logicalFolder="noval/python/project" isStartup="false"/>
@@ -617,5 +607,6 @@
   <noval:file filePath="./noval/python/interpreter/pythonpathmixin.py" logicalFolder="noval/python/interpreter" isStartup="false"/>
   <noval:file filePath="./tests/test_strutils.py" logicalFolder="tests" isStartup="false"/>
   <noval:file filePath="./noval/python/project/runconfiguration.py" logicalFolder="noval/python/project" isStartup="false"/>
+  <noval:file filePath="./noval/ttkwidgets/textframe.py" logicalFolder="noval/ttkwidgets" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>

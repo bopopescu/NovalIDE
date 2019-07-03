@@ -9,6 +9,7 @@ import noval.consts as consts
 import noval.ui_utils as ui_utils
 import noval.ttkwidgets.checklistbox as checklistbox
 import noval.project.property as projectproperty
+import noval.ttkwidgets.treeviewframe as treeviewframe
 
 class ProjectReferrencePanel(ui_utils.BaseConfigurationPanel):
     def __init__(self,parent,item,current_project):
@@ -18,11 +19,12 @@ class ProjectReferrencePanel(ui_utils.BaseConfigurationPanel):
         project_StaticText.pack(fill="x")
         ttk.Label(self,text=_("The reference projects for '%s':") % self.GetProjectName()).pack(fill="x")
         row = ttk.Frame(self)
-        self.listbox = checklistbox.CheckListbox(row)
+        listbox_view =treeviewframe.TreeViewFrame(row,treeview_class=checklistbox.CheckListbox,borderwidth=1,relief="solid",show_scrollbar=False)
+        self.listbox = listbox_view.tree
         self.listbox["show"] = "tree"
-        self.listbox.pack(side=tk.LEFT,fill="both",expand=1)
+        listbox_view.pack(side=tk.LEFT,fill="both",expand=1)
         right = ttk.Frame(row)
-        ttk.Button(right, text= _("Select All"),command=self.SelectAll).pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=consts.DEFAUT_CONTRL_PAD_Y)
+        ttk.Button(right, text= _("Select All"),command=self.SelectAll).pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
         ttk.Button(right,text= _("UnSelect All"),command=self.UnSelectAll).pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0))
         right.pack(side=tk.LEFT,fill="y")
         row.pack(fill="both",expand=1)

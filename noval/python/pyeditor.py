@@ -34,6 +34,7 @@ import noval.menu as tkmenu
 import noval.constants as constants
 import noval.python.project.viewer as projectviewer
 import noval.python.project.runconfig as runconfig
+import noval.ui_utils as ui_utils
 
 class PythonDocument(codeeditor.CodeDocument): 
 
@@ -286,7 +287,8 @@ class PythonView(codeeditor.CodeView):
         
 
     def UpdateUI(self, command_id):
-        if command_id in [constants.ID_INSERT_DECLARE_ENCODING, constants.ID_UNITTEST,constants.ID_RUN,constants.ID_DEBUG]:
+        if command_id in [constants.ID_INSERT_DECLARE_ENCODING, constants.ID_UNITTEST,constants.ID_RUN,constants.ID_DEBUG,constants.ID_SET_EXCEPTION_BREAKPOINT,constants.ID_STEP_INTO,constants.ID_STEP_NEXT,constants.ID_RUN_LAST,\
+                    constants.ID_CHECK_SYNTAX,constants.ID_SET_PARAMETER_ENVIRONMENT,constants.ID_DEBUG_LAST,constants.ID_START_WITHOUT_DEBUG]:
             return True
         elif command_id == constants.ID_GOTO_DEFINITION:
             return self.GetCtrl().IsCaretLocateInWord()
@@ -346,11 +348,11 @@ class PythonCtrl(codeeditor.CodeCtrl):
         #获取文本控件对应的视图需要取2次master
         GetApp().MainFrame.GetOutlineView().SyncToPosition(self.master.master.GetView(),line_no)
 
-    def DebugRunScript(self,event):
-        view = wx.GetApp().GetDocumentManager().GetCurrentView()
-        wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).RunWithoutDebug(view.GetDocument().GetFilename())
+    def DebugRunScript(self):
+        view = GetApp().GetDocumentManager().GetCurrentView()
+        GetApp().GetDebugger().RunWithoutDebug(view.GetDocument().GetFilename())
         
-    def QuickAddWatch(self,event):
+    def QuickAddWatch(self):
         if self.HasSelection():
             text = self.GetSelectedText()
             watch = debugger.Watchs.Watch(text,text)
@@ -391,13 +393,15 @@ class PythonCtrl(codeeditor.CodeCtrl):
                 watch = debugger.Watchs.Watch(text,text)
                 wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).AddtoWatch(watch)
         
-    def BreakintoDebugger(self,event):
-        view = wx.GetApp().GetDocumentManager().GetCurrentView()
-        wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).BreakIntoDebugger(view.GetDocument().GetFilename())
+    @ui_utils.no_implemented_yet
+    def BreakintoDebugger(self):
+        pass
+       # view = wx.GetApp().GetDocumentManager().GetCurrentView()
+        #wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).BreakIntoDebugger(view.GetDocument().GetFilename())
     
-    def RunScript(self,event):
-        view = wx.GetApp().GetDocumentManager().GetCurrentView()
-        wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).Run(view.GetDocument().GetFilename())
+    def RunScript(self):
+        view = GetApp().GetDocumentManager().GetCurrentView()
+        GetApp().GetDebugger().Run(view.GetDocument().GetFilename())
 
     def GetFontAndColorFromConfig(self):
         return CodeEditor.CodeCtrl.GetFontAndColorFromConfig(self, configPrefix = "Python")

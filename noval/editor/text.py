@@ -36,6 +36,7 @@ import noval.docposition as docposition
 import noval.constants as constants
 import noval.python.pyutils as pyutils
 import noval.ui_utils as ui_utils
+import noval.syntax.syntax as syntax
 
 def classifyws(s, tabwidth):
     raw = effective = 0
@@ -341,7 +342,7 @@ class TextView(misc.AlarmEventView):
          
     def GetCtrlClass(self):
         """ Used in split window to instantiate new instances """
-        return TextCtrl
+        return SyntaxTextCtrl
     
     def GetLangId(self):
         return lang.ID_LANG_TXT
@@ -356,7 +357,7 @@ class TextView(misc.AlarmEventView):
         frame = GetApp().CreateDocumentFrame(self, doc, flags)
         #wrap为None表示不允许自动换行,undo默认为False,表示禁止撤销操作,设置为True表示允许文本撤销恢复操作
         #use_edit_tester表示弹出菜单使用主编辑菜单的tester函数,use_edit_image表示使用主编辑菜单的编辑图标
-        self._text_frame = ui_base.TextFrame(frame,text_class=self.GetCtrlClass(),\
+        self._text_frame = ui_base.TextviewFrame(frame,text_class=self.GetCtrlClass(),\
                                 font="EditorFont",horizontal_scrollbar_class=ui_common.AutoScrollbar,wrap=tk.NONE,undo=True,use_edit_tester=True,use_edit_image=True)
         self._textEditor = self._text_frame.text
         #绑定视图激活事件,鼠标松开或者键盘松开时激活文本视图
@@ -522,7 +523,8 @@ class TextView(misc.AlarmEventView):
         if command_id == constants.ID_SAVE:
             return self.GetDocument().IsModified()
         elif command_id in [constants.ID_INSERT_COMMENT_TEMPLATE,constants.ID_INSERT_DECLARE_ENCODING,constants.ID_UNITTEST,constants.ID_COMMENT_LINES,constants.ID_UNCOMMENT_LINES,\
-                        constants.ID_RUN,constants.ID_DEBUG,constants.ID_GOTO_DEFINITION]:
+                        constants.ID_RUN,constants.ID_DEBUG,constants.ID_GOTO_DEFINITION,constants.ID_SET_EXCEPTION_BREAKPOINT,constants.ID_STEP_INTO,constants.ID_STEP_NEXT,constants.ID_RUN_LAST,\
+                    constants.ID_CHECK_SYNTAX,constants.ID_SET_PARAMETER_ENVIRONMENT,constants.ID_DEBUG_LAST,constants.ID_START_WITHOUT_DEBUG]:
             return False
         elif command_id == constants.ID_UNDO:
             return self.GetCtrl().CanUndo()
@@ -571,7 +573,7 @@ class TextCtrl(ui_base.TweakableText):
         self._bind_mouse_aids()
 
         self._ui_theme_change_binding = self.bind(
-            "<<ThemeChanged>>", self._reload_theme_options, True
+            "<<ThemeChanged>>", self.reload_ui_theme, True
         )
 
         self._initial_configuration = self.configure()
@@ -1092,13 +1094,21 @@ class TextCtrl(ui_base.TweakableText):
         self._popup_menu.AppendMenuItem(GetApp().Menubar.GetEditMenu().FindMenuItem(consts.ID_REDO),\
                                 handler=GetApp().MainFrame.CreateEditCommandHandler("<<Redo>>"),**common_kwargs)
         self._popup_menu.add_separator()
-        self._popup_menu.AppendMenuItem(GetApp().Menubar.GetEditMenu().FindMenuItem(consts.ID_CUT),\
-                                handler=GetApp().MainFrame.CreateEditCommandHandler("<<Cut>>"),**common_kwargs)
+
         args = {}
         if not self._use_edit_image:
             args.update({
                 'image':None
             })
+            
+        if not self._use_edit_tester:
+            args.update({
+                'tester':self.CanCut,
+            })
+            
+        self._popup_menu.AppendMenuItem(GetApp().Menubar.GetEditMenu().FindMenuItem(consts.ID_CUT),\
+                                handler=GetApp().MainFrame.CreateEditCommandHandler("<<Cut>>"),**args)
+                                
         if not self._use_edit_tester:
             args.update({
                 'tester':self.CanCopy,
@@ -1111,8 +1121,13 @@ class TextCtrl(ui_base.TweakableText):
             })
         self._popup_menu.AppendMenuItem(GetApp().Menubar.GetEditMenu().FindMenuItem(consts.ID_PASTE),\
                                 handler=GetApp().MainFrame.CreateEditCommandHandler("<<Paste>>"),**args)
+                                
+        if not self._use_edit_tester:
+            args.update({
+                'tester':self.CanDelete,
+            })
         self._popup_menu.AppendMenuItem(GetApp().Menubar.GetEditMenu().FindMenuItem(consts.ID_CLEAR),\
-                                handler=self.OnDelete,**common_kwargs)
+                                handler=self.OnDelete,**args)
                                 
         sel_args = {}
         if not self._use_edit_tester:
@@ -1127,20 +1142,42 @@ class TextCtrl(ui_base.TweakableText):
         '''
         start,end = self.get_selection()
         self.delete(start, end)
+        
+    def CanCut(self):
+        if self.is_read_only() or self.IsStateDisabled():
+            return False
+        return self.HasSelection()
+
+    def IsStateDisabled(self):
+        return self['state'] == tk.DISABLED
 
     def CanCopy(self):
         return self.HasSelection()
+        
+    def CanDelete(self):
+        if self.is_read_only() or self.IsStateDisabled():
+            return False
+        return self.HasSelection()
 
     def CanPaste(self):
-        return False
+        if self.is_read_only() or self.IsStateDisabled():
+            return False
+        return True
 
     def CanUndo(self):
+        if self.is_read_only() or self.IsStateDisabled():
+            return False
         return True
 
     def CanRedo(self):
+        if self.is_read_only() or self.IsStateDisabled():
+            return False
         return True
+        
+    def reload_ui_theme(self, event=None):
+        self._reload_theme_options(force=True)
 
-    def _reload_theme_options(self, event=None):
+    def _reload_theme_options(self, force=False):
 
         style = ttk.Style()
 
@@ -1152,12 +1189,12 @@ class TextCtrl(ui_base.TweakableText):
         # if self.focus_get() == self:
         #    states.append("focus")
 
-        if "background" not in self._initial_configuration:
+        if "background" not in self._initial_configuration or force:
             background = style.lookup(self._style, "background", states)
             if background:
                 self.configure(background=background)
 
-        if "foreground" not in self._initial_configuration:
+        if "foreground" not in self._initial_configuration or force:
             foreground = style.lookup(self._style, "foreground", states)
             if foreground:
                 self.configure(foreground=foreground)
@@ -1306,6 +1343,32 @@ class TextCtrl(ui_base.TweakableText):
         if first == last:
             return ''
         return self.get(first,last)
+        
+
+class SyntaxTextCtrl(TextCtrl):
+
+    def __init__(self, master=None, cnf={}, **kw):
+        TextCtrl.__init__(self, master, cnf=cnf, **kw)
+        self.UpdateSyntaxTheme()
+
+    def UpdateSyntaxTheme(self):
+        self.SetSyntax(syntax.SyntaxThemeManager().SYNTAX_THEMES)
+        
+    def SetSyntax(self,syntax_options):
+        # apply new options
+        for tag_name in syntax_options:
+            if tag_name == "TEXT":
+                self.configure(**syntax_options[tag_name])
+                break
+        self.SetOtherOptions(syntax_options)
+
+    def SetOtherOptions(self,syntax_options):
+        if "current_line" in syntax_options:
+            self.tag_lower("current_line")
+        self.tag_raise("sel")
+
+    def _reload_theme_options(self,force=False):
+        pass
         
 class TextOptionsPanel(ui_utils.BaseConfigurationPanel):
 

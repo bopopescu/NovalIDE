@@ -8,7 +8,6 @@ import noval.consts as consts
 import noval.python.parser.utils as parserutils
 import noval.util.apputils as sysutils
 #import noval.tool.project.PythonVariables as PythonVariables
-#import ProjectDialog
 import noval.util.utils as utils
 import noval.ui_utils as ui_utils
 import noval.python.interpreter.pythonpathmixin as pythonpathmixin
@@ -17,6 +16,8 @@ import noval.ui_utils as ui_utils
 import noval.project.property as projectproperty
 import noval.imageutils as imageutils
 import noval.ttkwidgets.treeviewframe as treeviewframe
+import noval.python.pyutils as pyutils
+import noval.constants as constants
 
 class InternalPathPage(ttk.Frame):
     
@@ -40,7 +41,7 @@ class InternalPathPage(ttk.Frame):
         self.remove_path_btn = ttk.Button(right_frame, text=_("Remove Path..."),command=self.RemovePath)
         self.remove_path_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
         
-        self.add_file_btn = ttk.Button(right_frame,text=_("Add File..."),command=self.AddNewPath)
+        self.add_file_btn = ttk.Button(right_frame,text=_("Add File..."),command=self.AddNewFilePath)
         self.add_file_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
         
         right_frame.pack(side=tk.LEFT,fill="y")
@@ -59,10 +60,9 @@ class InternalPathPage(ttk.Frame):
             item = self.tree_ctrl.AppendItem(self.tree_ctrl.GetRootItem(), path)
             self.tree_ctrl.SetItemImage(item,self.FolderIdx,wx.TreeItemIcon_Normal)
 
-    def AddNewFilePath(self,event):
-        
-        dlg = ProjectDialog.SelectModuleFileDialog(self,-1,_("Select Zip/Egg/Wheel File"),self.current_project_document.GetModel(),False,['egg','zip','whl'])
-        if dlg.ShowModal() == wx.ID_OK:
+    def AddNewFilePath(self):
+        dlg = pyutils.SelectModuleFileDialog(self,_("Select Zip/Egg/Wheel File"),self.current_project_document.GetModel(),False,['egg','zip','whl'])
+        if dlg.ShowModal() == constants.ID_OK:
             main_module_path = os.path.join(PythonVariables.FormatVariableName(PythonVariables.PROJECT_DIR_VARIABLE) , self.current_project_document.\
                     GetModel().GetRelativePath(dlg.module_file))
             if self.CheckPathExist(main_module_path):
@@ -70,17 +70,16 @@ class InternalPathPage(ttk.Frame):
             else:
                 item = self.tree_ctrl.AppendItem(self.tree_ctrl.GetRootItem(),main_module_path)
                 self.tree_ctrl.SetItemImage(item,self.FolderIdx,wx.TreeItemIcon_Normal)
-        dlg.Destroy()
         
-    def RemovePath(self,event):
+    def RemovePath(self):
         item = self.tree_ctrl.GetSelection()
         if item is None or not item.IsOk():
             return
         self.tree_ctrl.Delete(item)
         
-    def AddNewPath(self,event):
-        dlg = ProjectDialog.ProjectFolderPathDialog(self,-1,_("Select Internal Path"),self.current_project_document.GetModel())
-        if dlg.ShowModal() == wx.ID_OK:
+    def AddNewPath(self):
+        dlg = pyutils.ProjectFolderPathDialog(self,_("Select Internal Path"),self.current_project_document.GetModel())
+        if dlg.ShowModal() == constants.ID_OK:
             selected_path = dlg.selected_path
             if selected_path is not None:
                 selected_path = os.path.join(PythonVariables.FormatVariableName(PythonVariables.PROJECT_DIR_VARIABLE) , selected_path)
@@ -91,7 +90,6 @@ class InternalPathPage(ttk.Frame):
             else:
                 item = self.tree_ctrl.AppendItem(self.tree_ctrl.GetRootItem(), selected_path)
                 self.tree_ctrl.SetItemImage(item,self.FolderIdx,wx.TreeItemIcon_Normal)
-        dlg.Destroy()
         
     def CheckPathExist(self,path):
         items = []
@@ -139,12 +137,18 @@ class ExternalPathPage(ttk.Frame,pythonpathmixin.PythonpathMixin):
     def GetPythonPathList(self):
         python_path_list = self.GetPathList()
         return python_path_list
+        
+    def destroy(self):
+        if self.menu is not None:
+            self.menu.destroy()
+        self.button_menu.destroy()
+        ttk.Frame.destroy(self)
 
 class EnvironmentPage(ui_utils.BaseEnvironmentUI):
     def __init__(self,parent):
         ui_utils.BaseEnvironmentUI.__init__(self, parent)
       #  self.LoadEnviron()
-     #   self.UpdateUI(None)
+        self.UpdateUI()
         
     def LoadEnviron(self):
         environ = RunConfiguration.ProjectConfiguration.LoadProjectEnviron(self.GetParent().GetParent().ProjectDocument.GetKey())

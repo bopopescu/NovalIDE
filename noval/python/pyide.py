@@ -53,7 +53,6 @@ import noval.python.project.debugrun
 import noval.python.project.pythoninterpreter
 import noval.python.project.pythonpath
 import noval.python.project.projectreferrence
-#import noval.python.project.debugrun
 
 _debugger = None
 
@@ -96,17 +95,35 @@ class PyIDEApplication(ide.IDEApplication):
         preference.PreferenceManager().AddOptionsPanel(preference.INTERPRETER_OPTION_NAME,preference.GENERAL_ITEM_NAME,interpretergerneralconfiguration.InterpreterGeneralConfigurationPanel)
         preference.PreferenceManager().AddOptionsPanel(preference.INTERPRETER_OPTION_NAME,preference.INTERPRETER_CONFIGURATIONS_ITEM_NAME,interpreterconfigruation.InterpreterConfigurationPanel)
         
-        self.AddCommand(constants.ID_START_WITHOUT_DEBUG,_("&Run"),_("&Start Without Debugging"),self.OnUnittestDlg,default_tester=True,default_command=True)
+        self.AddCommand(constants.ID_START_WITHOUT_DEBUG,_("&Run"),_("&Start Without Debugging"),self.RunWithoutDebug,default_tester=True,default_command=True)
 
-        self.AddCommand(constants.ID_SET_EXCEPTION_BREAKPOINT,_("&Run"),_("&Exceptions..."),self.OnUnittestDlg,default_tester=True,default_command=True,add_separator=True)
-        self.AddCommand(constants.ID_STEP_INTO,_("&Run"),_("&Step Into"),self.OnUnittestDlg,default_tester=True,default_command=True,image=self.GetImage('python/debugger/step_into.png'))
-        self.AddCommand(constants.ID_STEP_NEXT,_("&Run"),_("&Step Over"),self.OnUnittestDlg,default_tester=True,default_command=True,add_separator=True,image=self.GetImage('python/debugger/step_next.png'))
+        self.AddCommand(constants.ID_SET_EXCEPTION_BREAKPOINT,_("&Run"),_("&Exceptions..."),self.SetExceptionBreakPoint,default_tester=True,default_command=True,add_separator=True)
+        self.AddCommand(constants.ID_STEP_INTO,_("&Run"),_("&Step Into"),self.StepInto,default_tester=True,default_command=True,image=self.GetImage('python/debugger/step_into.png'))
+        self.AddCommand(constants.ID_STEP_NEXT,_("&Run"),_("&Step Over"),self.StepNext,default_tester=True,default_command=True,add_separator=True,image=self.GetImage('python/debugger/step_next.png'))
 
-        self.AddCommand(constants.ID_CHECK_SYNTAX,_("&Run"),_("&Check Syntax..."),self.OnUnittestDlg,default_tester=True,default_command=True)
-        self.AddCommand(constants.ID_SET_PARAMETER_ENVIRONMENT,_("&Run"),_("&Set Parameter And Environment"),self.OnUnittestDlg,default_tester=True,default_command=True,image=self.GetImage('python/debugger/runconfig.png'))
+        self.AddCommand(constants.ID_CHECK_SYNTAX,_("&Run"),_("&Check Syntax..."),self.CheckSyntax,default_tester=True,default_command=True)
+        self.AddCommand(constants.ID_SET_PARAMETER_ENVIRONMENT,_("&Run"),_("&Set Parameter And Environment"),self.SetParameterEnvironment,default_tester=True,default_command=True,image=self.GetImage('python/debugger/runconfig.png'))
         self.AddCommand(constants.ID_RUN_LAST,_("&Run"),_("&Run Using Last Settings"),self.OnUnittestDlg,default_tester=True,default_command=True)
         self.AddCommand(constants.ID_DEBUG_LAST,_("&Run"),_("&Debug Using Last Settings"),self.OnUnittestDlg,default_tester=True,default_command=True)     
         return True
+        
+    @ui_utils.no_implemented_yet
+    def SetExceptionBreakPoint(self):
+        pass
+        
+    @ui_utils.no_implemented_yet
+    def StepNext(self):
+        pass
+        
+    @ui_utils.no_implemented_yet
+    def StepInto(self):
+        pass
+
+    def CheckSyntax(self):
+        _debugger.CheckScript()
+        
+    def SetParameterEnvironment(self):
+        _debugger.SetParameterAndEnvironment()
         
     @misc.update_toolbar
     def LoadDefaultInterpreter(self):
@@ -288,6 +305,9 @@ class PyIDEApplication(ide.IDEApplication):
         
     def DebugRun(self):
         _debugger.DebugRun()
+
+    def RunWithoutDebug(self):
+        _debugger.OnRunWithoutDebug()
         
     def GetDebugger(self):
         global _debugger
@@ -315,14 +335,19 @@ class PyIDEApplication(ide.IDEApplication):
         return False
         
     def UpdateUI(self,command_id):
+        current_project = self.MainFrame.GetProjectView(False).GetCurrentProject()
         current_interpreter = self.GetCurrentInterpreter()
+        builtin_item_ids = [constants.ID_RUN,constants.ID_SET_EXCEPTION_BREAKPOINT,constants.ID_STEP_INTO,constants.ID_STEP_NEXT,constants.ID_RUN_LAST]
+        all_item_ids = builtin_item_ids + [constants.ID_SET_PARAMETER_ENVIRONMENT,constants.ID_DEBUG_LAST,constants.ID_START_WITHOUT_DEBUG]
         #使用内建解释器时,禁止运行按钮和菜单
-        if command_id == constants.ID_RUN:
+        if command_id in builtin_item_ids:
             if current_interpreter is None or current_interpreter.IsBuiltIn:
                 return False
-        elif command_id == constants.ID_DEBUG:
+        elif command_id in all_item_ids:
             if current_interpreter is None:
                 return False
-
+        if current_project is not None:
+            if command_id in all_item_ids:
+                return True
         return ide.IDEApplication.UpdateUI(self,command_id)
             

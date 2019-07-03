@@ -205,7 +205,7 @@ def clam():
         "TButton": {
             "configure": {
                 "anchor": "center",
-                "width": scale(11),
+                "width": scale(-15),
                 "padding": scale(5),
                 "relief": "raised",
             },
@@ -364,7 +364,7 @@ def xpnative():
         "TButton": {
             "configure": {
                 "anchor": "center",
-                "width": scale(11),
+                "width": scale(-15),
                 "padding": [scale(1), scale(1)],
             }
         },
@@ -649,6 +649,13 @@ def load_plugin():
 
     if consts.AQUA_UI_THEME_NAME in original_themes:
         GetApp().add_ui_theme("Kind of Aqua", consts.AQUA_UI_THEME_NAME, enhanced_aqua)
+
+    if consts.WINDOWS_UI_THEME_NAME in GetApp().get_usable_ui_theme_names():
+        default_ui_theme = consts.WINDOWS_UI_THEME_NAME
+
+    elif consts.ENHANCED_CLAM_UI_THEME_NAME in GetApp().get_usable_ui_theme_names():
+        default_ui_theme = consts.ENHANCED_CLAM_UI_THEME_NAME
+    GetApp().theme_value.set(default_ui_theme)
         
 class BaseUIThemeLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)

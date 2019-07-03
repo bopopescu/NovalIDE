@@ -1,4 +1,4 @@
-from noval import NewId,_
+from noval import NewId,_,GetApp
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox,filedialog
@@ -43,13 +43,8 @@ NO_FLAG = "No"
 class NewVirtualEnvProgressDialog(ui_base.GenericProgressDialog):
     
     def __init__(self,parent):
-        wx.ProgressDialog.__init__(self,_("New Virtual Env"),
-                               _("Please wait a minute for end New Virtual Env"),
-                               maximum = 100,
-                               parent = parent,
-                               style = 0
-                                | wx.PD_APP_MODAL
-                                | wx.PD_SMOOTH
+        ui_base.GenericProgressDialog.__init__(self,parent,_("New Virtual Env"),
+                               mode="indeterminate",info=_("Please wait a minute for end New Virtual Env")
                                 )
         self.KeepGoing = True
         self.msg = ""
@@ -62,7 +57,8 @@ class NewVirtualEnvDialog(ui_base.CommonModaldialog):
         ui_base.CommonModaldialog.__init__(self,parent)
         self.title(title)
         self.main_frame.columnconfigure(1, weight=1)
-        
+        self._interpreter = interpreter
+        self._interpreters = []
         ttk.Label(self.main_frame, text=_("Name:")).grid(row=0,column=0,sticky=tk.NSEW,padx=consts.DEFAUT_CONTRL_PAD_X, pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         self.name_var = tk.StringVar()
         name_ctrl = ttk.Entry(self.main_frame,textvariable=self.name_var)
@@ -72,63 +68,55 @@ class NewVirtualEnvDialog(ui_base.CommonModaldialog):
         path_ctrl = ttk.Entry(self.main_frame,textvariable=self.path_var)
         path_ctrl.grid(row=1,column=1,sticky=tk.NSEW,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         misc.create_tooltip(path_ctrl,_("set the location of virtual env"))
-        browser_btn = ttk.Button(self.main_frame, text= "...",command=self.ChooseVirtualEnvPath)
+        browser_btn = ttk.Button(self.main_frame, text= "...",command=self.ChooseVirtualEnvPath,width=5)
         browser_btn.grid(row=1,column=2,sticky=tk.NSEW,padx=consts.DEFAUT_CONTRL_PAD_X, pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-        interprterChoice = ttk.Combobox(self.main_frame,values = self.GetChoices(),state="readonly")
+        values,index = self.GetChoices()
+        self._interprterChoice = ttk.Combobox(self.main_frame,values = values,state="readonly")
+        if index != -1:
+            self._interprterChoice.current(index)
         ttk.Label(self.main_frame, text= _("Base Interpreter:")).grid(row=2,column=0,sticky=tk.NSEW,padx=consts.DEFAUT_CONTRL_PAD_X, pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-        interprterChoice.grid(row=2,column=1,sticky=tk.NSEW, pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-        includeSitePackgaes = ttk.Checkbutton(self.main_frame, text=_("Inherited system site-packages from base interpreter"))
+        self._interprterChoice.grid(row=2,column=1,sticky=tk.NSEW, pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        self.includeSitePackgaes_var = tk.IntVar(value=0)
+        includeSitePackgaes = ttk.Checkbutton(self.main_frame, text=_("Inherited system site-packages from base interpreter"),variable=self.includeSitePackgaes_var)
         includeSitePackgaes.grid(row=3,column=0,sticky=tk.NSEW,columnspan=2,padx=consts.DEFAUT_CONTRL_PAD_X, pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
 
         bottom_frame = ttk.Frame(self.main_frame)
         bottom_frame.grid(row=4,column=0,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),columnspan=3)
         self.AppendokcancelButton(bottom_frame)
-
-        self._interpreter = interpreter
-     #   self.LoadInterpreters()
        
     def GetChoices(self):
         choices = []
-        for i,interpreter in enumerate(interpretermanager.InterpreterManager.interpreters):
-            display_name = "%s (%s)" % (interpreter.Version,interpreter.Path)
-            choices.append(display_name)
-        return choices
-        
-    def LoadInterpreters(self):
-        self._interprterChoice.Clear()
-        interpreter_image_path = os.path.join(sysutils.mainModuleDir, "noval", "tool", "bmp_source", "python_nature.png")
-        interpreter_image = wx.Image(interpreter_image_path,wx.BITMAP_TYPE_ANY)
-        interpreter_bmp = wx.BitmapFromImage(interpreter_image)
+        index = -1
         i = 0
         for interpreter in interpretermanager.InterpreterManager.interpreters:
             if interpreter.IsBuiltIn:
                 continue
             display_name = "%s (%s)" % (interpreter.Version,interpreter.Path)
-            self._interprterChoice.Append(display_name,interpreter_bmp,interpreter.Path)
+            if utils.is_py2():
+                display_name = display_name.decode(utils.get_default_encoding())
+            choices.append(display_name)
             if interpreter.Path == self._interpreter.Path:
-                self._interprterChoice.SetSelection(i)
+                index = i
             i += 1
+            self._interpreters.append(interpreter)
+        return choices,index
         
-    def ChooseVirtualEnvPath(self,event):
-        dlg = wx.DirDialog(wx.GetApp().GetTopWindow(),
-                _("Choose the location of Virtual Env"), 
-                style=wx.DD_DEFAULT_STYLE|wx.DD_NEW_DIR_BUTTON)
-        if dlg.ShowModal() != wx.ID_OK:
-            dlg.Destroy()
+    def ChooseVirtualEnvPath(self):                
+        path = filedialog.askdirectory(title=_("Choose the location of Virtual Env"))
+        if not path:
             return
-        path = dlg.GetPath()
-        self.path_ctrl.SetValue(path)
+        self.path_var.set(fileutils.opj(path))
         
-    def OnOKClick(self, event):
-        name = self.name_ctrl.GetValue().strip()
-        location = self.path_ctrl.GetValue().strip()
+    def _ok(self):
+        name = self.name_var.get().strip()
+        location = self.path_var.get().strip()
         if name == "":
-            wx.MessageBox(_("name cann't be empty"))
+            messagebox.showinfo(GetApp().GetAppName(),_("name cann't be empty"))
             return
         if location == "":
-            wx.MessageBox(_("location cann't be empty"))
+            messagebox.showinfo(GetApp().GetAppName(),_("location cann't be empty"))
             return
-        self.EndModal(wx.ID_OK)
+        ui_base.CommonModaldialog._ok(self)
 
 class AddInterpreterDialog(ui_base.CommonModaldialog):
     def __init__(self,parent,title,id_modify_dlg=False):
@@ -188,34 +176,34 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
     def __init__(self,parent):
         ui_utils.BaseConfigurationPanel.__init__(self, parent)
         interpreter_staticText = ttk.Label(self, text=_("Python interpreters(eg.:such as python.exe, pythonw.exe). Double or right click to rename."))
-        interpreter_staticText.grid(row=0, column=0, sticky=tk.NSEW,padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        interpreter_staticText.pack(fill="x",padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        row = ttk.Frame(self)
         columns = ['id','Name','Version','Path','Default']
-        self.listview = treeviewframe.TreeViewFrame(self, columns=columns,displaycolumns=(1,2,3,4),show="headings",height=8)
+        self.listview = treeviewframe.TreeViewFrame(row, columns=columns,displaycolumns=(1,2,3,4),show="headings",height=7,borderwidth=1,relief="solid")
         self.listview.tree.bind("<<TreeviewSelect>>", self.on_select, "+")
         self.listview.tree.bind("<Double-Button-1>", self.ModifyInterpreterNameDlg, "+")
         self.listview.tree.bind("<3>", self.OnContextMenu, True)
-        self.listview.grid(row=1, column=0, sticky=tk.NSEW,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+        self.listview.pack(side=tk.LEFT,fill="x",expand=1,padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0),pady=(0,consts.DEFAUT_HALF_CONTRL_PAD_Y))
         for column in columns[1:]:
             self.listview.tree.heading(column, text=_(column))
         self.listview.tree.column('1',width=100,anchor='w')
         self.listview.tree.column('2',width=70,anchor='w')
         self.listview.tree.column('4',width=70,anchor='w')
 
-        # set single-cell frame
-        self.columnconfigure(0, weight=1)
-        right_frame = ttk.Frame(self)
+        right_frame = ttk.Frame(row)
         add_btn = ttk.Button(right_frame, text=_("Add"),command=self.AddInterpreter)
-        add_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y*3,consts.DEFAUT_HALF_CONTRL_PAD_Y))
+        add_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(0,consts.DEFAUT_HALF_CONTRL_PAD_Y))
         self.remove_btn = ttk.Button(right_frame, text=_("Remove"),command=self.RemoveInterpreter)
         self.remove_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))    
         self.smart_analyse_btn = ttk.Button(right_frame, text=_("Smart Analyse"),command=self.SmartAnalyseIntreprter)
         self.smart_analyse_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
         self.set_default_btn = ttk.Button(right_frame,text=_("Set Default"),command=self.SetDefaultInterpreter)
         self.set_default_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
-        right_frame.grid(row=0, column=1, rowspan=2,sticky=tk.NSEW)
+        right_frame.pack(side=tk.LEFT,fill="y")
+        
+        row.pack(fill="x")
         nb = ttk.Notebook(self)
-        nb.grid(row=2, column=0, columnspan=2,sticky=tk.NSEW,padx=(consts.DEFAUT_CONTRL_PAD_X,0))
-        self.rowconfigure(2, weight=1)
+        nb.pack(fill="both",expand=1,padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0))
         
         self.package_icon = imageutils.load_image("","project/python/package_obj.gif")
 
@@ -249,6 +237,11 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
             self.menu.Append(ID_GOTO_INTERPRETER_PATH,_("Open Path in Explorer"),handler=lambda:self.ProcessEvent(ID_GOTO_INTERPRETER_PATH))
         self.menu.tk_popup(event.x_root, event.y_root)
         
+    def destroy(self):
+        if self.menu is not None:
+            self.menu.destroy()
+        ui_utils.BaseConfigurationPanel.destroy(self)
+        
     def ProcessEvent(self,id): 
         selections = self.listview.tree.selection()
         if not selections:
@@ -273,14 +266,12 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
             return True
         elif id == ID_NEW_INTERPRETER_VIRTUALENV:
             dlg = NewVirtualEnvDialog(self,interpreter,_("New Virtual Env"))
-            python_path = dlg._interprterChoice.GetClientData(dlg._interprterChoice.GetSelection())
-            interpreter = interpretermanager.InterpreterManager().GetInterpreterByPath(python_path)
+            interpreter = dlg._interpreters[dlg._interprterChoice.current()]
             status = dlg.ShowModal()
-            if status == wx.ID_OK:
-                name = dlg.name_ctrl.GetValue().strip()
-                location = dlg.path_ctrl.GetValue().strip()
-                include_site_packages = dlg._includeSitePackgaes.GetValue()
-                dlg.Destroy()
+            if status == constants.ID_OK:
+                name = dlg.name_var.get().strip()
+                location = dlg.path_var.get().strip()
+                include_site_packages = dlg.includeSitePackgaes_var.get()
                 progress_dlg = NewVirtualEnvProgressDialog(self)
                 try:
                     self.CreateVirtualEnv(name,location,include_site_packages,interpreter,progress_dlg)
@@ -359,7 +350,7 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
                 command = strutils.emphasis_path(interpreter.GetPipPath()) + " install virtualenv"
             self.ExecCommandAndOutput(command,progress_dlg)
         should_root = not self.IsLocationWritable(location)
-        if not sysutils.isWindows() and should_root:
+        if not sysutils.is_windows() and should_root:
             command = "pkexec " + strutils.emphasis_path(self.GetVirtualEnvPath(interpreter)) + " " + strutils.emphasis_path(location)
         else:
             command = strutils.emphasis_path(self.GetVirtualEnvPath(interpreter)) + " " + strutils.emphasis_path(location)

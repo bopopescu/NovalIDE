@@ -36,6 +36,11 @@ import noval.ui_utils as ui_utils
 #python3的tkinter很好地支持多线程,所有不需要再额外包装
 if utils.is_py2():
     from noval.mttkinter import mtTkinter
+import json
+try:
+    import StringIO
+except:
+    import io as StringIO
 
 TEMPLATE_VISIBLE = 1
 #不可见模板,不会在文件对话框中出现
@@ -82,6 +87,7 @@ class App(tk.Tk):
         self._splash = None
         self.locale = noval.Locale(noval.ui_lang.LANGUAGE_DEFAULT)
         self.frame = None
+        self._clip_board = None
         #是否全屏显示
         self._is_full_screen = False
         #初始化历史文件菜单id列表,文件id的值必须是连续增长的
@@ -369,6 +375,12 @@ class App(tk.Tk):
     @property
     def IsFullScreen(self):
         return self._is_full_screen
+        
+    @property
+    def TheClipboard(self):
+        if self._clip_board is None:
+            self._clip_board = Clipboard()
+        return self._clip_board
         
 class DocManager(object):
 
@@ -2293,8 +2305,85 @@ class DocFrameFileDropTarget(newTkDnD.FileDropTarget):
             if not msgTitle:
                 msgTitle = _("File Error")
             messagebox.showerror(msgTitle,_("Could not open '%s':  %s") % (fileutils.get_filename_from_path(filename), e))
+            
 
+class DataObject(object):
+    
+    def __init__(self,data_type="str"): 
+        self._data_type = data_type
+        self._data = ''
 
+    def SetData(self,data):
+        self._data = data
 
+    def GetData(self):
+        return self._data
         
+    def GetDataSize(self):
+        return len(self._data)
+        
+    @property
+    def RawData(self):
+        return self._data
+        
+    @RawData.setter
+    def RawData(self,data):
+        self._data = data
 
+class JsonDataobject(DataObject):
+    
+    def __init__(self): 
+        DataObject.__init__(self,data_type="json")
+
+    def SetData(self,data):
+        DataObject.SetData(self,json.dumps(data))
+
+    def GetData(self):
+        data = DataObject.GetData(self)
+        d = json.loads(data)
+        return json.loads(data)
+            
+class Clipboard(object):
+    def __init__(self):
+        self._is_opened = False
+        
+    def Open(self):
+        if self._is_opened:
+            return True
+        self.buf = StringIO.StringIO()
+        self._is_opened = True
+        return self._is_opened
+
+    def Close(self):
+        self.buf.close()
+        self._is_opened = False
+
+    def IsOpened(self):
+        return self._is_opened
+
+    def AddData(self,data_ojbect):
+        self.buf.write(data_ojbect.RawData)
+
+    def SetData(self,data_ojbect):
+        self.Clear()
+        self.AddData(data_ojbect)
+
+    def GetData(self,data_ojbect):
+        if not self.buf.getvalue():
+            return False
+        data_ojbect.RawData = self.buf.getvalue()
+        return True
+
+    def Clear(self):
+        self.buf.truncate(0)
+
+    def Flush(self):
+        self.buf.flush()
+
+    def Get(*args, **kwargs):
+        """
+        Get() -> Clipboard
+
+        Returns global instance (wxTheClipboard) of the object.
+        """
+        return _misc_.Clipboard_Get(*args, **kwargs)

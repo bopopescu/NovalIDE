@@ -658,7 +658,7 @@ class BaseProjectbrowser(ttk.Frame):
         menu = tkmenu.PopupMenu(self,**misc.get_style_configuration("Menu"))
         menu["postcommand"] = lambda: menu._update_menu()
         common_item_ids = self.GetPopupFolderItemIds()
-        self.GetCommonItemsMenu(menu,common_item_ids)
+        self.GetCommonItemsMenu(menu,common_item_ids,is_folder=True)
         
         menu.Append(constants.ID_RENAME,_("&Rename"),handler=lambda:self.ProcessEvent(constants.ID_RENAME))
         menu.Append(constants.ID_REMOVE_FROM_PROJECT,_("Remove from Project"),handler=lambda:self.ProcessEvent(constants.ID_REMOVE_FROM_PROJECT))
@@ -692,7 +692,7 @@ class BaseProjectbrowser(ttk.Frame):
             project_item_ids.extend([None, constants.ID_PROPERTIES,constants.ID_OPEN_FOLDER_PATH])
         return project_item_ids
         
-    def GetCommonItemsMenu(self,menu,menu_item_ids):
+    def GetCommonItemsMenu(self,menu,menu_item_ids,is_folder=False):
         for item_id in menu_item_ids:
             if item_id == None:
                 menu.add_separator()
@@ -705,8 +705,15 @@ class BaseProjectbrowser(ttk.Frame):
             #更改编辑菜单的tester命令
             if item_id in [consts.ID_UNDO,consts.ID_REDO]:
                 extra.update(dict(tester=lambda:False))
-            elif item_id in [consts.ID_CUT,consts.ID_COPY,consts.ID_PASTE,consts.ID_CLEAR,consts.ID_SELECTALL]:
+            elif item_id in [consts.ID_CLEAR,consts.ID_SELECTALL]:
                 extra.update(dict(tester=None))
+            elif item_id == consts.ID_PASTE:
+                extra.update(dict(tester=self.GetView().CanPaste))
+            elif item_id in [consts.ID_CUT,consts.ID_COPY]:
+                if is_folder:
+                    extra.update(dict(tester=lambda:False))
+                else:
+                    extra.update(dict(tester=None))
             if handler == None:
                 def common_handler(id=item_id):
                     self.ProcessEvent(id)
@@ -760,9 +767,6 @@ class BaseProjectbrowser(ttk.Frame):
         elif id == constants.ID_PROPERTIES:
             self.OnProperties()
             return True
-   #     elif id == constants.ID_PROJECT_PROPERTIES:
-    #        self.OnProjectProperties()
-     #       return True
         elif id == constants.ID_IMPORT_FILES:
             self.ImportFilesToProject(event)
             return True
@@ -797,7 +801,6 @@ class BaseProjectbrowser(ttk.Frame):
         
     def OpenPromptPath(self):
         document = self.GetCurrentProject()
-        project_path = os.path.dirname(document.GetFilename())
         item = self.tree.GetSingleSelectItem()
         filePath = self.GetItemPath(item)
         if self.GetView()._IsItemFile(item):
@@ -806,7 +809,6 @@ class BaseProjectbrowser(ttk.Frame):
             
     def CopyPath(self):
         document = self.GetCurrentProject()
-        project_path = os.path.dirname(document.GetFilename())
         item = self.tree.GetSingleSelectItem()
         filePath = self.GetItemPath(item)
         utils.CopyToClipboard(filePath)

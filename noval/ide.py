@@ -84,8 +84,8 @@ class IDEApplication(core.App):
         self._open_project_path = None
         self.frame = None           
         self._pluginmgr = None  
-        self._init_theming()
         self._config = utils.Config(self.GetAppName())
+        self._init_theming()
         #设置窗体大小
         self.geometry(
             "{0}x{1}+{2}+{3}".format(
@@ -197,6 +197,7 @@ class IDEApplication(core.App):
         #在插件初始化完后才创建项目菜单和外观菜单
         self.MainFrame.GetProjectView()._InitCommands()
         self.InitThemeMenu()
+        self.load_themes()
         
     def AppendDefaultCommand(self,command_id):
         self._default_command_ids.append(command_id)
@@ -658,7 +659,7 @@ class IDEApplication(core.App):
         #先查询是否允许关闭所有窗口
         if not self.MainFrame.CloseWindows():
             return False
-        if not self.GetDocumentManager().Clear():
+        if not self.GetDocumentManager().Clear(force=False):
             return False
             
     ##    self.MainFrame.destroy()
@@ -765,15 +766,13 @@ class IDEApplication(core.App):
             {}
         )  # type: Dict[str, Tuple[Optional[str], FlexibleSyntaxThemeSettings]] # value is (parent, settings)
         # following will be overwritten by plugins.base_themes
-       # self.set_default(
-        #    "view.ui_theme", "xpnative" if running_on_windows() else "clam"
-        #)
-        #self.set_default(
-         #   "view.ui_theme", "xpnative" if running_on_windows() else "clam"
-        #)
-        
+        default_ui_theme = utils.profile_get('APPLICATION_LOOK',"xpnative" if utils.is_windows() else "clam")
         self.theme_value = tk.StringVar()
-        self.theme_value.set(consts.WINDOWS_UI_THEME_NAME)
+        self.theme_value.set(default_ui_theme)
+        
+    def load_themes(self):
+        self._apply_ui_theme(self.theme_value.get())
+      #  self._apply_syntax_theme(self.get_option("view.syntax_theme"))
 
     def _register_ui_theme_as_tk_theme(self, name):
         # collect settings from all ancestors
@@ -816,7 +815,7 @@ class IDEApplication(core.App):
 
     def _apply_ui_theme(self, name):
         self._current_theme_name = name
-        print (name,self._style.theme_names(),self._style.theme_use())
+        print (name,self._style.theme_names(),self._style.theme_use(),self._style.configure("TButton"))
         if name not in self._style.theme_names():
             self._register_ui_theme_as_tk_theme(name)
 
@@ -868,7 +867,7 @@ class IDEApplication(core.App):
         os.startfile(UserDataDb.HOST_SERVER_ADDR)
         
     def GetInterpreterManager(self):
-        return InterpreterManager.InterpreterManager()
+        return interpretermanager.InterpreterManager()
         
     def OnOptions(self):
         preference_dlg = preference.PreferenceDialog(self)

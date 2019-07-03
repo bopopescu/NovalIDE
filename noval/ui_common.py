@@ -320,7 +320,7 @@ class AutoScrollbar(ui_base.SafeScrollbar):
 
 class PromptmessageBox(tk.Toplevel):
     def __init__(self,parent,title,msg):
-        tk.Toplevel.__init__(self, master, takefocus=1, background="pink")
+        tk.Toplevel.__init__(self, master, takefocus=1)
         self.title(title)
         self.label_ctrl = ttk.Label(self,text=msg)
         self.label_ctrl.pack(fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X, consts.DEFAUT_CONTRL_PAD_X), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
@@ -360,9 +360,12 @@ class PromptmessageBox(tk.Toplevel):
         self.destroy()
 
 def ShowInterpreterConfigurationPage():
+    interpreter_changed = False
     preference_dlg = preference.PreferenceDialog(GetApp().GetTopWindow(),selection=preference.GetOptionName(preference.INTERPRETER_OPTION_NAME,preference.INTERPRETER_CONFIGURATIONS_ITEM_NAME))
     if preference_dlg.ShowModal() == constants.ID_OK:
         GetApp().AddInterpreters()
+        interpreter_changed = True
     else:
         GetApp().SetCurrentInterpreter()
+    return interpreter_changed
     

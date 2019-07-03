@@ -10,6 +10,7 @@ import noval.project.resource as proejctresource
 import noval.util.singleton as singleton
 import noval.consts as consts
 import noval.ui_base as ui_base
+import noval.ttkwidgets.treeviewframe as treeviewframe
 
 RESOURCE_ITEM_NAME = "Resource"
 
@@ -82,7 +83,7 @@ class PropertyDialog(ui_base.CommonModaldialog):
     A default options dialog used by the OptionsService that hosts a notebook
     tab of options panels.
     """
-    PANEL_WIDITH = 750
+    PANEL_WIDITH = 800
     PANEL_HEIGHT = 500
 
     def __init__(self, master, title,selected_item,option_pages,option_name=None):#item_type
@@ -90,7 +91,7 @@ class PropertyDialog(ui_base.CommonModaldialog):
         Initializes the options dialog with a notebook page that contains new
         instances of the passed optionsPanelClasses.
         """
-        ui_base.CommonModaldialog.__init__(self, master, takefocus=1, background="pink")
+        ui_base.CommonModaldialog.__init__(self, master, takefocus=1)
         self.geometry("%dx%d" % (self.PANEL_WIDITH,self.PANEL_HEIGHT))
         self.title(title)
         self._optionsPanels = {}
@@ -103,9 +104,11 @@ class PropertyDialog(ui_base.CommonModaldialog):
 
         sizer_frame = ttk.Frame(top_frame)
         sizer_frame.pack(side=tk.LEFT,fill="y")
-        #设置path列存储模板路径,并隐藏改列 
-        self.tree = ttk.Treeview(sizer_frame)
-        self.tree.pack(side=tk.LEFT,fill="both",expand=1,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        
+        #设置path列存储模板路径,并隐藏改列
+        treeview = treeviewframe.TreeViewFrame(sizer_frame,show_scrollbar=False,borderwidth=1,relief="solid")
+        self.tree = treeview.tree
+        treeview.pack(side=tk.LEFT,fill="both",expand=1,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         self.tree.bind("<<TreeviewSelect>>", self.DoSelection, True)
      
         # configure the only tree column

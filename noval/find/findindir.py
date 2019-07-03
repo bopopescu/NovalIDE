@@ -389,7 +389,7 @@ class FindIndirService:
 class FindIndirDialog(ui_base.CommonModaldialog):
     
     def __init__(self, master,findString=''):
-        ui_base.CommonModaldialog.__init__(self, master, takefocus=1, background="pink")
+        ui_base.CommonModaldialog.__init__(self, master, takefocus=1)
         self.title(_("Find in Directory"))
         self.resizable(height=tk.FALSE, width=tk.FALSE)
         self.default_extentsion = "." + syntax.SyntaxThemeManager().GetLexer(GetApp().GetDefaultLangId()).GetDefaultExt()
@@ -541,7 +541,7 @@ class SearchProgressDialog(ui_base.GenericProgressDialog):
 class FindInfileDialog(ui_base.CommonModaldialog):
     
     def __init__(self, master,findString = ""):
-        ui_base.CommonModaldialog.__init__(self, master, takefocus=1, background="pink")
+        ui_base.CommonModaldialog.__init__(self, master, takefocus=1)
         self.UpdateTitle()
         self.resizable(height=tk.FALSE, width=tk.FALSE)
         sizer_frame = ttk.Frame(self)

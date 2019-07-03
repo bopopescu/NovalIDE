@@ -8,6 +8,7 @@ import binascii
 from Crypto.Cipher import PKCS1_v1_5
 from dummy.userdb import UserDataDb
 import os
+import noval.util.urlutils as urlutils
 
 receive_list = ['kan.wu@genetalks.com']
 
@@ -24,7 +25,7 @@ class RsaCrypto():
         return data
         
 def get_priviate_key_path():
-    priviate_key_path = os.path.join(utils.GetUserDataPath(),"cache","private_key")
+    priviate_key_path = os.path.join(utils.get_user_data_path(),"cache","private_key")
     return priviate_key_path
             
 def get_mail_credential():
@@ -33,7 +34,7 @@ def get_mail_credential():
     is_private_key_exist = False
     if os.path.exists(priviate_key_path):
         is_private_key_exist = True
-    result = utils.RequestData(api_addr,arg={'is_load_private_key':int(not is_private_key_exist)},to_json=True)
+    result = urlutils.RequestData(api_addr,arg={'is_load_private_key':int(not is_private_key_exist)},to_json=True)
     if result is None:
         wx.MessageBox(_("could not connect to server"),style=wx.OK|wx.ICON_ERROR)
         return None,-1,None,None,None,False
@@ -43,7 +44,7 @@ def get_mail_credential():
             f.write(private_key)
     return result['sender'],int(result['port']),result['smtpserver'],result['user'],result['password'],False
     
-def send_mail(subject,content):
+def send_mail(subject,content,attach_files=[]):
 
     sender,port,smtpserver,username,encrypt_password,use_tls = get_mail_credential()
     if sender is None:
@@ -59,9 +60,10 @@ def send_mail(subject,content):
     msg['From'] =  'NovalIDE'
     msg['To'] = ";".join(receive_list)
     
-    #log_attach = MIMEApplication(open(file_name, 'rb').read())
-   # log_attach.add_header('Content-Disposition', 'attachment', filename=os.path.basename(file_name))
-    #msg.attach(log_attach)
+    for attach_file in attach_files:
+        attach_obj = MIMEApplication(open(attach_file, 'rb').read())
+        attach_obj.add_header('Content-Disposition', 'attachment', filename=os.path.basename(attach_file))
+        msg.attach(attach_obj)
 
     smtp = smtplib.SMTP()
     smtp.connect(smtpserver,port=port)
@@ -70,5 +72,5 @@ def send_mail(subject,content):
     smtp.login(username, password)
     smtp.sendmail(sender, receive_list, msg.as_string())
     smtp.quit()
-    utils.GetLogger().info('send mail success')
+    utils.get_logger().info('send mail success')
     return True

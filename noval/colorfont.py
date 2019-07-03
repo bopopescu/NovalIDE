@@ -14,11 +14,12 @@ import noval.editor.text as texteditor
 from noval.editor.code import CodeCtrl
 from tkinter import font as tk_font
 import noval.ui_utils as ui_utils
+import noval.ttkwidgets.textframe as textframe
 
 class CodeSampleCtrl(CodeCtrl):
     
     def __init__(self, parent,**kw):
-        CodeCtrl.__init__(self, parent,font="EditorFont",borderwidth=1,read_only=True,**kw)
+        CodeCtrl.__init__(self, parent,font="EditorFont",read_only=True,height=10,**kw)
         self._lexer = None
         
     def on_secondary_click(self, event=None):
@@ -96,9 +97,10 @@ class ColorFontOptionsPanel(ui_utils.BaseConfigurationPanel):
         row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_HALF_CONTRL_PAD_Y))
 
         #默认文本控件高度超过面板高度了,这里指定一个小的高度,下面设置控件铺满面板
-        self.code_sample_ctrl = CodeSampleCtrl(self,height=10)
-        self.code_sample_ctrl.pack(fill="both",expand=1,padx=consts.DEFAUT_CONTRL_PAD_X)
-                self.OnSelectLexer()
+        text_frame = textframe.TextFrame(self,borderwidth=1,relief="solid",text_class=CodeSampleCtrl)
+        self.code_sample_ctrl = text_frame.text
+        text_frame.pack(fill="both",expand=1,padx=consts.DEFAUT_CONTRL_PAD_X)
+        self.OnSelectLexer()
 
     def validateSizeInput(self,contents):
         if not contents.isdigit():
