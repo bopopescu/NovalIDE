@@ -330,12 +330,12 @@ class InterpreterAdmin():
         return False
 
     def AddPythonInterpreter(self,interpreter_path,name):
-        interpreter = Interpreter.PythonInterpreter(name,interpreter_path)
+        interpreter = pythoninterpreter.PythonInterpreter(name,interpreter_path)
         if not interpreter.IsValidInterpreter:
-            raise PromptErrorException(_("%s is not a valid interpreter path") % interpreter_path)
+            raise RuntimeError(_("%s is not a valid interpreter path") % interpreter_path)
         interpreter.Name = name
         if self.CheckInterpreterExist(interpreter):
-            raise PromptErrorException(_("interpreter have already exist"))
+            raise RuntimeError(_("interpreter have already exist"))
         self.interpreters.append(interpreter)
         #first interpreter should be the default interpreter by default
         if 1 == len(self.interpreters):

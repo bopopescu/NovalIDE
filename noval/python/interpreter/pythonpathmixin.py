@@ -72,7 +72,7 @@ class PythonpathMixin:
 
     def AddNewPath(self):
         path = filedialog.askdirectory(title=_("Choose a directory to Add"))
-        self.AddPath(path)
+        self.AddPath(fileutils.opj(path))
         
     def AddPath(self,path):
         if self.CheckPathExist(path):
@@ -128,8 +128,8 @@ class PythonpathMixin:
         selections = self.treeview.tree.selection()
         if not selections:
             return
-        item = selections[0]
-        self.treeview.tree.delete(item)
+        for item in selections:
+            self.treeview.tree.delete(item)
 
     def ConvertPath(self,path):
         sys_encoding = locale.getdefaultlocale()[1]

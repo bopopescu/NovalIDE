@@ -9,9 +9,9 @@
 # Copyright:   (c) wukan 2019
 # Licence:     GPL-3.0
 #-------------------------------------------------------------------------------
-from noval import _,Locale
+from noval import _,Locale,GetApp
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk,messagebox
 import noval.util.apputils as apputils
 import glob
 import os
@@ -110,7 +110,8 @@ class GeneralOptionPanel(ui_utils.BaseConfigurationPanel):
         except RuntimeError as e:
             utils.get_logger().error(e)
             lang = ""
-        self.language_combox = ttk.Combobox(row,text=lang,value=values,state="readonly")
+        self.language_var = tk.StringVar(value=lang)
+        self.language_combox = ttk.Combobox(row,textvariable=self.language_var,values=values,state="readonly")
         ttk.Label(row, text=_("Language") + u": ").pack(side=tk.LEFT,fill="x")
         self.language_combox.pack(side=tk.LEFT,fill="x")
         row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
@@ -142,24 +143,34 @@ class GeneralOptionPanel(ui_utils.BaseConfigurationPanel):
         else:
             self.mru_ctrl["state"] = tk.DISABLED
 
+    def GetLangId(self):
+        current = self.language_combox.current()
+        if current == -1:
+            return -1
+        for i,lang in enumerate(self.lang_list):
+            if i == current:
+                return lang[1]
+
     def OnOK(self, optionsDialog):
         """
         Updates the config based on the selections in the options panel.
         """
-        config = wx.ConfigBase_Get()
-        config.WriteInt("ShowTipAtStartup", self._showTipsCheckBox.GetValue())
-        config.WriteInt(consts.CHECK_UPDATE_ATSTARTUP_KEY, self._chkUpdateCheckBox.GetValue())
-        if self.language_combox.GetValue() != config.Read("Language",""):
-            wx.MessageBox(_("Language changes will not appear until the application is restarted."),
-              _("Language Options"),
-              wx.OK | wx.ICON_INFORMATION,
-              self.GetParent())
-        config.Write("Language",self.language_combox.GetValue())
-        config.Write(consts.MRU_LENGTH_KEY,self._mru_ctrl.GetValue())
-        config.WriteInt(consts.ENABLE_MRU_KEY,self._enableMRUCheckBox.GetValue())
-        
+        if self.enablemru_var.get() and self.mru_var.get() > consts.MAX_MRU_FILE_LIMIT:
+            messagebox.showerror(GetApp().GetAppName(),_("MRU Length must not be greater than %d"%consts.MAX_MRU_FILE_LIMIT),parent=self)
+            return False
+            
+        if self.enablemru_var.get() and self.mru_var.get() < 1:
+            messagebox.showerror(GetApp().GetAppName(),_("MRU Length must not be less than 1"),parent=self)
+            return False
+            
+       # utils.WriteInt("ShowTipAtStartup", self._showTipsCheckBox.GetValue())
+        utils.profile_set(consts.CHECK_UPDATE_ATSTARTUP_KEY, self.checkupdate_var.get())
+        if self.GetLangId() != utils.profile_get_int(consts.LANGUANGE_ID_KEY,-1):
+            messagebox.showinfo(_("Language Options"),_("Language changes will not appear until the application is restarted."),parent=self)
+            utils.profile_set(consts.LANGUANGE_ID_KEY,self.GetLangId())
+        utils.profile_set(consts.MRU_LENGTH_KEY,self.mru_var.get())
+        utils.profile_set(consts.ENABLE_MRU_KEY,self.enablemru_var.get())
         return True
-
 
     def GetIcon(self):
         """ Return icon for options panel on the Mac. """

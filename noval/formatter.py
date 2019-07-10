@@ -2,7 +2,6 @@ import noval.syntax.lang as lang
 
 class Formatter(object):
     """description of class"""
-    
 
     def IsFormatterEnable(self,editor):
         if editor is None:
@@ -15,6 +14,10 @@ class Formatter(object):
     def UncommentRegion(self,editor):
         editor.GetView().uncomment_region()
 
-
+    def IndentRegion(self,editor):
+        editor.GetView().GetCtrl().indent_region()
+    
+    def DedentRegion(self,editor):
+        editor.GetView().GetCtrl().dedent_region()
 
 formatter = Formatter()

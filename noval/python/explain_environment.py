@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import platform
 import sys
 import os
@@ -53,11 +54,17 @@ def is_virtual_exe(p):
     
 def get_targets(prefix):
     targets = []
+    target_paths = []
     for suffix in ["", "3", "3.5", "3.6", "3.7", "3.8"]:
         cmd = prefix + suffix
         target = which(cmd)
         if target is not None:
-            targets.append((cmd,target),)
+            real_path = equivalent_realpath(target)
+            #在Linux系统上python使用快捷方式指向的路径有可能是同一个python路径,故需要获取快捷方式指向的实际路径
+            #并且除去重复的路径
+            if real_path not in target_paths:
+                targets.append((cmd,target),)
+                target_paths.append(real_path)
     return targets
 
 def list_commands(prefix, highlighted_reals, highlighted_dirs):

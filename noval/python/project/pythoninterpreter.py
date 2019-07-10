@@ -34,7 +34,7 @@ class PythonInterpreterPanel(ui_utils.BaseConfigurationPanel):
          #   self.interpreterCombo.SetValue(project_interpreter_name)
         
     def OnOK(self,optionsDialog):
-        utils.ProfileSet(self.ProjectDocument.GetKey() + "/Interpreter",self.GetInterpreterName())
+        utils.profile_set(self._current_project.GetKey() + "/Interpreter",self.GetInterpreter().Name)
         return True
         
     def GotoInterpreterConfiguration(self,event):
@@ -46,8 +46,8 @@ class PythonInterpreterPanel(ui_utils.BaseConfigurationPanel):
             self.interpreterCombo.InsertItems(choices,0)
             self.interpreterCombo.SetSelection(default_selection)
 
-    def GetInterpreterName(self):
-        return self.interpreterCombo.GetValue()
+    def GetInterpreter(self):
+        return interpretermanager.InterpreterManager().interpreters[self.interpreterCombo.current()]
 
 
 class PythonInterpreterPageLoader(plugin.Plugin):

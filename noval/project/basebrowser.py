@@ -44,19 +44,6 @@ class EntryPopup(tk.Entry):
         # returns 'break' to interrupt default key-bindings
         return 'break'
 
-def AddProjectMapping(doc, projectDoc=None, hint=None):
-    project_view = GetApp().MainFrame.GetProjectView()
-    if not projectDoc:
-        if not hint:
-            hint = doc.GetFilename()
-        projectDocs = project_view.FindProjectByFile(hint)
-        if projectDocs:
-            projectDoc = projectDocs[0]
-            
-    project_view.AddProjectMapping(doc, projectDoc)
-    if hasattr(doc, "GetModel"):
-        project_view.AddProjectMapping(doc.GetModel(), projectDoc)
-
 class ProjectTreeCtrl(ttk.Treeview):
     
     #用来设置粗体节点,粗体节点用来表示项目启动文件
@@ -102,6 +89,8 @@ class ProjectTreeCtrl(ttk.Treeview):
             self.tag_configure(self.NORMAL_TAG, font=consts.TREE_VIEW_FONT)
         
     def GetPyData(self,node):
+        if node is None:
+            return None
         values = self.item(node)["values"]
         if type(values) == str:
             return None
@@ -421,7 +410,7 @@ class BaseProjectbrowser(ttk.Frame):
                 if not docs and filepath.endswith(consts.PROJECT_EXTENSION):  # project already open
                     self.SetProject(filepath)
                 elif docs:
-                    AddProjectMapping(docs[0])
+                    baseviewer.AddProjectMapping(docs[0])
                         
 
         except IOError as e:
@@ -595,7 +584,7 @@ class BaseProjectbrowser(ttk.Frame):
         if not docs:  # project already open
             self.SetProject(project_path)
         elif docs:
-            AddProjectMapping(docs[0])
+            baseviewer.AddProjectMapping(docs[0])
           
     @misc.update_toolbar  
     def CloseProject(self):
@@ -732,7 +721,7 @@ class BaseProjectbrowser(ttk.Frame):
             view.OnAddCurrentFileToProject()
             return True
         elif id == constants.ID_ADD_NEW_FILE:
-            view.OnAddNewFile(event)
+            view.OnAddNewFile()
             return True
         elif id == constants.ID_ADD_FOLDER:
             view.OnAddFolder()

@@ -50,7 +50,7 @@ import noval.util.fileutils as fileutils
 import copy
 import noval.util.appdirs as appdirs
 import noval.util.utils as utils
-#from noval.model import configuration
+import noval.python.project.runconfig as runconfig
 import noval.python.debugger.breakpoints as breakpoints
 import pickle
 import noval.project.baseconfig as baseconfig
@@ -73,6 +73,8 @@ import noval.menu as tkmenu
 import noval.python.project.viewer as projectviewer
 import noval.consts as consts
 import noval.misc as misc
+from noval.python.parser.utils import py_cmp,py_sorted
+import noval.python.pyeditor as pyeditor
 #import sys
 #reload(sys)
 #sys.setdefaultencoding('utf-8')
@@ -193,10 +195,10 @@ class Executor(object):
             return ' \"' + text + '\"'
 
     def OutCall(self, text):
-        GetApp().event_generate(EVT_UPDATE_STDTEXT,value=text)
+        GetApp().event_generate(EVT_UPDATE_STDTEXT,value=text,interface=self._wxComponent)
 
     def ErrCall(self, text):
-        GetApp().event_generate(EVT_UPDATE_ERRTEXT,value=text)
+        GetApp().event_generate(EVT_UPDATE_ERRTEXT,value=text,interface=self._wxComponent)
 
     def Execute(self, arguments, startIn=None, environment=None):
         if not startIn:
@@ -288,7 +290,7 @@ class RunCommandUI(ttk.Frame):
     
     @staticmethod
     def StopAndRemoveAllUI():
-        return Service.ServiceView.RemoveAllPages()
+        return GetApp().GetDebugger().CloseAllPages()
 
     def __init__(self,parent, debugger, fileName,run_parameter):
         ttk.Frame.__init__(self, parent)
@@ -372,8 +374,6 @@ class RunCommandUI(ttk.Frame):
          ###   utils.GetLogger().warn("RunCommandUI object has been deleted, attribute access no longer allowed when finish executor")
             return
         if self._restarted:
-            wx.MilliSleep(250)
-            wx.Yield()
             self.RestartRunProcess()
             self._restarted = False
             
@@ -390,9 +390,15 @@ class RunCommandUI(ttk.Frame):
             self._textCtrl.set_read_only(True)
 
     def AppendText(self, event):
+        if event.get('interface') != self:
+            utils.get_logger().debug('run view interface receive other stdout msg,ignore it')
+            return
         self._textCtrl.AppendText(event.get('value'))
 
     def AppendErrorText(self, event):
+        if event.get('interface') != self:
+            utils.get_logger().debug('run view interface receive other stderr msg,ignore it')
+            return
         self._textCtrl.AppendErrorText(event.get('value'))
 
     def StopAndRemoveUI(self):
@@ -1640,63 +1646,6 @@ class PythonFramesUI(BaseFramesUI):
             tp,val,tb=sys.exc_info()
             return False
 
-
-class DebuggerView:
-
-    #----------------------------------------------------------------------------
-    # Overridden methods
-    #----------------------------------------------------------------------------
-
-    def __init__(self, service):
-        Service.ServiceView.__init__(self, service)
-
-    def _CreateControl(self, parent, id):
-        return None
-
-    #------------------------------------------------------------------------------
-    # Event handling
-    #-----------------------------------------------------------------------------
-
-    def OnToolClicked(self, event):
-        self.GetFrame().ProcessEvent(event)
-
-    #------------------------------------------------------------------------------
-    # Class methods
-    #-----------------------------------------------------------------------------
-
-    def ProcessEvent(self, event):
-        current_page = self.GetCurrentBottomPage()
-        if current_page is None:
-            return False
-        if hasattr(current_page, DEBUGGER_PAGE_COMMON_METHOD):
-            return current_page.ProcessEvent(event)
-        return False
-
-    def ProcessUpdateUIEvent(self, event):
-        current_page = self.GetCurrentBottomPage()
-        if current_page is None:
-            return False
-        if hasattr(current_page, DEBUGGER_PAGE_COMMON_METHOD):
-            return current_page.ProcessUpdateUIEvent(event)
-        return False
-        
-    def GetCurrentBottomPage(self):
-        bottomTab = self._service.GetBottomTab()
-        if bottomTab is None:
-            bottom_pane = self._service.AuiManager.GetAnyPane(aui.AUI_DOCK_BOTTOM)
-            if bottom_pane is None:
-                return None
-            return bottom_pane.window
-            
-        if bottomTab.GetSelection() < 0 or 0 == bottomTab.GetPageCount():
-            utils.GetLogger().debug("current bottom current page count is %d,bottom tab is destroy",bottomTab.GetPageCount())
-            return None
-        current_page = bottomTab.GetPage(bottomTab.GetSelection())
-        return current_page
-        
-    def GetDocument(self):
-        return None
-
 class Interaction:
     def __init__(self, message, framesXML,  info=None, quit=False):
         self._framesXML = framesXML
@@ -2116,6 +2065,14 @@ class Debugger:
         tab_page = self.bottomTab.get_child_by_index(index)
         page = tab_page.winfo_children()[0]
         return page
+
+    def CloseAllPages(self):
+        close_suc = True
+        for i in range(self.bottomTab.GetPageCount()-1, -1, -1): # Go from len-1 to 1
+            page = self.GetBottomtabInstancePage(i)
+            if hasattr(page, 'StopAndRemoveUI'):
+                close_suc = page.StopAndRemoveUI()
+        return close_suc
             
     def create_tab_menu(self):
         """
@@ -2129,10 +2086,7 @@ class Debugger:
                 page.StopAndRemoveUI()
                 
         def close_pages():
-            for i in range(self.bottomTab.GetPageCount()-1, 0, -1): # Go from len-1 to 1
-                page = self.GetBottomtabInstancePage(i)
-                if hasattr(page, 'StopAndRemoveUI'):
-                    page.StopAndRemoveUI()
+            self.CloseAllPages()
                     
         if self._popup_index < 0:
             return
@@ -2148,21 +2102,18 @@ class Debugger:
         self._tabs_menu.tk_popup(*self.bottomTab.winfo_toplevel().winfo_pointerxy())
 
 
-    def OnCloseFrame(self, event):
+    def CloseDebugger(self):
         # IS THIS THE RIGHT PLACE?
         try:
-            config = wx.ConfigBase_Get()
-            config.Write(self.BREAKPOINT_DICT_STRING, pickle.dumps(self._masterBPDict))
-            Watchs.Watch.Dump(self.watchs)
+          #  config = wx.ConfigBase_Get()
+           # config.Write(self.BREAKPOINT_DICT_STRING, pickle.dumps(self._masterBPDict))
+            #Watchs.Watch.Dump(self.watchs)
             if not RunCommandUI.StopAndRemoveAllUI():
                 return False
         except:
             tp,val,tb = sys.exc_info()
             traceback.print_exception(tp, val, tb)
         return True
-
-    def _CreateView(self):
-        return DebuggerView(self)
 
     #----------------------------------------------------------------------------
     # Service specific methods
@@ -2460,21 +2411,19 @@ class Debugger:
         return lastPart
             
     def SaveRunParameter(self,run_parameter):
-        config = wx.ConfigBase_Get()
-        cur_project_document = wx.GetApp().GetService(project.ProjectEditor.ProjectService).GetView().GetDocument()
+        cur_project_document = GetApp().MainFrame.GetProjectView(generate_event=False).GetCurrentProject()
         if cur_project_document is None:
-            project_name = NOT_IN_ANY_PROJECT
-            cur_project_document = project.ProjectEditor.ProjectDocument.GetUnProjectDocument()
+            project_name = consts.NOT_IN_ANY_PROJECT
+            cur_project_document = projectviewer.PythonProjectDocument()
         else:
             project_name = os.path.basename(cur_project_document.GetFilename())
-        config.Write(self.GetKey(cur_project_document,"LastRunProject"), project_name)
-        config.Write(self.GetKey(cur_project_document,"LastRunFile"), run_parameter.FilePath)
+        utils.profile_set(self.GetKey(cur_project_document,"LastRunProject"), project_name)
+        utils.profile_set(self.GetKey(cur_project_document,"LastRunFile"), run_parameter.FilePath)
         # Don't update the arguments or starting directory unless we're runing python.
-        config.Write(self.GetKey(cur_project_document,"LastRunArguments"), run_parameter.Arg)
-        config.Write(self.GetKey(cur_project_document,"LastRunStartIn"), run_parameter.StartupPath)
-        if run_parameter.Environment is not None and PYTHON_PATH_NAME in run_parameter.Environment:
-            config.Write(self.GetKey(cur_project_document,"LastPythonPath"),run_parameter.Environment[PYTHON_PATH_NAME])
-            
+        utils.profile_set(self.GetKey(cur_project_document,"LastRunArguments"), run_parameter.Arg)
+        utils.profile_set(self.GetKey(cur_project_document,"LastRunStartIn"), run_parameter.StartupPath)
+        if run_parameter.Environment is not None and consts.PYTHON_PATH_NAME in run_parameter.Environment:
+            utils.profile_set(self.GetKey(cur_project_document,"LastPythonPath"),run_parameter.Environment[consts.PYTHON_PATH_NAME])
 
         
     def DebugRunBuiltin(self,run_parameter):
@@ -2696,51 +2645,51 @@ class Debugger:
     def GetLastRunParameter(self,is_debug):
         if not Executor.GetPythonExecutablePath():
             return None
-        projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
         dlg_title = _('Run File')
         btn_name = _("Run")
         if is_debug:
            dlg_title = _('Debug File')
            btn_name = _("Debug")
-        dlg = CommandPropertiesDialog(self.GetView().GetFrame(),dlg_title, projectService, okButtonName=btn_name, debugging=is_debug,is_last_config=True)
-        dlg.CenterOnParent()
+        dlg = CommandPropertiesDialog(GetApp().GetTopWindow(),dlg_title, GetApp().MainFrame.GetProjectView(), okButtonName=btn_name, debugging=is_debug,is_last_config=True)
         showDialog = dlg.MustShowDialog()
         is_parameter_save = False
-        if showDialog and dlg.ShowModal() == wx.ID_OK:
+        if showDialog and dlg.ShowModal() == constants.ID_OK:
             projectDocument, fileToDebug, initialArgs, startIn, isPython, environment = dlg.GetSettings()
             #when show run dialog first,need to save parameter
             is_parameter_save = True
         elif not showDialog:
+            #隐藏窗口
+            dlg.withdraw()
             projectDocument, fileToDebug, initialArgs, startIn, isPython, environment = dlg.GetSettings()
+            dlg.destroy()
         else:
             dlg.Destroy()
             return None
-        dlg.Destroy()
-        if projectDocument.GetFilename() != NOT_IN_ANY_PROJECT and self.IsProjectContainBreakPoints(projectDocument.GetModel()):
+        if projectDocument.GetFilename() != consts.NOT_IN_ANY_PROJECT and self.IsProjectContainBreakPoints(projectDocument.GetModel()):
             is_debug_breakpoint = True
         else:
             is_debug_breakpoint = False
-        run_parameter = configuration.RunParameter(wx.GetApp().GetCurrentInterpreter(),\
+        run_parameter = runconfig.PythonRunconfig(GetApp().GetCurrentInterpreter(),\
                             fileToDebug,initialArgs,environment,startIn,is_debug_breakpoint)
         if is_parameter_save:
             self.SaveRunParameter(run_parameter)
         return run_parameter
             
-    def DebugRunLast(self,event):
+    def DebugRunLast(self):
         run_parameter = self.GetLastRunParameter(True)
         if run_parameter is None:
             return
-        run_parameter = self.UpdateRunEnvironment(run_parameter)
+        run_parameter = pyutils.get_override_runparameter(run_parameter)
         if not run_parameter.IsBreakPointDebug:
             self.DebugRunScript(run_parameter)
         else:
             self.DebugRunScriptBreakPoint(run_parameter)
         
-    def RunLast(self,event):
+    def RunLast(self):
         run_parameter = self.GetLastRunParameter(False)
         if run_parameter is None:
             return
-        run_parameter = self.UpdateRunEnvironment(run_parameter)
+        run_parameter = pyutils.get_override_runparameter(run_parameter)
         try:
             self.RunScript(run_parameter)
         except StartupPathNotExistError as e:
@@ -2794,17 +2743,12 @@ class Debugger:
                 filesModified = True
                 modify_docs.append(doc)
         if filesModified:
-            frame = self.GetView().GetFrame()
-            if utils.ProfileGetInt("PromptSaveProjectFile", True):
-                yesNoMsg = wx.MessageDialog(frame,
-                          _("Files have been modified.\nWould you like to save all files before running?"),
-                          _("Run Project"),
-                          wx.YES_NO|wx.ICON_QUESTION
+            if utils.profile_get_int("PromptSaveProjectFile", True):
+                yesNoMsg = messagebox.askyesno(_("Run Project"),
+                          _("Files have been modified.\nWould you like to save all files before running?")
                           )
-                yesNoMsg.CenterOnParent()
-                if yesNoMsg.ShowModal() == wx.ID_YES:
+                if yesNoMsg == True:
                     save_docs()
-                yesNoMsg.Destroy()
             else:
                 save_docs()
 
@@ -3048,32 +2992,34 @@ class CommandPropertiesDialog(ui_base.CommonModaldialog):
         ttk.Label(self.main_frame, text=_("Start in:")).grid(row=3,column=0,sticky=tk.NSEW,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         
         postpendStaticText = _("Postpend content root path")
-        self._projList = ttk.Combobox(self.main_frame, values=self._projectNameList)
+        self._projectNameVar = tk.StringVar()
+        self._projList = ttk.Combobox(self.main_frame, values=self._projectNameList,textvariable=self._projectNameVar)
         self._projList['state'] = 'readonly'
         self._projList.grid(row=0,column=1,sticky=tk.NSEW,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),columnspan=2,padx=(0,consts.DEFAUT_CONTRL_PAD_X))
-       # self.Bind(wx.EVT_CHOICE, self.EvtListBox, self._projList)
+        self._projList.bind("<<ComboboxSelected>>",self.EvtListBox)
 
         self._fileList = ttk.Combobox(self.main_frame)
         self._fileList['state'] = 'readonly'
         self._fileList.grid(row=1,column=1,sticky=tk.NSEW,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),columnspan=2,padx=(0,consts.DEFAUT_CONTRL_PAD_X))
-        #self.Bind(wx.EVT_CHOICE, self.OnFileSelected, self._fileList)
+        self._fileList.bind("<<ComboboxSelected>>",self.OnFileSelected)
   
         self._lastArguments = utils.profile_get(self.GetKey("LastRunArguments"))
         self._lastArgumentsVar = tk.StringVar(value=self._lastArguments)
-        argsEntry = ttk.Combobox(self.main_frame,values=[],textvariable=self._lastArgumentsVar)
-        argsEntry.grid(row=2,column=1,sticky=tk.NSEW,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),padx=(0,consts.DEFAUT_HALF_CONTRL_PAD_X))
-                                      
-      #  misc.create_tooltip(argsEntry,self._lastArguments)
-        self._useArgCheckBox = ttk.Checkbutton(self.main_frame, text= _("Use"),command=self.CheckUseArgument)
-        self._useArgCheckBox.grid(row=2,column=2,sticky=tk.NSEW,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-     #   self.Bind(wx.EVT_CHECKBOX,self.CheckUseArgument,self._useArgCheckBox)
+        row = ttk.Frame(self.main_frame)
+        self._argsEntry = ttk.Combobox(row,values=[],textvariable=self._lastArgumentsVar)
+        self._argsEntry.pack(side=tk.LEFT,fill="x",expand=1)
+             
+        self._useArgCheckBoxVar = tk.IntVar(value=1)
+        useArgCheckBox = ttk.Checkbutton(row, text= _("Use"),command=self.CheckUseArgument,variable=self._useArgCheckBoxVar)
+        useArgCheckBox.pack(side=tk.LEFT,fill="x",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0))
+        
+        row.grid(row=2,column=1,sticky=tk.NSEW,columnspan=2,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),padx=(0,consts.DEFAUT_HALF_CONTRL_PAD_X))
 
         self._lastStartIn = utils.profile_get(self.GetKey("LastRunStartIn"),os.getcwd())
         self._lastStartInVar = tk.StringVar(value=self._lastStartIn)
         startEntry = ttk.Entry(self.main_frame, textvariable=self._lastStartInVar)
         startEntry.grid(row=3,column=1,sticky=tk.NSEW,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),padx=(0,consts.DEFAUT_HALF_CONTRL_PAD_X))
-       # misc.create_tooltip(self._startEntry,self._lastStartIn)
-#
+
         self._findDir = ttk.Button(self.main_frame,text=_("Browse..."),command=self.OnFindDirClick)
         self._findDir.grid(row=3,column=2,sticky=tk.NSEW,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),padx=(0,consts.DEFAUT_CONTRL_PAD_X))
     
@@ -3090,7 +3036,8 @@ class CommandPropertiesDialog(ui_base.CommonModaldialog):
         last_row = 4
         if self._projectview.GetCurrentProject() is not None:
             last_row += 1
-            self._postpendCheckBox = ttk.Checkbutton(self.main_frame, text=postpendStaticText)
+            self._postpendCheckBoxVar = tk.IntVar(value=1)
+            self._postpendCheckBox = ttk.Checkbutton(self.main_frame, text=postpendStaticText,variable=self._postpendCheckBoxVar)
             self._postpendCheckBox.grid(row=last_row,column=1,sticky=tk.NSEW,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),columnspan=2)
         # Set up selections based on last values used.
         self._fileNameList = None
@@ -3106,7 +3053,7 @@ class CommandPropertiesDialog(ui_base.CommonModaldialog):
         self._projList.current(selectedIndex)
         self._selectedProjectIndex = selectedIndex
         self._selectedProjectDocument = self._projectDocumentList[selectedIndex]
-      #  self.PopulateFileList(self._selectedProjectDocument, lastFile)
+        self.PopulateFileList(self._selectedProjectDocument, lastFile)
         
        # if not self._is_last_config:
         #    self.SetEntryParams()
@@ -3126,7 +3073,7 @@ class CommandPropertiesDialog(ui_base.CommonModaldialog):
     def GetProjectFileKey(self, filepath,lastPart):
         if not self._currentProj:
             return self.GetKey(lastPart)
-        if self._currentProj.GetFilename() == NOT_IN_ANY_PROJECT:
+        if self._currentProj.GetFilename() == consts.NOT_IN_ANY_PROJECT:
             return self._currentProj.GetUnProjectFileKey(filepath,lastPart)
         else:
             pj_file = self._currentProj.GetModel().FindFile(filepath)
@@ -3135,67 +3082,61 @@ class CommandPropertiesDialog(ui_base.CommonModaldialog):
             return self._currentProj.GetFileKey(pj_file,lastPart)
             
     def SetEntryParams(self):
-        self._argsEntry.delete("1.0","end")
+        self._lastArgumentsVar.set("")
         if self._selectedFileIndex >= 0 and len(self._fileNameList) > self._selectedFileIndex:
             selected_filename = self._fileNameList[self._selectedFileIndex]
         else:
             selected_filename = ""
-        self._argsEntry.SetValue(utils.profile_get(self.GetProjectFileKey(selected_filename,"RunArguments"),""))
-        self._pythonPathEntry.SetValue(utils.profile_get(self.GetProjectFileKey(selected_filename,"PythonPath"),""))
-        self._startEntry.SetValue(utils.profile_get(self.GetProjectFileKey(selected_filename,"RunStartIn"),""))
         argments = utils.profile_get(self.GetProjectFileKey(selected_filename,"RunArguments"),"")
-        self._argsEntry.SetValue(argments)
-        self._argsEntry.SetToolTipString(argments)
-        self._pythonPathEntry.SetValue(utils.profile_get(self.GetProjectFileKey(selected_filename,"PythonPath"),""))
+        self._lastArgumentsVar.set(argments)
+        self._lastPythonPathVar.set(utils.profile_get(self.GetProjectFileKey(selected_filename,"PythonPath"),""))
         startin = utils.profile_get(self.GetProjectFileKey(selected_filename,"RunStartIn"),"")
-        self._startEntry.SetValue(startin)
-        self._startEntry.SetToolTipString(startin)
+        self._lastStartInVar.set(startin)
         saved_arguments = utils.profile_get(self.GetProjectFileKey(selected_filename,"FileSavedArguments"),'')
         if saved_arguments:
             arguments = pickle.loads(saved_arguments)
             self._argsEntry.AppendItems(arguments)
-        self._useArgCheckBox.SetValue(config.ReadInt(self.GetProjectFileKey(selected_filename,"UseArgument"),True))
-        self.CheckUseArgument(None)
+        self._useArgCheckBoxVar.set(utils.profile_get_int(self.GetProjectFileKey(selected_filename,"UseArgument"),True))
+        self.CheckUseArgument()
         
         if hasattr(self, "_postpendCheckBox"):
-            if self._projList.GetString(self._projList.GetSelection()) == NOT_IN_ANY_PROJECT:
-                self._postpendCheckBox.Enable(False)
+            if self._projectNameVar.get() == consts.NOT_IN_ANY_PROJECT:
+                self._postpendCheckBox['state'] = tk.DISABLED
             else:
-                self._postpendCheckBox.Enable(True)
-                checked = bool(config.ReadInt(self.GetKey("PythonPathPostpend"), True))
-                self._postpendCheckBox.SetValue(checked)
+                self._postpendCheckBox['state'] = tk.NORMAL
+                checked = bool(utils.profile_get_int(self.GetKey("PythonPathPostpend"), True))
+                self._postpendCheckBoxVar.set(checked)
         
     def _ok(self):
-        startIn = self._startEntry.GetValue().strip()
+        startIn = self._lastStartInVar.get().strip()
         if self._selectedFileIndex >= 0 and len(self._fileNameList) > self._selectedFileIndex:
             fileToRun = self._fileNameList[self._selectedFileIndex]
         else:
             fileToRun = ""
         if not fileToRun:
-            wx.MessageBox(_("You must select a file to proceed. Note that not all projects have files that can be run or debugged."))
+            messagebox.showinfo(GetApp().GetAppName(),_("You must select a file to proceed. Note that not all projects have files that can be run or debugged."))
             return
         isPython = fileutils.is_python_file(fileToRun)
         if isPython and not os.path.exists(startIn) and startIn != '':
-            wx.MessageBox(_("Starting directory does not exist. Please change this value."))
+            messagebox.showinfo(GetApp().GetAppName(),_("Starting directory does not exist. Please change this value."))
             return
-        config = wx.ConfigBase_Get()
         # Don't update the arguments or starting directory unless we're runing python.
         if isPython:
-            config.Write(self.GetProjectFileKey(fileToRun,"RunStartIn"), startIn)
-            config.Write(self.GetProjectFileKey(fileToRun,"PythonPath"),self._pythonPathEntry.GetValue().strip())
-            config.WriteInt(self.GetProjectFileKey(fileToRun,"UseArgument"), self._useArgCheckBox.GetValue())
+            utils.profile_set(self.GetProjectFileKey(fileToRun,"RunStartIn"), startIn)
+            utils.profile_set(self.GetProjectFileKey(fileToRun,"PythonPath"),self._lastPythonPathVar.get().strip())
+            utils.profile_set(self.GetProjectFileKey(fileToRun,"UseArgument"), self._useArgCheckBoxVar.get())
             #when use argument is checked,save argument
-            if self._useArgCheckBox.GetValue():
-                config.Write(self.GetProjectFileKey(fileToRun,"RunArguments"), self._argsEntry.GetValue())
+            if self._useArgCheckBoxVar.get():
+                utils.profile_set(self.GetProjectFileKey(fileToRun,"RunArguments"), self._lastArgumentsVar.get())
                 arguments = set()
                 for i in range(self._argsEntry.GetCount()):
                     arguments.add(self._argsEntry.GetString(i))
                 arguments.add(self._argsEntry.GetValue())
-                config.Write(self.GetProjectFileKey(fileToRun,"FileSavedArguments"),pickle.dumps(list(arguments))) 
+                utils.profile_set(self.GetProjectFileKey(fileToRun,"FileSavedArguments"),pickle.dumps(list(arguments))) 
             if hasattr(self, "_postpendCheckBox"):
-                config.WriteInt(self.GetKey("PythonPathPostpend"), int(self._postpendCheckBox.GetValue()))
+                utils.profile_set(self.GetKey("PythonPathPostpend"), self._postpendCheckBoxVar.get())
                 
-        self.EndModal(wx.ID_OK)
+        ui_base.CommonModaldialog._ok(self)
 
     def GetSettings(self):
         projectDocument = self._selectedProjectDocument
@@ -3203,66 +3144,52 @@ class CommandPropertiesDialog(ui_base.CommonModaldialog):
             fileToRun = self._fileNameList[self._selectedFileIndex]
         else:
             fileToRun = ""
-        filename = wx.ConfigBase_Get().Read(self.GetKey("LastRunFile"),fileToRun)
-        args = self._argsEntry.GetValue()
-        startIn = self._startEntry.GetValue().strip()
+        filename = utils.profile_get(self.GetKey("LastRunFile"),fileToRun)
+        args = self._lastArgumentsVar.get()
+        startIn = self._lastStartInVar.get().strip()
         isPython = fileutils.is_python_file(filename)
         env = {}
         if hasattr(self, "_postpendCheckBox"):
-            postpend = self._postpendCheckBox.GetValue()
+            postpend = self._postpendCheckBoxVar.get()
         else:
             postpend = False
         if postpend:
-            env[PYTHON_PATH_NAME] = str(self._pythonPathEntry.GetValue()) + os.pathsep + os.path.join(os.getcwd(), "3rdparty", "pywin32")
+            env[consts.PYTHON_PATH_NAME] = str(self._lastPythonPathVar.get()) + os.pathsep + os.path.join(os.getcwd(), "3rdparty", "pywin32")
         else:
             #should avoid environment contain unicode string,such as u'xxx'
-            env[PYTHON_PATH_NAME] = str(self._pythonPathEntry.GetValue())
+            env[consts.PYTHON_PATH_NAME] = str(self._lastPythonPathVar.get())
 
         return projectDocument, filename, args, startIn, isPython, env
 
     def OnFileSelected(self, event):
-        self._selectedFileIndex = self._fileList.GetSelection()
-        self.EnableForFileType(event.GetString())
+        self._selectedFileIndex = self._fileList.current()
         self.SetEntryParams()
-
-    def EnableForFileType(self, fileName):
-        show = fileutils.is_python_file(fileName)
-        self._startEntry.Enable(show)
-        self._findDir.Enable(show)
-        self._argsEntry.Enable(show)
-
-        if not show:
-            self._lastStartIn = self._startEntry.GetValue()
-            self._startEntry.SetValue("")
-            self._lastArguments = self._argsEntry.GetValue()
-            self._argsEntry.SetValue("")
-        else:
-            self._startEntry.SetValue(self._lastStartIn)
-            self._argsEntry.SetValue(self._lastArguments)
 
     def OnFindDirClick(self):
         path = filedialog.askdirectory(title=_("Choose a starting directory:"))
         if not path:
             return
-        self.path_var.set(fileutils.opj(path))
-        self._startEntry.SetValue(dlg.GetPath())
+        self._lastStartInVar.set(fileutils.opj(path))
         
-    def CheckUseArgument(self,event):
-        use_arg = self._useArgCheckBox.GetValue()
-        self._argsEntry.Enable(use_arg)
+    def CheckUseArgument(self):
+        use_arg = self._useArgCheckBoxVar.get()
+        if use_arg:
+            self._argsEntry['state'] = tk.NORMAL 
+        else:
+            self._argsEntry['state'] = tk.DISABLED
 
     def EvtListBox(self, event):
-        if event.GetString():
-            index = self._projectNameList.index(event.GetString())
+        if self._projectNameVar.get():
+            index = self._projectNameList.index(self._projectNameVar.get())
             self._selectedProjectDocument = self._projectDocumentList[index]
             self._currentProj = self._selectedProjectDocument
             self._selectedProjectIndex = index
             self.PopulateFileList(self._selectedProjectDocument)
             self.SetEntryParams()
 
-    def FilterFileList(self, list):
-        files = filter(lambda f:fileutils.is_python_file(f), list)
-        return files
+    def FilterFileList(self, file_list):
+        files = filter(lambda f:fileutils.is_python_file(f), file_list)
+        return list(files)
 
     def PopulateFileList(self, project, shortNameToSelect=None):
         project_startup_file = project.GetStartupFile()
@@ -3271,18 +3198,17 @@ class CommandPropertiesDialog(ui_base.CommonModaldialog):
         else:
             pj_files = [project_startup_file.filePath]
         self._fileNameList = self.FilterFileList(pj_files)
-     #   self._fileList.Clear()
         if not self._fileNameList:
+            self._fileList['values'] = []
             return
-        self._fileNameList.sort(lambda a, b: cmp(os.path.basename(a).lower(), os.path.basename(b).lower()))
-        strings = map(lambda file: os.path.basename(file), self._fileNameList)
+        py_sorted(self._fileNameList, cmp_func=lambda a, b: py_cmp(os.path.basename(a).lower(), os.path.basename(b).lower()))
+        strings = list(map(lambda file: os.path.basename(file), self._fileNameList))
         for index in range(0, len(self._fileNameList)):
             if shortNameToSelect == self._fileNameList[index]:
                 self._selectedFileIndex = index
                 break
-        self._fileList.Hide()
-        self._fileList.AppendItems(strings)
-        self._fileList.Show()
+
+        self._fileList['values'] = (strings)
         if self._selectedFileIndex not in range(0, len(strings)):
             # Pick first bpel file if there is one.
             for index in range(0, len(strings)):
@@ -3292,8 +3218,7 @@ class CommandPropertiesDialog(ui_base.CommonModaldialog):
         # Still no selected file, use first file.      
         if self._selectedFileIndex not in range(0, len(strings)):
             self._selectedFileIndex = 0
-        self._fileList.SetSelection(self._selectedFileIndex)
-        self.EnableForFileType(strings[self._selectedFileIndex])
+        self._fileList.current(self._selectedFileIndex)
 
     def GetProjectList(self):
         docList = []
@@ -3318,7 +3243,7 @@ class CommandPropertiesDialog(ui_base.CommonModaldialog):
 
         unprojectedFiles = []
         for document in GetApp().GetDocumentManager().GetDocuments():
-            if type(document) == projectviewer.PythonProjectDocument:
+            if type(document) == pyeditor.PythonDocument:
                 if not AlreadyInProject(document.GetFilename()):
                     unprojectedFiles.append(document.GetFilename())
         if unprojectedFiles:

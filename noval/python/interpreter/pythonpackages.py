@@ -7,7 +7,7 @@ import noval.ui_base as ui_base
 import noval.python.interpreter.interpretermanager as interpretermanager
 import os
 import subprocess
-###import noval.OutputThread as OutputThread
+import noval.outputthread as outputthread
 import threading
 import noval.util.strutils as strutils
 import noval.util.apputils as sysutils
@@ -75,7 +75,8 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
         else:
             ttk.Label(row,text=_("We will uninstall it in the interpreter:")).pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         names = self.GetNames()
-        self._interpreterCombo = ttk.Combobox(row,values=names,value=self.interpreter.Name,state="readonly")
+        self.interpreter_name_var =  tk.StringVar(value=self.interpreter.Name)
+        self._interpreterCombo = ttk.Combobox(row,values=names,textvariable=self.interpreter_name_var,state="readonly")
         self._interpreterCombo.pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),fill="x",expand=1,padx=(consts.DEFAUT_CONTRL_PAD_X,0))
         row.grid(row=row_no,column=0,padx=consts.DEFAUT_CONTRL_PAD_X,sticky=tk.EW,)
         row_no += 1
@@ -88,8 +89,8 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
         row_no += 1
         row = ttk.Frame(self.main_frame)
         self.value_var = tk.StringVar(value=package_name)
-        value_ctrl = ttk.Entry(row,textvariable=self.value_var)
-        value_ctrl.pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),fill="x",expand=1)
+        self.value_ctrl = ttk.Entry(row,textvariable=self.value_var)
+        self.value_ctrl.pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),fill="x",expand=1)
         #if self._manage_action == ManagePackagesDialog.MANAGE_UNINSTALL_PACKAGE:
          #   self.value_var.set()
         self.browser_btn = ttk.Button(row, text=_("Browse..."),command=self.BrowsePath)
@@ -104,7 +105,6 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
         label_2.grid(row=row_no,column=0,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),padx=consts.DEFAUT_CONTRL_PAD_X,sticky=tk.EW)
         row_no += 1
         
-
         self.text_frame = textframe.TextFrame(self.main_frame,borderwidth=1,relief="solid",text_class=texteditor.TextCtrl)
         self.output_ctrl = self.text_frame.text
         self.output_ctrl['state'] = tk.DISABLED
@@ -157,87 +157,94 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
     def ExecCommandAndOutput(self,command,dlg):
         #shell must be True on linux
         p = subprocess.Popen(command,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        stdout_thread = OutputThread.OutputThread(p.stdout,p,dlg,call_after=True)
+        stdout_thread = outputthread.OutputThread(p.stdout,p,dlg,call_after=True)
         stdout_thread.start()
-        stderr_thread = OutputThread.OutputThread(p.stderr,p,dlg,call_after=True)
+        stderr_thread = outputthread.OutputThread(p.stderr,p,dlg,call_after=True)
         stderr_thread.start()
         p.wait()
         self.EndDialog(p.returncode)
     
     def EndDialog(self,retcode):
-        package_name = self.value_ctrl.GetValue().strip()
+        package_name = self.value_var.get().strip()
         if package_name.find(" ") != -1 or package_name.find("==") != -1 or package_name.find("-U") != -1:
             self._install_with_name = False
         python_package = self.interpreter.GetInstallPackage(package_name)
         ret_suc = False
         if retcode == 0:
             if self._manage_action == self.MANAGE_INSTALL_PACKAGE and python_package:
-                self.GetParent().AddPackage(python_package,self.interpreter,True)
-                wx.MessageBox(_("Install Success"))
+                self.master.AddPackage(python_package,self.interpreter,True)
+                messagebox.showinfo(GetApp().GetAppName(),_("Install Success"))
                 ret_suc = True
             elif self._manage_action == self.MANAGE_UNINSTALL_PACKAGE and not python_package and self._install_with_name:
-                self.GetParent().RemovePackage(package_name,self.interpreter)
-                wx.MessageBox(_("Uninstall Success"))
+                self.master.RemovePackage(package_name,self.interpreter)
+                messagebox.showinfo(GetApp().GetAppName(),_("Uninstall Success"))
                 ret_suc = True
             elif self._manage_action == self.MANAGE_INSTALL_PACKAGE and not self._install_with_name:
-                self.interpreter.LoadPackages(self.GetParent(),True)
-                wx.MessageBox(_("Install Success"))
+                self.interpreter.LoadPackages(self.master,True)
+                messagebox.showinfo(GetApp().GetAppName(),_("Install Success"))
                 ret_suc = True
             elif self._manage_action == self.MANAGE_UNINSTALL_PACKAGE and not self._install_with_name:
                 self.interpreter.LoadPackages(self.GetParent(),True)
-                wx.MessageBox(_("Uninstall Success"))
+                messagebox.showinfo(GetApp().GetAppName(),_("Uninstall Success"))
                 ret_suc = True
         if ret_suc:
-            self.EndModal(wx.ID_OK)
+            ui_base.CommonModaldialog._ok(self)
         else:
             if self._manage_action == self.MANAGE_INSTALL_PACKAGE:
-                wx.MessageBox(_("Install Fail"),style=wx.OK|wx.ICON_ERROR)
+                messagebox.showerror(GetApp().GetAppName(),_("Install Fail"))
             elif self._manage_action == self.MANAGE_UNINSTALL_PACKAGE:
-                wx.MessageBox(_("Uninstall Fail"),style=wx.OK|wx.ICON_ERROR)
-            self.value_ctrl.Enable(True)
-            self.ok_btn.Enable(True)
+                messagebox.showerror(GetApp().GetAppName(),_("Uninstall Fail"))
+            self.value_ctrl['state'] = tk.NORMAL
+            self.ok_button['state'] = tk.NORMAL
         
     def InstallPackage(self,interpreter):
         should_root = False
-        if not sysutils.isWindows():
+        if not sysutils.is_windows():
             should_root = not interpreter.IsPythonlibWritable()
-        package_name = self.value_ctrl.GetValue().strip()
+        package_name = self.value_var.get().strip()
         if os.path.basename(package_name) == "requirements.txt":
             self._install_with_name = False
-            if not sysutils.isWindows() and should_root:
+            if not sysutils.is_windows() and should_root:
                 command = "pkexec " + strutils.emphasis_path(interpreter.GetPipPath()) + " install -r %s" % (package_name)
             else:
                 command = strutils.emphasis_path(interpreter.GetPipPath()) + " install -r %s" % (package_name)
         else:
-            if not sysutils.isWindows() and should_root:
+            if not sysutils.is_windows() and should_root:
                 command = "pkexec " + strutils.emphasis_path(interpreter.GetPipPath()) + " install %s" % (package_name)
             else:
                 command = strutils.emphasis_path(interpreter.GetPipPath()) + " install %s" % (package_name)
                 
-        if self.SOURCE_NAME_LIST[self._pipSourceCombo.GetSelection()] != self.SOURCE_NAME_LIST[0]:
-            command += " -i " + self.SOURCE_LIST[self._pipSourceCombo.GetSelection()]
-            parts = urlparse(self.SOURCE_LIST[self._pipSourceCombo.GetSelection()])
+        if self.SOURCE_NAME_LIST[self._pipSourceCombo.current()] != self.SOURCE_NAME_LIST[0]:
+            command += " -i " + self.SOURCE_LIST[self._pipSourceCombo.current()]
+            parts = urlparse(self.SOURCE_LIST[self._pipSourceCombo.current()])
             host = parts.netloc
             command += " --trusted-host " + host
             
-        self.output_ctrl.write(command + os.linesep)
-        self.call_back = self.output_ctrl.write
+        self.AppendText(command + os.linesep)
+        self.call_back = self.AppendText
         t = threading.Thread(target=self.ExecCommandAndOutput,args=(command,self))
         t.start()
         
+    def AppendText(self,content):
+        self.output_ctrl['state'] = tk.NORMAL
+        self.output_ctrl.set_read_only(False)
+        self.output_ctrl.insert(tk.END,content)
+        self.output_ctrl.set_read_only(True)
+        self.output_ctrl['state'] = tk.DISABLED
+        
     def UninstallPackage(self,interpreter):
         should_root = False
-        if not sysutils.isWindows():
+        if not sysutils.is_windows():
             should_root = not interpreter.IsPythonlibWritable()
         package_name = self.value_ctrl.GetValue().strip()
         if os.path.basename(package_name) == "requirements.txt":
             self._install_with_name = False
-            if not sysutils.isWindows() and should_root:
+            if not sysutils.is_windows() and should_root:
                 command = "pkexec " + strutils.emphasis_path(interpreter.GetPipPath()) + " uninstall -y -r %s" % (package_name)
             else:
                 command = strutils.emphasis_path(interpreter.GetPipPath()) + " uninstall -y -r %s" % (package_name)
         else:
-            if not sysutils.isWindows() and should_root:
+            if not sysutils.is_windows() and should_root:
                 command = "pkexec " + strutils.emphasis_path(interpreter.GetPipPath()) + " uninstall -y %s" % (package_name)
             else:
                 command = strutils.emphasis_path(interpreter.GetPipPath()) + " uninstall -y %s" % (package_name)
@@ -246,17 +253,17 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
         t = threading.Thread(target=self.ExecCommandAndOutput,args=(command,self))
         t.start()
         
-    def OnOKClick(self, event):
-        if self.value_ctrl.GetValue().strip() == "":
-            wx.MessageBox(_("package name is empty"))
+    def _ok(self):
+        if self.value_var.get().strip() == "":
+            messagebox.showinfo(GetApp().GetAppName(),_("package name is empty"))
             return
-        sel = self._interpreterCombo.GetSelection()
+        sel = self._interpreterCombo.current()
         self.interpreter = self.interpreters[sel]
         if self.interpreter.IsBuiltIn or self.interpreter.GetPipPath() is None:
-            wx.MessageBox(_("Could not find pip on the path"),style=wx.OK|wx.ICON_ERROR)
+            messagebox.showerror(GetApp().GetAppName(),_("Could not find pip on the path"))
             return
-        self.value_ctrl.Enable(False)
-        self.ok_btn.Enable(False)
+        self.value_ctrl['state'] = tk.DISABLED
+        self.ok_button['state'] = tk.DISABLED
         if self._manage_action == ManagePackagesDialog.MANAGE_INSTALL_PACKAGE:
             self.InstallPackage(self.interpreter)
         else:
@@ -295,20 +302,25 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
         self.EnableCheckSourcButton(True)
         
     def SelectBestPipSource(self):
-        for i in range(self._pipSourceCombo['values']):
-            if self._pipSourceCombo.GetString(i).find(_("The Best Source")) != -1:
-                self._pipSourceCombo.Delete(i)
-                self._pipSourceCombo.Insert(self.SOURCE_NAME_LIST[i],i)
+        index = -1
+        values = list(self._pipSourceCombo['values'])
+        for i,value in enumerate(values):
+            if value.find(_("The Best Source")) != -1:
+                values.remove(value)
+                values.insert(i,self.SOURCE_NAME_LIST[i])
                 break
         for i,pip_source in enumerate(self.SOURCE_LIST):
             if pip_source == self.BEST_PIP_SOURCE:
                 best_source_name = self.SOURCE_NAME_LIST[i] + "(" + _("The Best Source") + ")"
-                self._pipSourceCombo.Delete(i)
-                self._pipSourceCombo.Insert(best_source_name,i)
-                self._pipSourceCombo.Select(i)
+                values.remove(self.SOURCE_NAME_LIST[i])
+                values.insert(i,best_source_name)
+                index = i
                 break
+        self._pipSourceCombo['values'] = tuple(values)
+        if index != -1:
+            self._pipSourceCombo.current(index)
 
-    def CheckTheBestSource(self,event):
+    def CheckTheBestSource(self):
         self.CheckBestPipSource()
 
     def EnableCheckSourcButton(self,enable=True):
@@ -422,7 +434,7 @@ class PackagePanel(ttk.Frame):
         del interpreter.Packages[package_name]
         
     def NotifyPackageConfigurationChange(self):
-        self.GetParent().GetParent().NotifyConfigurationChange()
+        self.master.master.NotifyConfigurationChange()
         
     def FreezePackage(self):
         text_docTemplate = GetApp().GetDocumentManager().FindTemplateForPath("test.txt")

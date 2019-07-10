@@ -38,7 +38,7 @@ else:
         if isinstance(s, str):
             return s
         if isinstance(s, (bytes, bytearray)):
-            return str(s, encoding='utf-8')
+            return str(s, encoding=encoding)
         raise ValueError(
             "Expected str or bytes or bytearray, received %s." %
             type(s))

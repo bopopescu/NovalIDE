@@ -209,6 +209,10 @@ class TextviewFrame(ttk.Frame):
         gutter_foreground="#999999",
         **text_options
     ):
+        '''
+            line_numbers:是否显示行号
+            line_length_margin:为0表示不显示边界线,否则显示边界线
+        '''
         ttk.Frame.__init__(self, master=master, borderwidth=borderwidth, relief=relief)
 
         final_text_options = {
@@ -887,7 +891,7 @@ class CommonModaldialog(CommonDialog):
             self.master = tk._default_root or GetApp()
         assert(self.master is not None)
         focused_widget = self.master.focus_get()
-        if utils.is_linux():
+        if utils.is_linux() and focused_widget is not None:
             #在linux系统点击工具栏新建按钮后,提示信息会一直存在不会消失,手动隐藏提示信息
             focused_widget.event_generate("<Leave>")
         #隐藏最小化按钮

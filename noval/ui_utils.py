@@ -30,7 +30,7 @@ class FileHistory(hiscache.CycleCache):
         #检查文件路径是否在历史文件列表中,如果存在则删除
         if self.CheckFileExists(file_path):
             self._list.remove(file_path)
-        self.PutItem(file_path)
+        self.PutPath(file_path)
         #按照文件顺序重新构建历史文件列表菜单
         self.RebuildFilesMenu()
         
@@ -53,7 +53,13 @@ class FileHistory(hiscache.CycleCache):
                 break
         #务必按照倒序加载文件列表
         for path in paths[::-1]:
-            self.PutItem(path)
+            self.PutPath(path)
+            
+    def PutPath(self,path):
+        if self.GetCurrentSize() >= self._size:
+            utils.get_logger().debug('history file list size %d is greater then max list size %d',self.GetCurrentSize(),self._size)
+            return
+        self.PutItem(path)
 
     def Save(self,config):
         for i,item in enumerate(self._list):
@@ -321,9 +327,8 @@ class BaseEnvironmentUI(ttk.Frame):
         self.listview = treeviewframe.TreeViewFrame(row,columns=columns,show="headings")
         for column in columns:
             self.listview.tree.heading(column, text=_(column))
-            
+        self.listview.tree.bind("<<TreeviewSelect>>", self.UpdateUI, True)
         self.listview.pack(side=tk.LEFT,fill="both",expand=1)
-        
         right_frame = ttk.Frame(row)
         self.new_btn = ttk.Button(right_frame, text=_("New.."),command=self.NewVariable)
         self.new_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
@@ -333,10 +338,9 @@ class BaseEnvironmentUI(ttk.Frame):
         
         self.remove_btn.pack(padx=consts.DEFAUT_HALF_CONTRL_PAD_X,pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
         right_frame.pack(side=tk.LEFT,fill="y")
-        
         row.pack(fill="both",expand=1)
         
-    def UpdateUI(self):
+    def UpdateUI(self,event=None):
         selections = self.listview.tree.selection()
         if not selections:
             self.remove_btn["state"] = tk.DISABLED
@@ -345,17 +349,16 @@ class BaseEnvironmentUI(ttk.Frame):
             self.remove_btn["state"] = "normal"
             self.edit_btn["state"] = "normal"
 
-    def RemoveVariable(self,event):
-        index = self.dvlc.GetSelectedRow()
-        if index == wx.NOT_FOUND:
+    def RemoveVariable(self):
+        selections = self.listview.tree.selection()
+        if not selections:
             return
-        self.RemoveRowVariable(index)
+        self.RemoveRowVariable(selections)
         self.UpdateUI(None)
         
-    def RemoveRowVariable(self,row):
-        key = self.dvlc.GetTextValue(row,0)
-        ##self.interpreter.environments = filter(lambda e:not e.has_key(key),self.interpreter.environments)
-        self.dvlc.DeleteItem(row)
+    def RemoveRowVariable(self,selections):
+        for item in selections:
+            self.listview.tree.delete(item)
         
     def GetVariableRow(self,key):
         count = self.dvlc.GetStore().GetCount()
@@ -397,7 +400,8 @@ class BaseEnvironmentUI(ttk.Frame):
         key = dlg.key_var.get().strip()
         value = dlg.value_var.get().strip()
         if status == constants.ID_OK and key and value:
-            self.listview.tree.item(item)['values'] = (key,value)
+            self.listview.tree.set(item, column=0, value=key)
+            self.listview.tree.set(item, column=1, value=value)
         self.UpdateUI()
     
     def CheckKeyExist(self,key):
@@ -408,8 +412,8 @@ class BaseEnvironmentUI(ttk.Frame):
         
     def GetEnviron(self):
         dct = {}
-        for row in range(self.dvlc.GetStore().GetCount()):
-            dct[str(self.dvlc.GetTextValue(row,0))] = str(self.dvlc.GetTextValue(row,1))
+        for child in self.listview.tree.get_children():
+            dct[self.listview.tree.item(child)['values'][0]] = self.listview.tree.item(child)['values'][1]
         return dct
         
 

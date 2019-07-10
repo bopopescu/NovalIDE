@@ -28,7 +28,6 @@ import noval.constants as constants
 from pkg_resources import resource_filename
 import noval.model as model
 import os
-from dummy.userdb import UserDataDb
 import noval.project.baseviewer as baseprojectviewer
 import noval.python.project.viewer as projectviewer
 from noval.syntax import synglob
@@ -103,8 +102,8 @@ class PyIDEApplication(ide.IDEApplication):
 
         self.AddCommand(constants.ID_CHECK_SYNTAX,_("&Run"),_("&Check Syntax..."),self.CheckSyntax,default_tester=True,default_command=True)
         self.AddCommand(constants.ID_SET_PARAMETER_ENVIRONMENT,_("&Run"),_("&Set Parameter And Environment"),self.SetParameterEnvironment,default_tester=True,default_command=True,image=self.GetImage('python/debugger/runconfig.png'))
-        self.AddCommand(constants.ID_RUN_LAST,_("&Run"),_("&Run Using Last Settings"),self.OnUnittestDlg,default_tester=True,default_command=True)
-        self.AddCommand(constants.ID_DEBUG_LAST,_("&Run"),_("&Debug Using Last Settings"),self.OnUnittestDlg,default_tester=True,default_command=True)     
+        self.AddCommand(constants.ID_RUN_LAST,_("&Run"),_("&Run Using Last Settings"),self.RunLast,default_tester=True,default_command=True)
+        self.AddCommand(constants.ID_DEBUG_LAST,_("&Run"),_("&Debug Using Last Settings"),self.DebugLast,default_tester=True,default_command=True)     
         return True
         
     @ui_utils.no_implemented_yet
@@ -118,6 +117,12 @@ class PyIDEApplication(ide.IDEApplication):
     @ui_utils.no_implemented_yet
     def StepInto(self):
         pass
+        
+    def DebugLast(self):
+        _debugger.DebugRunLast()
+        
+    def RunLast(self):
+        _debugger.RunLast()
 
     def CheckSyntax(self):
         _debugger.CheckScript()
@@ -350,4 +355,9 @@ class PyIDEApplication(ide.IDEApplication):
             if command_id in all_item_ids:
                 return True
         return ide.IDEApplication.UpdateUI(self,command_id)
+        
+    def AllowClose(self):
+        if not _debugger.CloseDebugger():
+            return False
+        return ide.IDEApplication.AllowClose(self)
             

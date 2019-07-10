@@ -189,6 +189,7 @@ class IDEApplication(core.App):
         self.after(500,self.InitTkDnd)
         self.bind("TextInsert", self.EventTextChange, True)
         self.bind("TextDelete", self.EventTextChange, True)
+        self.bind("<<UpdateAppearance>>", self.EventTextChange, True)
         self.bind("<FocusIn>", self._on_focus_in, True)
         return True
         
@@ -232,7 +233,7 @@ class IDEApplication(core.App):
                 class_ = text.GetColorClass()
                 text.syntax_colorer = class_(text)
         if isinstance(text, codeeditor.CodeCtrl):
-            text.syntax_colorer.schedule_update(event, True)
+            text.syntax_colorer.schedule_update(event, use_coloring=utils.profile_get_int("TextHighlightSyntax", True))
             
         #只有文本编辑区域才在内容更改时更新大纲显示内容
         if isinstance(text.master.master,core.DocTabbedChildFrame):
@@ -636,7 +637,7 @@ class IDEApplication(core.App):
             family=editor_font_family, size=editor_font_size
         )
         style = ttk.Style()
-        treeview_font_size = int(editor_font_size * 0.7 + 2)
+        treeview_font_size = int(consts.DEFAULT_FONT_SIZE * 0.7 + 2)
         rowheight = 20
         tk_font.nametofont(consts.TREE_VIEW_FONT).configure(size=treeview_font_size)
         tk_font.nametofont(consts.TREE_VIEW_BOLD_FONT).configure(size=treeview_font_size)
@@ -661,8 +662,6 @@ class IDEApplication(core.App):
             return False
         if not self.GetDocumentManager().Clear(force=False):
             return False
-            
-    ##    self.MainFrame.destroy()
         return True
 
     def SaveLayout(self):
@@ -766,11 +765,13 @@ class IDEApplication(core.App):
             {}
         )  # type: Dict[str, Tuple[Optional[str], FlexibleSyntaxThemeSettings]] # value is (parent, settings)
         # following will be overwritten by plugins.base_themes
-        default_ui_theme = utils.profile_get('APPLICATION_LOOK',"xpnative" if utils.is_windows() else "clam")
+        default_ui_theme = "xpnative" if utils.is_windows() else "clam"
         self.theme_value = tk.StringVar()
         self.theme_value.set(default_ui_theme)
         
     def load_themes(self):
+        default_ui_theme = self.theme_value.get()
+        self.theme_value.set(utils.profile_get('APPLICATION_LOOK',default_ui_theme))
         self._apply_ui_theme(self.theme_value.get())
       #  self._apply_syntax_theme(self.get_option("view.syntax_theme"))
 
@@ -820,6 +821,7 @@ class IDEApplication(core.App):
             self._register_ui_theme_as_tk_theme(name)
 
         self._style.theme_use(name)
+        utils.profile_set('APPLICATION_LOOK',name)
 
         # https://wiki.tcl.tk/37973#pagetocfe8b22ab
         for setting in [

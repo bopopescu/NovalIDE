@@ -158,7 +158,8 @@ class EditorNotebook(ui_base.ClosableNotebook):
 
     def update_appearance(self):
         for editor in self.winfo_children():
-            editor.update_appearance()
+            if isinstance(editor.GetView(),texteditor.TextView):
+                editor.GetView().update_appearance()
 
     def update_editor_title(self, editor, title=None):
         if title is None:
@@ -270,9 +271,10 @@ class EditorNotebook(ui_base.ClosableNotebook):
         self.CloseAllWithoutDoc(closeall=True)
         
     def OpenPathInExplorer(self):
-        suc,msg = fileutils.open_file_directory(self._current_document.GetFilename())
-        if not suc:
-            messagebox.showerror(_("Error"),msg.decode(utils.get_default_encoding()))
+        try:
+            fileutils.open_file_directory(self._current_document.GetFilename())
+        except RuntimeError as e:
+            messagebox.showerror(_("Error"),str(e).decode(utils.get_default_encoding()))
             
     def OpenPathInTerminator(self):
         GetApp().OpenTerminator(self._current_document.GetFilename())
@@ -362,9 +364,9 @@ class EditorNotebook(ui_base.ClosableNotebook):
         GetApp().AddCommand(constants.ID_UNCOMMENT_LINES,_("&Format"),_("&Uncomment Lines"),lambda:formatter.formatter.UncommentRegion(self.get_current_editor()),image=GetApp().GetImage("uncomment.png"),\
                                             default_tester=True,default_command=True)
            
-        GetApp().AddCommand(constants.ID_INDENT_LINES,_("&Format"),_("&Indent Lines"),lambda:formatter.formatter.CommentRegion(self.get_current_editor()),image=GetApp().GetImage("indent.png"),\
+        GetApp().AddCommand(constants.ID_INDENT_LINES,_("&Format"),_("&Indent Lines"),lambda:formatter.formatter.IndentRegion(self.get_current_editor()),image=GetApp().GetImage("indent.png"),\
                                             default_tester=True,default_command=True)
-        GetApp().AddCommand(constants.ID_DEDENT_LINES,_("&Format"),_("&Dedent Lines"),lambda:formatter.formatter.UncommentRegion(self.get_current_editor()),image=GetApp().GetImage("dedent.png"),\
+        GetApp().AddCommand(constants.ID_DEDENT_LINES,_("&Format"),_("&Dedent Lines"),lambda:formatter.formatter.DedentRegion(self.get_current_editor()),image=GetApp().GetImage("dedent.png"),\
                                             default_tester=True,default_command=True)
                 
      

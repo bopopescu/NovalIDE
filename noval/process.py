@@ -663,7 +663,10 @@ class _FileWrapper:
                     self._lineBuf = os.read(self._descriptor,
                                                    nBytes)
                     if utils.is_py3_plus():
-                       self._lineBuf = compat.ensure_string(self._lineBuf)
+                        try:
+                            self._lineBuf = compat.ensure_string(self._lineBuf)
+                        except:
+                            self._lineBuf = compat.ensure_string(self._lineBuf,encoding=utils.get_default_encoding())
                     #self._lineBuf = ""
             return self._lineBuf
         elif self._handle is not None:

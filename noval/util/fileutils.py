@@ -248,7 +248,12 @@ def getAllExistingFiles(files, basepath=None, forceForwardSlashes=False):
     """For each file in files, if it exists, adds its absolute path to the rtn list. If file is a dir, calls this function recursively on all child files in the dir.
     If basepath is set, and if the file being processed is relative to basedir, adds that relative path to rtn list instead of the abs path.
     Is this is Windows, and forceForwardSlashes is True, make sure returned paths only have forward slashes."""
-    if isinstance(files, basestring):
+    
+    if apputils.is_py3_plus():
+        basestring_ = str
+    elif apputils.is_py2():
+        basestring_ = basestring
+    if isinstance(files, basestring_):
         files = [files]
     rtn = []
     for file in files:

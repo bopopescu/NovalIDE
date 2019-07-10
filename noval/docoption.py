@@ -94,7 +94,7 @@ class DocumentOptionsPanel(ui_utils.BaseConfigurationPanel):
         chkEOLCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
         
         row = ttk.Frame(self)
-        document_type_names,index = self.GetDocumentTypes()
+        document_type_names,index,self.templates = self.GetDocumentTypes()
         self.document_types_combox = ttk.Combobox(row, values=document_type_names,state = "readonly")
         self.document_types_combox.current(index)
         ttk.Label(row, text=_("Default New Document Type") + u": ").pack(side=tk.LEFT,fill="x")
@@ -105,16 +105,12 @@ class DocumentOptionsPanel(ui_utils.BaseConfigurationPanel):
         """
         Updates the config based on the selections in the options panel.
         """
-
-            
-        config.WriteInt("ShowCloseButton",self._showCloseBtnCheckBox.GetValue())
-        config.Write(DEFAULT_FILE_ENCODING_KEY,self.encodings_combo.GetValue())
-        config.WriteInt(REMBER_FILE_KEY, self._remberCheckBox.GetValue())
-        config.WriteInt(CHECK_EOL_KEY, self._chkEOLCheckBox.GetValue())
-        sel = self.document_types_combox.GetSelection()
-        if sel != -1:
-            template = self.document_types_combox.GetClientData(sel)
-            config.Write("DefaultDocumentType",template.GetDocumentName())
+    #    config.Write(DEFAULT_FILE_ENCODING_KEY,self.encodings_combo.GetValue())
+        utils.profile_set(consts.REMBER_FILE_KEY, self._remberCheckVar.get())
+        utils.profile_set("CheckFileModify", self._chkModifyCheckVar.get())
+       # utils.profile_set(consts.CHECK_EOL_KEY, self._chkEOLCheckBox.GetValue())
+        template = self.templates[self.document_types_combox.current()]
+        utils.profile_set("DefaultDocumentType",template.GetDocumentName())
         return True
 
     def GetDocumentTypes(self):
@@ -131,4 +127,4 @@ class DocumentOptionsPanel(ui_utils.BaseConfigurationPanel):
             if  default_document_typename == temp.GetDocumentName():
                 current_document_typename = _(descr)
             type_names.append(_(descr))
-        return type_names,type_names.index(current_document_typename)
+        return type_names,type_names.index(current_document_typename),templates

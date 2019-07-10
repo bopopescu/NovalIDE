@@ -73,6 +73,12 @@ class SyntaxThemeManager(object):
                 return lexer
         return self.GetLexer(lang.ID_LANG_TXT)
         
+    def IsExtSupported(self,ext):
+        for lexer in self.lexers:
+            if lexer.ContainExt(ext):
+                return True
+        return False
+        
     def GetLangLexerFromShowname(self,showname):
         for lexer in self.lexers:
             if lexer.GetShowName() == showname:

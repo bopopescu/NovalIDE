@@ -1,13 +1,13 @@
 from noval import _,NewId
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk,messagebox
 import os
 import noval.iface as iface
 import noval.plugin as plugin
 import noval.consts as consts
 import noval.python.parser.utils as parserutils
 import noval.util.apputils as sysutils
-#import noval.tool.project.PythonVariables as PythonVariables
+import noval.project.variables as variablesutils
 import noval.util.utils as utils
 import noval.ui_utils as ui_utils
 import noval.python.interpreter.pythonpathmixin as pythonpathmixin
@@ -66,59 +66,49 @@ class InternalPathPage(ttk.Frame):
             main_module_path = os.path.join(PythonVariables.FormatVariableName(PythonVariables.PROJECT_DIR_VARIABLE) , self.current_project_document.\
                     GetModel().GetRelativePath(dlg.module_file))
             if self.CheckPathExist(main_module_path):
-                wx.MessageBox(_("Path already exist"),_("Add Path"),wx.OK,self)
+                messagebox.showinfo(_("Add Path"),_("Path already exist"),parent= self)
             else:
                 item = self.tree_ctrl.AppendItem(self.tree_ctrl.GetRootItem(),main_module_path)
                 self.tree_ctrl.SetItemImage(item,self.FolderIdx,wx.TreeItemIcon_Normal)
         
     def RemovePath(self):
-        item = self.tree_ctrl.GetSelection()
-        if item is None or not item.IsOk():
+        selections = self.treeview.tree.selection()
+        if not selections:
             return
-        self.tree_ctrl.Delete(item)
+        for item in selections:
+            self.treeview.tree.delete(item)
         
     def AddNewPath(self):
         dlg = pyutils.ProjectFolderPathDialog(self,_("Select Internal Path"),self.current_project_document.GetModel())
         if dlg.ShowModal() == constants.ID_OK:
             selected_path = dlg.selected_path
             if selected_path is not None:
-                selected_path = os.path.join(PythonVariables.FormatVariableName(PythonVariables.PROJECT_DIR_VARIABLE) , selected_path)
+                selected_path = os.path.join(variablesutils.FormatVariableName(variablesutils.PROJECT_DIR_VARIABLE) , selected_path)
             else:
-                selected_path = PythonVariables.FormatVariableName(PythonVariables.PROJECT_DIR_VARIABLE)
+                selected_path = variablesutils.FormatVariableName(variablesutils.PROJECT_DIR_VARIABLE)
             if self.CheckPathExist(selected_path):
-                wx.MessageBox(_("Path already exist"),_("Add Path"),wx.OK,self)
+                messagebox.showinfo(_("Add Path"),_("Path already exist"),parent= self)
             else:
-                item = self.tree_ctrl.AppendItem(self.tree_ctrl.GetRootItem(), selected_path)
-                self.tree_ctrl.SetItemImage(item,self.FolderIdx,wx.TreeItemIcon_Normal)
+                self.treeview.tree.insert('',"end",text=selected_path,image=self.folder_bmp)
         
     def CheckPathExist(self,path):
-        items = []
-        root_item = self.tree_ctrl.GetRootItem()
-        (item, cookie) = self.tree_ctrl.GetFirstChild(root_item)
-        while item:
-            items.append(item)
-            (item, cookie) = self.tree_ctrl.GetNextChild(root_item, cookie)
-        
+        items = self.treeview.tree.get_children()
         for item in items:
-            if parserutils.ComparePath(self.tree_ctrl.GetItemText(item),path):
+            if parserutils.ComparePath(self.treeview.tree.item(item,"text"),path):
                 return True
         return False
         
     def GetPythonPathList(self,use_raw_path=False):
         python_path_list = []
-        root_item = self.tree_ctrl.GetRootItem()
-        (item, cookie) = self.tree_ctrl.GetFirstChild(root_item)
-        while item:
-            text = self.tree_ctrl.GetItemText(item)
+        items = self.treeview.tree.get_children()
+        for item in items:
+            path = self.treeview.tree.item(item,"text")
             if use_raw_path:
-                python_path_list.append(text)
+                python_path_list.append(path)
             else:
-                python_variable_manager = PythonVariables.ProjectVariablesManager(self.current_project_document)
+                python_variable_manager = variablesutils.VariablesManager(self.current_project_document)
                 path = python_variable_manager.EvalulateValue(text)
                 python_path_list.append(str(path))
-            (item, cookie) = self.tree_ctrl.GetNextChild(root_item, cookie)
-        ###if self._useProjectPathCheckBox.GetValue():
-           ### python_path_list.append(self.current_project_document.GetPath())
         return python_path_list
 
 class ExternalPathPage(ttk.Frame,pythonpathmixin.PythonpathMixin):
@@ -182,14 +172,14 @@ class PythonPathPanel(ui_utils.BaseConfigurationPanel):
     def OnOK(self,optionsDialog):
         
         internal_path_list = self.internal_path_panel.GetPythonPathList(True)
-        utils.ProfileSet(self.ProjectDocument.GetKey() + "/InternalPath",internal_path_list.__repr__())
-        utils.ProfileSet(self.ProjectDocument.GetKey() + "/AppendProjectPath",int(self.internal_path_panel._useProjectPathCheckBox.GetValue()))
+        utils.profile_set(self.current_project_document.GetKey() + "/InternalPath",internal_path_list)
+        utils.profile_set(self.current_project_document.GetKey() + "/AppendProjectPath",self.internal_path_panel._useProjectPathCheckVar.get())
             
         external_path_list = self.external_path_panel.GetPythonPathList()
-        utils.ProfileSet(self.ProjectDocument.GetKey() + "/ExternalPath",external_path_list.__repr__())
+        utils.profile_set(self.current_project_document.GetKey() + "/ExternalPath",external_path_list.__repr__())
             
         environment_list = self.environment_panel.GetEnviron()
-        utils.ProfileSet(self.ProjectDocument.GetKey() + "/Environment",environment_list.__repr__())
+        utils.profile_set(self.current_project_document.GetKey() + "/Environment",environment_list.__repr__())
 
         return True
 

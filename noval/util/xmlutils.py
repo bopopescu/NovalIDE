@@ -25,7 +25,10 @@ xmlLogger = logging.getLogger("novalide.util.xml")
     
 def load(fileName, knownTypes=None, knownNamespaces=None, createGenerics=False):
     loadedObject = None
-    fileObject = open(fileName)
+    if utils.is_py2():
+        fileObject = open(fileName)
+    else:
+        fileObject = open(fileName,encoding="utf-8")
     timeStart = time.time()
     xml = ""
     try:
@@ -67,9 +70,11 @@ def save(fileName, objectToSave, prettyPrint=True, marshalType=True, knownTypes=
         raise xmlmarshaller.MarshallerException('Error marshalling object to file "%s": object is marked "readOnly" and cannot be written' % (fileName))        
     timeStart = time.time()
     xml = marshal(objectToSave, prettyPrint=prettyPrint, marshalType=marshalType, knownTypes=knownTypes, knownNamespaces=knownNamespaces, encoding=encoding)
-    if utils.is_py3():
+    if utils.is_py2():
+        fileObject = open(fileName, 'w')
+    else:
+        fileObject = open(fileName, 'w',encoding="utf-8")
         xml = compat.ensure_string(xml)
-    fileObject = open(fileName, 'w')
     try:
         fileObject.write(xml)
         fileObject.flush()
@@ -142,7 +147,10 @@ def cloneObject(objectToClone, knownTypes=None, marshalType=True, knownNamespace
     return clonedObject
 
 def getAgVersion(fileName):
-    fileObject = open(fileName)
+    if utils.is_py2():
+        fileObject = open(fileName)
+    else:
+        fileObject = open(fileName,encoding="utf-8")
     try:
         xml = fileObject.read()
     finally:

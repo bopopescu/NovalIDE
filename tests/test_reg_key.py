@@ -45,6 +45,8 @@ class TestRegistry(unittest.TestCase):
         reg = registry.Registry()
         child_reg = reg.Open(r"SOFTWARE\NovalIDEDebug")
         child_reg.DeleteKey('xxxx/yyy/zzz/ddd')
+        child_reg.DeleteKey('xxxx\\yyy')
+        child_reg.DeleteKey('xxxx\\yyy\\zzz\\ddd')
 
     def testDeleteValue(self):
         reg = registry.Registry()

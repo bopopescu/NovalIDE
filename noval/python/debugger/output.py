@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import tkinter as tk
 from tkinter import ttk
-from noval import _,NewId
+from noval import _,NewId,GetApp
 import noval.editor.text as texteditor
 #from noval.tool import FindTextCtrl
 import noval.ui_base as ui_base
@@ -24,10 +24,30 @@ class OutputCtrl(texteditor.TextCtrl):
         self._executor = None
         self._is_debug = is_debug
    #     wx.EVT_SET_FOCUS(self, self.OnFocus)
-    #    wx.stc.EVT_STC_DOUBLECLICK(self, self.GetId(), self.OnDoubleClick) 
+        self.bind('<Double-Button-1>',self.OnDoubleClick)
         
      #   wx.stc.EVT_STC_MODIFIED(self, self.GetId(), self.OnModify)    
       #  wx.EVT_KEY_DOWN(self, self.OnKeyPressed)
+      
+        self.tag_configure(
+            "io",
+            font="IOFont",
+        )
+        
+        self.tag_configure(
+            "stdin",
+            foreground="Blue"
+        )
+        
+        self.tag_configure(
+            "stdout",
+            foreground="Black"
+        )
+        
+        self.tag_configure(
+            "stderr",
+            foreground="Red"
+        )
             
     @property
     def IsFirstInput(self):
@@ -195,7 +215,8 @@ class OutputCtrl(texteditor.TextCtrl):
 
     def OnDoubleClick(self, event):
         # Looking for a stack trace line.
-        lineText, pos = self.GetCurLine()
+        line, col = self.GetCurrentLineColumn()
+        lineText = self.GetLineText(line)
         fileBegin = lineText.find("File \"")
         fileEnd = lineText.find("\", line ")
         lineEnd = lineText.find(", in ")
@@ -204,7 +225,7 @@ class OutputCtrl(texteditor.TextCtrl):
             lineNumber = self.GetCurrentLine()
             if(lineNumber == 0):
                 return
-            lineText = self.GetLine(lineNumber - 1)
+            lineText = self.GetLineText(lineNumber - 1)
             fileBegin = lineText.find("File \"")
             fileEnd = lineText.find("\", line ")
             lineEnd = lineText.find(", in ")
@@ -224,14 +245,12 @@ class OutputCtrl(texteditor.TextCtrl):
                               wx.OK | wx.ICON_ERROR,
                               wx.GetApp().GetTopWindow())
             return
-        wx.GetApp().GotoView(filename,lineNum)
+        GetApp().GotoView(filename,lineNum,load_outline=False)
         #last activiate debug view
         self.ActiveDebugView()
-        
 
     def AppendText(self, text,last_readonly=False):
         self.set_read_only(False)
-    #    self.SetCurrentPos(self.GetTextLength())
         self.AddText(text)
         self.ScrolltoEnd()
         #rember last position
@@ -244,16 +263,8 @@ class OutputCtrl(texteditor.TextCtrl):
 
     def AppendErrorText(self, text,last_readonly=False):
         self.set_read_only(False)
-   #     self.SetCurrentPos(self.GetTextLength())
-        self.StyleSetSpec(self.ERROR_COLOR_STYLE, 'fore:#ff0000, back:#FFFFFF,face:%s,size:%d' % \
-                                    (self._font.GetFaceName(),self._font.GetPointSize())) 
-        pos = self.GetCurrentPos()
-        self.AddText(text)
-        self.StartStyling(pos, 2)
-        self.SetStyling(len(text), self.ERROR_COLOR_STYLE)
-        self.ScrolltoEnd()
-        #rember last position
-        self.InputStartPos = self.GetCurrentPos()
+        tags = ("io",'stderr')
+        texteditor.TextCtrl.intercept_insert(self, "insert", text, tags)
         if last_readonly:
             self.SetReadOnly(True)
 

@@ -1,11 +1,11 @@
-from noval import _
+from noval import _,GetApp
 import tkinter as tk
 from tkinter import ttk
 import os
 import noval.iface as iface
 import noval.plugin as plugin
 import noval.consts as consts
-#import noval.tool.project as project
+from noval.util import utils
 import noval.ui_utils as ui_utils
 import noval.ttkwidgets.checklistbox as checklistbox
 import noval.project.property as projectproperty
@@ -28,7 +28,7 @@ class ProjectReferrencePanel(ui_utils.BaseConfigurationPanel):
         ttk.Button(right,text= _("UnSelect All"),command=self.UnSelectAll).pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0))
         right.pack(side=tk.LEFT,fill="y")
         row.pack(fill="both",expand=1)
-      #  self.LoadProjects()
+        self.LoadProjects()
 
     def GetProjectName(self):
         return os.path.basename(self._current_project.GetFilename())
@@ -36,32 +36,31 @@ class ProjectReferrencePanel(ui_utils.BaseConfigurationPanel):
     def OnOK(self,optionsDialog):
         ref_projects = self.GetReferenceProjects()
         ref_project_names = [ref_project.GetModel().Name for ref_project in ref_projects]
-        utils.ProfileSet(self.ProjectDocument.GetKey() + "/ReferenceProjects",ref_project_names.__repr__())
+        utils.profile_set(self._current_project.GetKey() + "/ReferenceProjects",ref_project_names)
         return True
         
-    def SelectAll(self,event):
+    def SelectAll(self):
         for i in range(self.listbox.GetCount()):
             if not self.listbox.IsChecked(i):
                 self.listbox.Check(i,True)
         
-    def UnSelectAll(self,event):
+    def UnSelectAll(self):
         for i in range(self.listbox.GetCount()):
             if self.listbox.IsChecked(i):
                 self.listbox.Check(i,False)
         
     def LoadProjects(self):
-        str_project_names = utils.ProfileGet(self.ProjectDocument.GetKey() + "/ReferenceProjects","")
+        str_project_names = utils.profile_get(self._current_project.GetKey() + "/ReferenceProjects","")
         try:
             ref_project_names = eval(str_project_names)
         except:
             ref_project_names = []
-        projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
-        current_project_document = projectService.GetCurrentProject()
-        for document in projectService.GetView().Documents:
+        current_project_document = GetApp().MainFrame.GetProjectView(generate_event=False).GetCurrentProject()
+        for document in GetApp().MainFrame.GetProjectView(generate_event=False).GetView().Documents:
             if document == current_project_document:
                 continue
             project_name = document.GetModel().Name
-            i = self.listbox.Append(project_name,document)
+            i = self.listbox.Append(project_name)
             if project_name in ref_project_names:
                 self.listbox.Check(i,True)
             

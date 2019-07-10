@@ -20,8 +20,18 @@ class FindResultsview(ttk.Frame):
         self.text = text_frame.text
         text_frame.grid(row=0, column=0, sticky=tk.NSEW)
         self.text.bind("<Double-Button-1>", self.OnJumptoFoundLine, "+")
+        self._ui_theme_change_binding = self.bind(
+            "<<ThemeChanged>>", self.reload_ui_theme, True
+        )
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
+        
+    def destroy(self):
+        self.unbind("<<ThemeChanged>>")
+        ttk.Frame.destroy(self)
+
+    def reload_ui_theme(self, event=None):
+        self.text._reload_theme_options(force=True)
         
     def AddLine(self,line_text):
         #只读状态时无法写入数据需要先解除只读

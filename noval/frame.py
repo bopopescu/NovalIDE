@@ -193,7 +193,8 @@ class DocTabbedParentFrame(ttk.Frame):
         #文本默认绑定了ctrl+d事件,需要解除并从新绑定快捷键事件
         GetApp().AddCommand(constants.ID_CLEAR,_("&Edit"),_("&Delete"),handler=lambda:self.OnDelete(),image="delete.png",\
                             default_tester=True,default_command=True,extra_sequences=["<<CtrlDInText>>"])
-        GetApp().AddCommand(constants.ID_SELECTALL,_("&Edit"),_("Select A&ll"),self.SelectAll,add_separator=True,default_tester=True,default_command=True,skip_sequence_binding=True)
+        GetApp().AddCommand(constants.ID_SELECTALL,_("&Edit"),_("Select A&ll"),self.SelectAll,add_separator=True,default_tester=True,default_command=True,\
+                            skip_sequence_binding=True,extra_sequences=["<<CtrlAInText>>"])
 
         undo_menu_item = GetApp().Menubar.GetEditMenu().FindMenuItem(constants.ID_UNDO)
         self.AddToolbarButton(constants.ID_UNDO,undo_menu_item.image,undo_menu_item.label,\
@@ -355,25 +356,17 @@ class DocTabbedParentFrame(ttk.Frame):
         return self._views[view_name]["instance"]
         
     def SaveLayout(self):
-        ##TODO 测试此处代码BUG,测试完成后要删除
-        try:
-            utils.profile_set(self._toolbar.GetToolbarKey(), self._toolbar.IsShown())
-            utils.profile_set(self.status_bar.GetStatusbarKey(), self.status_bar.IsShown())
-            self.SavePerspective()
-            for view_name in self._views:
-                visibility_flag = self._views[view_name]['visibility_flag']
-                utils.profile_set(consts.FRAME_VIEW_VISIBLE_KEY % view_name,visibility_flag.get())
-            utils.profile_set("LastPerspective",self._last_perspective)
-            self.GetProjectView().SaveProjectConfig()
-        except:
-            utils.get_logger().exception("")
-            print (self._toolbar.GetToolbarKey(), self._toolbar.IsShown())
-            print (self.status_bar.GetStatusbarKey(), self.status_bar.IsShown())
-            for view_name in self._views:
-                visibility_flag = self._views[view_name]['visibility_flag']
-                print (view_name,visibility_flag.get(),"===================")
-                utils.profile_set(consts.FRAME_VIEW_VISIBLE_KEY % view_name,visibility_flag.get())
-                print (k)
+        utils.profile_set(self._toolbar.GetToolbarKey(), self._toolbar.IsShown())
+        utils.profile_set(self.status_bar.GetStatusbarKey(), self.status_bar.IsShown())
+        self.SavePerspective()
+        for view_name in self._views:
+            visibility_flag = self._views[view_name]['visibility_flag']
+            if view_name.find("Debugger") != -1:
+                utils.get_logger().debug("debugger view %s does not save layout",view_name)
+                continue
+            utils.profile_set(consts.FRAME_VIEW_VISIBLE_KEY % view_name,visibility_flag.get())
+        utils.profile_set("LastPerspective",self._last_perspective)
+        self.GetProjectView().SaveProjectConfig()
             
     def IsViewShown(self,view_name):
         visibility_flag = self._views[view_name]['visibility_flag']

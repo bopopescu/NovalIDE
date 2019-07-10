@@ -32,6 +32,9 @@ class Registry(object):
             return None
         return Registry(open_key)
         
+    def Exist(self,key):
+        return self.Open(key) is not None
+        
     def Read(self,value_name):
         #读取健的默认值
         return QueryValue(self.RootKey,value_name)
@@ -86,6 +89,19 @@ class Registry(object):
             else:
                 loop_key = loop_key.CreateKey(key)
         return loop_key
+
+    def DeleteKeys(self,key_str):
+        key_path = key_str.replace("/","\\")
+        registry = self.Open(key_path)
+        if registry is None:
+            return
+        names = list(registry.EnumChildKeyNames())
+        if 0 == len(names):
+            self.DeleteKey(key_path)
+        else:
+            for name in names:
+                self.DeleteKeys(key_str + "/" + name)
+            self.DeleteKeys(key_str)
         
     def CloseKey(self):
         CloseKey(self.RootKey)

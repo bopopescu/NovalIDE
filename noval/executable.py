@@ -9,8 +9,8 @@
 # Copyright:   (c) wukan 2019
 # Licence:     GPL-3.0
 #-------------------------------------------------------------------------------
-
-
+from noval import _
+from tkinter import messagebox
 import noval.util.apputils as apputils
 import noval.util.strutils as strutils
 import os
@@ -49,7 +49,7 @@ class Executable(object):
         '''
         unicode_path = self.GetUnicodePath()
         if unicode_path != self.Path:
-            wx.MessageBox(_("%s path '%s' contains no asc character") % (self.TypeName,unicode_path),_("Warning"),wx.OK|wx.ICON_WARNING,wx.GetApp().GetTopWindow())
+            messagebox.showwarning(_("Warning"),_("%s path '%s' contains no asc character") % (self.TypeName,unicode_path))
         
     @property
     def InstallPath(self):

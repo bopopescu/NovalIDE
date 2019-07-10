@@ -64,12 +64,13 @@ else:
 class UserDataDb(BaseDb):
     
     USER_DATA_DB_NAME = "data.db"
-    DB_VERSION = "1.0.1"
+    DB_VERSION = "1.0.2"
     ###HOST_SERVER_ADDR = 'http://127.0.0.1:8000'
     HOST_SERVER_ADDR = 'http://www.novalide.com'
     ####HOST_SERVER_ADDR = 'http://47.105.90.123:8080/'
 
     def __init__(self):
+        self.CheckDbVersion()
         db_dir = os.path.join(appdirs.get_user_data_path(),consts.USER_CACHE_DIR)
         if not os.path.exists(db_dir):
             parserutils.MakeDirs(db_dir)
@@ -78,11 +79,31 @@ class UserDataDb(BaseDb):
         db_path = os.path.join(db_dir,self.USER_DATA_DB_NAME)
         BaseDb.__init__(self,db_path)
         self.init_data_db()
-        if parserutils.CompareDatabaseVersion(self.DB_VERSION,self.GetDbVersion()):
-            self.close()
-            os.remove(db_path)
-            BaseDb.__init__(self,db_path)
-            self.init_data_db()
+            
+    def CheckDbVersion(self):
+        db_dir = os.path.join(appdirs.get_user_data_path(),consts.USER_CACHE_DIR)
+        db_file = os.path.join(db_dir,self.USER_DATA_DB_NAME)
+        db_ver_file = os.path.join(db_dir,self.USER_DATA_DB_NAME + ".version")
+        if self.NeedUpdateDatabaseFile(db_ver_file):
+            if os.path.exists(db_file):
+                utils.get_logger().info("the database file %s need to be updated",db_file)
+                try:
+                    os.remove(db_file)
+                    self.SaveDbVersion(db_ver_file)
+                except:
+                    utils.get_logger().error("remove database file %s fail",db_file)
+                    
+    def SaveDbVersion(self,db_ver_file):
+        with open(db_ver_file,"w") as f:
+            return f.write(self.DB_VERSION)
+
+    def NeedUpdateDatabaseFile(self,db_ver_file):
+        if not os.path.exists(db_ver_file):
+            return True
+        if parserutils.CompareDatabaseVersion(self.DB_VERSION,self.GetDbVersion(db_ver_file)):
+            utils.get_logger().info("the database version is updated......")
+            return True
+        return False
 
     def init_data_db(self):
         table_already_exist_flag = 'already exists'
@@ -103,17 +124,14 @@ class UserDataDb(BaseDb):
     def CreateUser(self):
         os_name,os_bit,sn = get_host_info()
         insert_sql = '''
-            insert into user(os_bit,os,sn,user_name,version) values (?,?,?,?,?)
+            insert into user(os_bit,os,sn,user_name) values (?,?,?,?)
         '''
-        data = [(os_bit,os_name,sn,getpass.getuser(),self.DB_VERSION)]
+        data = [(os_bit,os_name,sn,getpass.getuser())]
         self.save(insert_sql,data)
         
-    def GetDbVersion(self):
-        sql = "select * from user"
-        result = self.fetchone(sql)
-        if not result:
-            return self.DB_VERSION
-        return result[9]
+    def GetDbVersion(self,db_ver_file):
+        with open(db_ver_file) as f:
+            return f.read()
 
     def GetUser(self):
         sql = "select * from user"

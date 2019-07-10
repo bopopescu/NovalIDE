@@ -30,7 +30,7 @@ import noval.python.parser.utils as parserutils
 import uuid
 import noval.filewatcher as filewatcher
 import pickle
-#import NewFile
+import noval.project.newfile as newfile
 import datetime
 from noval.util import utils
 #import noval.tool.project.RunConfiguration as RunConfiguration
@@ -50,6 +50,7 @@ try:
     import tkSimpleDialog
 except ImportError:
     import tkinter.simpledialog as tkSimpleDialog
+import noval.ui_common as ui_common
     
 #----------------------------------------------------------------------------
 # Constants
@@ -69,6 +70,20 @@ def getProjectKeyName(projectId):
 #----------------------------------------------------------------------------
 # Classes
 #----------------------------------------------------------------------------
+
+
+def AddProjectMapping(doc, projectDoc=None, hint=None):
+    project_view = GetApp().MainFrame.GetProjectView()
+    if not projectDoc:
+        if not hint:
+            hint = doc.GetFilename()
+        projectDocs = project_view.FindProjectByFile(hint)
+        if projectDocs:
+            projectDoc = projectDocs[0]
+            
+    project_view.AddProjectMapping(doc, projectDoc)
+    if hasattr(doc, "GetModel"):
+        project_view.AddProjectMapping(doc.GetModel(), projectDoc)
 
 class ProjectDocument(core.Document):
     
@@ -186,6 +201,7 @@ class ProjectDocument(core.Document):
         try:
             self.LoadObject(fileObject)
         except Exception as e:
+            utils.get_logger().exception('')
             GetApp().CloseSplash()
             msgTitle = GetApp().GetAppName()
             if not msgTitle:
@@ -1155,7 +1171,6 @@ class ProjectView(misc.AlarmEventView):
             else:
                 config.DeleteEntry(consts.CURRENT_PROJECT_KEY)
 
-
     def OnClose(self, deleteWindow = True):
         self.WriteProjectConfig()
             
@@ -1246,6 +1261,7 @@ class ProjectView(misc.AlarmEventView):
             self._treeCtrl.item(parentItem, open=True)
 
     def OnUpdate(self, sender = None, hint = None):
+        global DEFAULT_PROMPT_MESSAGE_ID
         if core.View.OnUpdate(self, sender, hint):
             return
         
@@ -1285,11 +1301,10 @@ class ProjectView(misc.AlarmEventView):
                                     project.RemoveFile(file)
                                 if DEFAULT_PROMPT_MESSAGE_ID == constants.ID_YES or \
                                             DEFAULT_PROMPT_MESSAGE_ID == constants.ID_NO:
-                                    prompt_dlg = ProjectUI.PromptMessageDialog(wx.GetApp().GetTopWindow(),-1,_("Project File Exists"),\
+                                    prompt_dlg = ui_common.PromptmessageBox(GetApp().GetTopWindow(),_("Project File Exists"),\
                                             _("The file %s is already exist in project ,Do You Want to overwrite it?") % filePath)
                                     status = prompt_dlg.ShowModal()
-                                    ProjectUI.PromptMessageDialog.DEFAULT_PROMPT_MESSAGE_ID = status
-                                    prompt_dlg.Destroy()
+                                    DEFAULT_PROMPT_MESSAGE_ID = status
                             if DEFAULT_PROMPT_MESSAGE_ID == constants.ID_YESTOALL or\
                                 DEFAULT_PROMPT_MESSAGE_ID == constants.ID_YES:
                                 try:
@@ -1467,23 +1482,6 @@ class ProjectView(misc.AlarmEventView):
                 doc = template.CreateDocument("", flags = wx.lib.docview.DOC_NEW)
                 break
                 
-    def OpenProject(self,event):
-        descr = _("Project File") + "(*%s)|*%s" % (PROJECT_EXTENSION,PROJECT_EXTENSION)
-        dlg = wx.FileDialog(self.GetFrame(),_("Open Project") ,
-                       wildcard = descr,
-                       style=wx.OPEN|wx.FILE_MUST_EXIST|wx.CHANGE_DIR)
-        if dlg.ShowModal() != wx.ID_OK:
-            dlg.Destroy()
-            return
-        project_path = dlg.GetPath()
-        dlg.Destroy()
-        
-        doc = self.GetDocumentManager().CreateDocument(project_path, wx.lib.docview.DOC_SILENT|wx.lib.docview.DOC_OPEN_ONCE)
-        if not doc:  # project already open
-            self.SetProject(project_path)
-        elif doc:
-            AddProjectMapping(doc)
-                
     def SaveProject(self):
         doc = self.GetDocument()
         if doc.IsModified():
@@ -1526,9 +1524,8 @@ class ProjectView(misc.AlarmEventView):
             messagebox.showinfo(_("Archive Success"),_("Success archived to %s") % zip_path)
             GetApp().GetTopWindow().PushStatusText(_("Success archived to %s") % zip_path)
         except Exception as e:
-            msg = unicode(e)
             utils.get_logger().exception("")
-            messagebox.showerror(_("Archive Error"),msg)
+            messagebox.showerror(_("Archive Error"),str(e))
             GetApp().GetTopWindow().PushStatusText(_("Archive Error"))
         GetApp().configure(cursor="")
 
@@ -1787,37 +1784,18 @@ class ProjectView(misc.AlarmEventView):
 
     #----------------------------------------------------------------------------
     # Control events
-    #----------------------------------------------------------------------------
-
-    def OnProperties(self, event):
-        if self.ProjectHasFocus():
-            self.OnProjectProperties()
-        elif self.FilesHasFocus():
-            items = self._treeCtrl.GetSelections()
-            if not items:
-                return
-            item = items[0]
-            filePropertiesService = wx.GetApp().GetService(Property.FilePropertiesService)
-            filePropertiesService.ShowPropertiesDialog(self.GetDocument(),item)
-
-    def OnProjectProperties(self, option_name=None):
-        if self.GetDocument():
-            filePropertiesService = wx.GetApp().GetService(Property.FilePropertiesService)
-            filePropertiesService.ShowPropertiesDialog(self.GetDocument(),self._treeCtrl.GetRootItem(),option_name)
-            
-    def OnAddNewFile(self,event):
-        items = self._treeCtrl.GetSelections()
+    #----------------------------------------------------------------------------            
+    def OnAddNewFile(self):
+        items = self._treeCtrl.selection()
         if items:
             item = items[0]
             folderPath = self._GetItemFolderPath(item)
         else:
             folderPath = ""
-        frame = NewFile.NewFileDialog(self.GetFrame(),-1,_("New FileType"),folderPath)
-        frame.CenterOnParent()
-        if frame.ShowModal() == wx.ID_OK:
-            if self.GetDocument().GetCommandProcessor().Submit(ProjectAddFilesCommand(self.GetDocument(), [frame.file_path], folderPath=folderPath)):
-                self.OnOpenSelection(None)
-        frame.Destroy()
+        dlg = newfile.NewFileDialog(self.GetFrame(),_("New FileType"),folderPath)
+        if dlg.ShowModal() == constants.ID_OK:
+            if self.GetDocument().GetCommandProcessor().Submit(projectcommand.ProjectAddFilesCommand(self.GetDocument(), [dlg.file_path], folderPath=folderPath)):
+                self._prject_browser.OpenSelection()
 
     def OnAddFolder(self):
         if self.GetDocument():
@@ -1918,7 +1896,8 @@ class ProjectView(misc.AlarmEventView):
                 self.title(_("Add Directory Files to Project"))
                 row = ttk.Frame(self.main_frame)
                 ttk.Label(row, text=_("Directory:")).pack(side=tk.LEFT)
-                dirCtrl = ttk.Entry(row, text=os.path.dirname(self._view.GetDocument().GetFilename()))
+                self.dir_var = tk.StringVar(value=os.path.dirname(self._view.GetDocument().GetFilename()))
+                dirCtrl = ttk.Entry(row, textvariable=self.dir_var)
                 dirCtrl.pack(side=tk.LEFT,fill="x",expand=1)
                # dirCtrl.SetToolTipString(dirCtrl.GetValue())
                 findDirButton = ttk.Button(row,text=_("Browse..."),command=self.OnBrowseButton)
@@ -1953,7 +1932,7 @@ class ProjectView(misc.AlarmEventView):
                 path = filedialog.askdirectory(title=_("Choose a directory:"))
                 if not path:
                     return
-                self.path_var.set(fileutils.opj(path))
+                self.dir_var.set(fileutils.opj(path))
 
         dlg = AddDirProjectDialog(GetApp().GetTopWindow(),self)
         status = dlg.ShowModal()
@@ -2647,21 +2626,20 @@ class ProjectView(misc.AlarmEventView):
         return False
         
     def OnAddCurrentFileToProject(self):
-        doc = self.GetDocumentManager().GetCurrentDocument()
+        text_view = GetApp().MainFrame.GetNotebook().get_current_editor().GetView()
+        doc = text_view.GetDocument()
         filepath = doc.GetFilename()
         projectDoc = self.GetDocument()
         if projectDoc.IsFileInProject(filepath):
             messagebox.showwarning(GetApp().GetAppName(),_("Current document is already in the project"))
             return
         folderPath = None
-        if self.GetView().GetMode() == ProjectView.PROJECT_VIEW:
-            selections = self.GetView()._treeCtrl.GetSelections()
-            if selections:
-                item = selections[0]
-                folderPath = self.GetView()._GetItemFolderPath(item)
-        if projectDoc.GetCommandProcessor().Submit(ProjectAddFilesCommand(projectDoc, [filepath],folderPath=folderPath)):
+        item = self._treeCtrl.GetSingleSelectItem()
+        if item:
+            folderPath = self._GetItemFolderPath(item)
+        if projectDoc.GetCommandProcessor().Submit(projectcommand.ProjectAddFilesCommand(projectDoc, [filepath],folderPath=folderPath)):
             AddProjectMapping(doc, projectDoc)
-            self.GetView().Activate()  # after add, should put focus on project editor
+            self.Activate()  # after add, should put focus on project editor
             if folderPath is None:
                 folderPath = ""
             newFilePath = os.path.join(projectDoc.GetModel().homeDir,folderPath,os.path.basename(filepath))
@@ -2670,7 +2648,7 @@ class ProjectView(misc.AlarmEventView):
             if not parserutils.ComparePath(newFilePath,filepath):
                 openDoc = doc.GetOpenDocument(newFilePath)
                 if openDoc:
-                    wx.MessageBox(_("Project file is already opened"),style = wx.OK|wx.ICON_WARNING)
+                    messagebox.showwarning(GetApp().GetAppName(),_("Project file is already opened"))
                     openDoc.GetFirstView().GetFrame().SetFocus()
                     return
                 doc.FileWatcher.StopWatchFile(doc)
@@ -2744,13 +2722,12 @@ class ProjectOptionsPanel(ui_utils.BaseConfigurationPanel):
 
 
     def OnOK(self, optionsDialog):
-        config = wx.ConfigBase_Get()
-        config.WriteInt("ProjectSaveDocs", self._projSaveDocsCheckBox.GetValue())
-        config.WriteInt("PromptSaveProjectFile", self._promptSaveCheckBox.GetValue())
-        config.WriteInt("LoadFolderState", self._loadFolderStateCheckBox.GetValue())
-        if not ACTIVEGRID_BASE_IDE:
-            config.WriteInt("RunWelcomeDialog2", self._projShowWelcomeCheckBox.GetValue())
-            config.Write(APP_LAST_LANGUAGE, self._langCtrl.GetStringSelection())
+        utils.profile_set("ProjectSaveDocs", self.projectsavedoc_chkvar.get())
+        utils.profile_set("PromptSaveProjectFile", self.promptSavedoc_chkvar.get())
+        utils.profile_set("LoadFolderState", self.loadFolderState_chkvar.get())
+       # if not ACTIVEGRID_BASE_IDE:
+         #   config.WriteInt("RunWelcomeDialog2", self._projShowWelcomeCheckBox.GetValue())
+          #  config.Write(APP_LAST_LANGUAGE, self._langCtrl.GetStringSelection())
         return True
 
 

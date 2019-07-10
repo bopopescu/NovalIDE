@@ -3,25 +3,25 @@
     <zh_CN>
     <TemplateData value="Python">
         <Template>
-        <Icon Large="noval/tool/bmp_source/template/python.bmp" Small="noval/tool/bmp_source/template/python-small.bmp"/>
+        <Icon Large="noval/tool/bmp_source/template/python.bmp" Small="noval/bmp_source/template/python-small.bmp"/>
         <Ext>.py</Ext>
-        <Content> noval/tool/data/template/PythonFile.tar.bz2 </Content>
+        <Content> noval/data/template/PythonFile.tar.bz2 </Content>
         <DefaultName>module.py</DefaultName>
         <Name>Python脚本</Name>
         <Description>一个简单的Python脚本</Description>
         </Template>
         <Template>
-        <Icon Large="noval/tool/bmp_source/template/python.bmp" Small="noval/tool/bmp_source/template/python-small.bmp"/>
+        <Icon Large="noval/tool/bmp_source/template/python.bmp" Small="noval/bmp_source/template/python-small.bmp"/>
         <Ext>.py</Ext>
-        <Content> noval/tool/data/template/PyClass.tar.bz2 </Content>
+        <Content> noval/data/template/PyClass.tar.bz2 </Content>
         <DefaultName>class.py</DefaultName>
         <Name>Python类</Name>
         <Description>一个包含空类的Python脚本</Description>
         </Template>
         <Template>
-        <Icon Large="noval/tool/bmp_source/template/python.bmp" Small="noval/tool/bmp_source/template/python-small.bmp"/>
+        <Icon Large="noval/tool/bmp_source/template/python.bmp" Small="noval/bmp_source/template/python-small.bmp"/>
         <Ext>.py</Ext>
-        <Content> noval/tool/data/template/EmptyPythonModule.tar.bz2 </Content>
+        <Content> noval/data/template/EmptyPythonModule.tar.bz2 </Content>
         <DefaultName>module.py</DefaultName>
         <Name>空模块</Name>
         <Description>一个空的Python模块文件</Description>
@@ -29,7 +29,7 @@
     </TemplateData>
     <TemplateData value="网络">
         <Template>
-        <Icon Large="noval/tool/bmp_source/template/html.bmp" Small="noval/tool/bmp_source/template/html-small.bmp"/>
+        <Icon Large="noval/tool/bmp_source/template/html.bmp" Small="noval/bmp_source/template/html-small.bmp"/>
         <Ext>.html</Ext>
         <Content> noval/tool/data/template/HtmlFile.tar.bz2 </Content>
         <DefaultName>WebPage.html</DefaultName>
@@ -37,7 +37,7 @@
         <Description>一个包含html客户端代码的页面</Description>
         </Template>
         <Template>
-        <Icon Large="noval/tool/bmp_source/template/xml.bmp" Small="noval/tool/bmp_source/template/xml-small.bmp"/>
+        <Icon Large="noval/tool/bmp_source/template/xml.bmp" Small="noval/bmp_source/template/xml-small.bmp"/>
         <Ext>.xml</Ext>
         <Content> noval/tool/data/template/XmlFile.tar.bz2 </Content>
         <DefaultName>XmlFile.xml</DefaultName>
@@ -45,9 +45,9 @@
         <Description>一个包含申明的可扩展标记文件</Description>
         </Template>
         <Template>
-        <Icon Large="noval/tool/bmp_source/template/ini.bmp" Small="noval/tool/bmp_source/template/ini-small.bmp"/>
+        <Icon Large="noval/tool/bmp_source/template/ini.bmp" Small="noval/bmp_source/template/ini-small.bmp"/>
         <Ext>.css</Ext>
-        <Content> noval/tool/data/template/Stylesheet.tar.bz2 </Content>
+        <Content> noval/data/template/Stylesheet.tar.bz2 </Content>
         <DefaultName>Stylesheet.css</DefaultName>
         <Name>层叠样式表</Name>
         <Description>一个用来描述html丰富定义的样式表</Description>
@@ -55,7 +55,7 @@
     </TemplateData>
     <TemplateData value="其它">
         <Template>
-        <Icon Large="noval/tool/bmp_source/template/js.bmp" Small="noval/tool/bmp_source/template/js-small.bmp"/>
+        <Icon Large="noval/tool/bmp_source/template/js.bmp" Small="noval/bmp_source/template/js-small.bmp"/>
         <Ext>.js</Ext>
         <Content> noval/tool/data/template/JavaScript.tar.bz2 </Content>
         <DefaultName>JavaScript.js</DefaultName>
@@ -63,15 +63,15 @@
         <Description>一个包含JavaScript代码的脚本</Description>
         </Template>
         <Template>
-        <Icon Large="noval/tool/bmp_source/template/txt.bmp" Small="noval/tool/bmp_source/template/txt-small.bmp"/>
+        <Icon Large="noval/tool/bmp_source/template/txt.bmp" Small="noval/bmp_source/template/txt-small.bmp"/>
         <Ext>.sql</Ext>
-        <Content> noval/tool/data/template/TextFile.tar.bz2 </Content>
+        <Content> noval/data/template/TextFile.tar.bz2 </Content>
         <DefaultName>SqlFile.sql</DefaultName>
         <Name>SQL文件</Name>
         <Description>一个空的sql脚本文件</Description>
         </Template>
         <Template>
-        <Icon Large="noval/tool/bmp_source/template/ini.bmp" Small="noval/tool/bmp_source/template/ini-small.bmp"/>
+        <Icon Large="noval/tool/bmp_source/template/ini.bmp" Small="noval/bmp_source/template/ini-small.bmp"/>
         <Ext>.ini</Ext>
         <Content> noval/tool/data/template/IniFile.tar.bz2 </Content>
         <DefaultName>Config.ini</DefaultName>
@@ -79,9 +79,9 @@
         <Description>一个描述配置的初始化文件</Description>
         </Template>
         <Template>
-        <Icon Large="noval/tool/bmp_source/template/txt.bmp" Small="noval/tool/bmp_source/template/txt-small.bmp"/>
+        <Icon Large="noval/tool/bmp_source/template/txt.bmp" Small="noval/bmp_source/template/txt-small.bmp"/>
         <Ext>.txt</Ext>
-        <Content> noval/tool/data/template/TextFile.tar.bz2 </Content>
+        <Content> noval/data/template/TextFile.tar.bz2 </Content>
         <DefaultName>TextFile.txt</DefaultName>
         <Name>文本文件</Name>
         <Description>一个空的文本文件</Description>
@@ -93,7 +93,7 @@
         <Template>
         <Icon Large="noval/tool/bmp_source/template/python.bmp" Small="noval/tool/bmp_source/template/python-small.bmp"/>
         <Ext>.py</Ext>
-        <Content> noval/tool/data/template/PythonFile.tar.bz2 </Content>
+        <Content> noval/data/template/PythonFile.tar.bz2 </Content>
         <DefaultName>module.py</DefaultName>
         <Name>Python Script</Name>
         <Description>An simple .py file</Description>
@@ -101,7 +101,7 @@
         <Template>
         <Icon Large="noval/tool/bmp_source/template/python.bmp" Small="noval/tool/bmp_source/template/python-small.bmp"/>
         <Ext>.py</Ext>
-        <Content> noval/tool/data/template/PyClass.tar.bz2 </Content>
+        <Content> noval/data/template/PyClass.tar.bz2 </Content>
         <DefaultName>class.py</DefaultName>
         <Name>Python class</Name>
         <Description>An .py file with an empty class</Description>
@@ -110,7 +110,7 @@
         <Template>
         <Icon Large="noval/tool/bmp_source/template/python.bmp" Small="noval/tool/bmp_source/template/python-small.bmp"/>
         <Ext>.py</Ext>
-        <Content> noval/tool/data/template/EmptyPythonFile.tar.bz2 </Content>
+        <Content> noval/data/template/EmptyPythonFile.tar.bz2 </Content>
         <DefaultName>module.py</DefaultName>
         <Name>Empty Python Module</Name>
         <Description>An .py file with empty content</Description>
@@ -121,7 +121,7 @@
         <Template>
         <Icon Large="noval/tool/bmp_source/template/html.bmp" Small="noval/tool/bmp_source/template/html-small.bmp"/>
         <Ext>.html</Ext>
-        <Content> noval/tool/data/template/HtmlFile.tar.bz2 </Content>
+        <Content> noval/data/template/HtmlFile.tar.bz2 </Content>
         <DefaultName>WebPage.html</DefaultName>
         <Name>HTML Page</Name>
         <Description>An HTML page that can include client-side code.</Description>
@@ -180,3 +180,4 @@
     </en_US>
 
 </FileType>
+

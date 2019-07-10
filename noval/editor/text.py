@@ -50,6 +50,13 @@ def classifyws(s, tabwidth):
         else:
             break
     return raw, effective
+    
+def index2line(index):
+    return int(float(index))
+
+
+def line2index(line):
+    return str(float(line))
 
 class TextDocument(core.Document):
     
@@ -442,10 +449,18 @@ class TextView(misc.AlarmEventView):
         self._text_frame.focus_set()
         
     def update_appearance(self):
-        self._text_frame.set_gutter_visibility(True)
+        self._text_frame.set_gutter_visibility(utils.profile_get_int("TextViewLineNumbers", True))
         #设置代码边界线长度
-       # self._text_frame.set_line_length_margin(100)
-##        self._code_view.text.event_generate("<<UpdateAppearance>>")
+        view_right_edge = utils.profile_get_int("TextViewRightEdge", True)
+        if view_right_edge:
+            line_length_margin = utils.profile_get_int("TextEditorEdgeGuideWidth", consts.DEFAULT_EDGE_GUIDE_WIDTH)
+        else:
+            line_length_margin = 0
+        self._text_frame.set_line_length_margin(line_length_margin)
+        tag_current_line = utils.profile_get_int("TextHighlightCaretLine", True)
+        self.GetCtrl().SetTagCurrentLine(tag_current_line)
+        #更新代码着色
+        self.GetCtrl().event_generate("<<UpdateAppearance>>")
 
     def GetValue(self):
         return self.GetCtrl().GetValue()
@@ -544,6 +559,7 @@ class TextCtrl(ui_base.TweakableText):
     Most of the code is adapted from idlelib.EditorWindow.
     use_edit_tester表示文本窗口弹出编辑菜单是否使用主编辑菜单的tester函数,默认为False
     use_edit_image表示是否使用主编辑菜单的编辑图标,默认为False
+    tag_current_line:表示是否高亮当前行
     """
 
     def __init__(self, master=None, style="Text", tag_current_line=True,
@@ -580,12 +596,15 @@ class TextCtrl(ui_base.TweakableText):
         self._regular_insertwidth = self["insertwidth"]
         self._reload_theme_options()
 
-        self._should_tag_current_line = tag_current_line
+        self.SetTagCurrentLine(tag_current_line)
         #是否高亮当前行
+        self.bind("<<CursorMove>>", self._tag_current_line, True)
+        self.bind("<<TextChange>>", self._tag_current_line, True)
         if tag_current_line:
-            self.bind("<<CursorMove>>", self._tag_current_line, True)
-            self.bind("<<TextChange>>", self._tag_current_line, True)
             self._tag_current_line()
+        
+    def SetTagCurrentLine(self,tag_current_line=False):
+        self._should_tag_current_line = tag_current_line
 
     def _bind_mouse_aids(self):
         #单击鼠标右键事件
@@ -609,6 +628,7 @@ class TextCtrl(ui_base.TweakableText):
         self.bind("<Control-t>", self._redirect_ctrlt, True)
         self.bind("<Control-k>", self._redirect_ctrlk, True)
         self.bind("<Control-h>", self._redirect_ctrlh, True)
+        self.bind("<Control-a>", self._redirect_ctrla, True)
         #tk8.5.15版本默认绑定了contrl-f事件,需要重新绑定该事件
         if strutils.compare_version(pyutils.get_tk_version_str(),("8.6.6")) < 0:
             self.bind("<Control-f>", self._redirect_ctrlf, True)
@@ -663,6 +683,10 @@ class TextCtrl(ui_base.TweakableText):
         
     def _redirect_ctrlf(self,event):
         self.event_generate("<<CtrlFInText>>")
+        return "break"
+        
+    def _redirect_ctrla(self,event):
+        self.event_generate("<<CtrlAInText>>")
         return "break"
         
     def _redirect_ctrlk(self, event):
@@ -1375,6 +1399,7 @@ class TextOptionsPanel(ui_utils.BaseConfigurationPanel):
     def __init__(self, parent,  hasWordWrap = False):
         ui_utils.BaseConfigurationPanel.__init__(self, parent)
         self._hasWordWrap = hasWordWrap
+        self._hasTabs = False
         if self._hasWordWrap:
             self._wordWrapCheckBox = ttk.Checkbutton(self, text=_("Wrap words inside text area"))
             self._wordWrapCheckBox.SetValue(wx.ConfigBase_Get().ReadInt(self._configPrefix + "EditorWordWrap", False))
@@ -1385,14 +1410,13 @@ class TextOptionsPanel(ui_utils.BaseConfigurationPanel):
       #  self._viewIndentationGuideCheckBox = wx.CheckBox(self, -1, _("Show indentation guides"))
        # self._viewIndentationGuideCheckBox.SetValue(config.ReadInt(self._configPrefix + "EditorViewIndentationGuides", False))
         self._viewRightEdgeVar = tk.IntVar(value=utils.profile_get_int("TextViewRightEdge", True))
-        viewRightEdgeCheckBox = ttk.Checkbutton(self,text=_("Show right edge"),variable=self._viewRightEdgeVar)
+        viewRightEdgeCheckBox = ttk.Checkbutton(self,text=_("Show right edge"),variable=self._viewRightEdgeVar,command=self.CheckViewRightEdge)
         viewRightEdgeCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         
         self._viewLineNumbersVar = tk.IntVar(value=utils.profile_get_int("TextViewLineNumbers", True))
         viewLineNumbersCheckBox = ttk.Checkbutton(self,text=_("Show line numbers"),variable=self._viewLineNumbersVar)
         viewLineNumbersCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
 
-        
         self._highlightCaretLineVar = tk.IntVar(value=utils.profile_get_int("TextHighlightCaretLine", True))
         highlightCaretLineCheckBox = ttk.Checkbutton(self,text=_("Highlight Caret Line"),variable=self._highlightCaretLineVar)
         highlightCaretLineCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
@@ -1420,9 +1444,9 @@ class TextOptionsPanel(ui_utils.BaseConfigurationPanel):
         row = ttk.Frame(self)
         edgeWidthLabel = ttk.Label(row, text= _("Edge Guide Width:"))
         edgeWidthLabel.pack(side=tk.LEFT)
-        self._edgeWidthVar = tk.IntVar(value = utils.profile_get_int("TextEditorEdgeGuideWidth", 4))
-        edge_spin_ctrl = tk.Spinbox(row, from_=0, to=160)
-        edge_spin_ctrl.pack(side=tk.LEFT)
+        self._edgeWidthVar = tk.IntVar(value = utils.profile_get_int("TextEditorEdgeGuideWidth", consts.DEFAULT_EDGE_GUIDE_WIDTH))
+        self.edge_spin_ctrl = tk.Spinbox(row, from_=0, to=160,textvariable=self._edgeWidthVar)
+        self.edge_spin_ctrl.pack(side=tk.LEFT)
         row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
 ##        defaultEOLModelLabel = wx.StaticText(self, -1, _("Default EOL Mode:"))
 ##        self.eol_model_combox = wx.ComboBox(self, -1,choices=EOLFormat.EOLFormatDlg.EOL_CHOICES,style= wx.CB_READONLY)
@@ -1433,69 +1457,53 @@ class TextOptionsPanel(ui_utils.BaseConfigurationPanel):
 ##        idx = EOLFormat.EOLFormatDlg.EOL_ITEMS.index(eol_mode)
 ##        self.eol_model_combox.SetSelection(idx)
 
-    #    self.CheckRightEdge(None)
-     #   self.UpdateSampleFont()
+        self.CheckViewRightEdge()
         
-    def CheckRightEdge(self,event):
-        self.edge_spin_ctrl.Enable(self._viewRightEdgeCheckBox.GetValue())
-
-    def UpdateSampleFont(self):
-        nativeFont = wx.NativeFontInfo()
-        nativeFont.FromString(self._textFont.GetNativeFontInfoDesc())
-        font = wx.NullFont
-        font.SetNativeFontInfo(nativeFont)
-        font.SetPointSize(self._sampleTextCtrl.GetFont().GetPointSize())  # Use the standard point size
-        self._sampleTextCtrl.SetFont(font)
-        self._sampleTextCtrl.SetForegroundColour(self._textColor)
-        self._sampleTextCtrl.SetValue(str(self._textFont.GetPointSize()) + _(" pt. ") + self._textFont.GetFaceName())
-        self._sampleTextCtrl.Refresh()
-        self.Layout()
-
-    def OnChooseFont(self, event):
-        data = wx.FontData()
-        data.EnableEffects(True)
-        data.SetInitialFont(self._textFont)
-        data.SetColour(self._textColor)
-        fontDialog = wx.FontDialog(self, data)
-        fontDialog.CenterOnParent()
-        if fontDialog.ShowModal() == wx.ID_OK:
-            data = fontDialog.GetFontData()
-            self._textFont = data.GetChosenFont()
-            self._textColor = data.GetColour()
-            self.UpdateSampleFont()
-        fontDialog.Destroy()
-
+    def CheckViewRightEdge(self):
+        if self._viewRightEdgeVar.get():
+            self.edge_spin_ctrl['state'] = tk.NORMAL
+        else:
+            self.edge_spin_ctrl['state'] = tk.DISABLED
 
     def OnOK(self, optionsDialog):
-        config = wx.ConfigBase_Get()
-        doViewStuffUpdate = config.ReadInt(self._configPrefix + "EditorViewWhitespace", False) != self._viewWhitespaceCheckBox.GetValue()
-        config.WriteInt(self._configPrefix + "EditorViewWhitespace", self._viewWhitespaceCheckBox.GetValue())
-        doViewStuffUpdate = doViewStuffUpdate or config.ReadInt(self._configPrefix + "EditorViewEOL", False) != self._viewEOLCheckBox.GetValue()
-        config.WriteInt(self._configPrefix + "EditorViewEOL", self._viewEOLCheckBox.GetValue())
-        doViewStuffUpdate = doViewStuffUpdate or config.ReadInt(self._configPrefix + "EditorViewIndentationGuides", False) != self._viewIndentationGuideCheckBox.GetValue()
-        config.WriteInt(self._configPrefix + "EditorViewIndentationGuides", self._viewIndentationGuideCheckBox.GetValue())
-        doViewStuffUpdate = doViewStuffUpdate or config.ReadInt(self._configPrefix + "EditorViewRightEdge", False) != self._viewRightEdgeCheckBox.GetValue()
-        config.WriteInt(self._configPrefix + "EditorViewRightEdge", self._viewRightEdgeCheckBox.GetValue())
-        doViewStuffUpdate = doViewStuffUpdate or config.ReadInt(self._configPrefix + "EditorViewLineNumbers", True) != self._viewLineNumbersCheckBox.GetValue()
-        config.WriteInt(self._configPrefix + "EditorViewLineNumbers", self._viewLineNumbersCheckBox.GetValue())
-        doViewStuffUpdate = doViewStuffUpdate or config.ReadInt(self._configPrefix + "EditorHighlightCaretLine", True) != self._highlightCaretLineCheckBox.GetValue()
-        config.WriteInt(self._configPrefix + "EditorHighlightCaretLine", self._highlightCaretLineCheckBox.GetValue())
-        if sysutilslib.isWindows():
-            default_eol_mode = wx.stc.STC_EOL_CRLF
-        else:
-            default_eol_mode = wx.stc.STC_EOL_LF
-        eol_mode = EOLFormat.EOLFormatDlg.EOL_ITEMS[self.eol_model_combox.GetSelection()]
-        doViewStuffUpdate = doViewStuffUpdate or config.ReadInt(self._configPrefix + "EditorEOLMode", default_eol_mode) != eol_mode
-        config.WriteInt(self._configPrefix + "EditorEOLMode", eol_mode)
-        if self._viewRightEdgeCheckBox.GetValue():
-            doViewStuffUpdate = doViewStuffUpdate or config.ReadInt("EdgeGuideWidth", consts.DEFAULT_EDGE_GUIDE_WIDTH) != int(self.edge_spin_ctrl.GetValue())
-            config.WriteInt("EdgeGuideWidth", int(self.edge_spin_ctrl.GetValue()))
-        if self._hasFolding:
-            doViewStuffUpdate = doViewStuffUpdate or config.ReadInt(self._configPrefix + "EditorViewFolding", True) != self._viewFoldingCheckBox.GetValue()
-            config.WriteInt(self._configPrefix + "EditorViewFolding", self._viewFoldingCheckBox.GetValue())
-        if self._hasWordWrap:
-            doViewStuffUpdate = doViewStuffUpdate or config.ReadInt(self._configPrefix + "EditorWordWrap", False) != self._wordWrapCheckBox.GetValue()
-            config.WriteInt(self._configPrefix + "EditorWordWrap", self._wordWrapCheckBox.GetValue())
+        doViewStuffUpdate = False
+    #    doViewStuffUpdate = config.ReadInt(self._configPrefix + "EditorViewWhitespace", False) != self._viewWhitespaceCheckBox.GetValue()
+     #   config.WriteInt(self._configPrefix + "EditorViewWhitespace", self._viewWhitespaceCheckBox.GetValue())
+      #  doViewStuffUpdate = doViewStuffUpdate or config.ReadInt(self._configPrefix + "EditorViewEOL", False) != self._viewEOLCheckBox.GetValue()
+       # config.WriteInt(self._configPrefix + "EditorViewEOL", self._viewEOLCheckBox.GetValue())
+        #doViewStuffUpdate = doViewStuffUpdate or config.ReadInt(self._configPrefix + "EditorViewIndentationGuides", False) != self._viewIndentationGuideCheckBox.GetValue()
+        #config.WriteInt(self._configPrefix + "EditorViewIndentationGuides", self._viewIndentationGuideCheckBox.GetValue())
+        doViewStuffUpdate = doViewStuffUpdate or utils.profile_get_int("TextViewRightEdge", False) != self._viewRightEdgeVar.get()
+        utils.profile_set( "TextViewRightEdge", self._viewRightEdgeVar.get())
+        
+        doViewStuffUpdate = doViewStuffUpdate or utils.profile_get_int("TextViewLineNumbers", True) != self._viewLineNumbersVar.get()
+        utils.profile_set("TextViewLineNumbers", self._viewLineNumbersVar.get())
+        
+        doViewStuffUpdate = doViewStuffUpdate or utils.profile_get_int("TextHighlightCaretLine", True) != self._highlightCaretLineVar.get()
+        utils.profile_set("TextHighlightCaretLine", self._highlightCaretLineVar.get())
+        
+        doViewStuffUpdate = doViewStuffUpdate or utils.profile_get_int("TextHighlightParentheses", True) != self._highlightParenthesesVar.get()
+        utils.profile_set("TextHighlightParentheses", self._highlightParenthesesVar.get())
+        
+        doViewStuffUpdate = doViewStuffUpdate or utils.profile_get_int("TextHighlightSyntax", True) != self._highlightSyntaxVar.get()
+        utils.profile_set("TextHighlightSyntax", self._highlightSyntaxVar.get())
+        
+      #  if sysutilslib.isWindows():
+       #     default_eol_mode = wx.stc.STC_EOL_CRLF
+        #else:
+         #   default_eol_mode = wx.stc.STC_EOL_LF
+        #eol_mode = EOLFormat.EOLFormatDlg.EOL_ITEMS[self.eol_model_combox.GetSelection()]
+        #doViewStuffUpdate = doViewStuffUpdate or config.ReadInt(self._configPrefix + "EditorEOLMode", default_eol_mode) != eol_mode
+        #config.WriteInt(self._configPrefix + "EditorEOLMode", eol_mode)
+        if self._viewRightEdgeVar.get():
+            doViewStuffUpdate = doViewStuffUpdate or utils.profile_get_int("TextEditorEdgeGuideWidth", consts.DEFAULT_EDGE_GUIDE_WIDTH) != self._edgeWidthVar.get()
+            utils.profile_set("TextEditorEdgeGuideWidth", self._edgeWidthVar.get())
+       # if self._hasFolding:
+        #    doViewStuffUpdate = doViewStuffUpdate or config.ReadInt(self._configPrefix + "EditorViewFolding", True) != self._viewFoldingCheckBox.GetValue()
+         #   config.WriteInt(self._configPrefix + "EditorViewFolding", self._viewFoldingCheckBox.GetValue())
+        #if self._hasWordWrap:
+          #  doViewStuffUpdate = doViewStuffUpdate or config.ReadInt(self._configPrefix + "EditorWordWrap", False) != self._wordWrapCheckBox.GetValue()
+           # config.WriteInt(self._configPrefix + "EditorWordWrap", self._wordWrapCheckBox.GetValue())
         if self._hasTabs:
             doViewStuffUpdate = doViewStuffUpdate or not config.ReadInt(self._configPrefix + "EditorUseTabs", True) != self._hasTabsCheckBox.GetValue()
             config.WriteInt(self._configPrefix + "EditorUseTabs", not self._hasTabsCheckBox.GetValue())
@@ -1504,21 +1512,7 @@ class TextOptionsPanel(ui_utils.BaseConfigurationPanel):
             if newIndentWidth != oldIndentWidth:
                 doViewStuffUpdate = True
                 config.WriteInt(self._configPrefix + "EditorIndentWidth", newIndentWidth)
-        doFontUpdate = self._originalTextFont != self._textFont or self._originalTextColor != self._textColor
-        if doFontUpdate:
-            data_str = json.dumps({'font':self._textFont.GetFaceName(),'size':self._textFont.GetPointSize()})
-            config.Write(consts.PRIMARY_FONT_KEY, data_str)
-            config.Write(self._configPrefix + "EditorColor", "%02x%02x%02x" % (self._textColor.Red(), self._textColor.Green(), self._textColor.Blue()))
-            font, color = syntax.LexerManager().GetFontAndColorFromConfig()
-            syntax.LexerManager().SetGlobalFont(font.GetFaceName(),font.GetPointSize())
-            syntax.LexerManager().SetGlobalFontColor("",strutils.RGBToHex(color))
-        if doViewStuffUpdate or doFontUpdate:
-            for document in optionsDialog.GetDocManager().GetDocuments():
-                if issubclass(document.GetDocumentTemplate().GetDocumentType(), TextDocument):
-                    if doViewStuffUpdate:
-                        document.UpdateAllViews(hint = "ViewStuff")
-                    if doFontUpdate:
-                        document.UpdateAllViews(hint = "Font")
+        GetApp().MainFrame.GetNotebook().update_appearance()
         return True
                
          

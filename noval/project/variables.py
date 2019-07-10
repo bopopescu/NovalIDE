@@ -71,20 +71,26 @@ class VariablesDialog(ui_base.CommonModaldialog):
         ttk.Label(self.main_frame, text=_("Input the variable name:")).pack(fill="x")
         self.current_project_document = current_project_document
         
-        self.search_variable_ctrl = ttk.Entry(self.main_frame)
-        self.search_variable_ctrl.pack(fill="x")
-    #    self.Bind(wx.EVT_TEXT,self.SeachVariable)
+        self.search_variable_var = tk.StringVar()
+        search_variable_ctrl = ttk.Entry(self.main_frame,textvariable=self.search_variable_var)
+        search_variable_ctrl.pack(fill="x")
+        self.search_variable_var.trace("w", self.SeachVariable)
         columns = ['Name','Value']
         self.listview = treeviewframe.TreeViewFrame(self.main_frame,columns=columns,height=20,show="headings")
         self.listview.pack(fill="both",expand=1)
+        self.listview.tree.bind('<Double-Button-1>',self._ok)
         self.SetVariables()
         self.AddokcancelButton()
         self.ok_button.configure(text=_("&Insert"),default="active")
 
-    def SeachVariable(self,event):
-        search_name = self.search_variable_ctrl.GetValue().strip()
-        self.dvlc.DeleteAllItems()
+    def SeachVariable(self,*args):
+        search_name = self.search_variable_var.get().strip()
+        self._clear_tree()
         self.SetVariables(search_name)
+
+    def _clear_tree(self):
+        for child_id in self.listview.tree.get_children():
+            self.listview.tree.delete(child_id)
             
     def GetVariableList(self):
         def comp_key(x,y):
@@ -103,9 +109,9 @@ class VariablesDialog(ui_base.CommonModaldialog):
                 show_name = FormatVariableName(name)
                 self.listview.tree.insert("",0,values=(show_name,project_variable_manager.GetVariable(name)))
         
-    def _ok(self):
-        row = self.dvlc.GetSelectedRow()
-        if row == -1:
+    def _ok(self,event=None):
+        selections = self.listview.tree.selection()
+        if not selections:
             return
-        self.selected_variable_name = self.dvlc.GetTextValue(row,0)
-        self.EndModal(wx.ID_OK)
+        self.selected_variable_name = self.listview.tree.item(selections[0])['values'][0]
+        ui_base.CommonModaldialog._ok(self)

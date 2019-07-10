@@ -162,8 +162,8 @@ class RunConfiguration():
         return self._configurations.items()[0][1].GetRootKeyPath()
     
     @classmethod
-    def CreateNewConfiguration(cls,project_doc,main_module_file=None,configuration_name=""):
-        interpreter_name = ProjectConfiguration.LoadProjectInterpreter(project_doc.GetKey())
+    def CreateNewConfiguration(cls,project_doc,default_interpreter,main_module_file=None,configuration_name=""):
+        interpreter_name = default_interpreter.Name
         args = {
             StartupConfiguration.CONFIGURATION_NAME:StartupConfiguration(project_doc,main_module_file),
             AugumentsConfiguration.CONFIGURATION_NAME:AugumentsConfiguration(project_doc,main_module_file),
@@ -225,7 +225,7 @@ class FileConfiguration(BaseConfiguration):
         
     def LoadConfigurationNames(self):
         file_key = self.GetRootKeyPath()
-        value = utils.ProfileGet(file_key + "/" + "ConfigurationList","[]")
+        value = utils.profile_get(file_key + "/" + "ConfigurationList","[]")
         try:
             configuration_name_list = eval(value)
         except Exception as e:

@@ -550,6 +550,8 @@ class DocManager(object):
         history. Called from Initialize.
         """
         max_files = utils.profile_get_int(consts.MRU_LENGTH_KEY,consts.DEFAULT_MRU_FILE_NUM)
+        if max_files > consts.MAX_MRU_FILE_LIMIT:
+            max_files = consts.MAX_MRU_FILE_LIMIT
         enableMRU = utils.profile_get_int(consts.ENABLE_MRU_KEY, True)
         if enableMRU:
             self._fileHistory = ui_utils.FileHistory(maxFiles=max_files,idBase=ID_MRU_FILE1)
@@ -2376,6 +2378,7 @@ class Clipboard(object):
 
     def Clear(self):
         self.buf.truncate(0)
+        self.buf.seek(0)
 
     def Flush(self):
         self.buf.flush()

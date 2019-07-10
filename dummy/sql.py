@@ -11,7 +11,7 @@ CREATE_USER_TABLE_SQL = '''
         phone varchar (100),
         email varchar (300),
         password text,
-        version varchar (20),
+        is_pro BOOLEAN default 0,
         created_time datetime default (datetime('now', 'localtime'))
     )
 '''

@@ -161,7 +161,7 @@ class PropertyDialog(ui_base.CommonModaldialog):
         self.current_panel = panel
         self.current_panel.grid(column=0, row=0, sticky="nsew",padx=consts.DEFAUT_CONTRL_PAD_X,pady=consts.DEFAUT_CONTRL_PAD_Y)
         
-    def OnOK(self, event):
+    def _ok(self):
         """
         Calls the OnOK method of all of the OptionDialog's embedded panels
         """
@@ -171,15 +171,17 @@ class PropertyDialog(ui_base.CommonModaldialog):
             optionsPanel = self._optionsPanels[name]
             if not optionsPanel.OnOK(self):
                 return
-        sel = self.tree.GetSelection()
-        text = self.tree.GetPyData(sel)
-        current_project_document = self.filePropertiesService._current_project_document
-        if current_project_document is not None:
-            utils.ProfileSet(current_project_document.GetKey("Selection"),text)
+        selections = self.tree.selection()
+        if selections:
+            sel = selections[0]
+            text = self.tree.item(sel)['values'][0]
+            if self._current_project_document is not None:
+                utils.profile_set(self._current_project_document.GetKey("Selection"),text)
+        ui_base.CommonModaldialog._ok(self)
         
     def GetOptionPanel(self,option_name):
         return self._optionsPanels[option_name]
         
     def HasPanel(self,option_name):
-        return self._optionsPanels.has_key(option_name)
+        return option_name in self._optionsPanels
         

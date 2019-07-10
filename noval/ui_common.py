@@ -318,29 +318,24 @@ class AutoScrollbar(ui_base.SafeScrollbar):
         raise tk.TclError("cannot use pack with this widget")
         
 
-class PromptmessageBox(tk.Toplevel):
-    def __init__(self,parent,title,msg):
-        tk.Toplevel.__init__(self, master, takefocus=1)
+class PromptmessageBox(ui_base.CommonModaldialog):
+    def __init__(self,master,title,msg):
+        ui_base.CommonModaldialog.__init__(self, master, takefocus=1)
         self.title(title)
-        self.label_ctrl = ttk.Label(self,text=msg)
+        self.label_ctrl = ttk.Label(self.main_frame,text=msg)
         self.label_ctrl.pack(fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X, consts.DEFAUT_CONTRL_PAD_X), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         
-        separator = ttk.Separator(self, orient = tk.HORIZONTAL)
-        separator.pack(side=tk.LEFT,fill="x",expand=1)
-        
-        bottom_page = ttk.Frame(self)
+        bottom_page = ttk.Frame(self.main_frame)
+        ttk.Label(bottom_page).pack(side=tk.LEFT,fill="x",expand=1)
         btnYes = ttk.Button(bottom_page, text=_("Yes"), command=self.OnYes,default=tk.ACTIVE)
-        self.prev_button.grid(column=1, row=0, sticky=tk.EW, padx=(DEFAUT_CONTRL_PAD_X, DEFAUT_CONTRL_PAD_X), pady=DEFAUT_CONTRL_PAD_Y)
+        btnYes.pack(side=tk.LEFT,fill="x")
         btnNo = ttk.Button(bottom_page, text=_("No"), command=self.OnNo)
-        self.next_button.grid(column=2, row=0, sticky=tk.EW, padx=(0, DEFAUT_CONTRL_PAD_X), pady=DEFAUT_CONTRL_PAD_Y)
-        
+        btnNo.pack(side=tk.LEFT,fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X, 0))
         btnYesAll = ttk.Button(bottom_page, text=_("YestoAll"), command=self.OnYestoAll)
-        self.ok_button.grid(column=3, row=0, sticky=tk.EW, padx=(0, DEFAUT_CONTRL_PAD_X), pady=DEFAUT_CONTRL_PAD_Y)
+        btnYesAll.pack(side=tk.LEFT,fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X, 0))
         btnNoAll = ttk.Button(bottom_page, text=_("NotoAll"), command=self.OnNotoAll)
-        self.cancel_button.grid(column=4, row=0, sticky=tk.EW, padx=(0, DEFAUT_CONTRL_PAD_X), pady=DEFAUT_CONTRL_PAD_Y)
-        self.result = None
-        bottom_page.grid(column=0, row=1, sticky=tk.EW, padx=0, pady=0)
-        bottom_page.columnconfigure(0, weight=1)
+        btnNoAll.pack(side=tk.LEFT,fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X, 0))
+        bottom_page.pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X, pady=consts.DEFAUT_CONTRL_PAD_Y)
         self.status = -1
 
     def OnYes(self):

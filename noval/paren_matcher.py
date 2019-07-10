@@ -67,7 +67,7 @@ class ParenMatcher:
         self.text.tag_remove("surrounding_parens", "0.1", "end")
         self.text.tag_remove("unclosed_expression", "0.1", "end")
 
-        if utils.profile_get_int("HIGHLIGHTING_PAREN_MATCH",True):
+        if utils.profile_get_int("TextHighlightParentheses",True):
             self._update_highlighting_for_active_range()
 
     def _update_highlighting_for_active_range(self):
@@ -180,6 +180,4 @@ class ParenMatcherPluginLoader(plugin.Plugin):
         wb = GetApp()
         wb.bind_class("CodeCtrl", "<<CursorMove>>", update_highlighting, True)
         wb.bind_class("CodeCtrl", "<<TextChange>>", update_highlighting, True)
-       # wb.bind_class("ShellText", "<<CursorMove>>", update_highlighting, True)
-        #wb.bind_class("ShellText", "<<TextChange>>", update_highlighting, True)
-       ### wb.bind("<<UpdateAppearance>>", update_highlighting, True)
+        wb.bind("<<UpdateAppearance>>", update_highlighting, True)

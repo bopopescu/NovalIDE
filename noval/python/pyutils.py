@@ -1,4 +1,5 @@
-from noval import GetApp
+from noval import GetApp,_
+from tkinter import messagebox
 import sys
 import os
 import noval.consts as consts
@@ -74,10 +75,10 @@ class ProjectFolderPathDialog(ui_base.CommonModaldialog):
         self.treeview.tree["show"] = ("tree",)
         self.treeview.pack(fill="both",expand=1)
         self.folder_bmp = imageutils.load_image("","packagefolder_obj.gif")
-        root_item = self.treeview.tree.insert("","end",text=os.path.basename(rootPath),image=self.folder_bmp)
-        #self._treeCtrl.SetPyData(root_item,rootPath)
+        root_item = self.treeview.tree.insert("","end",text=os.path.basename(rootPath),image=self.folder_bmp,values=(rootPath,))
         self.ListDirItem(root_item,rootPath)
         self.treeview.tree.item(root_item,open=True)
+        self.treeview.tree.selection_set(root_item)
         self.AddokcancelButton()
 
     def ListDirItem(self,parent_item,path):
@@ -87,16 +88,13 @@ class ProjectFolderPathDialog(ui_base.CommonModaldialog):
         for f in files:
             file_path = os.path.join(path, f)
             if os.path.isdir(file_path) and not fileutils.is_path_hidden(file_path):
-                item = self.treeview.tree.insert(parent_item,"end",text=f,image=self.folder_bmp)
+                item = self.treeview.tree.insert(parent_item,"end",text=f,image=self.folder_bmp,values=(file_path,))
                 self.ListDirItem(item,file_path)
-             #   self._treeCtrl.SetPyData(item,file_path)
 
     def _ok(self):
-        path = fileutils.getRelativePath(self._treeCtrl.\
-                    GetPyData(self._treeCtrl.GetSelection()),\
-                            self._current_project.homeDir)
+        path = fileutils.getRelativePath(self.treeview.tree.GetPyData(self.treeview.tree.GetSingleSelectItem()),self._current_project.homeDir)
         self.selected_path = path
-        self.EndModal(wx.ID_OK)
+        ui_base.CommonModaldialog._ok(self)
 
 class SelectModuleFileDialog(ui_base.CommonModaldialog):
     def __init__(self,parent,title,project_model,is_startup=False,filters=[]):
@@ -113,7 +111,6 @@ class SelectModuleFileDialog(ui_base.CommonModaldialog):
         self.treeview.tree["show"] = ("tree",)
         self.treeview.pack(fill="both",expand=1)
         
-   #     wx.EVT_TREE_ITEM_ACTIVATED(self._treeCtrl, self._treeCtrl.GetId(), self.OnOKClick)
         self.folder_bmp = imageutils.load_image("","packagefolder_obj.gif")
         self.python_file_bmp = imageutils.load_image("","file/python_module.png")
         
@@ -133,9 +130,9 @@ class SelectModuleFileDialog(ui_base.CommonModaldialog):
                 pj_file = self._current_project.FindFile(file_path)
                 if pj_file:
                     if fileutils.is_python_file(file_path):
-                        item = self.treeview.tree.insert(parent_item,"end",text=f,image=self.python_file_bmp)
+                        item = self.treeview.tree.insert(parent_item,"end",text=f,image=self.python_file_bmp,values=(file_path,))
                     else:
-                        item = self.treeview.tree.insert(parent_item,"end",text=f,image=self.zip_file_bmp)
+                        item = self.treeview.tree.insert(parent_item,"end",text=f,image=self.zip_file_bmp,values=(file_path,))
                     #self._treeCtrl.SetPyData(item,pj_file)
                     if pj_file.IsStartup and self.is_startup:
                         self.treeview.tree.SetItemBold(item)
@@ -144,12 +141,12 @@ class SelectModuleFileDialog(ui_base.CommonModaldialog):
                 self.ListDirItem(item,file_path)
 
     def _ok(self):
-        pj_file = self._treeCtrl.GetPyData(self._treeCtrl.GetSelection())
+        pj_file = self.treeview.tree.GetPyData(self.treeview.tree.GetSingleSelectItem())
         if pj_file is None:
-            wx.MessageBox(_("Please select a file"))
+            messagebox.showinfo(GetApp().GetAppName(),_("Please select a file"))
             return
         self.module_file = pj_file
-        self.EndModal(wx.ID_OK)
+        ui_base.CommonModaldialog._ok(self)
         
     def IsFileFiltered(self,file_path):
         file_ext = strutils.get_file_extension(file_path)

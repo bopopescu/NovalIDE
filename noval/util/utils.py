@@ -53,8 +53,8 @@ elif is_linux():
         from ConfigParser import ConfigParser
     except:
         from configparser import ConfigParser
+        
 class Config(object):
-    
     if is_windows():
         def __init__(self,app_name):
             self.app_name = app_name
@@ -130,14 +130,23 @@ class Config(object):
                 return False
                 
         def DeleteEntry(self,key_val):
+            dest_key_reg,value = self.GetDestRegKey(key_val,ensure_open=False)
+            if dest_key_reg is None:
+                return
             try:
-                dest_key_reg.DeleteKey(key_val)
+                dest_key_reg.DeleteValue(value)
             except:
-                dest_key_reg,value = self.GetDestRegKey(key_val)
-                try:
-                    dest_key_reg.DeleteValue(value)
-                except:
-                    get_logger().debug("delete key_val %s fail" % key_val)
+                get_logger().debug("delete key_val %s fail" % key_val)
+                
+        def GetGroups(self,key_path,names):
+            if not self.reg.Exist(key_path):
+                return
+            dest_key_reg,value = self.GetDestRegKey(key_path)
+            for name in dest_key_reg.EnumChildKeyNames():
+                names.append(name)
+            
+        def DeleteGroup(self,key_path):
+            self.reg.DeleteKeys(key_path)
             
     else:
         def __init__(self,app_name):
@@ -163,13 +172,12 @@ class Config(object):
                     if section and not self.cfg.has_section(section):
                         self.cfg.add_section(section)
                 else:
-                    child_reg = loop_reg.Open(child,access=KEY_ALL_ACCESS)
-                    if child_reg is None:
+                    if section and not self.cfg.has_section(section):
                         return None,last_key
             return ("/").join(sections),last_key
                 
         def Read(self,key,default=""):
-            section,last_key = self.GetDestSection(key)
+            section,last_key = self.GetDestSection(key,ensure_open=False)
             try:
                 return self.cfg.get(section,last_key)
             except:
@@ -210,8 +218,20 @@ class Config(object):
                 self.cfg.write(f)
                 
         def DeleteEntry(self,key):
-            print ('delete key entry',key)
+            section,last_key = self.GetDestSection(key)
+            self.cfg.remove_option(section,last_key)
+            self.Save()
+
+        def GetGroups(self,key_path,names):
+            for section in self.cfg.sections():
+                if section.find(key_path) != -1:
+                    names.append(key_path)
             
+        def DeleteGroup(self,key_path):
+            for section in self.cfg.sections():
+                if section.find(key_path) != -1:
+                    self.cfg.remove_section(section)
+            self.Save()
 
 def call_after(func): 
     def _wrapper(*args, **kwargs): 
