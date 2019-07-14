@@ -24,6 +24,7 @@ import noval.util.urlutils as urlutils
 import noval.python.parser.utils as parserutils
 import noval.constants as constants
 import noval.ttkwidgets.textframe as textframe
+import noval.util.compat as compat
 
 class ManagePackagesDialog(ui_base.CommonModaldialog):
     
@@ -228,6 +229,8 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
     def AppendText(self,content):
         self.output_ctrl['state'] = tk.NORMAL
         self.output_ctrl.set_read_only(False)
+        if utils.is_py3_plus():
+            content = compat.ensure_string(content)
         self.output_ctrl.insert(tk.END,content)
         self.output_ctrl.set_read_only(True)
         self.output_ctrl['state'] = tk.DISABLED
@@ -236,7 +239,7 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
         should_root = False
         if not sysutils.is_windows():
             should_root = not interpreter.IsPythonlibWritable()
-        package_name = self.value_ctrl.GetValue().strip()
+        package_name = self.value_var.get().strip()
         if os.path.basename(package_name) == "requirements.txt":
             self._install_with_name = False
             if not sysutils.is_windows() and should_root:
@@ -248,8 +251,8 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
                 command = "pkexec " + strutils.emphasis_path(interpreter.GetPipPath()) + " uninstall -y %s" % (package_name)
             else:
                 command = strutils.emphasis_path(interpreter.GetPipPath()) + " uninstall -y %s" % (package_name)
-        self.output_ctrl.write(command + os.linesep)
-        self.call_back = self.output_ctrl.write
+        self.AppendText(command + os.linesep)
+        self.call_back = self.AppendText
         t = threading.Thread(target=self.ExecCommandAndOutput,args=(command,self))
         t.start()
         
@@ -408,6 +411,8 @@ class PackagePanel(ttk.Frame):
             
     def LoadPackageList(self,interpreter):
         for name in interpreter.Packages:
+            if name not in interpreter.Packages:
+                continue
             self.AddPackage(interpreter.Packages[name])
         utils.get_logger().debug("load interpreter %s package end" % self.interpreter.Name)
             
@@ -415,8 +420,11 @@ class PackagePanel(ttk.Frame):
         if self.interpreter != interpreter:
             utils.get_logger().debug("interpreter %s is not panel current interprter,current interpreter is %s" , interpreter.Name,self.interpreter.Name)
             return
-        self.listview._clear_tree()
-        self.LoadPackageList(interpreter)
+        try:
+            self.listview._clear_tree()
+            self.LoadPackageList(interpreter)
+        except tk.TclError:
+            utils.get_logger().warn('tkinter object is not accessable when load packages')
         
     def AddPackage(self,python_package,interpreter=None,remove_exist=False):
         if remove_exist:
@@ -427,14 +435,22 @@ class PackagePanel(ttk.Frame):
             interpreter.Packages[python_package.Name] = python_package
         
     def RemovePackage(self,name,interpreter):
-        row,package_name = self.GetPackageRow(name)
-        if row == -1:
+        item,package_name = self.GetPackageItem(name)
+        if not item:
             return
-        self.dvlc.DeleteItem(row)
+        self.listview.tree.delete(item)
         del interpreter.Packages[package_name]
+
+    def GetPackageItem(self,package_name):
+        childs = self.listview.tree.get_children()
+        for child in childs:
+            column_value = self.listview.tree.item(child)['values'][0]
+            if column_value.lower() == package_name.lower():
+                return child,column_value
+        return None,""
         
     def NotifyPackageConfigurationChange(self):
-        self.master.master.NotifyConfigurationChange()
+        self.master.master.NotifyConfigurationChanged()
         
     def FreezePackage(self):
         text_docTemplate = GetApp().GetDocumentManager().FindTemplateForPath("test.txt")

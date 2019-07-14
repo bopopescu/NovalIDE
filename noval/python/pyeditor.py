@@ -257,7 +257,7 @@ class PythonView(codeeditor.CodeView):
         document = self.GetDocument()
         if not document:
             return True
-        self._module_analyzer.AnalyzeModuleSynchronizeTree(callback_view,outlineView,force,lineNum)
+        self.GetCtrl().after(1,self._module_analyzer.AnalyzeModuleSynchronizeTree,callback_view,outlineView,force,lineNum)
         return True
         
     def IsUnitTestEnable(self):

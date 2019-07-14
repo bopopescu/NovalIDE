@@ -10,8 +10,8 @@
 # Copyright:    (c) 2004-2005 ActiveGrid, Inc.
 # License:      wxWindows License
 #----------------------------------------------------------------------------
-#import noval.model.projectmodel as projectmodel
 from noval import NewId,GetApp,_
+import noval.core as core
 import tkinter as tk
 from tkinter import ttk,messagebox,filedialog
 import sys
@@ -330,6 +330,9 @@ class RunCommandUI(ttk.Frame):
         # See comment on PythonDebuggerUI.StopExecution
         self._executor.DoStopExecution()
         RunCommandUI.runners.remove(self)
+        
+    def GetOutputView(self):
+        return self._output
 
     def Execute(self,onWebServer = False):
         try:
@@ -1985,6 +1988,23 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
     def StopWait(self):
         assert(self._waiting)
         self.ShutdownServer()
+        
+
+class DebuggerView(core.View):
+    def __init__(self,debugger):
+        self._debugger = debugger
+        core.View.__init__(self)
+        
+    def GetCtrl(self):
+        select_page = self._debugger.bottomTab.get_current_child()
+        if select_page is None:
+            return None
+        debugger_page = self.GetInstancePage(select_page)
+        return debugger_page.GetOutputView().GetOutputCtrl()
+        
+    def GetInstancePage(self,tab_page):
+        page = tab_page.winfo_children()[0]
+        return page
 
 class Debugger:
 
@@ -2050,7 +2070,13 @@ class Debugger:
         self._tabs_menu = None
         self._popup_index = -1
         self._watch_separater = None
-
+        self._view = self._CreateView()
+        
+    def _CreateView(self):
+        return DebuggerView(self)
+        
+    def GetView(self):
+        return self._view
 
     def _right_btn_press(self, event):
         try:
@@ -2059,7 +2085,6 @@ class Debugger:
             self.create_tab_menu()
         except Exception:
             utils.get_logger().exception("Opening tab menu")
-            
 
     def GetBottomtabInstancePage(self,index):
         tab_page = self.bottomTab.get_child_by_index(index)
@@ -2067,12 +2092,26 @@ class Debugger:
         return page
 
     def CloseAllPages(self):
+        '''
+            关闭并移除所有运行调式标签页
+        '''
         close_suc = True
         for i in range(self.bottomTab.GetPageCount()-1, -1, -1): # Go from len-1 to 1
             page = self.GetBottomtabInstancePage(i)
-            if hasattr(page, 'StopAndRemoveUI'):
-                close_suc = page.StopAndRemoveUI()
+            close_suc = self.ClosePage(page)
         return close_suc
+
+    def ClosePage(self,page=None):
+        '''
+            关闭并移除单个运行调式标签页
+        '''
+        if page is None:
+            page = self.GetBottomtabInstancePage(self._popup_index)
+        #运行调试标签页关闭之前先检查进程是否在运行,并询问用户是否关闭
+        if hasattr(page, 'StopAndRemoveUI'):
+            return page.StopAndRemoveUI()
+        #非运行调式标签页直接允许关闭
+        return True
             
     def create_tab_menu(self):
         """
@@ -2080,14 +2119,6 @@ class Debugger:
         a tab or select from the available documents if the user clicks on the
         notebook's white space.
         """
-        
-        def close_page():
-            if hasattr(page, 'StopAndRemoveUI'):
-                page.StopAndRemoveUI()
-                
-        def close_pages():
-            self.CloseAllPages()
-                    
         if self._popup_index < 0:
             return
         page = self.GetBottomtabInstancePage(self._popup_index)
@@ -2097,8 +2128,8 @@ class Debugger:
         if self._tabs_menu is None:
             menu = tkmenu.PopupMenu(self.bottomTab.winfo_toplevel())
             self._tabs_menu = menu
-            menu.Append(constants.ID_CLOSE,_("Close"),handler=close_page)
-            menu.Append(constants.ID_CLOSE_ALL,_("Close All"),handler=close_pages)
+            menu.Append(constants.ID_CLOSE,_("Close"),handler=self.ClosePage)
+            menu.Append(constants.ID_CLOSE_ALL,_("Close All"),handler=self.CloseAllPages)
         self._tabs_menu.tk_popup(*self.bottomTab.winfo_toplevel().winfo_pointerxy())
 
 
@@ -2425,19 +2456,15 @@ class Debugger:
         if run_parameter.Environment is not None and consts.PYTHON_PATH_NAME in run_parameter.Environment:
             utils.profile_set(self.GetKey(cur_project_document,"LastPythonPath"),run_parameter.Environment[consts.PYTHON_PATH_NAME])
 
-        
     def DebugRunBuiltin(self,run_parameter):
         fileToRun = run_parameter.FilePath
-        pythonService = wx.GetApp().GetService(PythonEditor.PythonService)
-        pythonService.ShowWindow()
-        #switch to builtin interpreter tab
-        pythonService.SwitchtoTabPage()
-        python_interpreter_view = pythonService.GetView()
+        GetApp().MainFrame.ShowView(consts.PYTHON_INTERPRETER_VIEW_NAME,toogle_visibility_flag=True)
+        python_interpreter_view = GetApp().MainFrame.GetCommonView(consts.PYTHON_INTERPRETER_VIEW_NAME)
         old_argv = sys.argv
         environment,initialArgs = run_parameter.Environment,run_parameter.Arg
         sys.argv = [fileToRun]
         command = 'execfile(r"%s")' % fileToRun
-        python_interpreter_view.shell.run(command)
+        python_interpreter_view.run(command)
         sys.argv = old_argv
 
     def IsProjectContainBreakPoints(self,cur_project):
@@ -2576,6 +2603,7 @@ class Debugger:
                                    image_file="python/debugger/debug.ico",debugger=self, fileName=fileToRun,run_parameter=run_parameter,visible_in_menu=False)
         page = view['instance']
         page.Execute(onWebServer = False)
+        GetApp().GetDocumentManager().ActivateView(self.GetView())
         
     def SetExceptionBreakPoint(self):
         exception_dlg = BreakPoints.BreakpointExceptionDialog(wx.GetApp().GetTopWindow(),-1,_("Add Python Exception Breakpoint"))
@@ -3055,8 +3083,8 @@ class CommandPropertiesDialog(ui_base.CommonModaldialog):
         self._selectedProjectDocument = self._projectDocumentList[selectedIndex]
         self.PopulateFileList(self._selectedProjectDocument, lastFile)
         
-       # if not self._is_last_config:
-        #    self.SetEntryParams()
+        if not self._is_last_config:
+            self.SetEntryParams()
         last_row += 1
         bottom_frame = ttk.Frame(self.main_frame)
         bottom_frame.grid(row=last_row,column=0,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),columnspan=3)
@@ -3092,10 +3120,9 @@ class CommandPropertiesDialog(ui_base.CommonModaldialog):
         self._lastPythonPathVar.set(utils.profile_get(self.GetProjectFileKey(selected_filename,"PythonPath"),""))
         startin = utils.profile_get(self.GetProjectFileKey(selected_filename,"RunStartIn"),"")
         self._lastStartInVar.set(startin)
-        saved_arguments = utils.profile_get(self.GetProjectFileKey(selected_filename,"FileSavedArguments"),'')
+        saved_arguments = utils.profile_get(self.GetProjectFileKey(selected_filename,"FileSavedArguments"),[])
         if saved_arguments:
-            arguments = pickle.loads(saved_arguments)
-            self._argsEntry.AppendItems(arguments)
+            self._argsEntry['values'] = saved_arguments
         self._useArgCheckBoxVar.set(utils.profile_get_int(self.GetProjectFileKey(selected_filename,"UseArgument"),True))
         self.CheckUseArgument()
         
@@ -3129,10 +3156,13 @@ class CommandPropertiesDialog(ui_base.CommonModaldialog):
             if self._useArgCheckBoxVar.get():
                 utils.profile_set(self.GetProjectFileKey(fileToRun,"RunArguments"), self._lastArgumentsVar.get())
                 arguments = set()
-                for i in range(self._argsEntry.GetCount()):
-                    arguments.add(self._argsEntry.GetString(i))
-                arguments.add(self._argsEntry.GetValue())
-                utils.profile_set(self.GetProjectFileKey(fileToRun,"FileSavedArguments"),pickle.dumps(list(arguments))) 
+                values = self._argsEntry['values']
+                if not values:
+                    values = []
+                values = list(values)
+                values.append(self._lastArgumentsVar.get())
+                arguments = set(values)
+                utils.profile_set(self.GetProjectFileKey(fileToRun,"FileSavedArguments"),list(arguments))
             if hasattr(self, "_postpendCheckBox"):
                 utils.profile_set(self.GetKey("PythonPathPostpend"), self._postpendCheckBoxVar.get())
                 

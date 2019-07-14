@@ -456,7 +456,6 @@
   <noval:file filePath="./noval/bmp_source/images/windows_insall.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
   <noval:file filePath="./noval/bmp_source/images/zh_en.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
   <noval:file filePath="./noval/project/__init__.py" logicalFolder="noval/project" isStartup="false"/>
-  <noval:file filePath="./noval/project/ProjectUI.py" logicalFolder="noval/project" isStartup="false"/>
   <noval:file filePath="./tests/test_buffer.py" logicalFolder="tests" isStartup="false"/>
   <noval:file filePath="./tests/test_input_output.py" logicalFolder="tests" isStartup="false"/>
   <noval:file filePath="./tests/test_interpreter.py" logicalFolder="tests" isStartup="false"/>
@@ -544,7 +543,6 @@
   <noval:file filePath="./noval/find/__init__.py" logicalFolder="noval/find" isStartup="false"/>
   <noval:file filePath="./noval/find/find.py" logicalFolder="noval/find" isStartup="false"/>
   <noval:file filePath="./noval/find/findindir.py" logicalFolder="noval/find" isStartup="false"/>
-  <noval:file filePath="./noval/find/findctrl.py" logicalFolder="noval/find" isStartup="false"/>
   <noval:file filePath="./noval/find/findresult.py" logicalFolder="noval/find" isStartup="false"/>
   <noval:file filePath="./noval/paren_matcher.py" logicalFolder="noval" isStartup="false"/>
   <noval:file filePath="./noval/project/importfiles.py" logicalFolder="noval/project" isStartup="false"/>
@@ -610,5 +608,6 @@
   <noval:file filePath="./noval/project/newfile.py" logicalFolder="noval/project" isStartup="false"/>
   <noval:file filePath="./noval/outputthread.py" logicalFolder="noval" isStartup="false"/>
   <noval:file filePath="./tests/test_app_config.py" logicalFolder="tests" isStartup="false"/>
+  <noval:file filePath="./noval/find/findtext.py" logicalFolder="noval/find" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>

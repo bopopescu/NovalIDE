@@ -100,6 +100,7 @@ class AboutDialog(ui_base.CommonModaldialog):
         )
         ok_button.grid(pady=(0, 15))
         ok_button.focus_set()
+        ok_button.bind("<Return>", self._ok, True)
         self.FormatTkButtonText(ok_button)
 
 

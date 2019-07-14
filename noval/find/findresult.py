@@ -11,6 +11,7 @@ import noval.editor.text as texteditor
 from noval.find.findindir import FILENAME_MARKER,PROJECT_MARKER,FILE_MARKER,FindIndirService
 import noval.ttkwidgets.textframe as textframe
 import noval.ui_base as ui_base
+import noval.util.utils as utils
 
 class FindResultsview(ttk.Frame):
     def __init__(self, master):
@@ -36,6 +37,9 @@ class FindResultsview(ttk.Frame):
     def AddLine(self,line_text):
         #只读状态时无法写入数据需要先解除只读
         self.text.set_read_only(False)
+        #linux系统下windows换行符会显示乱码,故统一成linux换行符
+        if utils.is_linux():
+            line_text = line_text.strip()
         #"1.0"表示在文本最开头插入,end表示在文件末尾插入
         self.text.insert(tk.END, line_text)
         if not line_text.endswith("\n"):

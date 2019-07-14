@@ -6,7 +6,7 @@ import noval.util.singleton as singleton
 import noval.consts as consts
 import noval.ui_base as ui_base
 import noval.ttkwidgets.treeviewframe as treeviewframe
-
+from noval.util import utils
 ENVIRONMENT_OPTION_NAME = "Environment"
 
 OTHER_OPTION_NAME = "Other"
@@ -29,10 +29,12 @@ def GetOptionName(caterory,name):
 
 class PreferenceDialog(ui_base.CommonModaldialog):
     
-    def __init__(self, master,selection=ENVIRONMENT_OPTION_NAME+"/"+GENERAL_ITEM_NAME):
+    def __init__(self, master,selection=None):
         ui_base.CommonModaldialog.__init__(self, master, takefocus=1)
         self.title(_("Options"))
         self.geometry("%dx%d" % (PREFERENCE_DLG_WIDITH,PREFERENCE_DLG_HEIGHT))
+        if not selection:
+            selection=ENVIRONMENT_OPTION_NAME+"/"+GENERAL_ITEM_NAME
         
         self.current_panel = None
         self.current_item = None
@@ -60,10 +62,9 @@ class PreferenceDialog(ui_base.CommonModaldialog):
 
         option_catetory,sel_option_name = self.GetOptionNames(selection)
         category_list = PreferenceManager().GetOptionList()
-        category_dct = PreferenceManager().GetOptionPages()
+        category_dct = PreferenceManager().GetOptionPageClasses()
         for category in category_list:
             item = self.tree.insert("", "end", text=_(category))
-          ##  self.tree.SetPyData(item,category)
             optionsPanelClasses = category_dct[category]
             for name,optionsPanelClass in optionsPanelClasses:
                 option_panel = optionsPanelClass(page_frame)
@@ -89,8 +90,8 @@ class PreferenceDialog(ui_base.CommonModaldialog):
             return "",selection_name
         return names[0],names[1]
         
-    def OnOk(self):
-        pass
+    def GetOptionPanel(self,category,option_name):
+        return self._optionsPanels[GetOptionName(category , option_name)]
         
     def _on_select(self,event):
         sel = self.tree.selection()[0]
@@ -108,16 +109,6 @@ class PreferenceDialog(ui_base.CommonModaldialog):
         self.current_panel = panel
         self.current_panel.grid(column=0, row=0, sticky="nsew")
         
-    def GetSelectOptionName(self,item):
-        item_select_name = ""
-        parent_item = item
-        item_names = []
-        while parent_item != self.tree.GetRootItem():
-            item_names.append(self.tree.GetPyData(parent_item))
-            parent_item = parent_item.GetParent()
-        item_names.reverse()
-        return '/'.join(item_names)
-        
     def _ok(self, event=None):
         if not self.current_panel.Validate():
             return
@@ -125,12 +116,11 @@ class PreferenceDialog(ui_base.CommonModaldialog):
             optionsPanel = self._optionsPanels[name]
             if not optionsPanel.OnOK(self):
                 return
-     #   sel = self.tree.GetSelection()
-       # if self.tree.GetChildrenCount(sel) > 0:
-            #(item, cookie) = self.tree.GetFirstChild(sel)
-            #sel = item
-        #text = self.GetSelectOptionName(sel)
-        #wx.ConfigBase_Get().Write("OptionName",text)
+        sel = self.tree.selection()[0]
+        if len(self.tree.get_children(sel)) > 0:
+            sel = self.tree.get_children(sel)[0]
+        text = self.tree.item(sel)['values'][0]
+        utils.profile_set("PrefereceOptionName",text)
         ui_base.CommonModaldialog._ok(self,event)
         
     def _cancel(self, event=None):
@@ -144,18 +134,18 @@ class PreferenceDialog(ui_base.CommonModaldialog):
 class PreferenceManager:
     
     def __init__(self):
-        self._optionsPanels = {}
+        self._optionsPanelClasses = {}
         self.category_list = []
         
-    def GetOptionPages(self):
-        return self._optionsPanels
+    def GetOptionPageClasses(self):
+        return self._optionsPanelClasses
 
-    def AddOptionsPanel(self,category,name,optionsPanelClass):
-        if category not in self._optionsPanels:
-            self._optionsPanels[category] = [(name,optionsPanelClass),]
+    def AddOptionsPanelClass(self,category,name,optionsPanelClass):
+        if category not in self._optionsPanelClasses:
+            self._optionsPanelClasses[category] = [(name,optionsPanelClass),]
             self.category_list.append(category)
         else:
-            self._optionsPanels[category].append((name,optionsPanelClass),)
+            self._optionsPanelClasses[category].append((name,optionsPanelClass),)
             
     def GetOptionList(self):
         return self.category_list

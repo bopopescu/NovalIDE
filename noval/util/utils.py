@@ -153,7 +153,11 @@ class Config(object):
             self.app_name = app_name
             self.cfg = ConfigParser()
             self.config_path = os.path.join(os.path.expanduser("~"),"." + self.app_name)
-            self.cfg.read(self.config_path)
+            try:
+                self.cfg.read(self.config_path)
+            except Exception as e:
+                get_logger().warn('load ide config file error %s,will reaload it',str(e))
+                self.Reload()
             
         def GetDestSection(self,key,ensure_open=True):
             '''
@@ -232,6 +236,14 @@ class Config(object):
                 if section.find(key_path) != -1:
                     self.cfg.remove_section(section)
             self.Save()
+            
+        def Reload(self):
+            '''
+                如果配置文件加载错误,重新加载时删除原配置文件
+            '''
+            if os.path.exists(self.config_path):
+                os.remove(self.config_path)
+            self.cfg.read(self.config_path)
 
 def call_after(func): 
     def _wrapper(*args, **kwargs): 

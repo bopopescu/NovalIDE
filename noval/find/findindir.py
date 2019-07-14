@@ -13,7 +13,7 @@ from noval import _,GetApp
 import os
 from os.path import join
 import re
-#import noval.tool.project.ProjectEditor as ProjectEditor
+import noval.misc as misc
 import noval.util.strutils as strutils
 import time
 import threading
@@ -45,6 +45,17 @@ def _open(filename):
         f = open(filename, 'r',errors='replace')
     return f
     
+
+class FindDirOption:
+    def __init__(self,find_text_option,path,recursive=True,search_hidden=False,file_type_list=[]):
+        self.find_option = find_text_option
+        self.path = path
+        self.recursive = recursive
+        self.search_hidden = search_hidden
+        self.file_types = file_type_list
+        
+FIND_DIR_OPTION = FindDirOption(findtext.CURERNT_FIND_OPTION,"")
+    
 @singleton.Singleton
 class FindIndirService:
     
@@ -58,14 +69,14 @@ class FindIndirService:
         #总的文件查找个数,用来设置进度条的最大值
         self.total_find_filecount = 0
         
-    def FindIndir(self,find_text_option,result_view):
+    def FindIndir(self,find_dir_option,result_view):
         #创建一个消息队列
         self.notify_queue = queue.Queue()
         self.progress_dlg = None
         self.total_find_filecount = 0
         #3秒后才显示进度条对话框,如果在此时间内搜索文本操作已经完成,则不会显示进度条对话框
         GetApp().MainFrame.after(3000,self.ShowSearchProgressDialog)
-        t = threading.Thread(target=self.FindTextIndir,args = (find_text_option,result_view,self.notify_queue))
+        t = threading.Thread(target=self.FindTextIndir,args = (find_dir_option,result_view,self.notify_queue))
         t.start()
 
     def ShowSearchProgressDialog(self):
@@ -75,41 +86,46 @@ class FindIndirService:
             self.progress_dlg = dlg
             dlg.ShowModal()
 
-    def FindTextIndir(self,find_text_option,view,que):
+    def FindTextIndir(self,find_dir_option,view,que):
         #设置正在搜索文本
         self._is_searching_text = True
         total_found_line = 0
         list_files = []
         cur_pos = 0
         # do search in files on disk
-        for root, dirs, files in os.walk(find_text_option.dirstr):
+        for root, dirs, files in os.walk(find_dir_option.path):
             if self.progress_dlg is not None and not self.progress_dlg.keep_going:
                 break
-            if not find_text_option.recursive and root != find_text_option.dirstr:
+            #是否搜索子目录
+            if not find_dir_option.recursive and root != find_dir_option.path:
                 break
-            if not find_text_option.search_hidden and fileutils.is_file_path_hidden(root):
+            #是否搜索隐藏目录
+            if not find_dir_option.search_hidden and fileutils.is_file_path_hidden(root):
                 continue
             for name in files:
-                if find_text_option.file_types != []:
-                    file_ext = strutils.GetFileExt(name)
-                    if file_ext not in find_text_option.file_types:
+                #后缀文件名列表为空表示搜索所有后缀的文件
+                if find_dir_option.file_types != []:
+                    file_ext = strutils.get_file_extension(name)
+                    #查找时过滤文件后缀名
+                    if file_ext not in find_dir_option.file_types:
                         continue
                 filename = os.path.join(root, name)
-                if not find_text_option.search_hidden and fileutils.is_file_path_hidden(filename):
+                #是否搜索隐藏文件
+                if not find_dir_option.search_hidden and fileutils.is_file_path_hidden(filename):
                     break
                 list_files.append(filename)
                 self.total_find_filecount += 1
                 if len(list_files) >= self.MAX_LIMIT_LIST_FILE_LENGTH:
                     if self.IsProgressRunning():
                         self.progress_dlg.SetRange(self.total_find_filecount)
-                    found_line,cur_pos = self.FindTextInFiles(find_text_option,view,list_files,cur_pos,que)
+                    found_line,cur_pos = self.FindTextInFiles(find_dir_option.find_option,view,list_files,cur_pos,que)
                     total_found_line += found_line
                     list_files = []
         #处理一些队列末尾的文件查找
         if self.total_find_filecount > 0 and len(list_files) >0:
             if self.IsProgressRunning():
                 self.progress_dlg.SetRange(self.total_find_filecount)
-            found_line,cur_pos = self.FindTextInFiles(find_text_option,view,list_files,cur_pos,que)
+            found_line,cur_pos = self.FindTextInFiles(find_dir_option.find_option,view,list_files,cur_pos,que)
             total_found_line += found_line
         self._is_searching_text = False
         #结束进度条的标志
@@ -402,7 +418,7 @@ class FindIndirDialog(ui_base.CommonModaldialog):
         self.find_indir_label = ttk.Label(top_frame, text=_("Directory:"))
         self.find_indir_label.pack(side=tk.LEFT,fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X,0), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         # Find text field
-        self.path_entry_var = tk.StringVar()
+        self.path_entry_var = tk.StringVar(value=FIND_DIR_OPTION.path)
         self.path_entry = ttk.Entry(top_frame, textvariable=self.path_entry_var)
         self.path_entry.pack(side=tk.LEFT,fill="x",expand=1,padx=(0,0), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         
@@ -437,15 +453,17 @@ class FindIndirDialog(ui_base.CommonModaldialog):
 
         self.find_entry = findtext.FindtextCombo(sizer_frame,findString)
         self.find_entry_var = self.find_entry.find_entry_var
+        self.find_entry_var.trace("w", self._update_button_statuses)
         self.find_entry.pack(fill="x",side=tk.LEFT, padx=(0, consts.DEFAUT_HALF_CONTRL_PAD_X), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         
 
         self.filetypes_label = ttk.Label(sizer_frame,text=_("File types:"))
         self.filetypes_label.pack(fill="x", side=tk.LEFT,padx=(0,0),pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y, 0))
         
-        self.filetypes_entry_var = tk.StringVar(value=self.default_extentsion)
+        self.filetypes_entry_var = tk.StringVar(value="*" + self.default_extentsion)
         self.filetypes_entry = ttk.Entry(sizer_frame, textvariable=self.filetypes_entry_var,width=8)
         self.filetypes_entry.pack(fill="x",side=tk.LEFT,padx=(0, 0), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
+        misc.create_tooltip(self.filetypes_entry,_("Multiple file types seperated by semicolon"))
         
 
         sizer_frame = ttk.Frame(self)
@@ -481,6 +499,7 @@ class FindIndirDialog(ui_base.CommonModaldialog):
         )
         self.cancel_button.pack(fill="x",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,consts.DEFAUT_HALF_CONTRL_PAD_X), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         self.bind("<Return>", self.FindIndir, True)
+        self._update_button_statuses()
 
     def Close(self):
         self.destroy()
@@ -492,28 +511,46 @@ class FindIndirDialog(ui_base.CommonModaldialog):
             path = fileutils.opj(path)
             self.path_entry_var.set(path)
             
+
+    def GetFileTypeList(self,file_type_str):
+        if file_type_str == "" or file_type_str == "*.*" or file_type_str=="*":
+            return []
+        type_parts = file_type_str.split(";")
+        return [part.replace("*.","") for part in type_parts]
+        
+            
     def FindIndir(self,event=None):
+        global FIND_DIR_OPTION
+        
         path = self.path_entry_var.get()
-        findstr = self.find_entry_var.get().strip()
+        findstr = self.find_entry_var.get()
         if findstr == "":
             return
-        findtext.CURERNT_FIND_OPTION.findstr = findstr
-        findtext.CURERNT_FIND_OPTION.dirstr = path
-        findtext.CURERNT_FIND_OPTION.recursive = self.recursive_var.get()
-        findtext.CURERNT_FIND_OPTION.search_hidden = self.search_hidden_var.get()
-        findtext.CURERNT_FIND_OPTION.match_case = self.case_var.get()
-        findtext.CURERNT_FIND_OPTION.match_whole_word = self.whole_word_var.get()
-        findtext.CURERNT_FIND_OPTION.regex = self.regular_var.get()
+        FIND_DIR_OPTION.find_option.findstr = findstr
+        FIND_DIR_OPTION.path = path
+        FIND_DIR_OPTION.recursive = self.recursive_var.get()
+        FIND_DIR_OPTION.search_hidden = self.search_hidden_var.get()
+        FIND_DIR_OPTION.find_option.match_case = self.case_var.get()
+        FIND_DIR_OPTION.find_option.match_whole_word = self.whole_word_var.get()
+        FIND_DIR_OPTION.find_option.regex = self.regular_var.get()
+        FIND_DIR_OPTION.file_types = self.GetFileTypeList(self.filetypes_entry_var.get().strip())
         
         result_view = GetApp().MainFrame.GetSearchresultsView()
         result_view.ClearLines()
         result_view.AddLine(_("Searching for '%s' in '%s'\n\n") % (findstr, path))
         findserivice = FindIndirService()
         if os.path.isfile(path):
-            findserivice.FindTextInFile(path,findtext.CURERNT_FIND_OPTION,result_view)
+            findserivice.FindTextInFile(path,FIND_DIR_OPTION.find_option,result_view)
         else:
-            findserivice.FindIndir(findtext.CURERNT_FIND_OPTION,result_view)
+            findserivice.FindIndir(FIND_DIR_OPTION,result_view)
         self.destroy()
+        
+    def _update_button_statuses(self, *args):
+        find_text = self.find_entry_var.get()
+        if len(find_text) == 0:
+            self.search_button.config(state="disabled")
+        else:
+            self.search_button.config(state="normal")
 
 class SearchProgressDialog(ui_base.GenericProgressDialog):
     
@@ -552,6 +589,7 @@ class FindInfileDialog(ui_base.CommonModaldialog):
         
         self.find_entry = findtext.FindtextCombo(sizer_frame,findString)
         self.find_entry_var = self.find_entry.find_entry_var
+        self.find_entry_var.trace("w", self._update_button_statuses)
         self.find_entry.pack(fill="x",side=tk.LEFT, padx=(0, consts.DEFAUT_HALF_CONTRL_PAD_X), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
 
         sizer_frame = ttk.Frame(self)
@@ -587,6 +625,7 @@ class FindInfileDialog(ui_base.CommonModaldialog):
         )
         self.cancel_button.pack(fill="x",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,consts.DEFAUT_HALF_CONTRL_PAD_X), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         self.bind("<Return>", self.FindText, True)
+        self._update_button_statuses()
         
     def UpdateTitle(self):
         self.dlg_title = _("Find in File")
@@ -598,11 +637,18 @@ class FindInfileDialog(ui_base.CommonModaldialog):
         self.destroy()
         
     def GetFindTextOption(self):
-        findstr = self.find_entry_var.get().strip()
+        findstr = self.find_entry_var.get()
         findtext.CURERNT_FIND_OPTION.findstr = findstr
         findtext.CURERNT_FIND_OPTION.match_case = self.case_var.get()
         findtext.CURERNT_FIND_OPTION.match_whole_word = self.whole_word_var.get()
         findtext.CURERNT_FIND_OPTION.regex = self.regular_var.get()
+        
+    def _update_button_statuses(self, *args):
+        find_text = self.find_entry_var.get()
+        if len(find_text) == 0:
+            self.search_button.config(state="disabled")
+        else:
+            self.search_button.config(state="normal")
         
 
 class FindInprojectDialog(FindInfileDialog):

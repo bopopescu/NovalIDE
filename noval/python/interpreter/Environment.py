@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from noval import _
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk,messagebox
 import noval.ui_base as ui_base
 import os
 import noval.ttkwidgets.linklabel as linklabel
@@ -83,3 +83,14 @@ class EnvironmentPanel(ui_utils.BaseEnvironmentUI):
             #存储值会把数字字符串自动转换成整形,这里需要转换成字符串类型
             dct[value[0]] = str(value[1])
         return dct
+        
+    def CheckAndRemoveKeyitem(self,key):
+        if not ui_utils.BaseEnvironmentUI.CheckAndRemoveKeyitem(self,key):
+            return False
+        #检查系统环境变量中是否存在该变量
+        if self.include_chkvar.get():
+            if key.upper() in os.environ:
+                ret = messagebox.askyesno(_("Warning"),_("Key name has already exist in system environment variable,Do you wann't to overwrite it?"),parent=self)
+                if ret == False:
+                    return False
+        return True

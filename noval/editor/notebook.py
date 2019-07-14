@@ -17,7 +17,6 @@ import noval.misc as misc
 import noval.menu as tkmenu
 import noval.consts as consts
 import noval.imageutils as imageutils
-import noval.syntax.lang as lang
 import noval.core as core
 import noval.syntax.syntax as syntax
 import noval.util.fileutils as fileutils
@@ -34,7 +33,7 @@ from noval.editor import text as texteditor
 import noval.docposition as docposition
 import noval.formatter as formatter
 import datetime
-import getpass
+import noval.project.variables as variablesutils
 
 class EditorNotebook(ui_base.ClosableNotebook):
     """
@@ -117,6 +116,7 @@ class EditorNotebook(ui_base.ClosableNotebook):
             self._cmd_new_file()
 
     #重写关闭文档标签页事件,如果是文档类型的标签页除了关闭窗口之外,还要关闭打开的文档
+    @misc.update_toolbar
     def close_tab(self, index):
         editor = self.get_child_by_index(index)
         if editor:
@@ -288,7 +288,7 @@ class EditorNotebook(ui_base.ClosableNotebook):
     @misc.update_toolbar
     def NewModule(self):
         flags = core.DOC_NEW
-        lexer = syntax.SyntaxThemeManager().GetLexer(lang.ID_LANG_PYTHON)
+        lexer = syntax.SyntaxThemeManager().GetLexer(GetApp().GetDefaultLangId())
         temp = GetApp().GetDocumentManager().FindTemplateForPath("test.%s" % lexer.GetDefaultExt())
         newDoc = temp.CreateDocument("", flags)
         if newDoc:
@@ -445,7 +445,9 @@ class EditorNotebook(ui_base.ClosableNotebook):
         self.get_current_editor().GetView().UpdateFontSize(delta)
         
     def DoFind(self,replace=False):
-        findtext.ShowFindReplaceDialog(GetApp(),replace=replace)
+        editor = self.get_current_editor()
+        findString = editor.GetView().GetCtrl().GetSelectionText()
+        findtext.ShowFindReplaceDialog(GetApp(),replace=replace,findString=findString)
         
     def FindIndir(self):
         findindir.ShowFindIndirDialog(GetApp(),self.get_current_editor())
@@ -477,7 +479,7 @@ class EditorNotebook(ui_base.ClosableNotebook):
         lexer = syntax.SyntaxThemeManager().GetLexer(langid)
         comment_template = lexer.GetCommentTemplate()
         if comment_template is not None:
-            comment_template_content = comment_template.format(File=file_name,Author=getpass.getuser(),Date=now_time.date(),Year=now_time.date().year)
+            comment_template_content = comment_template.format(File=file_name,Author=variablesutils.GetProjectVariableManager().GetVariable('USER'),Date=now_time.date(),Year=now_time.date().year)
             text_view.GetCtrl().GotoPos(0,0)
             text_view.AddText(comment_template_content)
             

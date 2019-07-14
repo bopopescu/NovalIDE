@@ -470,7 +470,7 @@ class PythonInterpreter(BuiltinPythonInterpreter):
         
     def GetDocPath(self):
         if self._help_path == "":
-            if sysutils.isWindows():
+            if apputils.is_windows():
                 python_location = os.path.dirname(self.Path)
                 doc_location = os.path.join(python_location,"Doc")
                 file_list = glob.glob(os.path.join(doc_location,"*.chm"))

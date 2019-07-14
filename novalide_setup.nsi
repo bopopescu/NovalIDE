@@ -300,11 +300,11 @@ Function .onInstSuccess
   IntCmp $Language 1033 SetLangEnglish
 
 SetLangChinese:
-  WriteINIStr "$INSTDIR\config.ini" "IDE" "Language" "Chinese"
+  WriteINIStr "$INSTDIR\config.ini" "IDE" "Language" "46"
   Goto SetLangEnd
 
 SetLangEnglish:
-  WriteINIStr "$INSTDIR\config.ini" "IDE" "Language" "English"
+  WriteINIStr "$INSTDIR\config.ini" "IDE" "Language" "60"
 
 SetLangEnd:
 FunctionEnd

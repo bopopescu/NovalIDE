@@ -918,21 +918,28 @@ class CommonModaldialog(CommonDialog):
         self.status = constants.ID_CANCEL
         self.destroy()
         
-    def AddokcancelButton(self):
+    def AddokcancelButton(self,side=None):
         bottom_frame = ttk.Frame(self.main_frame)
-        bottom_frame.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        if side is None:
+            bottom_frame.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        else:
+            bottom_frame.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0),side=side,expand=1)
         self.AppendokcancelButton(bottom_frame)
         
     def AppendokcancelButton(self,bottom_frame):
         space_label = ttk.Label(bottom_frame,text="")
         space_label.grid(column=0, row=0, sticky=tk.EW, padx=(consts.DEFAUT_CONTRL_PAD_X, consts.DEFAUT_CONTRL_PAD_X), pady=consts.DEFAUT_CONTRL_PAD_Y)
-        self.ok_button = ttk.Button(bottom_frame, text=_("&OK"), command=self._ok,default=tk.ACTIVE)
+        self.ok_button = ttk.Button(bottom_frame, text=_("&OK"), command=self._ok,default=tk.ACTIVE,takefocus=1)
         self.ok_button.grid(column=1, row=0, sticky=tk.EW, padx=(0, consts.DEFAUT_CONTRL_PAD_X), pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
         self.cancel_button = ttk.Button(bottom_frame, text=_("Cancel"), command=self._cancel)
         self.cancel_button.grid(column=2, row=0, sticky=tk.EW, padx=(0, consts.DEFAUT_CONTRL_PAD_X), pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
         self.FormatTkButtonText(self.ok_button)
         self.FormatTkButtonText(self.cancel_button)
         bottom_frame.columnconfigure(0, weight=1)
+        self.ok_button.focus_set()
+        #设置回车键关闭对话框
+        self.ok_button.bind("<Return>", self._ok, True)
+        self.cancel_button.bind("<Return>", self._cancel, True)
 
 class SingleChoiceDialog(CommonModaldialog):
     def __init__(self, master,title,label,choices = [],selection=-1):
@@ -1007,6 +1014,7 @@ class GenericProgressDialog(CommonModaldialog):
     def Cancel(self):
         self.keep_going = False
         self.is_cancel = True
+        self.cancel_button['state'] = tk.DISABLED
         
     def SetValue(self,val):
         assert(type(val) == int)

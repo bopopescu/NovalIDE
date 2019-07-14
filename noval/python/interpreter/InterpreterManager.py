@@ -30,10 +30,11 @@ BUILTIN_INTERPRETER_NAME = "Builtin_Interpreter"
 @Singleton
 class InterpreterManager:
 
-    interpreters = []
-    DefaultInterpreter = None
-    CurrentInterpreter = None
     KEY_PREFIX = "interpreters"
+    def __init__(self):
+        self.interpreters = []
+        self.DefaultInterpreter = None
+        self.CurrentInterpreter = None
 
     def LoadDefaultInterpreter(self):
         if self.LoadPythonInterpretersFromConfig():
@@ -48,6 +49,7 @@ class InterpreterManager:
 
         if apputils.is_windows() and None == self.GetInterpreterByName(BUILTIN_INTERPRETER_NAME):
             self.LoadBuiltinInterpreter()
+        self.interpreters = InterpreterManager().interpreters
         if 1 == len(self.interpreters):
             self.MakeDefaultInterpreter()
         elif 1 < len(self.interpreters):
@@ -274,17 +276,15 @@ class InterpreterManager:
             choices.append(interpreter.Name)
         return choices,default_index
 
-    @classmethod
-    def CheckIdExist(cls,id):
-        for kb in cls.interpreters:
+    def CheckIdExist(self,id):
+        for kb in self.interpreters:
             if kb.Id == id:
                 return True
         return False
 
-    @classmethod
-    def GenerateId(cls):
+    def GenerateId(self):
         id = NewId()
-        while cls.CheckIdExist(id):
+        while self.CheckIdExist(id):
             id = NewId()
         return id
 
@@ -294,26 +294,23 @@ class InterpreterManager:
                 return True
         return False
 
-    @classmethod
-    def SetCurrentInterpreter(cls,interpreter):
-        cls.CurrentInterpreter = interpreter
+    def SetCurrentInterpreter(self,interpreter):
+        self.CurrentInterpreter = interpreter
         if interpreter is None:
             return
         #change builtin module name of BuiltinImportNode
         nodeast.BuiltinImportNode.BUILTIN_MODULE_NAME = interpreter.BuiltinModuleName
 
-    @classmethod
-    def GetCurrentInterpreter(cls):
-        return cls.CurrentInterpreter
+    def GetCurrentInterpreter(self):
+        return self.CurrentInterpreter
 
     def LoadBuiltinInterpreter(self):
         builtin_interpreter = pythoninterpreter.BuiltinPythonInterpreter(BUILTIN_INTERPRETER_NAME,sys.executable)
         self.interpreters.append(builtin_interpreter)
         
-    @classmethod
-    def GetInterpreterNames(cls):
+    def GetInterpreterNames(self):
         names = []
-        for interpreter in cls.interpreters:
+        for interpreter in self.interpreters:
             names.append(interpreter.Name)
         return names
         

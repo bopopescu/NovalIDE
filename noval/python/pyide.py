@@ -91,8 +91,9 @@ class PyIDEApplication(ide.IDEApplication):
         insert_menu = edit_menu.GetMenu(constants.ID_INSERT)
         self.AddMenuCommand(constants.ID_INSERT_DECLARE_ENCODING,insert_menu,_("Insert Encoding Declare"),self.InsertEncodingDeclare,default_tester=True,default_command=True)
         
-        preference.PreferenceManager().AddOptionsPanel(preference.INTERPRETER_OPTION_NAME,preference.GENERAL_ITEM_NAME,interpretergerneralconfiguration.InterpreterGeneralConfigurationPanel)
-        preference.PreferenceManager().AddOptionsPanel(preference.INTERPRETER_OPTION_NAME,preference.INTERPRETER_CONFIGURATIONS_ITEM_NAME,interpreterconfigruation.InterpreterConfigurationPanel)
+        #添加Python语言仅有的首选项面板
+        preference.PreferenceManager().AddOptionsPanelClass(preference.INTERPRETER_OPTION_NAME,preference.GENERAL_ITEM_NAME,interpretergerneralconfiguration.InterpreterGeneralConfigurationPanel)
+        preference.PreferenceManager().AddOptionsPanelClass(preference.INTERPRETER_OPTION_NAME,preference.INTERPRETER_CONFIGURATIONS_ITEM_NAME,interpreterconfigruation.InterpreterConfigurationPanel)
         
         self.AddCommand(constants.ID_START_WITHOUT_DEBUG,_("&Run"),_("&Start Without Debugging"),self.RunWithoutDebug,default_tester=True,default_command=True)
 
@@ -178,15 +179,7 @@ class PyIDEApplication(ide.IDEApplication):
             if data == current_interpreter:
                 self.toolbar_combox.SetSelection(i)
                 break
-                
-    def AddInterpreters(self):
-        cb = self.ToolbarCombox
-        cb.Clear()
-        for interpreter in interpretermanager.InterpreterManager().interpreters:
-            cb.Append(interpreter.Name,interpreter)
-        cb.Append(_("Configuration"),)
-        self.SetCurrentInterpreter()
-        
+                        
     def Quit(self):
         if not self.AllowClose():
             return
@@ -360,4 +353,7 @@ class PyIDEApplication(ide.IDEApplication):
         if not _debugger.CloseDebugger():
             return False
         return ide.IDEApplication.AllowClose(self)
+        
+    def GetDebuggerView(self):
+        return Debugger.DebuggerView
             

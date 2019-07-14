@@ -1,24 +1,27 @@
 # -*- coding: utf-8 -*-
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk,filedialog,messagebox
 from noval import _,NewId,GetApp
 import noval.editor.text as texteditor
-#from noval.tool import FindTextCtrl
+import noval.find.findtext as findtext
+import noval.find.find as finddialog
 import noval.ui_base as ui_base
 import noval.util.apputils as apputils
 import os
 import noval.constants as constants
+import noval.consts as consts
+import noval.util.strutils as strutils
 
-class OutputCtrl(texteditor.TextCtrl):
-    
+class OutputCtrl(texteditor.TextCtrl,findtext.FindTextEngine):
+    '''
+        调式输出控件同时兼顾查找功能
+    '''
     TEXT_WRAP_ID = NewId()
-    FIND_TEXT_ID = NewId()
     EXPORT_TEXT_ID = NewId()
-    ERROR_COLOR_STYLE = 2
-    INPUT_COLOR_STYLE = 1
   
     def __init__(self, parent,is_debug=False,**kwargs):
         texteditor.TextCtrl.__init__(self, parent,**kwargs)
+        findtext.FindTextEngine.__init__(self)
         self._first_input = True
         self._input_start_pos = 0
         self._executor = None
@@ -48,6 +51,8 @@ class OutputCtrl(texteditor.TextCtrl):
             "stderr",
             foreground="Red"
         )
+        self._is_wrap = tk.IntVar(value=False)
+        self.SetWrap()
             
     @property
     def IsFirstInput(self):
@@ -69,103 +74,26 @@ class OutputCtrl(texteditor.TextCtrl):
         self.ActiveDebugView()
         self.PopupMenu(self.CreatePopupMenu(), event.GetPosition())
         
-    def CreatePopupMenu1111(self):
-        menu = wx.Menu()
-        frame = wx.GetApp().MainFrame
-        menuBar = frame.GetMenuBar()
-        for itemID in self.ItemIDs:
-            if not itemID:
-                menu.AppendSeparator()
-            else:
-                item = menuBar.FindItemById(itemID)
-                if item:
-                    menu_item = wx.MenuItem(menu,itemID,item.GetItemLabel())
-                    bmp = item.GetBitmap()
-                    if bmp:
-                        menu_item.SetBitmap(bmp)
-                    menu.AppendItem(menu_item)
-                elif itemID == self.TEXT_WRAP_ID:
-                    menu.AppendCheckItem(self.TEXT_WRAP_ID, _("Word Wrap"))
-                elif itemID == self.EXPORT_TEXT_ID:
-                    menu.Append(self.EXPORT_TEXT_ID, _("Export All"))
-                    
-        for itemID in self.ItemIDs:
-            if itemID:
-                wx.EVT_MENU(self, itemID, frame.ProcessEvent) 
-                wx.EVT_UPDATE_UI(self, itemID, self.ProcessUpdateUIEvent)
-        return menu
+    def CreatePopupMenu(self):
+        texteditor.TextCtrl.CreatePopupMenu(self)
+        self._popup_menu.add_separator()
+        self._popup_menu.Append(self.TEXT_WRAP_ID,_("Word Wrap"),kind=consts.CHECK_MENU_ITEM_KIND,handler=self.SetWrap,variable=self._is_wrap)
+        self._popup_menu.AppendMenuItem(GetApp().Menubar.GetEditMenu().FindMenuItem(constants.ID_FIND),handler=self.DoFind,tester=None)
+        self._popup_menu.Append(self.EXPORT_TEXT_ID, _("Export All"),handler=self.SaveAll)
         
-    def ProcessEvent(self, event):
-        id = event.GetId()
-        if id == constants.ID_UNDO:
-            self.Undo()
-            return True
-        elif id == constants.ID_REDO:
-            self.Redo()
-            return True
-        elif id == constants.ID_CUT:
-            self.Cut()
-            return True
-        elif id == constants.ID_COPY:
-            self.Copy()
-            return True
-        elif id == constants.ID_PASTE:
-            self.OnPaste()
-            return True
-        elif id == constants.ID_CLEAR:
-            self.ClearOutput()
-            return True
-        elif id == constants.ID_SELECTALL:
-            self.SelectAll()
-            return True
-        elif id == self.TEXT_WRAP_ID:
-            self.SetWordWrap(not self.GetWordWrap())
-            return True
-            
-        elif id == constants.ID_FIND:
-            findService = wx.GetApp().GetService(FindService.FindService)
-            findService.ShowFindReplaceDialog(findString = self.GetSelectedText())
-            return True
-        elif id == self.EXPORT_TEXT_ID:
-            self.SaveAll()
-            return True
-        elif id == FindService.FindService.FINDONE_ID:
-            self.DoFindText()
-            return True
-        else:
-            return False
-            
-    def ProcessUpdateUIEvent(self, event):
-        id = event.GetId()
-        if id == constants.ID_UNDO:
-            event.Enable(self.CanUndo())
-            return True
-        elif id == constants.ID_REDO:
-            event.Enable(self.CanRedo())
-            return True
-        elif id == constants.ID_CUT or id == constants.ID_PASTE:
-            event.Enable(False)
-            return True
-        elif id == constants.ID_COPY:
-            event.Enable(self.HasSelection())
-            return True
-        elif id == constants.ID_CLEAR:
-            event.Enable(True)  # wxBug: should be stcControl.CanCut()) but disabling clear item means del key doesn't work in control as expected
-            return True
-        elif id == constants.ID_SELECTALL or id == constants.ID_FIND or id == self.EXPORT_TEXT_ID:
-            hasText = self.GetTextLength() > 0
-            event.Enable(hasText)
-            return True
-        elif id == self.TEXT_WRAP_ID:
-            event.Enable(self.CanWordWrap())
-            event.Check(self.CanWordWrap() and self.GetWordWrap())
-            return True
-        else:
-            return False       
+
+    def DoFind(self):
+        finddialog.ShowFindReplaceDialog(self)
             
     def OnFocus(self, event):
         self.ActiveDebugView()
         event.Skip()
+        
+    def SetWrap(self):
+        if self._is_wrap.get():
+            self.configure(**{'wrap':'char'})
+        else:
+            self.configure(**{'wrap':'none'})
         
     def ActiveDebugView(self):
         if not self._is_debug:
@@ -190,28 +118,23 @@ class OutputCtrl(texteditor.TextCtrl):
             self.TextNotFound(findString,flags,forceFindNext,forceFindPrevious)
             
     def SaveAll(self):
-        text_docTemplate = wx.GetApp().GetDocumentManager().FindTemplateForPath("test.txt")
-        descr = _(text_docTemplate.GetDescription()) + " (" + text_docTemplate.GetFileFilter() + ") |" + text_docTemplate.GetFileFilter()  # spacing is important, make sure there is no space after the "|", it causes a bug on wx_gtk
-        if text_docTemplate.GetDocumentType() == STCTextEditor.TextDocument:
-            default_ext = ""
-            descr = _("All Files") +  "(*.*) |*.*|%s" % descr
-        filename = wx.FileSelector(_("Save As"),
-                                   text_docTemplate.GetDirectory(),
-                                   "*.txt",
-                                   default_ext,
-                                   wildcard = descr,
-                                   flags = wx.SAVE | wx.OVERWRITE_PROMPT,
-                                   parent = self)
-                                   
-
+        text_docTemplate = GetApp().GetDocumentManager().FindTemplateForPath("test.txt")
+        default_ext = text_docTemplate.GetDefaultExtension()
+        descrs = strutils.get_template_filter(text_docTemplate)
+        filename = filedialog.asksaveasfilename(
+            master = self,
+            filetypes=[descrs],
+            defaultextension=default_ext,
+            initialdir=text_docTemplate.GetDirectory(),
+            initialfile="outputs.txt"
+        )
         if filename == "":
             return
-            
         try:
             with open(filename,"wb") as f:
-                f.write(self.GetText())
+                f.write(self.GetValue())
         except Exception as e:
-            wx.MessageBox(str(e),style=wx.OK|wx.ICON_ERROR)
+            messagebox.showerror(_("Error"),str(e))
 
     def OnDoubleClick(self, event):
         # Looking for a stack trace line.
@@ -318,10 +241,6 @@ class OutputCtrl(texteditor.TextCtrl):
         self.StartStyling(pos, 31)
         self.SetStyling(len(text), self.INPUT_COLOR_STYLE)
         self.SetReadOnly(True)
-        
-    def SetInputStyle(self):
-        self.StyleSetSpec(self.INPUT_COLOR_STYLE, 'fore:#221dff, back:#FFFFFF,face:%s,size:%d' % \
-                     (self._font.GetFaceName(),self._font.GetPointSize())) 
         
 
 class OutputView(ttk.Frame):

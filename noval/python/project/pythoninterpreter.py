@@ -41,10 +41,9 @@ class PythonInterpreterPanel(ui_utils.BaseConfigurationPanel):
         if not ui_common.ShowInterpreterConfigurationPage():
             return
         choices,default_selection = interpretermanager.InterpreterManager().GetChoices()
-        self.interpreterCombo.Clear()
+        self.interpreterCombo['values'] = choices
         if len(choices) > 0:
-            self.interpreterCombo.InsertItems(choices,0)
-            self.interpreterCombo.SetSelection(default_selection)
+            self.interpreterCombo.current(default_selection)
 
     def GetInterpreter(self):
         return interpretermanager.InterpreterManager().interpreters[self.interpreterCombo.current()]

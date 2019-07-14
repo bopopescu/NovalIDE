@@ -83,7 +83,7 @@ class IDEApplication(core.App):
     #    self.ShowSplash(self.GetIDESplashBitmap())
         self._open_project_path = None
         self.frame = None           
-        self._pluginmgr = None  
+        self._pluginmgr = None
         self._config = utils.Config(self.GetAppName())
         self._init_theming()
         #设置窗体大小
@@ -107,7 +107,8 @@ class IDEApplication(core.App):
 
         ##locale must be set as app member property,otherwise it will only workable when app start up
         ##it will not workable after app start up,the translation also will not work
-        lang_id = utils.profile_get_int(consts.LANGUANGE_ID_KEY,ui_lang.LANGUAGE_CHINESE_SIMPLIFIED)
+        #默认从配置文件获取语言id
+        lang_id = utils.profile_get_int(consts.LANGUANGE_ID_KEY,utils.get_lang_config())
         if Locale.IsAvailable(lang_id):
             self.locale = Locale(lang_id)
             self.locale.AddCatalogLookupPathPrefix(os.path.join(utils.get_app_path(),'locale'))
@@ -168,11 +169,12 @@ class IDEApplication(core.App):
         self._InitMainFrame()
         #再初始化程序菜单及其命令
         self._InitCommands()
-        preference.PreferenceManager().AddOptionsPanel(preference.ENVIRONMENT_OPTION_NAME,preference.GENERAL_ITEM_NAME,generalopt.GeneralOptionPanel)
-        preference.PreferenceManager().AddOptionsPanel(preference.ENVIRONMENT_OPTION_NAME,preference.PROJECT_ITEM_NAME,baseprojectviewer.ProjectOptionsPanel)
-        preference.PreferenceManager().AddOptionsPanel(preference.ENVIRONMENT_OPTION_NAME,preference.TEXT_ITEM_NAME,texteditor.TextOptionsPanel)
-        preference.PreferenceManager().AddOptionsPanel(preference.ENVIRONMENT_OPTION_NAME,"Document",docoption.DocumentOptionsPanel)
-        preference.PreferenceManager().AddOptionsPanel(preference.ENVIRONMENT_OPTION_NAME,preference.FONTS_CORLORS_ITEM_NAME,colorfont.ColorFontOptionsPanel)
+        #添加通用首选项面板
+        preference.PreferenceManager().AddOptionsPanelClass(preference.ENVIRONMENT_OPTION_NAME,preference.GENERAL_ITEM_NAME,generalopt.GeneralOptionPanel)
+        preference.PreferenceManager().AddOptionsPanelClass(preference.ENVIRONMENT_OPTION_NAME,preference.PROJECT_ITEM_NAME,baseprojectviewer.ProjectOptionsPanel)
+        preference.PreferenceManager().AddOptionsPanelClass(preference.ENVIRONMENT_OPTION_NAME,preference.TEXT_ITEM_NAME,texteditor.TextOptionsPanel)
+        preference.PreferenceManager().AddOptionsPanelClass(preference.ENVIRONMENT_OPTION_NAME,"Document",docoption.DocumentOptionsPanel)
+        preference.PreferenceManager().AddOptionsPanelClass(preference.ENVIRONMENT_OPTION_NAME,preference.FONTS_CORLORS_ITEM_NAME,colorfont.ColorFontOptionsPanel)
         #必须等菜单栏和主窗口初始化完成才在此处初始化插件
         self.InitPlugins()
         #打开从命令行传递的参数文件
@@ -872,7 +874,7 @@ class IDEApplication(core.App):
         return interpretermanager.InterpreterManager()
         
     def OnOptions(self):
-        preference_dlg = preference.PreferenceDialog(self)
+        preference_dlg = preference.PreferenceDialog(self,selection=utils.profile_get("PrefereceOptionName",''))
         preference_dlg.ShowModal()
         
     def ShowFullScreen(self):
@@ -883,6 +885,9 @@ class IDEApplication(core.App):
             
     def GetDefaultDocumentType(self):
         return syntax.SyntaxThemeManager().GetLexer(self.GetDefaultLangId()).GetDocTypeName()
+        
+    def GetDebuggerView(self):
+        return None
 
 class AppEvent(record.Record):
     def __init__(self, sequence, **kwargs):

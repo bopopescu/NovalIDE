@@ -385,10 +385,11 @@ class IntellisenceManager(object):
         self._is_running = interpreter.Analysing
         if progress_dlg != None:
             progress_dlg.KeepGoing = False
-        if load_data_end and not self._is_stopped:
-            self.load_intellisence_data(interpreter) 
-        if progress_dlg == None:
+            progress_dlg.destroy()
+        else:
             self.ShareUserData()
+        if load_data_end and not self._is_stopped:
+            self.load_intellisence_data(interpreter)
         if not self._is_stopped:
             utils.update_statusbar(_("Intellisence database has been updated"))
         else:

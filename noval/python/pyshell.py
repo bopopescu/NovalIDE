@@ -20,6 +20,10 @@ import re
 import noval.editor.text as texteditor
 import tkinter.font as tk_font
 
+def execfile(filePath):
+    with open(filePath,encoding="utf-8") as f:
+        exec(f.read())
+
 class PythonText(CodeCtrl):
     def __init__(self, master=None, cnf={}, **kw):
         if "indent_with_tabs" not in kw:
@@ -183,7 +187,7 @@ class ShellText(PythonText):
             "prompt",
             font="PyShellBoldEditorFont",
         )
-        
+        #如果tk版本大于8.6.6
         if strutils.compare_version(pyutils.get_tk_version_str(),("8.6.6")) > 0:
             self.tag_configure(
                 "io", lmargincolor=get_syntax_options_for_tag("TEXT")["background"]
@@ -1078,6 +1082,10 @@ class PyShell(ttk.Frame):
         # 显示Python解释器信息.
         self.showIntro(introText)
         self.text._insert_prompt()
+        #python3没有execfile函数,自己实现一个
+        if utils.is_py3():
+            import builtins
+            builtins.execfile = execfile
         
     def _arrow_up(self,event):
         #if self.historyIndex < 0:
@@ -1123,6 +1131,23 @@ class PyShell(ttk.Frame):
             self.write(str(x))
             self.run("")
             #sys.exit
+        except Exception as e:
+            self.write(str(x))
+            
+    def run(self, command, prompt=True, verbose=True):
+        """Execute command as if it was typed in directly.
+        >>> shell.run('print "this"')
+        >>> print "this"
+        this
+        >>>
+        """
+        # Go to the very bottom of the text.
+     #   endpos = self.GetTextLength()
+      #  self.SetCurrentPos(endpos)
+        command = command.rstrip()
+        if prompt: self.prompt()
+        if verbose: self.write(command)
+        self.push(command)
             
     def prompt(self):
         """Display proper prompt for the context: ps1, ps2 or ps3.

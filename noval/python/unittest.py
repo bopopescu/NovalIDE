@@ -52,41 +52,27 @@ class UnitTestDialog(ui_base.CommonModaldialog):
             size=14,
         ),
         
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(1, weight=1)
-        
-        sizer_frame = ttk.Frame(self)
-        sizer_frame.grid(column=0, row=0, sticky="ew")
+        sizer_frame = ttk.Frame(self.main_frame)
         label_ctrl = ttk.Label(sizer_frame,text=_("NovalIDE UnitTest Wizard"),font=welcome_label_font)
         label_ctrl.pack(side=tk.LEFT,fill="x",expand=1)
         
         img_ctrl = ttk.Label(sizer_frame,image=self.img,compound=tk.RIGHT)
         img_ctrl.pack(side=tk.LEFT)
         
-        sizer_frame = ttk.Frame(self)
-        sizer_frame.grid(column=0, row=1, sticky="nsew")
-
-        self.treeview = treeviewframe.TreeViewFrame(sizer_frame,treeview_class=checkboxtreeview.CheckboxTreeview)
+        sizer_frame.pack(fill="x")
+        
+        self.treeview = treeviewframe.TreeViewFrame(self.main_frame,treeview_class=checkboxtreeview.CheckboxTreeview)
         self.treeview.pack(expand=1,fill=tk.BOTH,pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         self.tree = self.treeview.tree
-        
-        bottom_frame = ttk.Frame(self)
-        bottom_frame.grid(column=0, row=2, sticky=tk.EW, padx=0, pady=0)
-        
-        space_label = ttk.Label(bottom_frame,text="")
-        space_label.grid(column=0, row=0, sticky=tk.EW, padx=(consts.DEFAUT_CONTRL_PAD_X, consts.DEFAUT_CONTRL_PAD_X), pady=consts.DEFAUT_CONTRL_PAD_Y)
-        self.ok_button = ttk.Button(bottom_frame, text=_("&OK"), command=self._ok,default=tk.ACTIVE)
-        self.ok_button.grid(column=1, row=0, sticky=tk.EW, padx=(0, consts.DEFAUT_CONTRL_PAD_X), pady=consts.DEFAUT_CONTRL_PAD_Y)
-        self.cancel_button = ttk.Button(bottom_frame, text=_("Cancel"), command=self._cancel)
-        self.cancel_button.grid(column=2, row=0, sticky=tk.EW, padx=(0, consts.DEFAUT_CONTRL_PAD_X), pady=consts.DEFAUT_CONTRL_PAD_Y)
-        bottom_frame.columnconfigure(0, weight=1)
-        
+        self.AddokcancelButton()
         self._cur_view = view
 
     def CreateUnitTestFrame(self):
         module_scope = self._cur_view.ModuleScope
         if module_scope is None:
             messagebox.showerror(_("Error"),self._cur_view.ModuleAnalyzer.SyntaxError)
+            self.withdraw()
+            self.destroy()
             return False
         self.root = self.tree.insert("","end",text=module_scope.Module.Name)
         self.TranverseItem(module_scope.Module,self.root)
@@ -104,7 +90,7 @@ class UnitTestDialog(ui_base.CommonModaldialog):
                 self.TranverseItem(child,item)
         self.tree.item(parent, open=True)
 
-    def _ok(self):
+    def _ok(self,event=None):
         for template in GetApp().GetDocumentManager().GetTemplates():
             if template.GetDocumentType() == pyeditor.PythonDocument:
                 newDoc = template.CreateDocument("", flags = core.DOC_NEW)
@@ -118,7 +104,7 @@ class UnitTestDialog(ui_base.CommonModaldialog):
                     doc_view.AddText(self.CreateUnitTestTemplate())
                     doc_view.AddText(UNITTEST_TMPLATE_FOOTER)
                     break
-        self.destroy()
+        ui_base.CommonModaldialog._ok(self,event)
 
     def CreateUnitTestFromClass(self,node_name,is_name=False):
         if is_name:

@@ -263,6 +263,9 @@ class BaseProject(object):
         for file in self._files:
             file._getDocCallback = getDocCallback
 
+
+class Project(BaseProject):
+    pass
         
 class ProjectFile(object):
     

@@ -137,7 +137,7 @@ def get_app_version():
 def get_lang_config():
     config_path = os.path.join(mainModuleDir,"config.ini")
     if not os.path.exists(config_path):
-        return ''
+        return -1
         
     if is_py2():
         from ConfigParser import ConfigParser
@@ -145,4 +145,4 @@ def get_lang_config():
         from configparser import ConfigParser
     cfg = ConfigParser()
     cfg.read(config_path)
-    return cfg.get('IDE','Language')
+    return int(cfg.get('IDE','Language'))

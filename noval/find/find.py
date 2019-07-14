@@ -17,11 +17,15 @@ import os
 import noval.util.apputils as sysutilslib
 import noval.consts as consts
 import noval.util.utils as utils
+import noval.editor.text as texteditor
 
 #----------------------------------------------------------------------------
 # Constants
 #----------------------------------------------------------------------------
+
+#这些常量为保存在配置文件中的键值
 FIND_MATCHPATTERN = "FindMatchPattern"
+FIND_MATCHPATTERN_LIST = "FindMatchPatterns"
 FIND_MATCHREPLACE = "FindMatchReplace"
 FIND_MATCHCASE = "FindMatchCase"
 FIND_MATCHWHOLEWORD = "FindMatchWholeWordOnly"
@@ -59,17 +63,7 @@ class FindOpt:
         self.down = down
         self.regex = regex
         
-
-class FindDirOption(FindOpt):
-    def __init__(self,findstr,dir_,match_case=False,match_whole_word=False,regex=False,recursive=True,search_hidden=False,file_type_list=[]):
-        FindOpt.__init__(self,findstr,match_case=match_case,match_whole_word=match_whole_word,regex=regex)
-        self.dirstr = dir_
-        self.recursive = recursive
-        self.search_hidden = search_hidden
-        self.file_types = file_type_list
-        
-
-CURERNT_FIND_OPTION = FindDirOption('','')
+CURERNT_FIND_OPTION = FindOpt('')
         
 class FindDialog(tk.Toplevel):
     last_searched_word = None
@@ -80,22 +74,8 @@ class FindDialog(tk.Toplevel):
         self.main_frame.grid(row=0, column=0, sticky="nsew")
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
-
-        # references to the current set of passive found tags e.g. all words that match the searched term but are not the active string
-        self.passive_found_tags = set()
-        self.active_found_tag = (
-            None
-        )  # reference to the currently active (centered) found string
-
-        # a tuple containing the start and indexes of the last processed string
-        # if the last action was find, then the end index is start index + 1
-        # if the last action was replace, then the indexes correspond to the start
-        # and end of the inserted word
-        self.last_processed_indexes = None
-        self.last_search_case = (
-            None
-        )  # case sensitivity value used during the last search
-
+        #查找焦点文本控件
+        self.text = None
         # set up window display
         self.geometry(
             "+%d+%d"
@@ -129,8 +109,6 @@ class FindDialog(tk.Toplevel):
         self.find_entry.grid(
             column=1, row=0, padx=(0, consts.DEFAUT_CONTRL_PAD_X), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0)
         )
-        #if FindDialog.last_searched_word is not None:
-          #  self.find_entry.insert(0, FindDialog.last_searched_word)
 
         # Info text label (invisible by default, used to tell user that searched string was not found etc)
         self.infotext_label_var = tk.StringVar()
@@ -212,6 +190,7 @@ class FindDialog(tk.Toplevel):
             self._update_button_statuses()
 
         self.focus_set()
+        self.LoadConfig()
 
     def AddCancelButton(self,row=1):
         cancel_button = ttk.Button(self.right_frame, text=_("Cancel"), command=self._ok)
@@ -245,117 +224,93 @@ class FindDialog(tk.Toplevel):
 
     def GetFindTextOption(self):
         global CURERNT_FIND_OPTION
-        findstr = self.find_entry_var.get().strip()
+        findstr = self.find_entry_var.get()
         CURERNT_FIND_OPTION.findstr = findstr
         CURERNT_FIND_OPTION.match_case = self.case_var.get()
         CURERNT_FIND_OPTION.match_whole_word = self.whole_word_var.get()
         CURERNT_FIND_OPTION.regex = self.regular_var.get()
         CURERNT_FIND_OPTION.down = self.direction_var.get()
         CURERNT_FIND_OPTION.wrap = self.wrap_var.get()
-
-    def GetCodeView(self) :
-        self.codeview = GetApp().GetDocumentManager().GetCurrentView()
-
+        
+    def GetCtrl(self) :
+        current_view = GetApp().GetDocumentManager().GetCurrentView()
+        if isinstance(current_view,texteditor.TextView) or isinstance(current_view,GetApp().GetDebuggerView()):
+            self.text = current_view.GetCtrl()
+        return self.text
+        
     def _perform_find(self, event=None):
-        self.GetCodeView()
+        self.do_find()
+
+    def do_find(self,ok=0):
+        self.GetCtrl()
+        if self.text is None:
+            self.infotext_label_var.set("current view is not a text or debugger view")
+            return
         self.GetFindTextOption()
         self.infotext_label_var.set("")  # reset the info label text
         tofind = self.find_entry.get()  # get the text to find
         if len(tofind) == 0:  # in the case of empty string, cancel
             return  # TODO - set warning text to info label?
-
-        search_backwards = (
-            self.direction_var.get() == 1
-        )  # True - search backwards ('up'), False - forwards ('down')
-
-        if self._repeats_last_search(
-            tofind
-        ):  # continuing previous search, find the next occurrence
-            if search_backwards:
-                search_start_index = self.last_processed_indexes[0]
-            else:
-                search_start_index = self.last_processed_indexes[1]
-
-            if self.active_found_tag is not None:
-                self.codeview.GetCtrl().tag_remove(
-                    "current_found", self.active_found_tag[0], self.active_found_tag[1]
-                )  # remove the active tag from the previously found string
-                self.passive_found_tags.add(
-                    (self.active_found_tag[0], self.active_found_tag[1])
-                )  # ..and set it to passive instead
-                self.codeview.GetCtrl().tag_add(
-                    "found", self.active_found_tag[0], self.active_found_tag[1]
-                )
-
-        else:  # start a new search, start from the current insert line position
-            if self.active_found_tag is not None:
-                self.codeview.GetCtrl().tag_remove(
-                    "current_found", self.active_found_tag[0], self.active_found_tag[1]
-                )  # remove the previous active tag if it was present
-            for tag in self.passive_found_tags:
-                self.codeview.GetCtrl().tag_remove(
-                    "found", tag[0], tag[1]
-                )  # and remove all the previous passive tags that were present
-            search_start_index = self.codeview.GetCtrl().index(
-                "insert"
-            )  # start searching from the current insert position
-            self._find_and_tag_all(
-                tofind
-            )  # set the passive tag to ALL found occurences
-            FindDialog.last_searched_word = tofind  # set the data about last search
-            self.last_search_case = self._is_search_case_sensitive()
-
-        wordstart = self.codeview.GetCtrl().search(
-            tofind,
-            search_start_index,
-            backwards=search_backwards,
-            forwards=not search_backwards,
-            nocase=not self._is_search_case_sensitive(),
-        )  # performs the search and sets the start index of the found string
-        if len(wordstart) == 0:
-            self.infotext_label_var.set(
-                "The specified text was not found!"
-            )  # TODO - better text, also move it to the texts resources list
-         #   self.replace_and_find_button.config(state="disabled")
-          #  self.replace_button.config(state="disabled")
-            return
-
-        self.last_processed_indexes = (
-            wordstart,
-            self.codeview.GetCtrl().index("%s+1c" % wordstart),
-        )  # sets the data about last search
-        self.codeview.GetCtrl().see(wordstart)  # moves the view to the found index
-        wordend = self.codeview.GetCtrl().index(
-            "%s+%dc" % (wordstart, len(tofind))
-        )  # calculates the end index of the found string
-        self.codeview.GetCtrl().tag_add(
-            "current_found", wordstart, wordend
-        )  # tags the found word as active
-        self.active_found_tag = (wordstart, wordend)
-      #  self.replace_and_find_button.config(state="normal")
-       # self.replace_button.config(state="normal")
+        res = self.text.do_find(CURERNT_FIND_OPTION,ok=ok)
+        if res:
+            self.text.find_and_select(res)
+            if CURERNT_FIND_OPTION.wrap:
+                self.text.do_wrap_search(self.infotext_label_var)
+            #单词查找到则添加到单词列表中去
+            values = self.find_entry['values']
+            if not values:
+                values = []
+             #需要将存储的tuple类型转换成list类型
+            values = list(values)
+            if tofind not in values:
+                values.insert(0,tofind)
+            self.find_entry['values'] = values
+        else:
+            self.infotext_label_var.set("The specified text was not found!")
+            self.text.bell()
+            return False
+        return True
 
     def _ok(self, event=None):
         """Called when the window is closed. responsible for handling all cleanup."""
+        self.SaveConfig()
         self._remove_all_tags()
         self.destroy()
 
         global _active_find_dialog
         _active_find_dialog = None
+        
+
+    def SaveConfig(self):
+        """ Save find/replace patterns and search flags to registry. """
+        utils.profile_set(FIND_MATCHPATTERN, self.find_entry_var.get())
+        utils.profile_set(FIND_MATCHCASE, self.case_var.get())
+        utils.profile_set(FIND_MATCHWHOLEWORD, self.whole_word_var.get())
+        utils.profile_set(FIND_MATCHREGEXPR, self.regular_var.get())
+        utils.profile_set(FIND_MATCHWRAP, self.wrap_var.get())
+        utils.profile_set(FIND_MATCHUPDOWN, self.direction_var.get())
+        values = self.find_entry['values']
+        if not values:
+            values = []
+        #最多存储50个单词
+        utils.profile_set(FIND_MATCHPATTERN_LIST, list(values[0:50]))
+        
+
+    def LoadConfig(self):
+        #如果未有指定字符串,从配置中加载上一次查找的字符串
+        if not self.find_entry_var.get():
+            self.find_entry_var.set(utils.profile_get(FIND_MATCHPATTERN,''))
+        self.case_var.set(utils.profile_get_int(FIND_MATCHCASE,False))
+        self.whole_word_var.set(utils.profile_get_int(FIND_MATCHWHOLEWORD,False))
+        self.regular_var.set(utils.profile_get_int(FIND_MATCHREGEXPR,False))
+        self.wrap_var.set(utils.profile_get_int(FIND_MATCHWRAP,True))
+        self.direction_var.set(utils.profile_get_int(FIND_MATCHUPDOWN,True))
+        find_string_list = utils.profile_get(FIND_MATCHPATTERN_LIST, [])
+        self.find_entry['values'] = find_string_list
 
     # removes the active tag and all passive tags
     def _remove_all_tags(self):
-        for tag in self.passive_found_tags:
-            self.codeview.GetCtrl().tag_remove(
-                "found", tag[0], tag[1]
-            )  # removes the passive tags
-
-        if self.active_found_tag is not None:
-            self.codeview.GetCtrl().tag_remove(
-                "current_found", self.active_found_tag[0], self.active_found_tag[1]
-            )  # removes the currently active tag
-
-        self.active_found_tag = None
+        pass
 
     # finds and tags all occurences of the searched term
     def _find_and_tag_all(self, tofind, force=False):
@@ -395,12 +350,13 @@ class FindReplaceDialog(FindDialog):
         self.replace_label.grid(column=0, row=1, sticky="w", padx=(consts.DEFAUT_CONTRL_PAD_X, 0))
 
         # Replace text field
-        self.replace_entry = ttk.Entry(self.main_frame)
+        self.replvar = tk.StringVar()
+        self.replace_entry = ttk.Entry(self.main_frame,textvariable=self.replvar)
         self.replace_entry.grid(column=1, row=1,sticky="nsew", padx=(0, consts.DEFAUT_CONTRL_PAD_X),pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
 
         # Replace button - replaces the current occurrence, if it exists
         self.replace_and_find_button = ttk.Button(
-            self.right_frame, text=_("Replace"), command=self._perform_replace_and_find
+            self.right_frame, text=_("Replace"), command=self._perform_replace
         )
         self.replace_and_find_button.grid(column=0, row=1, sticky=tk.W + tk.E, padx=(0, consts.DEFAUT_CONTRL_PAD_X),pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y, 0))
         self.replace_and_find_button.config(state="disabled")
@@ -417,6 +373,14 @@ class FindReplaceDialog(FindDialog):
         self.AddCancelButton(row=3)
         #根据查找文本是否为空更新查找以及替换按钮状态
         self._update_button_statuses()
+        #替换字符串时需要设置ok标志为1
+        self.ok = 1
+        
+    def GetCtrl(self) :
+        current_view = GetApp().GetDocumentManager().GetCurrentView()
+        if isinstance(current_view,texteditor.TextView):
+            self.text = current_view.GetCtrl()
+        return self.text
 
     def SaveConfig(self):
         """ Save find/replace patterns and search flags to registry. """
@@ -454,85 +418,100 @@ class FindReplaceDialog(FindDialog):
 
     # performs the replace operation - replaces the currently active found word with what is entered in the replace field
     def _perform_replace(self):
+        if self.do_find(self.ok):
+            if self.do_replace():   # Only find next match if replace succeeded.
+                                    # A bad re can cause a it to fail.
+                #替换之后再查找一次
+                self.do_find(0)
+        
 
-        # nothing is currently in found status
-        if self.active_found_tag == None:
-            return
+    def do_find(self,ok=0):
+        if FindDialog.do_find(self,ok):
+            self.ok = 1
+            return True
+        else:
+            return False
 
-        # get the found word bounds
-        del_start = self.active_found_tag[0]
-        del_end = self.active_found_tag[1]
-
-        # erase all tags - these would not be correct anyway after new word is inserted
-        self._remove_all_tags()
-        toreplace = self.replace_entry.get()  # get the text to replace
-
-        # delete the found word
-        self.codeview.text.delete(del_start, del_end)
-        # insert the new word
-        self.codeview.text.insert(del_start, toreplace)
-        # mark the inserted word boundaries
-        self.last_processed_indexes = (
-            del_start,
-            self.codeview.text.index("%s+%dc" % (del_start, len(toreplace))),
-        )
-
-        get_workbench().event_generate(
-            "Replace",
-            widget=self.codeview.text,
-            old_text=self.codeview.text.get(del_start, del_end),
-            new_text=toreplace,
-        )
-
-    # performs the replace operation followed by a new find
-    def _perform_replace_and_find(self):
-        if self.active_found_tag == None:
-            return
-        self._perform_replace()
-        self._perform_find()
+    def _replace_expand(self, m, repl):
+        """ Helper function for expanding a regular expression
+            in the replace field, if needed. """
+        if CURERNT_FIND_OPTION.regex:
+            try:
+                new = m.expand(repl)
+            except re.error:
+                new = None
+        else:
+            new = repl
+        return new
+        
+    def do_replace(self):
+        text = self.text
+        prog = text.getprog()
+        if not prog:
+            return False
+        try:
+            first = pos = text.index("sel.first")
+            last = text.index("sel.last")
+        except TclError:
+            pos = None
+        if not pos:
+            first = last = pos = text.index("insert")
+        line, col = text.get_line_col(pos)
+        chars = text.get("%d.0" % line, "%d.0" % (line+1))
+        m = prog.match(chars, col)
+        if not prog:
+            return False
+        new = self._replace_expand(m, self.replvar.get())
+        if new is None:
+            return False
+        text.mark_set("insert", first)
+        if m.group():
+            text.delete(first, last)
+        if new:
+            text.insert(first, new)
+        self.ok = 0
+        return True
+        
 
     # replaces all occurences of the search string with the replace string
     def _perform_replace_all(self):
-
-        tofind = self.find_entry.get()
-        if len(tofind) == 0:
-            self.infotext_label_var.set("Enter string to be replaced.")
+        repl = self.replvar.get()
+        if not FindDialog.do_find(self):
             return
-
-        toreplace = self.replace_entry.get()
-
-        self._remove_all_tags()
-
-        currentpos = 1.0
-        end = self.codeview.text.index("end")
-
-        while True:
-            currentpos = self.codeview.text.search(
-                tofind, currentpos, end, nocase=not self._is_search_case_sensitive()
-            )
-            if currentpos == "":
+        text = self.text
+        text.tag_remove("sel", "1.0", "end")
+        text.tag_remove("hit", "1.0", "end")
+        line = 1
+        col = 1
+        ok = 1
+        first = last = None
+        text.SetOption(CURERNT_FIND_OPTION)
+        prog = text.getprog()
+        while 1:
+            res = text.search_forward(prog, line, col, 0, ok)
+            if not res:
                 break
+            line, m = res
+            chars = text.get("%d.0" % line, "%d.0" % (line+1))
+            orig = m.group()
+            new = self._replace_expand(m, repl)
+            if new is None:
+                break
+            i, j = m.span()
+            first = "%d.%d" % (line, i)
+            last = "%d.%d" % (line, j)
+            if new == orig:
+                text.mark_set("insert", last)
+            else:
+                text.mark_set("insert", first)
+                if first != last:
+                    text.delete(first, last)
+                if new:
+                    text.insert(first, new)
+            col = i + len(new)
+            ok = 0
 
-            endpos = self.codeview.text.index("%s+%dc" % (currentpos, len(tofind)))
-
-            self.codeview.text.delete(currentpos, endpos)
-
-            if toreplace != "":
-                self.codeview.text.insert(currentpos, toreplace)
-
-            currentpos = self.codeview.text.index(
-                "%s+%dc" % (currentpos, len(toreplace))
-            )
-
-        get_workbench().event_generate(
-            "ReplaceAll", widget=self.codeview.text, old_text=tofind, new_text=toreplace
-        )
-
-
-
-def ShowFindReplaceDialog(master,replace=False):
-    editor = GetApp().MainFrame.GetNotebook().get_current_editor()
-    findString = editor.GetView().GetCtrl().GetSelectionText()
+def ShowFindReplaceDialog(master,replace=False,findString=""):
     if replace:
         global _active_find_replace_dialog
         if _active_find_replace_dialog == None:

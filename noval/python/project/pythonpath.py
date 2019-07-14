@@ -106,7 +106,7 @@ class InternalPathPage(ttk.Frame):
             if use_raw_path:
                 python_path_list.append(path)
             else:
-                python_variable_manager = variablesutils.VariablesManager(self.current_project_document)
+                python_variable_manager = variablesutils.GetProjectVariableManager(self.current_project_document)
                 path = python_variable_manager.EvalulateValue(text)
                 python_path_list.append(str(path))
         return python_path_list

@@ -186,6 +186,7 @@ class FullScreenDialog(ui_base.CommonDialog):
         ui_base.CommonDialog.__init__(self,parent)
         self.title(_('FullScreen Display'))
         self._listBox = None
+        #隐藏窗体标题栏
         self.transient(parent)
         # Setup
         self.__DoLayout()
@@ -368,15 +369,9 @@ class BaseEnvironmentUI(ttk.Frame):
         return -1
         
     def AddVariable(self,key,value):
-        if self.CheckKeyExist(key):
-            ret = messagebox.askyesno(_("Warning"),_("Key name has already exist in environment variable,Do you wann't to overwrite it?"),parent=self)
-            if ret == True:
-                row = self.GetVariableRow(key)
-                assert(row != -1)
-                self.RemoveRowVariable(row)
-            else:
-                return
-        self.listview.tree.insert("","end",values=(key,value))
+        #检查变量是否存在
+        if self.CheckAndRemoveKeyitem(key):
+            self.listview.tree.insert("","end",values=(key,value))
         
     def NewVariable(self):
         dlg = EnvironmentVariableDialog(self,_("New Environment Variable"))
@@ -403,12 +398,22 @@ class BaseEnvironmentUI(ttk.Frame):
             self.listview.tree.set(item, column=0, value=key)
             self.listview.tree.set(item, column=1, value=value)
         self.UpdateUI()
+        
+    def CheckAndRemoveKeyitem(self,key):
+        item = self.CheckKeyItem(key)
+        if item:
+            ret = messagebox.askyesno(_("Warning"),_("Key name has already exist in environment variable,Do you wann't to overwrite it?"),parent=self)
+            if ret == True:
+                self.RemoveRowVariable([item])
+            else:
+                return False
+        return True
     
-    def CheckKeyExist(self,key):
+    def CheckKeyItem(self,key):
         for child in self.listview.tree.get_children():
             if self.listview.tree.item(child)['values'][0] == key:
-                return True
-        return False
+                return child
+        return None
         
     def GetEnviron(self):
         dct = {}

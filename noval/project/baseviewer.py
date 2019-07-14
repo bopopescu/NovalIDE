@@ -117,7 +117,7 @@ class ProjectDocument(core.Document):
         
     @staticmethod
     def GetProjectModel():
-        raise Exception("This method must be implemented in derived class")
+        return projectlib.Project()
 
     def GetRunConfiguration(self,start_up_file):
         file_key = self.GetFileKey(start_up_file)
@@ -1918,13 +1918,15 @@ class ProjectView(misc.AlarmEventView):
                 choices.insert(0, _("All Files") + "(*.*)")  # first item
                 row = ttk.Frame(self.main_frame)
                 ttk.Label(row,text=_("Files of type:")).pack(side=tk.LEFT)
-                filterChoice = ttk.Combobox(row,  values=choices)
+                self.filter_var = tk.StringVar()
+                filterChoice = ttk.Combobox(row,  values=choices,textvariable=self.filter_var)
                 filterChoice.current(0)
                 filterChoice['state'] = 'readonly'
                 filterChoice.pack(side=tk.LEFT,fill="x",expand=1)
                 row.pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
                 misc.create_tooltip(filterChoice,_("Select file type filter."))
-                ttk.Checkbutton(self.main_frame, text=_("Add files from subdirectories")).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+                self.subfolderChkVar = tk.IntVar(value=True)
+                subfolderCtrl = ttk.Checkbutton(self.main_frame, text=_("Add files from subdirectories"),variable=self.subfolderChkVar).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
                # subfolderCtrl.SetValue(True)
                 self.AddokcancelButton()
 
@@ -1936,29 +1938,21 @@ class ProjectView(misc.AlarmEventView):
 
         dlg = AddDirProjectDialog(GetApp().GetTopWindow(),self)
         status = dlg.ShowModal()
-        passedCheck = False
-        while status == constants.ID_OK and not passedCheck:
-            if not os.path.exists(dirCtrl.GetValue()):
-                dlg = wx.MessageDialog(frame,
-                                       _("'%s' does not exist.") % dirCtrl.GetValue(),
-                                       _("Find in Directory"),
-                                       wx.OK | wx.ICON_EXCLAMATION
+        if status == constants.ID_OK:
+            if not os.path.exists(dlg.dir_var.get()):
+                messagebox.showinfo(GetApp().GetAppName(),
+                                       _("directory '%s' does not exist.") % dlg.dir_var.get(),
+                                       parent=self.GetFrame(),
                                        )
-                dlg.CenterOnParent()
-                dlg.ShowModal()
-                dlg.Destroy()
-
-                status = frame.ShowModal()
-            else:
-                passedCheck = True
+                return
 
         if status == constants.ID_OK:
-            wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
+            GetApp().configure(cursor="circle")
 
             try:
                 doc = self.GetDocument()
-                searchSubfolders = subfolderCtrl.IsChecked()
-                dirString = dirCtrl.GetValue()
+                searchSubfolders = dlg.subfolderChkVar.get()
+                dirString = dlg.dir_var.get()
     
                 if os.path.isfile(dirString):
                     # If they pick a file explicitly, we won't prevent them from adding it even if it doesn't match the filter.
@@ -2002,7 +1996,7 @@ class ProjectView(misc.AlarmEventView):
                 self.Activate()  # after add, should put focus on project editor
                 
             finally:
-                wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_DEFAULT))
+                GetApp().configure(cursor="")
 
 
     def DoAddFilesToProject(self, filePaths, folderPath):
@@ -2018,7 +2012,7 @@ class ProjectView(misc.AlarmEventView):
             text = tkSimpleDialog.askstring(
                 _("Enter New Name"),
                 _("Enter New Name"),
-                # selection_range=(0, len(initial_name)-3)
+                initialvalue=self._treeCtrl.item(item,"text"),
                 parent=self.GetFrame()
             )
             if not text:

@@ -37,6 +37,7 @@ import noval.constants as constants
 import noval.python.pyutils as pyutils
 import noval.ui_utils as ui_utils
 import noval.syntax.syntax as syntax
+import noval.find.findtext as findtext
 
 def classifyws(s, tabwidth):
     raw = effective = 0
@@ -629,7 +630,7 @@ class TextCtrl(ui_base.TweakableText):
         self.bind("<Control-k>", self._redirect_ctrlk, True)
         self.bind("<Control-h>", self._redirect_ctrlh, True)
         self.bind("<Control-a>", self._redirect_ctrla, True)
-        #tk8.5.15版本默认绑定了contrl-f事件,需要重新绑定该事件
+        #tk8.5.15版本默认绑定了contrl-f事件,如果tk版本小于8.6.6,需要重新绑定该事件
         if strutils.compare_version(pyutils.get_tk_version_str(),("8.6.6")) < 0:
             self.bind("<Control-f>", self._redirect_ctrlf, True)
         
@@ -1369,10 +1370,14 @@ class TextCtrl(ui_base.TweakableText):
         return self.get(first,last)
         
 
-class SyntaxTextCtrl(TextCtrl):
+class SyntaxTextCtrl(TextCtrl,findtext.FindTextEngine):
+    '''
+        文本语法控件同时兼顾查找功能
+    '''
 
     def __init__(self, master=None, cnf={}, **kw):
         TextCtrl.__init__(self, master, cnf=cnf, **kw)
+        findtext.FindTextEngine.__init__(self)
         self.UpdateSyntaxTheme()
 
     def UpdateSyntaxTheme(self):

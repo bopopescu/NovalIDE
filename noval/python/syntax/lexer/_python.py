@@ -154,7 +154,8 @@ class SyntaxColorer(syndata.BaseSyntaxcolorer):
 
         if not self._update_scheduled:
             self._update_scheduled = True
-            self.text.after_idle(perform_update)
+            #self.text.after_idle(perform_update)
+            self.text.after(1,perform_update)
 
     def _update_coloring(self):
         self._update_uniline_tokens("1.0", "end")

@@ -161,7 +161,7 @@ class StartupPage(BasePage):
     def OnOK(self):
         try:
             main_module_path = self.main_module_var.get().strip()
-            python_variable_manager = variablesutils.VariablesManager(self.ProjectDocument)
+            python_variable_manager = variablesutils.GetProjectVariableManager(self.ProjectDocument)
             main_module_path = python_variable_manager.EvalulateValue(main_module_path)
             
             other_startup_path = self.other_var.get().strip()
@@ -212,7 +212,7 @@ class ArgumentsPage(BasePage):
     def OnOK(self):
         try:
             arguments_text = self.program_argument_textctrl.GetValue()
-            python_variable_manager = variablesutils.VariablesManager(self.ProjectDocument)
+            python_variable_manager = variablesutils.GetProjectVariableManager(self.ProjectDocument)
             arguments_text = python_variable_manager.EvalulateValue(arguments_text)
         except RuntimeError as e:
             wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR,self)
@@ -456,7 +456,7 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
     def GetStartupFile(self,prompt_error=True):
         try:
             startup_file_path = self.startup_path_var.get()
-            python_variable_manager = variablesutils.VariablesManager(self.current_project_document)
+            python_variable_manager = variablesutils.GetProjectVariableManager(self.current_project_document)
             startup_file_path = python_variable_manager.EvalulateValue(startup_file_path)
         except RuntimeError as e:
             if prompt_error:
