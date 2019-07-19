@@ -28,10 +28,12 @@ import noval.plugin as plugin
 import noval.ui_common as ui_common
 import noval.ui_utils as ui_utils
 
+import noval.project.variables as variablesutils
+
 class PythonProjectDocument(ProjectDocument):
 
     #pyc和pyo二进制文件类型禁止添加到项目中
-    BIN_FILE_EXTS = ['pyc','pyo']
+    BIN_FILE_EXTS = ['pyc','pyo'] + ProjectDocument.BIN_FILE_EXTS
     def __init__(self, model=None):
         ProjectDocument.__init__(self,model)
         
@@ -88,12 +90,12 @@ class NewPythonProjectWizard(NewProjectWizard):
         pass
         
 class PythonProjectNameLocationPage(ProjectNameLocationPage):
-    def __init__(self,master):
-        ProjectNameLocationPage.__init__(self,master,add_bottom_page=False)
-        
+    def __init__(self,master,**kwargs):
+        ProjectNameLocationPage.__init__(self,master,add_bottom_page=False,**kwargs)
         sizer_frame = ttk.Frame(self)
         sizer_frame.grid(column=0, row=4, sticky="nsew")
-        self.pythonpath_chkvar = tk.IntVar(value=PythonNewProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH)
+        pythonpath_val = kwargs.get('pythonpath_pattern',PythonNewProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH)
+        self.pythonpath_chkvar = tk.IntVar(value=pythonpath_val)
         self.add_src_radiobutton = ttk.Radiobutton(
             sizer_frame, text=_("Create %s Folder And Add it to the PYTHONPATH") % PythonNewProjectConfiguration.DEFAULT_PROJECT_SRC_PATH, variable=self.pythonpath_chkvar,\
                         value=PythonNewProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH
@@ -112,7 +114,7 @@ class PythonProjectNameLocationPage(ProjectNameLocationPage):
         )
         self.configure_no_path_radiobutton.pack(fill="x")
 
-        ProjectNameLocationPage.CreateBottomPage(self,chk_box_row=5)
+        ProjectNameLocationPage.CreateBottomPage(self,chk_box_row=5,**kwargs)
         
         sizer_frame = ttk.Frame(self)
         sizer_frame.grid(column=0, row=7, sticky="nsew")
@@ -129,7 +131,8 @@ class PythonProjectNameLocationPage(ProjectNameLocationPage):
         self.interpreter_combo.grid(column=1, row=2, sticky="nsew",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         self.interpreter_combo.state(['readonly'])
         self.interpreter_combo['values'] = names
-        self.interpreter_combo.current(0)
+        if len(names) > 0:
+            self.interpreter_combo.current(0)
             
         link_label = linklabel.LinkLabel(sizer_frame,text=_("Configuration"),normal_color='royal blue',hover_color='blue',clicked_color='purple')
         link_label.bind("<Button-1>", self.OpenInterpreterConfiguration)
@@ -147,13 +150,25 @@ class PythonProjectNameLocationPage(ProjectNameLocationPage):
         if self.pythonpath_chkvar.get() == PythonNewProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH:
             project_src_path = os.path.join(dirName,PythonNewProjectConfiguration.DEFAULT_PROJECT_SRC_PATH)
             if not os.path.exists(project_src_path):
-                dirutils.MakeDirs(project_src_path)
+                try:
+                    dirutils.MakeDirs(project_src_path)
+                except Exception as e:
+                    self.infotext_label_var.set("%s"%str(e))
+                    return False
             
-        if self._new_project_configuration.PythonpathMode == PythonNewProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH:
-            view = GetApp().MainFrame.GetProjectView().GetView()
-            doc = view.GetDocument()
-            doc.GetCommandProcessor().Submit(command.ProjectAddFolderCommand(view, doc, PythonNewProjectConfiguration.DEFAULT_PROJECT_SRC_PATH))
-        
+        view = GetApp().MainFrame.GetProjectView().GetView()
+        doc = view.GetDocument()
+        #将项目路径添加到PYTHONPATH
+        if self._new_project_configuration.PythonpathMode == PythonNewProjectConfiguration.PROJECT_PATH_ADD_TO_PYTHONPATH:
+            utils.profile_set(doc.GetKey() + "/AppendProjectPath",True)
+        else:
+            #不将项目路径添加到PYTHONPATH
+            utils.profile_set(doc.GetKey() + "/AppendProjectPath",False)
+            if self._new_project_configuration.PythonpathMode == PythonNewProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH:
+                doc.GetCommandProcessor().Submit(command.ProjectAddFolderCommand(view, doc, PythonNewProjectConfiguration.DEFAULT_PROJECT_SRC_PATH))
+                src_path = os.path.join(variablesutils.FormatVariableName(variablesutils.PROJECT_DIR_VARIABLE) , PythonNewProjectConfiguration.DEFAULT_PROJECT_SRC_PATH)
+                #将项目里面的Src文件夹路径添加到PYTHONPATH
+                utils.profile_set(doc.GetKey() + "/InternalPath",[src_path])
         return True
         
     def GetNewPojectConfiguration(self):
@@ -250,8 +265,10 @@ class PythonProjectView(ProjectView):
 class DefaultProjectTemplateLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)
     def Load(self):
-        ProjectTemplateManager().AddProjectTemplate(_("Gernal"),_("Empty Project"),[PythonProjectNameLocationPage,])
-        ProjectTemplateManager().AddProjectTemplate(_("Gernal"),_("New Project From Existing Code"),\
-                    ["noval.python.project.viewer.PythonProjectNameLocationPage",("noval.project.importfiles.ImportfilesPage",{'rejects':PythonProjectDocument.BIN_FILE_EXTS})])
+        ProjectTemplateManager().AddProjectTemplate("General","Empty Project",[PythonProjectNameLocationPage,])
+        #导入代码时默认不创建项目目录,并且项目创建页面不能做完成操作,只能下一步和上一部操作,导入代码页面才能做完成操作
+        ProjectTemplateManager().AddProjectTemplate("General","New Project From Existing Code",\
+                    [("noval.python.project.viewer.PythonProjectNameLocationPage",{'can_finish':False,\
+                        'pythonpath_pattern':PythonNewProjectConfiguration.PROJECT_PATH_ADD_TO_PYTHONPATH,'create_project_dir':False}),("noval.project.importfiles.ImportfilesPage",{'rejects':PythonProjectDocument.BIN_FILE_EXTS})])
 
 consts.DEFAULT_PLUGINS += ('noval.python.project.viewer.DefaultProjectTemplateLoader',)

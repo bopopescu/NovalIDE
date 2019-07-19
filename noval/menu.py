@@ -674,8 +674,8 @@ class MenuBar(tk.Menu):
     def GetToolsMenu(self):
         return self.GetMenu(_("&Tools"))
         
-    def GetWindowsMenu(self):
-        return self.GetMenuByName(_(WINDOWS_MENU_ORIG_NAME))
+   # def GetWindowsMenu(self):
+    #    return self.GetMenuByName(_(WINDOWS_MENU_ORIG_NAME))
 
     def GetHelpMenu(self):
         return self.GetMenu(_("&Help"))

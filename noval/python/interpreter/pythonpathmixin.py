@@ -72,6 +72,8 @@ class PythonpathMixin:
 
     def AddNewPath(self):
         path = filedialog.askdirectory(title=_("Choose a directory to Add"))
+        if not path:
+            return
         self.AddPath(fileutils.opj(path))
         
     def AddPath(self,path):

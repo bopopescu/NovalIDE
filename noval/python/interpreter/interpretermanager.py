@@ -17,7 +17,6 @@ from noval.util.singleton import Singleton
 import noval.util.apputils as apputils
 import pickle
 from noval.python.interpreter import interpreter as pythoninterpreter
-import noval.python.parser.nodeast as nodeast
 import json
 import noval.util.utils as utils
 from tkinter import messagebox
@@ -298,8 +297,6 @@ class InterpreterManager:
         self.CurrentInterpreter = interpreter
         if interpreter is None:
             return
-        #change builtin module name of BuiltinImportNode
-        nodeast.BuiltinImportNode.BUILTIN_MODULE_NAME = interpreter.BuiltinModuleName
 
     def GetCurrentInterpreter(self):
         return self.CurrentInterpreter

@@ -26,6 +26,10 @@ class Locale(object):
         self._trans = []
         self._lookup_dirs = []
 
+    @property
+    def LangId(self):
+        return self._lang_id
+
     def AddCatalogLookupPathPrefix(self,lookup_dir):
         if lookup_dir not in self._lookup_dirs:
             self._lookup_dirs.append(lookup_dir)

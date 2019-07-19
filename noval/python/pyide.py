@@ -162,24 +162,9 @@ class PyIDEApplication(ide.IDEApplication):
         ide.IDEApplication.CreateLexerTemplates(self)
         synglob.LexerFactory().CreateLexerTemplates(self.GetDocumentManager(),model.LANGUAGE_PYTHON)
         
-    @property       
-    def ToolbarCombox(self):
-        return self.toolbar_combox
-        
     def GetCurrentInterpreter(self):
         return interpretermanager.InterpreterManager().GetCurrentInterpreter()
-        
-    def SetCurrentInterpreter(self):
-        current_interpreter = interpretermanager.InterpreterManager.GetCurrentInterpreter()
-        if current_interpreter is None:
-            self.toolbar_combox.SetSelection(-1)
-            return
-        for i in range(self.toolbar_combox.GetCount()):
-            data = self.toolbar_combox.GetClientData(i)
-            if data == current_interpreter:
-                self.toolbar_combox.SetSelection(i)
-                break
-                        
+                            
     def Quit(self):
         if not self.AllowClose():
             return
@@ -283,16 +268,19 @@ class PyIDEApplication(ide.IDEApplication):
         exe_dirs = interpreter.GetExedirs()
         env_overrides = {}
         env_overrides["PATH"] = ui_utils.get_augmented_system_path(exe_dirs) 
+        #设置安装路径的环境变量,运行程序时需要在路径中移除此路径
+        #python2.7中环境变量不能为unicode类型
+        env_overrides['MAIN_MODULE_APTH'] = str(apputils.mainModuleDir)
         explainer = os.path.join(os.path.dirname(__file__), "explain_environment.py")
         cmd = [target_executable, explainer]
-        
+        #检测是否虚拟解释器
         activate = os.path.join(os.path.dirname(target_executable), 
                                 "activate.bat" if utils.is_windows()
                                 else "activate")
         
         if os.path.isfile(activate):
             del env_overrides["PATH"]
-            if platform.system() == "Windows":
+            if utils.is_windows():
                 cmd = [activate, "&"] + cmd
             else:
                 cmd = ["source", activate, ";"] + cmd 

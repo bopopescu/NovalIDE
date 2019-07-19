@@ -51,6 +51,8 @@ import noval.find.findresult as findresult
 import noval.base_ui_themes as base_ui_themes
 import noval.clean_ui_themes as base_ui_themes
 import noval.paren_matcher as paren_matcher
+import noval.feedback as feedback
+import noval.syntax.syndata as syndata
 
 #----------------------------------------------------------------------------
 # Classes
@@ -212,6 +214,9 @@ class IDEApplication(core.App):
         self.event_generate("<<AppInitialized>>")
 
     def _on_focus_in(self, event):
+        '''
+            主界面在前台显示时,检查文本是否在外部改变
+        '''
         openDocs = self.GetDocumentManager().GetDocuments()
         for doc in openDocs:
             if isinstance(doc,baseprojectviewer.ProjectDocument):
@@ -219,7 +224,7 @@ class IDEApplication(core.App):
             else:
                 view = doc.GetFirstView()
             if hasattr(view,"_is_external_changed"):
-                if view._is_external_changed:
+                if view._is_external_changed and utils.profile_get_int("CheckFileModify", True):
                     view.check_for_external_changes()
         
     def EventTextChange(self,event):

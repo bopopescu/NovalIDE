@@ -8,7 +8,6 @@ from noval.util import singleton
 import os
 import threading
 import time
-from noval.python.parser import fileparser
 from noval.python.parser import config
 from noval.python.parser import builtinmodule
 from noval.python.parser.utils import CmpMember,py_sorted
@@ -364,8 +363,8 @@ class IntellisenceManager(object):
             startupinfo.wShowWindow = subprocess.SW_HIDE
         else:
             startupinfo = None
-        env = os.environ.update(dict(PYTHONPATH=utils.get_app_path()))
-        self._process_obj = subprocess.Popen(cmd_list,startupinfo=startupinfo,cwd=os.path.join(utils.get_app_path(), "noval", "python","parser"),env=env)
+        work_dir = os.path.join(utils.get_app_path(), "noval", "python","parser")
+        self._process_obj = subprocess.Popen(cmd_list,startupinfo=startupinfo,cwd=work_dir)
         interpreter.Analysing = True
         utils.update_statusbar(_("Updating interpreter %s intellisence database") % interpreter.Name)
         self._is_running = interpreter.Analysing
@@ -409,9 +408,10 @@ class IntellisenceManager(object):
         try:
             #if could not find last update time,update database force
             intellisence_data_path = self.GetInterpreterIntellisenceDataPath(interpreter)
-            last_update_time = factory.GetLastUpdateTime(intellisence_data_path)
-            last_datetime = datetime.datetime.strptime(last_update_time, factory.ISO_8601_DATETIME_FORMAT)
+            last_update_time = run.GetLastUpdateTime(intellisence_data_path)
+            last_datetime = datetime.datetime.strptime(last_update_time, run.ISO_8601_DATETIME_FORMAT)
         except:
+            utils.get_logger().exception('')
             return True
         now_datetime = datetime.datetime.now()
         if update_interval_option == consts.UPDATE_ONCE_DAY:
@@ -428,9 +428,10 @@ class IntellisenceManager(object):
         if current_interpreter is None:
             return
         if not self.IsInterpreterNeedUpdateDatabase(current_interpreter):
-            utils.GetLogger().info("interpreter %s is no need to update database" % current_interpreter.Name)
+            utils.get_logger().info("interpreter %s is no need to update database" % current_interpreter.Name)
             self.load_intellisence_data(current_interpreter,True)
             return
+        utils.get_logger().info("interpreter %s is need to update database" % current_interpreter.Name)
         try:
             self.generate_intellisence_data(current_interpreter,load_data_end=True)
         except Exception as e:

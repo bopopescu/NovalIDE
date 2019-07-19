@@ -26,9 +26,11 @@ class OutputCtrl(texteditor.TextCtrl,findtext.FindTextEngine):
         self._input_start_pos = 0
         self._executor = None
         self._is_debug = is_debug
-   #     wx.EVT_SET_FOCUS(self, self.OnFocus)
         self.bind('<Double-Button-1>',self.OnDoubleClick)
-        
+        #鼠标和键盘松开时激活视图
+        self.bind("<<ActivateView>>", self.ActivateView)
+        self.event_add("<<ActivateView>>","<KeyRelease>","<ButtonRelease>")
+
      #   wx.stc.EVT_STC_MODIFIED(self, self.GetId(), self.OnModify)    
       #  wx.EVT_KEY_DOWN(self, self.OnKeyPressed)
       
@@ -80,14 +82,9 @@ class OutputCtrl(texteditor.TextCtrl,findtext.FindTextEngine):
         self._popup_menu.Append(self.TEXT_WRAP_ID,_("Word Wrap"),kind=consts.CHECK_MENU_ITEM_KIND,handler=self.SetWrap,variable=self._is_wrap)
         self._popup_menu.AppendMenuItem(GetApp().Menubar.GetEditMenu().FindMenuItem(constants.ID_FIND),handler=self.DoFind,tester=None)
         self._popup_menu.Append(self.EXPORT_TEXT_ID, _("Export All"),handler=self.SaveAll)
-        
 
     def DoFind(self):
         finddialog.ShowFindReplaceDialog(self)
-            
-    def OnFocus(self, event):
-        self.ActiveDebugView()
-        event.Skip()
         
     def SetWrap(self):
         if self._is_wrap.get():
@@ -95,11 +92,9 @@ class OutputCtrl(texteditor.TextCtrl,findtext.FindTextEngine):
         else:
             self.configure(**{'wrap':'none'})
         
-    def ActiveDebugView(self):
-        if not self._is_debug:
-            wx.GetApp().GetDocumentManager().ActivateView(self.GetParent()._service.GetView())
-        else:
-            wx.GetApp().GetDocumentManager().ActivateView(self.GetParent().GetParent().GetParent()._service.GetView())
+    def ActivateView(self,event):
+        self.focus_set()
+        GetApp().GetDocumentManager().ActivateView(GetApp().GetDebugger().GetView())
         
     def ClearOutput(self):
         self.set_read_only(False)
@@ -248,12 +243,19 @@ class OutputView(ttk.Frame):
         ttk.Frame.__init__(self, master)
         self.vert_scrollbar = ui_base.SafeScrollbar(self, orient=tk.VERTICAL)
         self.vert_scrollbar.grid(row=0, column=1, sticky=tk.NSEW)
-        #设置查找结果文本字体为小一号的字体并且控件为只读状态
-        self.text = OutputCtrl(self,is_debug,font="SmallEditorFont",read_only=True,yscrollcommand=self.vert_scrollbar.set,borderwidth=0)
+
+        self.horizontal_scrollbar = ui_base.SafeScrollbar(self, orient=tk.HORIZONTAL)
+        self.horizontal_scrollbar.grid(row=1, column=0, sticky=tk.NSEW)
+
+        #设置查找结果文本字体为小一号的字体并且控件为只读状态,inactiveselectbackground表示查找并选择文本时的选中颜色
+        #禁止undo操作
+        self.text = OutputCtrl(self,is_debug,font="SmallEditorFont",inactiveselectbackground="gray",read_only=True,yscrollcommand=self.vert_scrollbar.set,\
+                                borderwidth=0,undo=False,xscrollcommand=self.horizontal_scrollbar.set)
         self.text.grid(row=0, column=0, sticky=tk.NSEW)
         self.text.bind("<Double-Button-1>", self.JumptoLine, "+")
         #关联垂直滚动条和文本控件
         self.vert_scrollbar["command"] = self.text.yview
+        self.horizontal_scrollbar["command"] = self.text.xview
         
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)

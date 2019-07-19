@@ -21,7 +21,7 @@ import noval.consts as consts
 
 class BaseWizard(ui_base.CommonModaldialog):
     def __init__(self, master):
-        ui_base.CommonModaldialog.__init__(self, master, takefocus=1)
+        ui_base.CommonModaldialog.__init__(self, master)
         self.current_page = None
         self.content_page = ttk.Frame(self)
         self.content_page.grid(column=0, row=0, sticky=tk.NSEW, padx=0, pady=0)
@@ -52,26 +52,29 @@ class BaseWizard(ui_base.CommonModaldialog):
         self.firstPage = firstPage
         self.current_page = self.firstPage 
         self.title(self.firstPage.title)
-        self.ShowModal(self)
+        self.ShowModal()
         
     def _ok(self, event=None):
-        if not self.current_page.Validate() or self.ok_button['state'] == tk.DISABLED:
+        #ok按钮处于不可用状态时无法执行回车键操作
+        if str(self.ok_button['state']) == tk.DISABLED:
+            return
+        if not self.current_page.Validate():
             return
             
         #从第一页开始调用每个页面的Finish方法
-        prev = self.firstPage.GetNext()
-        while prev:
-            if not prev.Finish():
+        next = self.firstPage.GetNext()
+        while next:
+            if not next.Finish():
                 return
-            prev = prev.GetNext()
+            next = next.GetNext()
         self.destroy()
         
     def _cancel(self, event=None):
         #向每一级页面通知Cancel
-        prev = self.firstPage.GetNext()
-        while prev:
-            prev.Cancel()
-            prev = prev.GetNext()
+        next = self.firstPage.GetNext()
+        while next:
+            next.Cancel()
+            next = next.GetNext()
         self.destroy()
         
     def FitToPage(self,page):

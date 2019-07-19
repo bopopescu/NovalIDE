@@ -2,7 +2,7 @@
 import sys
 import os
 import pickle
-from noval.python.parser import config,fileparser,utils
+import config,fileparser,utils
 import json
 import types
 import time

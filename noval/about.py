@@ -95,13 +95,13 @@ class AboutDialog(ui_base.CommonModaldialog):
         )
         license_label.grid(pady=20)
 
-        ok_button = ttk.Button(
+        self.ok_button = ttk.Button(
             self.main_frame, text=_("&OK"), command=self._ok, default="active"
         )
-        ok_button.grid(pady=(0, 15))
-        ok_button.focus_set()
-        ok_button.bind("<Return>", self._ok, True)
-        self.FormatTkButtonText(ok_button)
+        self.ok_button.grid(pady=(0, 15))
+        self.ok_button.focus_set()
+        self.ok_button.bind("<Return>", self._ok, True)
+        self.FormatTkButtonText(self.ok_button)
 
 
 

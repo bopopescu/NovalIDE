@@ -17,7 +17,7 @@ class FindResultsview(ttk.Frame):
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
         #设置查找结果文本字体为小一号的字体并且控件为只读状态
-        text_frame = textframe.TextFrame(self,borderwidth=0,text_class=texteditor.TextCtrl,font="SmallEditorFont",read_only=True,)
+        text_frame = textframe.TextFrame(self,borderwidth=0,text_class=texteditor.TextCtrl,font="SmallEditorFont",read_only=True,undo=False)
         self.text = text_frame.text
         text_frame.grid(row=0, column=0, sticky=tk.NSEW)
         self.text.bind("<Double-Button-1>", self.OnJumptoFoundLine, "+")
@@ -86,7 +86,7 @@ class FindResultsview(ttk.Frame):
     def GetDefineFilename(self,defLineNum):        
         while defLineNum >0:
             lineText = self.text.GetLineText(defLineNum)
-            if lineText.find(FILENAME_MARKER) != -1:
+            if lineText.find(FILENAME_MARKER) != -1 and lineText.find(FindIndirService.LINE_PREFIX) == -1:
                 filename = lineText.replace(FILENAME_MARKER,"").strip()
                 return filename
             defLineNum -=1

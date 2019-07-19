@@ -105,8 +105,14 @@ class GeneralOptionPanel(ui_utils.BaseConfigurationPanel):
         row = ttk.Frame(self)
         self.lang_list = GetLangList()
         values = [_(lang[2]) for lang in self.lang_list]
+        self.lang_id = utils.profile_get_int(consts.LANGUANGE_ID_KEY,-1)
         try:
-            lang = GetLangName(utils.profile_get_int(consts.LANGUANGE_ID_KEY,-1))
+            #安装包选择中文安装界面时,没有写入注册表,这里修复在界面的语言框里面显示为空的问题
+            if self.lang_id == -1 and GetApp().locale.LangId != ui_lang.LANGUAGE_DEFAULT:
+                self.lang_id = GetApp().locale.LangId
+            lang_name = GetLangName(self.lang_id)
+            #显示翻译后的语言名称
+            lang = _(lang_name)
         except RuntimeError as e:
             utils.get_logger().error(e)
             lang = ""
@@ -156,7 +162,7 @@ class GeneralOptionPanel(ui_utils.BaseConfigurationPanel):
         Updates the config based on the selections in the options panel.
         """
         if self.enablemru_var.get() and self.mru_var.get() > consts.MAX_MRU_FILE_LIMIT:
-            messagebox.showerror(GetApp().GetAppName(),_("MRU Length must not be greater than %d"%consts.MAX_MRU_FILE_LIMIT),parent=self)
+            messagebox.showerror(GetApp().GetAppName(),_("MRU Length must not be greater than %d")%consts.MAX_MRU_FILE_LIMIT,parent=self)
             return False
             
         if self.enablemru_var.get() and self.mru_var.get() < 1:
@@ -165,7 +171,7 @@ class GeneralOptionPanel(ui_utils.BaseConfigurationPanel):
             
        # utils.WriteInt("ShowTipAtStartup", self._showTipsCheckBox.GetValue())
         utils.profile_set(consts.CHECK_UPDATE_ATSTARTUP_KEY, self.checkupdate_var.get())
-        if self.GetLangId() != utils.profile_get_int(consts.LANGUANGE_ID_KEY,-1):
+        if self.GetLangId() != self.lang_id:
             messagebox.showinfo(_("Language Options"),_("Language changes will not appear until the application is restarted."),parent=self)
             utils.profile_set(consts.LANGUANGE_ID_KEY,self.GetLangId())
         utils.profile_set(consts.MRU_LENGTH_KEY,self.mru_var.get())

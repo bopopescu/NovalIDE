@@ -1,5 +1,5 @@
-from noval.python.parser import fileparser, config,nodeast
-from noval.python.parser.utils import CmpMember
+import fileparser, config,nodeast
+from utils import CmpMember
 try:
     import intellisence
 except ImportError:

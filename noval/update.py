@@ -72,7 +72,7 @@ class FileDownloader(object):
 
 def CheckAppUpdate(ignore_error = False):
     api_addr = '%s/member/get_update' % (UserDataDb.HOST_SERVER_ADDR)
-    lang = GetApp().locale.GetLanguageName()
+    lang = GetApp().locale.GetLanguageCanonicalName()
     app_version = apputils.get_app_version()
     data = urlutils.RequestData(api_addr,arg = {'app_version':app_version,'lang':lang})
     if data is None:

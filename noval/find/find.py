@@ -53,6 +53,20 @@ class FindtextCombo(ttk.Combobox):
 
         self.find_entry_var = tk.StringVar(value=findString)
         ttk.Combobox.__init__(self,master,textvariable=self.find_entry_var,**kw)
+        
+    def save_match_patters(self):
+        values = self['values']
+        if not values:
+            values = []
+        values = list(values)
+        if self.find_entry_var.get() and not self.find_entry_var.get() in values:
+            values.insert(0,self.find_entry_var.get())
+        #最多存储50个单词
+        utils.profile_set(FIND_MATCHPATTERN_LIST, values[0:20])
+        
+    def load_match_patters(self):
+        find_string_list = utils.profile_get(FIND_MATCHPATTERN_LIST, [])
+        self['values'] = find_string_list
 
 class FindOpt:
     def __init__(self,findstr,match_case=False,match_whole_word=False,wrap=True,down=True,regex=False):
@@ -188,9 +202,9 @@ class FindDialog(tk.Toplevel):
         #此处不更新
         if not replace:
             self._update_button_statuses()
+            self.LoadConfig()
 
         self.focus_set()
-        self.LoadConfig()
 
     def AddCancelButton(self,row=1):
         cancel_button = ttk.Button(self.right_frame, text=_("Cancel"), command=self._ok)
@@ -265,8 +279,12 @@ class FindDialog(tk.Toplevel):
             if tofind not in values:
                 values.insert(0,tofind)
             self.find_entry['values'] = values
+            #查找文本移动光标时同时更新状态栏显示的行列号
+            current_view = GetApp().GetDocumentManager().GetCurrentView()
+            if hasattr(current_view,"set_line_and_column"):
+                current_view.set_line_and_column()
         else:
-            self.infotext_label_var.set("The specified text was not found!")
+            self.infotext_label_var.set(_("The specified text was not found!"))
             self.text.bell()
             return False
         return True
@@ -289,12 +307,7 @@ class FindDialog(tk.Toplevel):
         utils.profile_set(FIND_MATCHREGEXPR, self.regular_var.get())
         utils.profile_set(FIND_MATCHWRAP, self.wrap_var.get())
         utils.profile_set(FIND_MATCHUPDOWN, self.direction_var.get())
-        values = self.find_entry['values']
-        if not values:
-            values = []
-        #最多存储50个单词
-        utils.profile_set(FIND_MATCHPATTERN_LIST, list(values[0:50]))
-        
+        self.find_entry.save_match_patters()
 
     def LoadConfig(self):
         #如果未有指定字符串,从配置中加载上一次查找的字符串
@@ -305,8 +318,8 @@ class FindDialog(tk.Toplevel):
         self.regular_var.set(utils.profile_get_int(FIND_MATCHREGEXPR,False))
         self.wrap_var.set(utils.profile_get_int(FIND_MATCHWRAP,True))
         self.direction_var.set(utils.profile_get_int(FIND_MATCHUPDOWN,True))
-        find_string_list = utils.profile_get(FIND_MATCHPATTERN_LIST, [])
-        self.find_entry['values'] = find_string_list
+        self.find_entry.load_match_patters()
+
 
     # removes the active tag and all passive tags
     def _remove_all_tags(self):
@@ -375,6 +388,7 @@ class FindReplaceDialog(FindDialog):
         self._update_button_statuses()
         #替换字符串时需要设置ok标志为1
         self.ok = 1
+        self.LoadConfig()
         
     def GetCtrl(self) :
         current_view = GetApp().GetDocumentManager().GetCurrentView()
@@ -384,17 +398,12 @@ class FindReplaceDialog(FindDialog):
 
     def SaveConfig(self):
         """ Save find/replace patterns and search flags to registry. """
-        findService = wx.GetApp().GetService(FindService)
-        if findService:
-            findService.SaveFindConfig(self._findCtrl.GetValue(),
-                                       self._wholeWordCtrl.IsChecked(),
-                                       self._matchCaseCtrl.IsChecked(),
-                                       self._regExprCtrl.IsChecked(),
-                                       self._wrapCtrl.IsChecked(),
-                                       self._radioBox.GetSelection(),
-                                       self._replaceCtrl.GetValue()
-                                       )
-                                       
+        FindDialog.SaveConfig(self)
+        utils.profile_set(FIND_MATCHREPLACE, self.replvar.get())
+        
+    def LoadConfig(self):
+        FindDialog.LoadConfig(self)
+        self.replvar.set(utils.profile_get(FIND_MATCHREPLACE,''))
 
     def _update_button_statuses(self, *args):
         #先更新查找按钮状态
@@ -410,6 +419,7 @@ class FindReplaceDialog(FindDialog):
 
     def _ok(self, event=None):
         """Called when the window is closed. responsible for handling all cleanup."""
+        self.SaveConfig()
         self._remove_all_tags()
         self.destroy()
         #对话框关闭时销毁实例,下次重新启动一个新实例

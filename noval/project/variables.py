@@ -102,7 +102,7 @@ class NewVariableDialog(ui_base.CommonModaldialog):
         ui_base.CommonModaldialog.__init__(self,parent)
         self.title(title)
         row = ttk.Frame(self.main_frame)
-        ttk.Label(row, text=_("Name: ")).pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        ttk.Label(row, text=_("Name")+ ":").pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
         self.name_var = tk.StringVar()
         key_ctrl = ttk.Entry(row,textvariable=self.name_var)
         key_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
@@ -143,6 +143,7 @@ class VariablesDialog(ui_base.CommonModaldialog):
         
         self.AddokcancelButton(side=tk.LEFT)
         self.ok_button.configure(text=_("&Insert"),default="active")
+        self.FormatTkButtonText(self.ok_button)
 
     def SeachVariable(self,*args):
         search_name = self.search_variable_var.get().strip()

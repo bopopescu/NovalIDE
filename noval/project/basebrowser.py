@@ -17,6 +17,8 @@ from noval.project.command import ProjectAddProgressFilesCommand
 from noval.python.parser.utils import py_cmp,py_sorted
 import noval.terminal as terminal
 import noval.project.property as projectproperty
+import time
+
 
 class EntryPopup(tk.Entry):
 
@@ -321,8 +323,6 @@ class BaseProjectbrowser(ttk.Frame):
         GetApp().bind("InitTkDnd",self.SetDropTarget,True)
         self.tree.bind("<3>", self.on_secondary_click, True)
         self.tree.bind("<<TreeviewSelect>>", self._on_select, True)
-        #是否停止导入代码
-        self.stop_import = False
         
     def SetDropTarget(self,event):
         #项目视图允许拖拽添加文件
@@ -343,16 +343,9 @@ class BaseProjectbrowser(ttk.Frame):
 
     def clear(self):
         self._clear_tree()            
-
-    def GetItemFilePath(self, item):
-        data = self.tree.GetPyData(item)
-        if data:
-            return data
-        else:
-            return None
             
     def GetItemFile(self, item):
-        file_path = self.GetItemFilePath(item)
+        file_path = self.GetView()._GetItemFilePath(item)
         if not file_path:
             return None
         return self.GetView().GetDocument().GetModel().FindFile(file_path)
@@ -374,7 +367,9 @@ class BaseProjectbrowser(ttk.Frame):
         doc = None
         try:
             item = selections[0]
-            filepath = self.GetItemFilePath(item)
+            filepath = self.GetItemPath(item)
+            #标准化文件路径
+            filepath = fileutils.opj(filepath)
             file_template = None
             if filepath:
                 if not os.path.exists(filepath):
@@ -443,17 +438,15 @@ class BaseProjectbrowser(ttk.Frame):
         self._is_loading = True
         openedDocs = False
         if utils.profile_get_int(consts.PROJECT_DOCS_SAVED_KEY, True):
-            docString = utils.profile_get(consts.PROJECT_SAVE_DOCS_KEY)
-            if docString:
-                doc = None
-                docList = eval(docString)
-                for fileName in docList:
-                    if isinstance(fileName, str) and \
-                            strutils.get_file_extension(fileName) == consts.PROJECT_SHORT_EXTENSION:
-                        if utils.is_py2():
-                            fileName = fileName.decode("utf-8")
-                        if os.path.exists(fileName):
-                            doc = GetApp().GetDocumentManager().CreateDocument(fileName, core.DOC_SILENT|core.DOC_OPEN_ONCE)
+            docList = utils.profile_get(consts.PROJECT_SAVE_DOCS_KEY,[])
+            doc = None
+            for fileName in docList:
+                if isinstance(fileName, str) and \
+                        strutils.get_file_extension(fileName) == consts.PROJECT_SHORT_EXTENSION:
+                    if utils.is_py2():
+                        fileName = fileName.decode("utf-8")
+                    if os.path.exists(fileName):
+                        doc = GetApp().GetDocumentManager().CreateDocument(fileName, core.DOC_SILENT|core.DOC_OPEN_ONCE)
                 if doc:
                     openedDocs = True
         self._is_loading = False
@@ -548,7 +541,7 @@ class BaseProjectbrowser(ttk.Frame):
         GetApp().AddCommand(constants.ID_DELETE_PROJECT,_("&Project"),_("Delete Project"),self.DeleteProject,image="project/trash.png",tester=lambda:self.GetView().UpdateUI(constants.ID_DELETE_PROJECT))
         GetApp().AddCommand(constants.ID_CLEAN_PROJECT,_("&Project"),_("Clean Project"),self.CleanProject,tester=lambda:self.GetView().UpdateUI(constants.ID_CLEAN_PROJECT))
         GetApp().AddCommand(constants.ID_ARCHIVE_PROJECT,_("&Project"),_("Archive Project"),self.ArchiveProject,image="project/archive.png",add_separator=True,tester=lambda:self.GetView().UpdateUI(constants.ID_ARCHIVE_PROJECT))
-        GetApp().AddCommand(constants.ID_IMPORT_FILES,_("&Project"),_("Import Files..."),None,image=GetApp().GetImage("project/import.png"),tester=lambda:self.GetView().UpdateUI(constants.ID_IMPORT_FILES))
+        GetApp().AddCommand(constants.ID_IMPORT_FILES,_("&Project"),_("Import Files..."),image=GetApp().GetImage("project/import.png"),tester=lambda:self.GetView().UpdateUI(constants.ID_IMPORT_FILES),handler=lambda:self.ProcessEvent(constants.ID_IMPORT_FILES))
         GetApp().AddCommand(constants.ID_ADD_FILES_TO_PROJECT,_("&Project"),_("Add &Files to Project..."),handler=lambda:self.ProcessEvent(constants.ID_ADD_FILES_TO_PROJECT),tester=lambda:self.GetView().UpdateUI(constants.ID_ADD_FILES_TO_PROJECT))
         GetApp().AddCommand(constants.ID_ADD_DIR_FILES_TO_PROJECT,_("&Project"),_("Add Directory Files to Project..."),handler=lambda:self.ProcessEvent(constants.ID_ADD_DIR_FILES_TO_PROJECT),tester=lambda:self.GetView().UpdateUI(constants.ID_ADD_DIR_FILES_TO_PROJECT))
         GetApp().AddCommand(constants.ID_ADD_CURRENT_FILE_TO_PROJECT,_("&Project"),_("&Add Active File to Project..."),handler=lambda:self.ProcessEvent(constants.ID_ADD_CURRENT_FILE_TO_PROJECT),add_separator=True,tester=lambda:self.GetView().UpdateUI(constants.ID_ADD_CURRENT_FILE_TO_PROJECT))
@@ -757,7 +750,7 @@ class BaseProjectbrowser(ttk.Frame):
             self.OnProperties()
             return True
         elif id == constants.ID_IMPORT_FILES:
-            self.ImportFilesToProject(event)
+            view.ImportFilesToProject()
             return True
         elif id == constants.ID_OPEN_FOLDER_PATH:
             self.OpenFolderPath()
@@ -774,8 +767,8 @@ class BaseProjectbrowser(ttk.Frame):
     def OnProperties(self):
         projectproperty.PropertiesService().ShowPropertyDialog(self.tree.GetSingleSelectItem())
 
-    def OnProjectProperties(self):
-        projectproperty.PropertiesService().ShowPropertyDialog(self.tree.GetRootItem())
+    def OnProjectProperties(self,item_name=None):
+        projectproperty.PropertiesService().ShowPropertyDialog(self.tree.GetRootItem(),option_name=item_name)
             
     def OpenProjectPath(self):
         document = self.GetCurrentProject()
@@ -811,22 +804,23 @@ class BaseProjectbrowser(ttk.Frame):
             filePath = fileutils.opj(os.path.join(project_path,self.GetView()._GetItemFolderPath(item)))
         return filePath
 
-    def StartCopyFilesToProject(self,progress_ui,file_list,src_path,dest_path):
-        self.copy_thread = threading.Thread(target = self.CopyFilesToProject,args=(progress_ui,file_list,src_path,dest_path))
+    def StartCopyFilesToProject(self,progress_ui,file_list,src_path,dest_path,que):
+        self.copy_thread = threading.Thread(target = self.CopyFilesToProject,args=(progress_ui,file_list,src_path,dest_path,que))
         self.copy_thread.start()
-        
-       # self.CopyFilesToProject(progress_ui,file_list,src_path,dest_path)
         
     def BuildFileList(self,file_list):
         return file_list
         
-    def CopyFilesToProject(self,progress_ui,file_list,src_path,dest_path):
+    def CopyFilesToProject(self,progress_ui,file_list,src_path,dest_path,que):
         #构建路径对应文件列表的对照表
+        utils.get_logger().info('start import total %d files to path %s',len(file_list),dest_path)
+        start_time = time.time()
         files_dict = self.BuildFileMaps(file_list)
         copy_file_count = 0
         #按照路径分别来拷贝文件
         for dir_path in files_dict:
-            if self.stop_import:
+            self.tree.item(self.tree.GetRootItem(), open=True)
+            if progress_ui.is_cancel:
                 break
             #路径下所有拷贝的文件列表
             file_path_list = files_dict[dir_path]
@@ -837,28 +831,30 @@ class BaseProjectbrowser(ttk.Frame):
             #目录路径如果有多层则导入文件的相对路径需添加多层目录
             if len(paths) > 1:
                 #第一层目录为项目目录必须剔除
-                dest_folder_path =  "/".join(paths[1:]) 
+                dest_folder_path =  "/".join(paths[1:])
                 if folder_path != "":
                     dest_folder_path +=  "/" + folder_path
             else:
                 dest_folder_path = folder_path
             self.GetView().GetDocument().GetCommandProcessor().Submit(ProjectAddProgressFilesCommand(progress_ui,\
-                self.GetView().GetDocument(), file_path_list, folderPath=dest_folder_path,range_value = copy_file_count))
+                self.GetView().GetDocument(), file_path_list, que,folderPath=dest_folder_path,range_value = copy_file_count))
             copy_file_count += len(file_path_list)
+        que.put((None,None))
+        end_time = time.time()
+        utils.get_logger().info('success import total %d files,elapse %d seconds',copy_file_count,int(end_time-start_time))
 
     def BuildFileMaps(self,file_list):
         d = {}
         for file_path in file_list:
             dir_path = os.path.dirname(file_path)
-            if not d.has_key(dir_path):
+            if not dir_path in d:
                 d[dir_path] = [file_path]
             else:
                 d[dir_path].append(file_path)
         return d
         
-    def StopImport(self):
-        self.stop_import = True
-        
     def SaveProjectConfig(self):
         self.GetView().WriteProjectConfig()
         
+    def GetOpenProjects(self):
+        return self.GetView().Documents

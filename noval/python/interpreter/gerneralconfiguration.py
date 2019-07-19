@@ -1,3 +1,14 @@
+# -*- coding: utf-8 -*-
+#-------------------------------------------------------------------------------
+# Name:        gerneralconfiguration.py
+# Purpose:
+#
+# Author:      wukan
+#
+# Created:     2019-07-16
+# Copyright:   (c) wukan 2019
+# Licence:     <your licence>
+#-------------------------------------------------------------------------------
 from noval import _,GetApp
 import tkinter as tk
 from tkinter import ttk
@@ -23,7 +34,8 @@ class InterpreterGeneralConfigurationPanel(ui_utils.BaseConfigurationPanel):
                 variable=self._warnInterpreterPathVar)
         warnInterpreterPathCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
            
-        self._showBuiltinInterpreterWindowVar = tk.IntVar(value=utils.profile_get_int("WarnInterpreterPath", True))
+        #是否显示内建解释器窗口,读取注册表里面存储解释器窗口是否显示的值
+        self._showBuiltinInterpreterWindowVar = tk.IntVar(value=utils.profile_get_int(consts.PYTHON_INTERPRETER_VIEW_NAME + "ViewVisible", False))
         showBuiltinInterpreterWindowCheckBox = ttk.Checkbutton(self,text=_("Show the builtin interpreter window"),variable=self._showBuiltinInterpreterWindowVar)
         showBuiltinInterpreterWindowCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
         
@@ -34,7 +46,8 @@ class InterpreterGeneralConfigurationPanel(ui_utils.BaseConfigurationPanel):
         box_frame = ttk.LabelFrame(self, text=_("Intellisence database update interval"))
         box_frame.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
 
-        self._update_interval_var = tk.IntVar(value=consts.UPDATE_ONCE_DAY)
+        self._update_interval_var = tk.IntVar(value=utils.profile_get_int("DatabaseUpdateInterval",consts.UPDATE_ONCE_DAY)
+)
         updateEveryStartupRadioBtn = ttk.Radiobutton(box_frame, text = _("Once when startup"),value=consts.UPDATE_ONCE_STARTUP,variable=self._update_interval_var)
         updateEveryStartupRadioBtn.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
         updateEveryDayRadioBtn = ttk.Radiobutton(box_frame, text = _("Once a day"),value=consts.UPDATE_ONCE_DAY,variable=self._update_interval_var)
@@ -143,15 +156,6 @@ class InterpreterGeneralConfigurationPanel(ui_utils.BaseConfigurationPanel):
         
     def GetUpdateIntervalOption(self):
         return self._update_interval_var.get()
-        if self.updateEveryDayRadioBtn.GetValue():
-            return UPDATE_ONCE_DAY
-        elif self.updateEveryMonthRadioBtn.GetValue():
-            return UPDATE_ONCE_MONTH
-        elif self.updateEveryWeekRadioBtn.GetValue():
-            return UPDATE_ONCE_WEEK
-        elif self.updateEveryStartupRadioBtn.GetValue():
-            return UPDATE_ONCE_STARTUP
-        return NEVER_UPDATE_ONCE
         
     def SetUpdateIntervalOption(self):
         

@@ -41,7 +41,7 @@ class PythonPathPanel(ttk.Frame,pythonpathmixin.PythonpathMixin):
             return
         pythonpathmixin.PythonpathMixin.RemovePath(self)
         
-    def GetPythonPathList(self):
+    def CheckPythonPathList(self):
         python_path_list = self.GetPythonPathFromPathList()
         is_pythonpath_changed = self.IsPythonPathChanged(python_path_list)
         if is_pythonpath_changed:

@@ -906,11 +906,16 @@ class CommonModaldialog(CommonDialog):
         self.master.lift()
         self.master.focus_force()
         if focused_widget is not None:
-            focused_widget.focus_set()
+            try:
+                focused_widget.focus_set()
+            except tk.TclError:
+                pass
             
         return self.status
 
     def _ok(self, event=None):
+        if str(self.ok_button['state']) == tk.DISABLED:
+            return
         self.status = constants.ID_OK
         self.destroy()
         

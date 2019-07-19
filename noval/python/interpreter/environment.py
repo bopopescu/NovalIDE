@@ -74,15 +74,11 @@ class EnvironmentPanel(ui_utils.BaseEnvironmentUI):
         return False
         
     def CheckEnviron(self):
-        return self.IsEnvironChanged(self.GetEnvironValues())
-
-    def GetEnvironValues(self):
-        dct = {}
-        for item in self.listview.tree.get_children():
-            value = self.listview.tree.item(item)['values']
-            #存储值会把数字字符串自动转换成整形,这里需要转换成字符串类型
-            dct[value[0]] = str(value[1])
-        return dct
+        dct = self.GetEnviron()
+        is_environ_changed = self.IsEnvironChanged(dct)
+        if is_environ_changed:
+            self.interpreter.Environ.SetEnviron(dct)
+        return is_environ_changed
         
     def CheckAndRemoveKeyitem(self,key):
         if not ui_utils.BaseEnvironmentUI.CheckAndRemoveKeyitem(self,key):

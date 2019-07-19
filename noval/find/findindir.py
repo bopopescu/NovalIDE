@@ -351,8 +351,7 @@ class FindIndirService:
                 result_view.AddLine("\n")
                 
         utils.get_logger().debug("end to search text for open project docs")
-        openDocNames = map(lambda openDoc: openDoc.GetFilename(), openDocs)
-
+        openDocNames = list(map(lambda openDoc: openDoc.GetFilename(), openDocs))
         #再查找所有项目中未打开的文件,按照查找文件的方式查找文本
         filenames = filter(lambda filename: filename not in openDocNames, projectFilenames)
         utils.get_logger().debug("start to search text for closed project docs")
@@ -371,7 +370,7 @@ class FindIndirService:
                     if needToDisplayFilename:
                         result_view.AddLine(FILENAME_MARKER + filename + "\n")
                         needToDisplayFilename = False
-                    line = repr(lineNum).zfill(4) + ":" + line
+                    line = self.LINE_PREFIX + repr(lineNum).zfill(4) + ":" + line
                     result_view.AddLine(line)
                     found_line += 1
                 line = docFile.readline()
@@ -500,9 +499,32 @@ class FindIndirDialog(ui_base.CommonModaldialog):
         self.cancel_button.pack(fill="x",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,consts.DEFAUT_HALF_CONTRL_PAD_X), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         self.bind("<Return>", self.FindIndir, True)
         self._update_button_statuses()
+        self.LoadConfig()
 
     def Close(self):
+        self.SaveConfig()
         self.destroy()
+
+    def SaveConfig(self):
+        """ Save find/replace patterns and search flags to registry. """
+        utils.profile_set(findtext.FIND_MATCHPATTERN, self.find_entry_var.get())
+        utils.profile_set(findtext.FIND_MATCHCASE, self.case_var.get())
+        utils.profile_set(findtext.FIND_MATCHWHOLEWORD, self.whole_word_var.get())
+        utils.profile_set(findtext.FIND_MATCHREGEXPR, self.regular_var.get())
+        utils.profile_set(FIND_MATCHDIR,self.path_entry_var.get())
+        utils.profile_set(FIND_MATCHDIRSUBFOLDERS,self.recursive_var.get())
+        self.find_entry.save_match_patters()
+
+    def LoadConfig(self):
+        #如果未有指定字符串,从配置中加载上一次查找的字符串
+        if not self.find_entry_var.get():
+            self.find_entry_var.set(utils.profile_get(findtext.FIND_MATCHPATTERN,''))
+        self.case_var.set(utils.profile_get_int(findtext.FIND_MATCHCASE,False))
+        self.whole_word_var.set(utils.profile_get_int(findtext.FIND_MATCHWHOLEWORD,False))
+        self.regular_var.set(utils.profile_get_int(findtext.FIND_MATCHREGEXPR,False))
+        self.path_entry_var.set(utils.profile_get(FIND_MATCHDIR,""))
+        self.recursive_var.set(utils.profile_get_int(FIND_MATCHDIRSUBFOLDERS,False))
+        self.find_entry.load_match_patters()
         
     def BrowsePath(self):
         path = filedialog.askdirectory()
@@ -524,7 +546,7 @@ class FindIndirDialog(ui_base.CommonModaldialog):
         
         path = self.path_entry_var.get()
         findstr = self.find_entry_var.get()
-        if findstr == "":
+        if findstr == "" or str(self.search_button['state']) == tk.DISABLED:
             return
         FIND_DIR_OPTION.find_option.findstr = findstr
         FIND_DIR_OPTION.path = path
@@ -543,7 +565,7 @@ class FindIndirDialog(ui_base.CommonModaldialog):
             findserivice.FindTextInFile(path,FIND_DIR_OPTION.find_option,result_view)
         else:
             findserivice.FindIndir(FIND_DIR_OPTION,result_view)
-        self.destroy()
+        self.Close()
         
     def _update_button_statuses(self, *args):
         find_text = self.find_entry_var.get()
@@ -626,15 +648,28 @@ class FindInfileDialog(ui_base.CommonModaldialog):
         self.cancel_button.pack(fill="x",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,consts.DEFAUT_HALF_CONTRL_PAD_X), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         self.bind("<Return>", self.FindText, True)
         self._update_button_statuses()
+        self.LoadConfig()
+        
+    def IsFindAvailable(self):
+        '''
+            按回车键执行查找时检测按钮是否可用
+        '''
+        return str(self.search_button['state']) == tk.NORMAL and self.find_entry_var.get() != '' 
         
     def UpdateTitle(self):
         self.dlg_title = _("Find in File")
         self.title(self.dlg_title)
         
     def FindText(self,event=None):
+        if not self.IsFindAvailable():
+            return
         self.GetFindTextOption()
         FindIndirService().FindInfile(findtext.CURERNT_FIND_OPTION,GetApp().MainFrame.GetSearchresultsView())
         self.destroy()
+        
+    def destroy(self):
+        self.SaveConfig()
+        ui_base.CommonModaldialog.destroy(self)
         
     def GetFindTextOption(self):
         findstr = self.find_entry_var.get()
@@ -649,7 +684,23 @@ class FindInfileDialog(ui_base.CommonModaldialog):
             self.search_button.config(state="disabled")
         else:
             self.search_button.config(state="normal")
-        
+
+    def SaveConfig(self):
+        """ Save find/replace patterns and search flags to registry. """
+        utils.profile_set(findtext.FIND_MATCHPATTERN, self.find_entry_var.get())
+        utils.profile_set(findtext.FIND_MATCHCASE, self.case_var.get())
+        utils.profile_set(findtext.FIND_MATCHWHOLEWORD, self.whole_word_var.get())
+        utils.profile_set(findtext.FIND_MATCHREGEXPR, self.regular_var.get())
+        self.find_entry.save_match_patters()
+
+    def LoadConfig(self):
+        #如果未有指定字符串,从配置中加载上一次查找的字符串
+        if not self.find_entry_var.get():
+            self.find_entry_var.set(utils.profile_get(findtext.FIND_MATCHPATTERN,''))
+        self.case_var.set(utils.profile_get_int(findtext.FIND_MATCHCASE,False))
+        self.whole_word_var.set(utils.profile_get_int(findtext.FIND_MATCHWHOLEWORD,False))
+        self.regular_var.set(utils.profile_get_int(findtext.FIND_MATCHREGEXPR,False))
+        self.find_entry.load_match_patters()
 
 class FindInprojectDialog(FindInfileDialog):
     
@@ -661,6 +712,8 @@ class FindInprojectDialog(FindInfileDialog):
         self.title(self.dlg_title)
         
     def FindText(self,event=None):
+        if not self.IsFindAvailable():
+            return
         self.GetFindTextOption()
         FindIndirService().FindInproject(findtext.CURERNT_FIND_OPTION,GetApp().MainFrame.GetSearchresultsView())
         self.destroy()

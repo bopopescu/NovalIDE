@@ -75,9 +75,7 @@ import noval.consts as consts
 import noval.misc as misc
 from noval.python.parser.utils import py_cmp,py_sorted
 import noval.python.pyeditor as pyeditor
-#import sys
-#reload(sys)
-#sys.setdefaultencoding('utf-8')
+import noval.python.project.runconfiguration as runconfiguration
 
 #VERBOSE mode will invoke threading.Thread _VERBOSE,which will print a lot of thread debug text on screen
 _VERBOSE = False
@@ -2099,6 +2097,9 @@ class Debugger:
         for i in range(self.bottomTab.GetPageCount()-1, -1, -1): # Go from len-1 to 1
             page = self.GetBottomtabInstancePage(i)
             close_suc = self.ClosePage(page)
+            #关闭其中一个调试运行标签页失败,则表示关闭整个失败,在退出程序检查是否有进程运行时表示是否退出程序
+            if not close_suc:
+                return False
         return close_suc
 
     def ClosePage(self,page=None):
@@ -2478,10 +2479,7 @@ class Debugger:
         if startup_file is None:
             messagebox.showerror(GetApp().GetAppName(),_("Your project needs a Python script marked as startup file to perform this action"))
             #show the property dialog to remind user to set the startup file
-            projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
-            project_view = projectService.GetCurrentProject().GetFirstView()
-            #force select the debug/run panel when show
-            project_view.OnProjectProperties(DEBUG_RUN_ITEM_NAME)
+            GetApp().MainFrame.GetProjectView(generate_event=False).OnProjectProperties(item_name="Debug/Run")
             return None
         return startup_file
         
@@ -2550,17 +2548,18 @@ class Debugger:
         run_configuration_name = self.GetRunConfiguration()
         #if user force run one project file ,then will not run configuration from config
         if filetoRun is None and run_configuration_name:
-            project_configuration = RunConfiguration.ProjectConfiguration(cur_project_document)
+            project_configuration = runconfiguration.ProjectConfiguration(cur_project_document)
             run_configuration = project_configuration.LoadConfiguration(run_configuration_name)
             #if run configuration name does not exist,then run in normal
             if not run_configuration:
                 run_parameter = self.GetFileRunParameter(filetoRun,is_break_debug)
             else:
-                try:
-                    run_parameter = run_configuration.GetRunParameter()
-                except PromptErrorException as e:
-                    wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR)
-                    return None
+                run_parameter = run_configuration.GetRunParameter()
+                #try:
+                 #   run_parameter = run_configuration.GetRunParameter()
+                #except PromptErrorException as e:
+                 #   wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR)
+                  #  return None
         else:
             run_parameter = self.GetFileRunParameter(filetoRun,is_break_debug)
         
@@ -3134,7 +3133,7 @@ class CommandPropertiesDialog(ui_base.CommonModaldialog):
                 checked = bool(utils.profile_get_int(self.GetKey("PythonPathPostpend"), True))
                 self._postpendCheckBoxVar.set(checked)
         
-    def _ok(self):
+    def _ok(self,event=None):
         startIn = self._lastStartInVar.get().strip()
         if self._selectedFileIndex >= 0 and len(self._fileNameList) > self._selectedFileIndex:
             fileToRun = self._fileNameList[self._selectedFileIndex]
@@ -3166,7 +3165,7 @@ class CommandPropertiesDialog(ui_base.CommonModaldialog):
             if hasattr(self, "_postpendCheckBox"):
                 utils.profile_set(self.GetKey("PythonPathPostpend"), self._postpendCheckBoxVar.get())
                 
-        ui_base.CommonModaldialog._ok(self)
+        ui_base.CommonModaldialog._ok(self,event=None)
 
     def GetSettings(self):
         projectDocument = self._selectedProjectDocument

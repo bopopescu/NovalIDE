@@ -11,7 +11,7 @@ import noval.project.variables as variablesutils
 import noval.util.utils as utils
 import noval.ui_utils as ui_utils
 import noval.python.interpreter.pythonpathmixin as pythonpathmixin
-#import noval.tool.project.RunConfiguration as RunConfiguration
+import noval.python.project.runconfiguration as runconfiguration
 import noval.ui_utils as ui_utils
 import noval.project.property as projectproperty
 import noval.imageutils as imageutils
@@ -51,25 +51,25 @@ class InternalPathPage(ttk.Frame):
         self._useProjectPathCheckVar = tk.IntVar(value=True)
         ttk.Checkbutton(row, text= _("Append project root path to PYTHONPATH"),variable=self._useProjectPathCheckVar).pack(fill="x",side=tk.LEFT)
         row.pack(fill="x")
-        #self._useProjectPathCheckBox.SetValue(RunConfiguration.ProjectConfiguration.IsAppendProjectPath(self.current_project_document.GetKey()))
-       # self.AppendPathPath()
+        self._useProjectPathCheckVar.set(runconfiguration.ProjectConfiguration.IsAppendProjectPath(self.current_project_document.GetKey()))
+        self.AppendPathPath()
 
     def AppendPathPath(self):
-        python_path_list = RunConfiguration.ProjectConfiguration.LoadProjectInternalPath(self.GetParent().GetParent().ProjectDocument.GetKey())
+        python_path_list = runconfiguration.ProjectConfiguration.LoadProjectInternalPath(self.current_project_document.GetKey())
         for path in python_path_list:
-            item = self.tree_ctrl.AppendItem(self.tree_ctrl.GetRootItem(), path)
-            self.tree_ctrl.SetItemImage(item,self.FolderIdx,wx.TreeItemIcon_Normal)
+            self.treeview.tree.insert('',"end",text=path,image=self.folder_bmp)
 
     def AddNewFilePath(self):
         dlg = pyutils.SelectModuleFileDialog(self,_("Select Zip/Egg/Wheel File"),self.current_project_document.GetModel(),False,['egg','zip','whl'])
         if dlg.ShowModal() == constants.ID_OK:
-            main_module_path = os.path.join(PythonVariables.FormatVariableName(PythonVariables.PROJECT_DIR_VARIABLE) , self.current_project_document.\
+            main_module_path = os.path.join(variablesutils.FormatVariableName(variablesutils.PROJECT_DIR_VARIABLE) , self.current_project_document.\
                     GetModel().GetRelativePath(dlg.module_file))
             if self.CheckPathExist(main_module_path):
                 messagebox.showinfo(_("Add Path"),_("Path already exist"),parent= self)
             else:
-                item = self.tree_ctrl.AppendItem(self.tree_ctrl.GetRootItem(),main_module_path)
-                self.tree_ctrl.SetItemImage(item,self.FolderIdx,wx.TreeItemIcon_Normal)
+               # item = self.tree_ctrl.AppendItem(self.tree_ctrl.GetRootItem(),main_module_path)
+                #self.tree_ctrl.SetItemImage(item,self.FolderIdx,wx.TreeItemIcon_Normal)
+                self.treeview.tree.insert('',"end",text=main_module_path,image=self.folder_bmp)
         
     def RemovePath(self):
         selections = self.treeview.tree.selection()
@@ -107,22 +107,21 @@ class InternalPathPage(ttk.Frame):
                 python_path_list.append(path)
             else:
                 python_variable_manager = variablesutils.GetProjectVariableManager(self.current_project_document)
-                path = python_variable_manager.EvalulateValue(text)
+                path = python_variable_manager.EvalulateValue(path)
                 python_path_list.append(str(path))
         return python_path_list
 
 class ExternalPathPage(ttk.Frame,pythonpathmixin.PythonpathMixin):
-    def __init__(self,parent):
+    def __init__(self,parent,project_document):
         ttk.Frame.__init__(self, parent)
+        self.project_document = project_document
         self.InitUI(True)
-       # self.tree_ctrl.AddRoot("ExternalPathList")
-       # self.AppendPathPath()
+        self.AppendPathPath()
         
     def AppendPathPath(self):
-        python_path_list = RunConfiguration.ProjectConfiguration.LoadProjectExternalPath(self.GetParent().GetParent().ProjectDocument.GetKey())
+        python_path_list = runconfiguration.ProjectConfiguration.LoadProjectExternalPath(self.project_document.GetKey())
         for path in python_path_list:
-            item = self.tree_ctrl.AppendItem(self.tree_ctrl.GetRootItem(), path)
-            self.tree_ctrl.SetItemImage(item,self.LibraryIconIdx,wx.TreeItemIcon_Normal)
+            self.treeview.tree.insert(self.GetRootItem(),"end",text=path,image=self.LibraryIcon)
         
     def GetPythonPathList(self):
         python_path_list = self.GetPathList()
@@ -135,15 +134,16 @@ class ExternalPathPage(ttk.Frame,pythonpathmixin.PythonpathMixin):
         ttk.Frame.destroy(self)
 
 class EnvironmentPage(ui_utils.BaseEnvironmentUI):
-    def __init__(self,parent):
+    def __init__(self,parent,project_document):
         ui_utils.BaseEnvironmentUI.__init__(self, parent)
-      #  self.LoadEnviron()
+        self.project_document = project_document
+        self.LoadEnviron()
         self.UpdateUI()
         
     def LoadEnviron(self):
-        environ = RunConfiguration.ProjectConfiguration.LoadProjectEnviron(self.GetParent().GetParent().ProjectDocument.GetKey())
-        for env in environ:
-            self.dvlc.AppendItem([env,environ[env]])
+        environ = runconfiguration.ProjectConfiguration.LoadProjectEnviron(self.project_document.GetKey())
+        for key in environ:
+            self.listview.tree.insert("","end",values=(key,environ[key]))
 
 class PythonPathPanel(ui_utils.BaseConfigurationPanel):
     def __init__(self,parent,item,current_project):
@@ -162,10 +162,10 @@ class PythonPathPanel(ui_utils.BaseConfigurationPanel):
         self.internal_path_panel = InternalPathPage(nb,self.current_project_document)
         nb.add(self.internal_path_panel, text=_("Internal Path"),image=self.internal_path_icon,compound=tk.LEFT)
 
-        self.external_path_panel = ExternalPathPage(nb)
+        self.external_path_panel = ExternalPathPage(nb,self.current_project_document)
         nb.add(self.external_path_panel, text=_("External Path"),image=self.external_path_icon,compound=tk.LEFT)
 
-        self.environment_panel = EnvironmentPage(nb)
+        self.environment_panel = EnvironmentPage(nb,self.current_project_document)
         nb.add(self.environment_panel, text=_("Environment"),image=self.environment_icon,compound=tk.LEFT)
         nb.pack(fill="both",expand=1)
         

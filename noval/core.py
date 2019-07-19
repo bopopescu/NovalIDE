@@ -1834,7 +1834,7 @@ class Document(object):
         msgTitle = GetApp().GetAppName()
         if not msgTitle:
             msgTitle = _("Warning")
-
+        #关闭文档之前询问用户是否保存修改
         answer = messagebox.askyesnocancel(msgTitle,_("Save changes to '%s'?") % self.GetPrintableName())
         if answer == False:
             self.Modify(False)
@@ -1842,14 +1842,7 @@ class Document(object):
         elif answer == True:
             return self.Save()
         else: # elif res == wx.CANCEL:
-            return False
-
-    def Draw(context):
-        """
-        Called by printing framework to draw the view.
-        """
-        return True
-
+            return False
 
     def AddView(self, view):
         """

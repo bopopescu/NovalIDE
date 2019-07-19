@@ -1,8 +1,13 @@
 import ast
-from noval.python.parser import nodeast
 import os
-from noval.python.parser import config
-from noval.python.parser import utils
+try:
+    from noval.python.parser import nodeast
+    from noval.python.parser import config
+    from noval.python.parser import utils
+except ImportError:
+    import nodeast
+    import config
+    import utils
 import sys
 import traceback
 

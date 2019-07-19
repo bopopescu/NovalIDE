@@ -46,6 +46,7 @@ import noval.misc as misc
 import noval.ui_base as ui_base
 import noval.ui_utils as ui_utils
 import noval.ttkwidgets.treeviewframe as treeviewframe
+import noval.project.importfiles as importfiles
 try:
     import tkSimpleDialog
 except ImportError:
@@ -61,8 +62,6 @@ PROJECT_DIRECTORY_KEY = "NewProjectDirectory"
 
 NEW_PROJECT_DIRECTORY_DEFAULT = appdirs.getSystemDir()
 
-#添加项目文件覆盖已有文件时默认处理方式
-DEFAULT_PROMPT_MESSAGE_ID = constants.ID_YES
 
 def getProjectKeyName(projectId):
     return "%s/{%s}/%s" % (PROJECT_KEY, projectId, "OpenFolders")
@@ -154,6 +153,12 @@ class ProjectDocument(core.Document):
         return "%s/{%s}/%s" % (PROJECT_KEY, self.GetModel().Id, lastPart)
         
     def GetFileKey(self,pj_file,lastPart=None):
+        if utils.is_py2():
+            str_ = unicode
+        else:
+            str_ = str
+        if isinstance(pj_file,str_):
+            pj_file = self.GetModel().FindFile(pj_file)
         if pj_file.logicalFolder is None:
             key_path = os.path.basename(pj_file.filePath)
         else:
@@ -273,10 +278,6 @@ class ProjectDocument(core.Document):
                     folder = None
                 else:
                     folder = folderPath
-                    
-                #不要添加二进制文件到项目中去
-                if strutils.get_file_extension(filePath) in self.BIN_FILE_EXTS:
-                    continue
                 self.GetModel().AddFile(filePath, folder, type, name)
         elif files:
             newFilePaths = []
@@ -297,7 +298,7 @@ class ProjectDocument(core.Document):
         else:
             return False
             
-    def AddProgressFiles(self,progress_ui,filePaths=None, folderPath=None, types=None, names=None,range_value = 0):
+    def AddProgressFiles(self,progress_ui,que,filePaths=None, folderPath=None, types=None, names=None,range_value = 0):
         # Filter out files that are not already in the project
         if filePaths:
             newFilePaths = []
@@ -324,17 +325,14 @@ class ProjectDocument(core.Document):
                     name = None
                     
                 if not folderPath:
-                    folder = projectService.FindLogicalViewFolderDefault(filePath)
+                    folder = None
                 else:
                     folder = folderPath
-                #禁止二进制文件类型禁止添加到项目中
-                if strutils.get_file_extension(filePath) in self.BIN_FILE_EXTS:
-                    continue
                 self.GetModel().AddFile(filePath, folder, type, name)
         else:
             return False
 
-        self.UpdateAllViews(hint = (consts.PROJECT_ADD_PROGRESS_COMMAND_NAME, self, newFilePaths,range_value,progress_ui))
+        self.UpdateAllViews(hint = (consts.PROJECT_ADD_PROGRESS_COMMAND_NAME, self, newFilePaths,range_value,progress_ui,que))
         if len(newFilePaths):
             self.Modify(True)
             return True
@@ -484,7 +482,15 @@ class ProjectDocument(core.Document):
         """Zips stagedir, creates a zipfile that has as name the projectname, in zipdest. Returns path to zipfile."""
         if os.path.exists(zipdest):
             raise AssertionError("Cannot archive project, %s already exists" % zipdest)
-        fileutils.zip(zipdest, files=self.GetModel().filePaths)
+
+        filePaths = self.GetModel().filePaths
+        newfilePaths = []
+        for filepath in filePaths:
+            #去除空文件夹下生成的虚拟文件
+            if filepath.find(consts.DUMMY_NODE_TEXT) == -1:
+                newfilePaths.append(filepath)  
+        #指定basedir则打包到压缩包的文件路径为相对路径,否则打包到压缩包的文件路径为绝对路径
+        fileutils.zip(zipdest, basedir=self.GetPath(),files=newfilePaths)
         return zipdest
 
 
@@ -735,9 +741,9 @@ class ProjectDocument(core.Document):
         
 
 class ProjectNameLocationPage(projectwizard.BitmapTitledWizardPage):
-    def __init__(self,master,add_bottom_page=True):
+    def __init__(self,master,add_bottom_page=True,**kwargs):
         projectwizard.BitmapTitledWizardPage.__init__(self,master,_("Enter the name and location for the project"),_("Name and Location"),"python_logo.png")
-        self.can_finish = True
+        self.can_finish = kwargs.get('can_finish',True)
         self.allowOverwriteOnPrompt = False
         sizer_frame = ttk.Frame(self)
         sizer_frame.grid(column=0, row=1, sticky="nsew")
@@ -755,7 +761,42 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledWizardPage):
         self.rowconfigure(2, weight=1)
 
         if add_bottom_page:
-            self.CreateBottomPage()
+            self.CreateBottomPage(**kwargs)
+            
+    def GetChoiceDirs(self,choiceDirs):
+        choiceDirs.append(self.dir_entry_var.get())
+        curProjectDoc = GetApp().MainFrame.GetProjectView().GetCurrentProject()
+        projectDirs = []
+        #先添加当前项目文档的路径到可选路径列表中
+        if curProjectDoc:
+            homeDir = os.path.dirname(curProjectDoc.GetAppDocMgr().homeDir)
+            if homeDir and (homeDir not in choiceDirs):
+                choiceDirs.append(homeDir)
+            #if not startingDirectory:
+             #   startingDirectory = homeDir
+        #再添加其它项目文档的路径到可选路径列表中
+        for projectDoc in GetApp().MainFrame.GetProjectView().GetOpenProjects():
+            if projectDoc == curProjectDoc:
+                continue
+            homeDir = os.path.dirname(projectDoc.GetAppDocMgr().homeDir
+)
+            if homeDir and (homeDir not in projectDirs):
+                projectDirs.append(homeDir)
+        for projectDir in projectDirs:
+            if projectDir not in choiceDirs:
+                choiceDirs.append(projectDir)
+                
+        #添加当前路径到可选路径列表中
+        cwdir = None
+        try:
+            cwdir = os.getcwd()
+        except:
+            pass
+        if cwdir and cwdir not in choiceDirs:
+            choiceDirs.append(cwdir)   
+        #最后添加系统默认路径到可选路径列表中             
+        if appdirs.getSystemDir() not in choiceDirs:
+            choiceDirs.append(appdirs.getSystemDir()) 
             
     def CreateTopPage(self):
         
@@ -770,8 +811,10 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledWizardPage):
         
         self.dir_label = ttk.Label(sizer_frame, text=_("Location:"))
         self.dir_label.grid(column=0, row=1, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
-        self.dir_entry_var = tk.StringVar()
-        self.dir_entry = ttk.Combobox(sizer_frame, textvariable=self.dir_entry_var)
+        choiceDirs = []
+        self.dir_entry_var = tk.StringVar(value=utils.profile_get(PROJECT_DIRECTORY_KEY, NEW_PROJECT_DIRECTORY_DEFAULT))
+        self.GetChoiceDirs(choiceDirs)
+        self.dir_entry = ttk.Combobox(sizer_frame, textvariable=self.dir_entry_var,values=choiceDirs)
         self.dir_entry.grid(column=1, row=1, sticky="nsew",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         self.browser_button = ttk.Button(
             sizer_frame, text=_("Browse..."), command=self.BrowsePath
@@ -781,13 +824,14 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledWizardPage):
         self.rowconfigure(3, weight=1)
         return sizer_frame
         
-    def CreateBottomPage(self,chk_box_row=4):
+    def CreateBottomPage(self,chk_box_row=4,**kwargs):
         
         sizer_frame = ttk.Frame(self)
         sizer_frame.grid(column=0, row=chk_box_row, sticky="nsew")
-        self.project_dir_chkvar = tk.IntVar()
+        #默认创建项目目录
+        self.project_dir_chkvar = tk.IntVar(value=kwargs.get('create_project_dir',True))
         self.create_project_dir_checkbutton = ttk.Checkbutton(
-            sizer_frame, text=_("Create Project Name Directory"), variable=self.project_dir_chkvar
+            sizer_frame, text=_("Create Project Directory"), variable=self.project_dir_chkvar
         )
         self.create_project_dir_checkbutton.pack(side=tk.LEFT,fill="x")
 
@@ -856,7 +900,14 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledWizardPage):
         dirName = self.GetProjectLocation()
         #if dir not exist,create it first
         if not os.path.exists(dirName):
-            parserutils.MakeDirs(dirName)
+            try:
+                parserutils.MakeDirs(dirName)
+            except Exception as e:
+                self.infotext_label_var.set("%s"%str(e))
+                #如果不是最后的页面,错误的信息需要弹出来,来醒目地提示用户错误,否则用户看不到错误信息
+                if self.GetNext():
+                    messagebox.showerror(_('Error'),str(e),parent=self)
+                return False
             
         projName = self.name_var.get().strip()
         fullProjectPath = os.path.join(dirName, strutils.MakeNameEndInExtension(projName, consts.PROJECT_EXTENSION))
@@ -866,7 +917,10 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledWizardPage):
                 if res != wx.YES:
                     return False
             else:                
-                messagebox.showinfo(_("File Exists"),_("That file already exists. Please choose a different name."))
+                self.infotext_label_var.set(_("That file already exists. Please choose a different name."))
+                #如果不是最后的页面,错误的信息需要弹出来,来醒目地提示用户错误,否则用户看不到错误信息
+                if self.GetNext():
+                    messagebox.showerror(_('File Exists'),_("That file already exists. Please choose a different name."),parent=self)
                 return False
                 
             # What if the document is already open and we're overwriting it?
@@ -886,7 +940,8 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledWizardPage):
         doc.GetModel().Name = self._new_project_configuration.Name
         doc.GetModel().Id = str(uuid.uuid1()).upper()
         doc.GetModel().SetInterpreter(self._new_project_configuration.Interpreter)
-        doc.OnSaveDocument(fullProjectPath)
+        if not doc.OnSaveDocument(fullProjectPath):
+            return False
         view = GetApp().MainFrame.GetProjectView().GetView()
         view.AddProjectToView(doc)
         return True
@@ -929,8 +984,8 @@ class NewProjectWizard(projectwizard.BaseWizard):
         return page
 
     def LoadDefaultProjectTemplates(self):
-        ProjectTemplateManager().AddProjectTemplate(_("Gernal"),_("Empty Project"),[ProjectNameLocationPage,])
-        ProjectTemplateManager().AddProjectTemplate(_("Gernal"),_("New Project From Existing Code"),["noval.project.baseviewer.ProjectNameLocationPage",])
+        ProjectTemplateManager().AddProjectTemplate("General","Empty Project",[ProjectNameLocationPage,])
+        ProjectTemplateManager().AddProjectTemplate("General","New Project From Existing Code",["noval.project.baseviewer.ProjectNameLocationPage",])
 
     def LoadProjectTemplates(self):
         self.LoadDefaultProjectTemplates()
@@ -945,12 +1000,11 @@ class NewProjectWizard(projectwizard.BaseWizard):
                 #found表示是否已经存在改路径的节点,node_id,表示从该节点下面插入
                 found,node_id = self.GetProjectTemplateNode(path)
                 if not found:
-                    node_id = self.tree.insert(node_id, "end", text=catlog_name,image=self.project_template_icon,values=path)
+                    node_id = self.tree.insert(node_id, "end", text=_(catlog_name),image=self.project_template_icon,values=path)
                     self.tree.selection_set(node_id)
             for template_name,pages in self.project_templates[template_catlog]:
-                #treeview不能存储包含空格的路径,故需要先把空格去掉
                 template_path = template_catlog + "/" + template_name
-                template_node_id = self.tree.insert(node_id, "end", text=template_name,values=(template_path,))
+                template_node_id = self.tree.insert(node_id, "end", text=_(template_name),values=(template_path,))
                 page_instances = self.InitPageInstances(pages)
                 self.SetPagesChain(page_instances)
                 self.template_pages[template_path] = page_instances
@@ -976,9 +1030,10 @@ class NewProjectWizard(projectwizard.BaseWizard):
                 page_class = getattr(page_module,page_class_name)
             try:
                 page = page_class(self,**args)
+                page_instances.append(page)
             except Exception as e:
                 utils.get_logger().error("init page instance error %s",e)
-            page_instances.append(page)
+                utils.get_logger().exception('')
         return page_instances
 
     def SetPagesChain(self,pages):
@@ -1052,7 +1107,8 @@ class ProjectTemplate(core.DocTemplate):
                 doc.GetModel()._projectDir = os.path.dirname(path)
             return doc
         else:
-            wiz = wizard_cls(GetApp())
+            wiz = wizard_cls(GetApp()
+.GetTopWindow())
             wiz.RunWizard(wiz._project_template_page)
             return None  # never return the doc, otherwise docview will think it is a new file and rename it
 
@@ -1191,10 +1247,7 @@ class ProjectView(misc.AlarmEventView):
         # We don't need to delete the window since it is a floater/embedded
         return True
         
-    def AddProgressFiles(self,newFilePaths,range_value,projectDoc,progress_ui):
-        global DEFAULT_PROMPT_MESSAGE_ID
-
-      ###  self._treeCtrl.UnselectAll()
+    def AddProgressFiles(self,newFilePaths,range_value,projectDoc,progress_ui,que):
         project = projectDoc.GetModel()
         projectDir = project.homeDir
         rootItem = self._treeCtrl.GetRootItem()
@@ -1215,40 +1268,46 @@ class ProjectView(misc.AlarmEventView):
                 if folderPath is None:
                     folderPath = ""
                 dest_path = os.path.join(projectDir,folderPath,os.path.basename(filePath))
+                #如果源文件和目的文件地址一样,则不用覆盖
                 if not parserutils.ComparePath(filePath,dest_path):
+                    #判断目的文件是否存在
                     if os.path.exists(dest_path):
-                        project.RemoveFile(file)
+                        #如果文件已经存在于项目中,需要先移除
+                        if project.FindFile(dest_path):
+                            project.RemoveFile(file)
                         #选择yes和no将显示覆盖确认对话框
-                        if DEFAULT_PROMPT_MESSAGE_ID == constants.ID_YES or DEFAULT_PROMPT_MESSAGE_ID == constants.ID_NO:
-                            prompt_dlg = ui_common.PromptmessageBox(parent,_("Project File Exists"),\
+                        if importfiles.DEFAULT_PROMPT_MESSAGE_ID == constants.ID_YES or importfiles.DEFAULT_PROMPT_MESSAGE_ID == constants.ID_NO:
+                            prompt_dlg = ui_common.PromptmessageBox(self.GetFrame(),_("Project File Exists"),\
                                     _("The file %s is already exist in project ,Do You Want to overwrite it?") % filePath)
-                            ui_common.show_dialog(prompt_dlg)
-                            DEFAULT_PROMPT_MESSAGE_ID = prompt_dlg.status
+                            prompt_dlg.ShowModal()
+                            importfiles.DEFAULT_PROMPT_MESSAGE_ID = prompt_dlg.status
                             #选择No时不要覆盖文件
-                            if DEFAULT_PROMPT_MESSAGE_ID == wx.ID_NO:
+                            if importfiles.DEFAULT_PROMPT_MESSAGE_ID == constants.ID_NO:
                                 range_value += 1
-                     #           Publisher.sendMessage(ImportFiles.NOVAL_MSG_UI_IMPORT_FILES_PROGRESS,value=range_value,\
-                      #                          is_cancel=self._stop_importing)
                                 continue
                     dest_dir_path = os.path.dirname(dest_path)
                     if not os.path.exists(dest_dir_path):
                         parserutils.MakeDirs(dest_dir_path)
                         
                     #选择yestoall和notoall将不再显示覆盖确认对话框
-                    if DEFAULT_PROMPT_MESSAGE_ID == constants.ID_YESTOALL or \
-                                DEFAULT_PROMPT_MESSAGE_ID == constants.ID_YES:
-                        shutil.copyfile(filePath,dest_path)
-                    file.filePath = dest_path
+                    if importfiles.DEFAULT_PROMPT_MESSAGE_ID == constants.ID_YESTOALL or \
+                                importfiles.DEFAULT_PROMPT_MESSAGE_ID == constants.ID_YES:
+                        try:
+                            shutil.copyfile(filePath,dest_path)
+                        except Exception as e:
+                            messagebox.showerror(GetApp().GetAppName(),str(e))
+                            return
+                    #路径有可能不符合规范,规范路径格式
+                    file.filePath = fileutils.opj(dest_path)
                 if not self._treeCtrl.FindItem(file.filePath,folder):
                     item = self._treeCtrl.AppendItem(folder, os.path.basename(file.filePath), file)
                     addList.append(item)
                 self._treeCtrl.item(folder, open=True)
             range_value += 1
-          ###  progress_ui.SetProgress(range_value,self.IsImportStop)
-            print (range_value,"================")
+            que.put((range_value,filePath))
             assert(type(range_value) == int and range_value > 0)
-            if self.IsImportStop:
-                utils.get_logger().info("user stop import code")
+            if progress_ui.is_cancel:
+                utils.get_logger().info("user stop import code files")
                 break
         # sort folders with new items
         parentList = []
@@ -1261,7 +1320,6 @@ class ProjectView(misc.AlarmEventView):
             self._treeCtrl.item(parentItem, open=True)
 
     def OnUpdate(self, sender = None, hint = None):
-        global DEFAULT_PROMPT_MESSAGE_ID
         if core.View.OnUpdate(self, sender, hint):
             return
         
@@ -1299,14 +1357,14 @@ class ProjectView(misc.AlarmEventView):
                                 #the dest file is already in the project
                                 if project.FindFile(dest_path):
                                     project.RemoveFile(file)
-                                if DEFAULT_PROMPT_MESSAGE_ID == constants.ID_YES or \
-                                            DEFAULT_PROMPT_MESSAGE_ID == constants.ID_NO:
+                                if importfiles.DEFAULT_PROMPT_MESSAGE_ID == constants.ID_YES or \
+                                            importfiles.DEFAULT_PROMPT_MESSAGE_ID == constants.ID_NO:
                                     prompt_dlg = ui_common.PromptmessageBox(GetApp().GetTopWindow(),_("Project File Exists"),\
                                             _("The file %s is already exist in project ,Do You Want to overwrite it?") % filePath)
                                     status = prompt_dlg.ShowModal()
-                                    DEFAULT_PROMPT_MESSAGE_ID = status
-                            if DEFAULT_PROMPT_MESSAGE_ID == constants.ID_YESTOALL or\
-                                DEFAULT_PROMPT_MESSAGE_ID == constants.ID_YES:
+                                    importfiles.DEFAULT_PROMPT_MESSAGE_ID = status
+                            if importfiles.DEFAULT_PROMPT_MESSAGE_ID == constants.ID_YESTOALL or\
+                                importfiles.DEFAULT_PROMPT_MESSAGE_ID == constants.ID_YES:
                                 try:
                                     shutil.copyfile(filePath,dest_path)
                                 except Exception as e:
@@ -1347,7 +1405,8 @@ class ProjectView(misc.AlarmEventView):
                 newFilePaths = hint[2]  # need to be added and selected, and sorted
                 range_value = hint[3]  # need to be selected
                 progress_ui = hint[4]
-                self.AddProgressFiles(newFilePaths,range_value,projectDoc,progress_ui)
+                que = hint[5]
+                self.AddProgressFiles(newFilePaths,range_value,projectDoc,progress_ui,que)
                 return
 
             elif hint[0] == "remove":
@@ -1474,13 +1533,6 @@ class ProjectView(misc.AlarmEventView):
         self._bold_item = item
         self.GetDocument().GetModel().StartupFile = pjfile
         self.GetDocument().Modify(True)
-        
-    def NewProject(self,event):
-        docManager = wx.GetApp().GetDocumentManager()
-        for template in docManager.GetTemplates():
-            if template.GetDocumentType() == ProjectDocument:
-                doc = template.CreateDocument("", flags = wx.lib.docview.DOC_NEW)
-                break
                 
     def SaveProject(self):
         doc = self.GetDocument()
@@ -1505,10 +1557,7 @@ class ProjectView(misc.AlarmEventView):
                 #清理项目的二进制文件
                 if ext in project_doc.BIN_FILE_EXTS:
                     GetApp().GetTopWindow().PushStatusText(_("Cleaning \"%s\".") % fullpath)
-                    try:
-                        os.remove(fullpath)
-                    except:
-                        pass
+                    fileutils.safe_remove(fullpath)
         GetApp().GetTopWindow().PushStatusText(_("Clean Completed."))
         GetApp().configure(cursor="")
         
@@ -1529,21 +1578,17 @@ class ProjectView(misc.AlarmEventView):
             GetApp().GetTopWindow().PushStatusText(_("Archive Error"))
         GetApp().configure(cursor="")
 
-    def ImportFilesToProject(self,event):
-        items = self._treeCtrl.GetSelections()
+    def ImportFilesToProject(self):
+        items = self._treeCtrl.selection()
         if items:
             item = items[0]
         else:
             item = self._treeCtrl.GetRootItem()
         folderPath = self._GetItemFolderPath(item)
-        frame = ImportFiles.ImportFilesDialog(wx.GetApp().GetTopWindow(),-1,_("Import Files"),folderPath)
-        frame.CenterOnParent()
-        if frame.ShowModal() == wx.ID_OK:
+        frame = importfiles.ImportfilesDialog(GetApp().GetTopWindow(),folderPath)
+        if frame.ShowModal() == constants.ID_OK:
             if not self._treeCtrl.IsExpanded(item):
                 self._treeCtrl.Expand(item)
-            #muse unsubscribe the registered msg,otherwise will sendmessage to the deleted dialog
-            Publisher.unsubscribe(frame.UpdateImportProgress,ImportFiles.NOVAL_MSG_UI_IMPORT_FILES_PROGRESS)
-        frame.Destroy()
 
     #----------------------------------------------------------------------------
     # Display Methods
@@ -1667,8 +1712,10 @@ class ProjectView(misc.AlarmEventView):
         return self._treeCtrl.AddFolder(folderPath)
 
     def LoadProject(self, document):
-      #  wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
+        GetApp().configure(cursor="circle")
         try:
+            #切换项目时加粗的节点重置为空,如果项目设置有启动文件,则将该启动文件节点加粗
+            self._bold_item = None
             rootItem = self.AddProjectRoot(document)
             if document:
                 docFilePath = document.GetFilename()
@@ -1714,16 +1761,8 @@ class ProjectView(misc.AlarmEventView):
                 child = self._treeCtrl.GetFirstChild(self._treeCtrl.GetRootItem())
                 if child:
                     self._treeCtrl.see(child)
-    
-                
-             #   if self._embeddedWindow:
-              #      document.GetCommandProcessor().SetEditMenu(wx.GetApp().GetEditMenu(self._GetParentFrame()))
-
         finally:
-            pass
-            #self._treeCtrl.Thaw()
-            #wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_DEFAULT))
-
+            GetApp().configure(cursor="")
 
     def ProjectHasFocus(self):
         """ Does Project Choice have focus """
@@ -1743,7 +1782,7 @@ class ProjectView(misc.AlarmEventView):
 
 
     def ClearFolderState(self):
-        config = wx.ConfigBase_Get()
+        config = GetApp().GetConfig()
         config.DeleteGroup(getProjectKeyName(self.GetDocument().GetModel().Id))
         
 
@@ -1903,14 +1942,14 @@ class ProjectView(misc.AlarmEventView):
                 findDirButton = ttk.Button(row,text=_("Browse..."),command=self.OnBrowseButton)
                 findDirButton.pack(side=tk.LEFT,padx=(consts.DEFAUT_CONTRL_PAD_X,0))
                 row.pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-                visibleTemplates = []
+                self.visibleTemplates = []
                 for template in self._view.GetDocumentManager()._templates:
                     if template.IsVisible() and not isinstance(template,ProjectTemplate):
-                        visibleTemplates.append(template)
+                        self.visibleTemplates.append(template)
 
                 choices = []
                 descr = ''
-                for template in visibleTemplates:
+                for template in self.visibleTemplates:
                     if len(descr) > 0:
                         descr = descr + _('|')
                     descr = _(template.GetDescription()) + " (" + template.GetFileFilter() + ")"
@@ -1919,12 +1958,12 @@ class ProjectView(misc.AlarmEventView):
                 row = ttk.Frame(self.main_frame)
                 ttk.Label(row,text=_("Files of type:")).pack(side=tk.LEFT)
                 self.filter_var = tk.StringVar()
-                filterChoice = ttk.Combobox(row,  values=choices,textvariable=self.filter_var)
-                filterChoice.current(0)
-                filterChoice['state'] = 'readonly'
-                filterChoice.pack(side=tk.LEFT,fill="x",expand=1)
+                self.filterChoice = ttk.Combobox(row,  values=choices,textvariable=self.filter_var)
+                self.filterChoice.current(0)
+                self.filterChoice['state'] = 'readonly'
+                self.filterChoice.pack(side=tk.LEFT,fill="x",expand=1)
                 row.pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-                misc.create_tooltip(filterChoice,_("Select file type filter."))
+                misc.create_tooltip(self.filterChoice,_("Select file type filter."))
                 self.subfolderChkVar = tk.IntVar(value=True)
                 subfolderCtrl = ttk.Checkbutton(self.main_frame, text=_("Add files from subdirectories"),variable=self.subfolderChkVar).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
                # subfolderCtrl.SetValue(True)
@@ -1935,6 +1974,14 @@ class ProjectView(misc.AlarmEventView):
                 if not path:
                     return
                 self.dir_var.set(fileutils.opj(path))
+
+            def _ok(self):
+                index = self.filterChoice.current()
+                self.template = None
+                lastIndex = len(self.filterChoice['values']) -1
+                if index and index != lastIndex:  # if not All or Any
+                    self.template = self.visibleTemplates[index-1]
+                ui_base.CommonModaldialog._ok(self)
 
         dlg = AddDirProjectDialog(GetApp().GetTopWindow(),self)
         status = dlg.ShowModal()
@@ -1960,19 +2007,14 @@ class ProjectView(misc.AlarmEventView):
                     paths = [dirString]
                 else:
                     paths = []
-    
-                    index = filterChoice.GetSelection()
-                    lastIndex = filterChoice.GetCount()-1
-                    if index and index != lastIndex:  # if not All or Any
-                        template = visibleTemplates[index-1]
-    
+                    template = dlg.template
                     # do search in files on disk
                     for root, dirs, files in os.walk(dirString):
                         if not searchSubfolders and root != dirString:
                             break
     
                         for name in files:
-                            if index == 0:  # All
+                            if template is None:  # All
                                 filename = os.path.join(root, name)
                                 # if already in project, don't add it, otherwise undo will remove it from project even though it was already in it.
                                 if not doc.IsFileInProject(filename):
@@ -1985,14 +2027,13 @@ class ProjectView(misc.AlarmEventView):
                                         paths.append(filename)
     
                 folderPath = None
-                if self.GetMode() == ProjectView.PROJECT_VIEW:
-                    selections = self._treeCtrl.GetSelections()
-                    if selections:
-                        item = selections[0]
-                        if not self._IsItemFile(item):
-                            folderPath = self._GetItemFolderPath(item)
+                selections = self._treeCtrl.selection()
+                if selections:
+                    item = selections[0]
+                    if not self._IsItemFile(item):
+                        folderPath = self._GetItemFolderPath(item)
 
-                doc.GetCommandProcessor().Submit(ProjectAddFilesCommand(doc, paths, folderPath=folderPath))
+                doc.GetCommandProcessor().Submit(projectcommand.ProjectAddFilesCommand(doc, paths, folderPath=folderPath))
                 self.Activate()  # after add, should put focus on project editor
                 
             finally:
@@ -2340,7 +2381,7 @@ class ProjectView(misc.AlarmEventView):
         
         self.ClearFolderState()  # remove from registry folder settings
         #delete project regkey config
-        wx.ConfigBase_Get().DeleteGroup(getProjectKeyName(doc.GetModel().Id))
+        GetApp().GetConfig().DeleteGroup(getProjectKeyName(doc.GetModel().Id))
 
         # close project
         if doc:            

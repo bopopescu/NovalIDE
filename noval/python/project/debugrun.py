@@ -17,9 +17,12 @@ import noval.ui_base as ui_base
 import noval.imageutils as imageutils
 import noval.editor.text as texteditor
 import noval.ttkwidgets.treeviewframe as treeviewframe
+import noval.ttkwidgets.listboxframe as listboxframe
 import noval.ttkwidgets.textframe as textframe
 import noval.python.pyutils as pyutils
 import noval.constants as constants
+import copy
+import noval.ui_utils as ut_utils
       
 class BasePage(ui_utils.BaseConfigurationPanel):
     
@@ -233,42 +236,46 @@ class InterpreterConfigurationPage(BasePage):
         self.interpreter_var = tk.StringVar()
         interpretersCombo = ttk.Combobox(self, values=choices,textvariable=self.interpreter_var)
         interpretersCombo.pack(fill="x")
-       # self.Bind(wx.EVT_TEXT,self.GetInterpreterPythonPath)
         if len(choices) > 0:
             interpretersCombo.current(default_selection)
         
         ttk.Label(self, text=_("PYTHONPATH that will be used in the run:")).pack(fill="x")
-        listbox_view =treeviewframe.TreeViewFrame(self,borderwidth=1,relief="solid",show_scrollbar=False)
-        self.listbox = listbox_view.tree
+        self.list_var = tk.StringVar()
+        listbox_view = listboxframe.ListboxFrame(self,listbox_class=ut_utils.ThemedListbox,show_scrollbar=False,listvariable=self.list_var)
+        self.listbox = listbox_view.listbox
         listbox_view.pack(fill="both",expand=1)
+        #必须放在SetCurrentInterpreterName方法前面
+        self.interpreter_var.trace("w", self.GetInterpreterPythonPath)
+        #这里会触发上面的事件
         self.SetCurrentInterpreterName(interpreter_configuration)
-       # self.GetInterpreterPythonPath(None)
         
     def SetCurrentInterpreterName(self,interpreter_configuration):
         interpreter_name = interpreter_configuration.InterpreterName
         if interpreter_name:
             self.interpreter_var.set(interpreter_name)
         
-    def GetInterpreterPythonPath(self,event):
-        self.listbox.Clear()
-        interpreter_name = self.interpretersCombo.GetValue().strip()
+    def GetInterpreterPythonPath(self,*GetInterpreterPythonPath):
+        self.list_var.set(tuple())
+        interpreter_name = self.interpreter_var.get()
         self.AppendInterpreterPythonPath(interpreter_name)
     
     def AppendInterpreterPythonPath(self,interpreter_name):
         interpreter = interpretermanager.InterpreterManager().GetInterpreterByName(interpreter_name)
         if interpreter is None:
             return
-        self.listbox.AppendItems(interpreter.PythonPathList)
-        proprty_dlg = self.GetParent().GetParent().GetParent().GetParent()
-        if proprty_dlg.HasPanel(PROJECT_REFERENCE_ITEM_NAME):
-            project_reference_panel = proprty_dlg.GetPanel(PROJECT_REFERENCE_ITEM_NAME)
-            for reference_project in project_reference_panel.GetReferenceProjects():
-                self.listbox.Append(os.path.dirname(reference_project.GetFilename()))
-            python_path_panel = proprty_dlg.GetPanel(PYTHONPATH_ITEM_NAME)
-            self.listbox.AppendItems(python_path_panel.GetPythonPathList())
+        #拷贝一份列表否则会修改原列表
+        values = copy.copy(interpreter.PythonPathList)
+        proprty_dlg = self.master.master.master.master.master.master.master.master
+        if proprty_dlg.HasPanel("Project References"):
+            project_reference_panel = proprty_dlg.GetOptionPanel("Project References")
+            for project_filename in project_reference_panel.GetReferenceProjects():
+                values.append(os.path.dirname(project_filename))
+            python_path_panel = proprty_dlg.GetOptionPanel('PythonPath')
+            values.extend(python_path_panel.GetPythonPathList())
         else:
             project_configuration = RunConfiguration.ProjectConfiguration(self.ProjectDocument)
             self.listbox.AppendItems(project_configuration.LoadPythonPath())
+        self.list_var.set(tuple(set(values)))
         
     def GetConfiguration(self):
         main_module_file = self.master.master.master.GetMainModuleFile()
@@ -441,8 +448,8 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
             self.copy_configuration_btn['state'] = tk.DISABLED
         self.UpdateUI()
         #folder or package folder has no run configurations
-      #  if not self.is_folder:
-       #     self.LoadConfigurations()
+        if not self.is_folder:
+            self.LoadConfigurations()
 
     def GetProjectName(self):
         return os.path.basename(self.current_project_document.GetFilename())
@@ -465,7 +472,7 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
         startup_file = self.current_project_document.GetModel().FindFile(startup_file_path)
         if not startup_file:
             if prompt_error:
-                wx.MessageBox(_("File \"%s\" is not in project") % startup_file_path)
+                messagebox.showerror(GetApp().GetAppName(),_("File \"%s\" is not in project") % startup_file_path)
             return None
         return startup_file
         
@@ -477,6 +484,7 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
             return
         config = GetApp().GetConfig()
         key_path = self.current_project_document.GetFileKey(project_file)
+        names = []
         config.GetGroups(key_path,names)
         for name in names:
             group_path = key_path + "/" + name
@@ -496,12 +504,13 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
                 self.current_project_document.GetFirstView().SetProjectStartupFileItem(item)
         #remove all configurations first
         self.RemoveFileConfigurations(self.select_project_file)
+        for run_configuration in self._configuration_list:
+            run_configuration.SaveConfiguration()
 
         selected_item_index = self.GetSelectIndex()
         selected_configuration_name = ""
         if -1 != selected_item_index:
             selected_configuration_name = self._configuration_list[selected_item_index].Name
-            
         if self.configuration_ListCtrl.selection():
             if self.select_project_file is None:
                 pj_key = self._configuration_list[0].ProjectDocument.GetKey()
@@ -518,12 +527,13 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
                     pj_file_key = run_configuration.GetRootKeyPath()
                     #update file configuration list
                     utils.profile_set(pj_file_key + "/ConfigurationList",file_configuration_list)
-                    if selected_configuration_name == self._configuration_list[i]:
+                    if selected_configuration_name == self._configuration_list[i].Name:
                         selected_configuration_name = last_part + "/" + selected_configuration_name
                 utils.profile_set(pj_key + "/ConfigurationList",new_configuration_names)
                 utils.profile_set(pj_key + "/RunConfigurationName",selected_configuration_name)
             else:
                 pj_file_key = self._configuration_list[0].GetRootKeyPath()
+                configuration_names = [run_configuration.Name for run_configuration in self._configuration_list]
                 utils.profile_set(pj_file_key + "/ConfigurationList",configuration_names)
                 utils.profile_set(pj_file_key + "/RunConfigurationName",selected_configuration_name)
         return True
@@ -644,20 +654,18 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
             
     def LoadConfigurations(self):
         if self.select_project_file is not None:
-            file_configuration = RunConfiguration.FileConfiguration(self.current_project_document,self.select_project_file)
+            file_configuration = runconfiguration.FileConfiguration(self.current_project_document,self.select_project_file)
             self._configuration_list = file_configuration.LoadConfigurations()
             selected_configuration_name = self.current_project_document.GetRunConfiguration(self.select_project_file)
         else:
-            project_configuration = RunConfiguration.ProjectConfiguration(self.current_project_document)
+            project_configuration = runconfiguration.ProjectConfiguration(self.current_project_document)
             self._configuration_list = project_configuration.LoadConfigurations()
             selected_configuration_name = project_configuration.GetRunConfigurationName()
             
         for configuration in self._configuration_list:
-            index = self.configuration_ListCtrl.GetItemCount()
-            self.configuration_ListCtrl.InsertImageStringItem( index,configuration.Name,self.ConfigurationIconIndex)
-            self.configuration_ListCtrl.SetItemData(index,index)
+            item = self.configuration_ListCtrl.insert("","end",text=configuration.Name,image=self.run_config_img)
             if selected_configuration_name == configuration.Name:
-                self.configuration_ListCtrl.Select(index)
+                self.configuration_ListCtrl.selection_set(item)
             
 
 class DebugrunPageLoader(plugin.Plugin):

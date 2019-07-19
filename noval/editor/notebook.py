@@ -274,7 +274,10 @@ class EditorNotebook(ui_base.ClosableNotebook):
         try:
             fileutils.open_file_directory(self._current_document.GetFilename())
         except RuntimeError as e:
-            messagebox.showerror(_("Error"),str(e).decode(utils.get_default_encoding()))
+            if utils.is_py2():
+                messagebox.showerror(_("Error"),str(e).decode(utils.get_default_encoding()))
+            else:
+                messagebox.showerror(_("Error"),str(e))
             
     def OpenPathInTerminator(self):
         GetApp().OpenTerminator(self._current_document.GetFilename())
@@ -417,7 +420,12 @@ class EditorNotebook(ui_base.ClosableNotebook):
         if fname is not None:
             #跳转到位置时不需追踪位置了
             GetApp().GotoView(fname,line,colno=col,trace_track=False)
-        
+            #跳转位置后要更新状态栏显示的行列号
+            editor  = self.get_current_editor()
+            if editor is not None:
+                text_view = editor.GetView()
+                text_view.set_line_and_column()    
+    
     @misc.update_toolbar
     def GotoPrePos(self):
         fname, line,col = (None, None,None)
@@ -440,6 +448,11 @@ class EditorNotebook(ui_base.ClosableNotebook):
         if fname is not None:
             #跳转到位置时不需追踪位置了
             GetApp().GotoView(fname,line,colno=col,trace_track=False)
+            #跳转位置后要更新状态栏显示的行列号
+            editor  = self.get_current_editor()
+            if editor is not None:
+                text_view = editor.GetView()
+                text_view.set_line_and_column()
         
     def ZoomView(self,delta=0):
         self.get_current_editor().GetView().UpdateFontSize(delta)

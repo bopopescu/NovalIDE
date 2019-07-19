@@ -15,8 +15,6 @@ import os
 import re
 import string
 import sys
-import noval.python.parser.nodeast as nodeast
-import noval.python.parser.intellisence as intellisence
 import noval.python.parser.config as parserconfig
 import noval.util.strutils as strutils
 import noval.consts as consts

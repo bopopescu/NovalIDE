@@ -13,6 +13,7 @@ import noval.python.parser.utils as parserutils
 import json
 import noval.util.utils as utils
 import noval.util.urlutils as urlutils
+import noval.util.fileutils as fileutils
 
 if apputils.is_windows():
     import wmi
@@ -87,10 +88,10 @@ class UserDataDb(BaseDb):
         if self.NeedUpdateDatabaseFile(db_ver_file):
             if os.path.exists(db_file):
                 utils.get_logger().info("the database file %s need to be updated",db_file)
-                try:
-                    os.remove(db_file)
+                fileutils.safe_remove(db_file)
+                if not os.path.exists(db_file):
                     self.SaveDbVersion(db_ver_file)
-                except:
+                else:
                     utils.get_logger().error("remove database file %s fail",db_file)
                     
     def SaveDbVersion(self,db_ver_file):

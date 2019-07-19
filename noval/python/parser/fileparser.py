@@ -1,12 +1,12 @@
 #coding:utf-8
 import ast
 import os
-from noval.python.parser import config
-from noval.python.parser import nodeast
+import config
+import nodeast
 import sys
-from noval.python.parser import utils
+import utils
 import pickle
-from noval.python.parser import codeparser
+import codeparser
 
 def is_package_dir(dir_name):
     package_file = "__init__.py"

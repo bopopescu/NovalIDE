@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
 from noval.util import utils
 import noval.python.interpreter.interpretermanager as interpretermanager
 import os
 import noval.project.basemodel as projectmodel
 import noval.project.variables as variablesutils
+import noval.consts as consts
+import noval.python.project.runconfig as runconfig
 
 class BaseConfiguration(object):
     
@@ -57,9 +60,9 @@ class StartupConfiguration(BaseConfiguration):
 
     def SaveConfiguration(self,config_key,configuration_name):
         configuration_key = self.GetConfigurationKey(configuration_name,config_key)
-        utils.ProfileSet(configuration_key + "/StartupPathPattern",self._startup_path_pattern)
+        utils.profile_set(configuration_key + "/StartupPathPattern",self._startup_path_pattern)
         if self._startup_path_pattern != self.DEFAULT_PROJECT_DIR_PATH:
-            utils.ProfileSet(configuration_key + "/StartupPath",self._startup_path)
+            utils.profile_set(configuration_key + "/StartupPath",self._startup_path)
         
 class AugumentsConfiguration(BaseConfiguration):
     
@@ -88,8 +91,8 @@ class AugumentsConfiguration(BaseConfiguration):
 
     def SaveConfiguration(self,config_key,configuration_name):
         configuration_key = self.GetConfigurationKey(configuration_name,config_key)
-        utils.ProfileSet(configuration_key + "/ProgramArgs",self._program_args)
-        utils.ProfileSet(configuration_key + "/InterpreterOptions",self._interpreter_option)
+        utils.profile_set(configuration_key + "/ProgramArgs",self._program_args)
+        utils.profile_set(configuration_key + "/InterpreterOptions",self._interpreter_option)
 
 class InterpreterConfiguration(BaseConfiguration):
     
@@ -105,7 +108,7 @@ class InterpreterConfiguration(BaseConfiguration):
 
     def SaveConfiguration(self,config_key,configuration_name):
         configuration_key = self.GetConfigurationKey(configuration_name,config_key)
-        utils.ProfileSet(configuration_key + "/InterpreterName",self._interpreter_name)
+        utils.profile_set(configuration_key + "/InterpreterName",self._interpreter_name)
 
 class EnvironmentConfiguration(BaseConfiguration):
     
@@ -116,7 +119,7 @@ class EnvironmentConfiguration(BaseConfiguration):
         
     def SaveConfiguration(self,config_key,configuration_name):
         configuration_key = self.GetConfigurationKey(configuration_name,config_key)
-        utils.ProfileSet(configuration_key + "/Environment",self.environ.__repr__())
+        utils.profile_set(configuration_key + "/Environment",self.environ)
       
     @property
     def Environ(self):
@@ -159,7 +162,8 @@ class RunConfiguration():
         self._configuration_name = name
         
     def GetRootKeyPath(self):
-        return self._configurations.items()[0][1].GetRootKeyPath()
+        #python3字典items方法返回dict_items对象,必须转换为list对象
+        return list(self._configurations.items())[0][1].GetRootKeyPath()
     
     @classmethod
     def CreateNewConfiguration(cls,project_doc,default_interpreter,main_module_file=None,configuration_name=""):
@@ -208,15 +212,15 @@ class RunConfiguration():
         initialArgs = arguments_configuration.GetArgs()
         startIn = startup_configuration.StartupPath
         if startup_configuration.StartupPathPattern != StartupConfiguration.DEFAULT_PROJECT_DIR_PATH:
-            startIn = PythonVariables.ProjectVariablesManager(self.ProjectDocument).EvalulateValue(startIn)
+            startIn = variablesutils.VariablesManager(self.ProjectDocument).EvalulateValue(startIn)
         interpreter_option = arguments_configuration.GetInterpreterOption()
         env = environment_configuration.GetEnviron()
         project_configuration = ProjectConfiguration(self.ProjectDocument)
         python_path_list = project_configuration.LoadPythonPath()
         project_environ = project_configuration.LoadEnviron()
         env.update(project_environ)
-        env[PYTHON_PATH_NAME] = str(os.pathsep.join(python_path_list))
-        return configuration.RunParameter(interpreter,fileToRun,initialArgs,env,startIn,project=self.ProjectDocument,interpreter_option=interpreter_option)
+        env[consts.PYTHON_PATH_NAME] = str(os.pathsep.join(python_path_list))
+        return runconfig.PythonRunconfig(interpreter,fileToRun,initialArgs,env,startIn,project=self.ProjectDocument,interpreter_option=interpreter_option)
 
 class FileConfiguration(BaseConfiguration):
     def __init__(self,project_doc,main_module_file):
@@ -242,19 +246,19 @@ class FileConfiguration(BaseConfiguration):
     def LoadConfiguration(self,configuration_name):
         
         startup_key = self.GetConfigurationKey(configuration_name,StartupConfiguration.CONFIGURATION_NAME)
-        startup_path_pattern = utils.ProfileGetInt(startup_key + "/StartupPathPattern",StartupConfiguration.DEFAULT_PROJECT_DIR_PATH)
-        startup_path = utils.ProfileGet(startup_key + "/StartupPath","")
+        startup_path_pattern = utils.profile_get_int(startup_key + "/StartupPathPattern",StartupConfiguration.DEFAULT_PROJECT_DIR_PATH)
+        startup_path = utils.profile_get(startup_key + "/StartupPath","")
         
         arguments_key = self.GetConfigurationKey(configuration_name,AugumentsConfiguration.CONFIGURATION_NAME)
-        interpreter_option = utils.ProfileGet(arguments_key + "/InterpreterOptions","")
-        program_args = utils.ProfileGet(arguments_key + "/ProgramArgs","")
+        interpreter_option = utils.profile_get(arguments_key + "/InterpreterOptions","")
+        program_args = utils.profile_get(arguments_key + "/ProgramArgs","")
         
         interpreter_key = self.GetConfigurationKey(configuration_name,InterpreterConfiguration.CONFIGURATION_NAME)
-        default_interpreter_name = utils.ProfileGet(self.ProjectDocument.GetKey() + "/Interpreter",interpretermanager.InterpreterManager.GetCurrentInterpreter().Name)
-        interpreter_name = utils.ProfileGet(interpreter_key + "/InterpreterName",default_interpreter_name)
+        default_interpreter_name = utils.profile_get(self.ProjectDocument.GetKey() + "/Interpreter",interpretermanager.InterpreterManager().GetCurrentInterpreter().Name)
+        interpreter_name = utils.profile_get(interpreter_key + "/InterpreterName",default_interpreter_name)
         
         environment_key = self.GetConfigurationKey(configuration_name,EnvironmentConfiguration.CONFIGURATION_NAME)
-        environ_str = utils.ProfileGet(environment_key + "/Environment","{}")
+        environ_str = utils.profile_get(environment_key + "/Environment","{}")
         environs = eval(environ_str)
         
         args = {
@@ -275,11 +279,7 @@ class ProjectConfiguration(BaseConfiguration):
         
     def LoadConfigurations(self):
         pj_key = self._project_document.GetKey()
-        value = utils.ProfileGet(pj_key + "/" + "ConfigurationList","[]")
-        try:
-            configuration_name_list = eval(value)
-        except Exception as e:
-            return self._configuration_list
+        configuration_name_list = utils.profile_get(pj_key + "/" + "ConfigurationList",[])
         for name in configuration_name_list:
             run_configuration = self.LoadConfiguration(name)
             if run_configuration:
@@ -302,11 +302,7 @@ class ProjectConfiguration(BaseConfiguration):
         return None
         
     def LoadReferenceProjects(self):
-        str_project_names = utils.ProfileGet(self.ProjectDocument.GetKey() + "/ReferenceProjects","")
-        try:
-            ref_project_names = eval(str_project_names)
-        except:
-            ref_project_names = []
+        ref_project_names = utils.profile_get(self.ProjectDocument.GetKey() + "/ReferenceProjects",[])
         return ref_project_names
         
     def GetProjectPath(self,project_name):
@@ -331,7 +327,7 @@ class ProjectConfiguration(BaseConfiguration):
     def LoadPythonPath(self):
         python_path_list = self.LoadProjectInternalPath(self.ProjectDocument.GetKey())
         for i,python_path in enumerate(python_path_list):
-            python_variable_manager = PythonVariables.ProjectVariablesManager(self.ProjectDocument)
+            python_variable_manager = variablesutils.VariablesManager(self.ProjectDocument)
             path = python_variable_manager.EvalulateValue(python_path)
             python_path_list[i] = path
         if self.IsAppendProjectPath(self.ProjectDocument.GetKey()):
@@ -344,7 +340,7 @@ class ProjectConfiguration(BaseConfiguration):
 
     def GetRunConfigurationName(self):
         pj_key = self.ProjectDocument.GetKey()
-        run_configuration_name = utils.ProfileGet(pj_key + "/RunConfigurationName","")
+        run_configuration_name = utils.profile_get(pj_key + "/RunConfigurationName","")
         if run_configuration_name == "":
             return run_configuration_name
         return run_configuration_name.split('/')[1]
@@ -354,11 +350,7 @@ class ProjectConfiguration(BaseConfiguration):
     
     @staticmethod
     def LoadProjectEnviron(pj_key):
-        enviroment_str = utils.ProfileGet(pj_key + "/Environment","{}")
-        try:
-            environ = eval(enviroment_str)
-        except:
-            environ = {}
+        environ = utils.profile_get(pj_key + "/Environment",{})
         return environ
         
     @classmethod
@@ -371,19 +363,18 @@ class ProjectConfiguration(BaseConfiguration):
         
     @staticmethod
     def LoadProjectPythonPath(pj_key,last_part):
-        path_str = utils.ProfileGet(pj_key + "/" + last_part,"[]")
-        try:
-            python_path_list = eval(path_str)
-        except:
-            python_path_list = []
+        python_path_list = utils.profile_get(pj_key + "/" + last_part,[])
         return python_path_list
         
     @staticmethod
     def LoadProjectInterpreter(pj_key):
-        interpreter_name = utils.profile_get(pj_key + "/Interpreter",interpretermanager.InterpreterManager().GetCurrentInterpreter().Name)
+        current_interpreter = interpretermanager.InterpreterManager().GetCurrentInterpreter()
+        if current_interpreter is None:
+            return None
+        interpreter_name = utils.profile_get(pj_key + "/Interpreter",current_interpreter.Name)
         return interpreter_name
     
     @staticmethod
     def IsAppendProjectPath(pj_key):
-        return utils.ProfileGetInt(pj_key + "/AppendProjectPath",True)
+        return utils.profile_get_int(pj_key + "/AppendProjectPath",1)
         

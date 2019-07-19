@@ -1,7 +1,7 @@
-
-import noval.python.parser.config as config
+import config
+import sys
 import os
-from noval.python.parser.utils import CmpMember
+from utils import CmpMember
 
 class AbstractAst(object):
     def __init__(self,parent,type):
@@ -256,9 +256,13 @@ class ImportNode(Node):
          return self._as_name
 
 class BuiltinImportNode(ImportNode):
-     BUILTIN_MODULE_NAME = '__builtin__'
+     
      def __init__(self,parent):
-        super(BuiltinImportNode,self).__init__(self.BUILTIN_MODULE_NAME,0,0,parent)
+        if sys.version_info[0] == 2:
+            BUILTIN_MODULE_NAME = '__builtin__'
+        else:
+            BUILTIN_MODULE_NAME = 'builtins'
+        super(BuiltinImportNode,self).__init__(BUILTIN_MODULE_NAME,0,0,parent)
         self._type = config.NODE_BUILTIN_IMPORT_TYPE
          
 class FromImportNode(Node):

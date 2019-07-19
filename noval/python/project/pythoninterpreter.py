@@ -6,7 +6,7 @@ import noval.util.utils as utils
 import noval.iface as iface
 import noval.plugin as plugin
 import noval.consts as consts
-#import noval.tool.project.RunConfiguration as RunConfiguration
+import noval.python.project.runconfiguration as runconfiguration
 import noval.project.property as projectproperty
 import noval.ui_utils as ui_utils
 import noval.ttkwidgets.linklabel as linklabel
@@ -29,9 +29,9 @@ class PythonInterpreterPanel(ui_utils.BaseConfigurationPanel):
         hyperLinkCtrl = linklabel.LinkLabel(self,text=_("Click to configure interpreters not listed"),normal_color='royal blue',hover_color='blue',clicked_color='purple')
         hyperLinkCtrl.bind("<Button-1>", self.GotoInterpreterConfiguration)
         hyperLinkCtrl.pack(fill="x",pady=consts.DEFAUT_HALF_CONTRL_PAD_Y)
-        #project_interpreter_name = RunConfiguration.ProjectConfiguration.LoadProjectInterpreter(current_project.GetKey())
-        #if project_interpreter_name:
-         #   self.interpreterCombo.SetValue(project_interpreter_name)
+        project_interpreter_name = runconfiguration.ProjectConfiguration.LoadProjectInterpreter(current_project.GetKey())
+        if project_interpreter_name and project_interpreter_name in choices:
+            self.interpreterCombo.current(choices.index(project_interpreter_name))
         
     def OnOK(self,optionsDialog):
         utils.profile_set(self._current_project.GetKey() + "/Interpreter",self.GetInterpreter().Name)

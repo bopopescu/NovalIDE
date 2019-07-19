@@ -16,11 +16,26 @@ import noval.ttkwidgets.checklistbox as checklistbox
 import noval.ttkwidgets.treeviewframe as treeviewframe
 import noval.syntax.lang as lang
 import noval.project.baseconfig as baseconfig
+import queue
+import noval.util.utils as utils
+import noval.ui_base as ui_base
+import noval.constants as constants
+
+#添加项目文件覆盖已有文件时默认处理方式
+DEFAULT_PROMPT_MESSAGE_ID = constants.ID_YES
 
 class ImportfilesPage(projectwizard.BitmapTitledWizardPage):
-    def __init__(self,master,add_bottom_page=True,filters=[],rejects=[]):
+    def __init__(self,master,filters=[],rejects=[],is_wizard=True,folderPath=None):
+        '''
+            is_wizard表示该页面是否是新建项目向导时的页面
+        '''
         projectwizard.BitmapTitledWizardPage.__init__(self,master,_("Import codes from File System"),_("Local File System"),"python_logo.png")
         self.can_finish = True
+        self.project_browser = GetApp().MainFrame.GetProjectView()
+        
+        self.folderPath = folderPath
+        self.dest_path = ''
+        self._is_wizard = is_wizard
         sizer_frame = ttk.Frame(self)
         sizer_frame.grid(column=0, row=1, sticky="nsew")
         separator = ttk.Separator(sizer_frame, orient = tk.HORIZONTAL)
@@ -45,11 +60,13 @@ class ImportfilesPage(projectwizard.BitmapTitledWizardPage):
         sizer_frame.grid(column=0, row=3, sticky="nsew")
         self.rowconfigure(3, weight=1)
 
-        self.check_box_view = treeviewframe.TreeViewFrame(sizer_frame,treeview_class=checkboxtreeview.CheckboxTreeview)
+        self.check_box_view = treeviewframe.TreeViewFrame(sizer_frame,treeview_class=checkboxtreeview.CheckboxTreeview,borderwidth=1,relief="solid")
         self.check_box_view.grid(column=0, row=0, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         self.check_box_view.tree.bind("<<TreeviewSelect>>", self._on_select, True)
+        self.check_box_view.tree.bind("<Button-1>", self._box_click, True)
+        self.current_item = None
         
-        self.check_listbox =treeviewframe.TreeViewFrame(sizer_frame,treeview_class=checklistbox.CheckListbox)
+        self.check_listbox =treeviewframe.TreeViewFrame(sizer_frame,treeview_class=checklistbox.CheckListbox,borderwidth=1,relief="solid")
         self.check_listbox.grid(column=1, row=0, sticky="nsew",padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         sizer_frame.columnconfigure(0, weight=1)
         sizer_frame.columnconfigure(1, weight=1)
@@ -60,7 +77,7 @@ class ImportfilesPage(projectwizard.BitmapTitledWizardPage):
         sizer_frame.grid(column=0, row=4, sticky="nsew")
         
         self.file_filter_btn = ttk.Button(
-            sizer_frame, text=_("File Filters"), command=self.BrowsePath
+            sizer_frame, text=_("File Filters"), command=self.SetFilters
         )
         self.file_filter_btn.grid(column=0, row=0, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         #文件类型过滤列表
@@ -75,16 +92,60 @@ class ImportfilesPage(projectwizard.BitmapTitledWizardPage):
             sizer_frame, text=_("UnSelect All"), command=self.UnselectAll
         )
         self.unselect_all_btn.grid(column=2, row=0, sticky="nsew",padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
+        self._progress_row = 5
+        #导入对话框页面添加一行控件
+        if not self._is_wizard:
+            frame = ttk.Frame(self)
+            ttk.Label(frame, text=_('Dest Directory:')).pack(side=tk.LEFT,fill="x")
+            self.dest_pathVar = tk.StringVar(value=self.dest_path)
+            destDirCtrl = ttk.Entry(frame, textvariable=self.dest_pathVar,state=tk.DISABLED)
+            destDirCtrl.pack(side=tk.LEFT,fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
+            frame.grid(column=0, row=5, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+            sbox_frame = ttk.LabelFrame(self, text=_("Option"))
+            self.overwrite_chkboxVar = tk.IntVar(value=False)
+            ttk.Checkbutton(sbox_frame, variable=self.overwrite_chkboxVar,text = _("Overwrite existing files without warning")).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
+            self.root_folder_chkboxVar = tk.IntVar(value=False)
+            ttk.Checkbutton(sbox_frame, variable=self.root_folder_chkboxVar,text = _("Create top-level folder")).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+            sbox_frame.grid(column=0, row=6, sticky="nsew")
+            self._progress_row = 7
         self.root_item = None
-        self.project_browser = GetApp().MainFrame.GetProjectView()
+        self.is_cancel = False
+
+    def GetDestpath(self):
+        #目的路径必须用相对路径
+        current_project = self.project_browser.GetView().GetDocument()
+        if current_project is None:
+            raise RuntimeError(_('There is no available project yet.'))
+
+        project_path = os.path.dirname(current_project.GetFilename())
+        self.dest_path = os.path.basename(project_path)
+        if self.folderPath:
+            self.dest_path = os.path.join(self.dest_path,self.folderPath)
+
+        #格式化系统标准路径
+        if sysutilslib.is_windows():
+            self.dest_path = self.dest_path.replace("/",os.sep)
+            
+    def InitDestpath(self):
+        assert(not self._is_wizard)
+        self.GetDestpath()
+        self.dest_pathVar.set(self.dest_path)
         
     def ShowProgress(self,row):
         sizer_frame = ttk.Frame(self)
         sizer_frame.grid(column=0, row=row, sticky="nsew")
+        self.label_var = tk.StringVar()
+        self.label_ctrl = ttk.Label(sizer_frame,textvariable=self.label_var,width=30)
+        self.label_ctrl.pack(fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         self.cur_prog_val = tk.IntVar(value=0)
-        self.pb = ttk.Progressbar(sizer_frame,variable=self.cur_prog_val)
+        self.pb = ttk.Progressbar(sizer_frame,variable=self.cur_prog_val,mode="determinate")
         self.pb.pack(fill="x",padx=(0, 0), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         sizer_frame.columnconfigure(0, weight=1)
+
+    def SetFilters(self):
+        filter_dlg = FileFilterDialog(self,self.filters,self.rejects)
+        if filter_dlg.ShowModal() == constants.ID_OK:
+            self.filters = filter_dlg.filters
 
     def BrowsePath(self):
         path = filedialog.askdirectory()
@@ -104,16 +165,34 @@ class ImportfilesPage(projectwizard.BitmapTitledWizardPage):
 
     def ListDirItemFiles(self,path):
         self.check_box_view._clear_tree()
+        self.check_listbox.clear()
         self.root_item = self.check_box_view.tree.insert("", "end", text=os.path.basename(path),values=(path,))
+        self.current_item = self.root_item
         self.ListDirTreeItem(self.root_item,path)
-        self.ListDirFiles(self.root_item,True,True)
+        self.ListDirFiles(self.root_item)
         self.check_box_view.tree.CheckItem(self.root_item)
         self.check_box_view.tree.focus(self.root_item)
         self.check_box_view.tree.selection_set(self.root_item)
         
     def _on_select(self,event):
         item = self.check_box_view.tree.GetSelectionItem()
-        self.ListDirFiles(item,True,True)
+        self.SelectItem(item)
+
+    def _box_click(self,event):
+        x, y, widget = event.x, event.y, event.widget
+        elem = widget.identify("element", x, y)
+        if not "image" in elem:
+            return
+        item = self.check_box_view.tree.identify_row(y)
+        self.SelectItem(item)
+        
+    def SelectItem(self,item):
+        #同一个节点无需遍历目录
+        if self.current_item == item:
+            self.CheckListbox(self.check_box_view.tree.IsItemChecked(item))
+            return
+        self.current_item = item
+        self.ListDirFiles(item,self.check_box_view.tree.IsItemChecked(item))
         
     def ListDirTreeItem(self,parent_item,path):
         if not os.path.exists(path):
@@ -122,24 +201,17 @@ class ImportfilesPage(projectwizard.BitmapTitledWizardPage):
         for f in files:
             file_path = os.path.join(path, f)
             if os.path.isdir(file_path) and not fileutils.is_file_path_hidden(file_path):
-                item = self.check_box_view.tree.insert(parent_item, "end", text=f,values=(file_path,))
+                try:
+                    item = self.check_box_view.tree.insert(parent_item, "end", text=f,values=(file_path,))
+                except:
+                    continue
                 self.ListDirTreeItem(item,file_path)
         self.check_box_view.tree.item(parent_item, open=True)
         
-    def ListDirFiles(self,item,checked=True,force=False):
+    def ListDirFiles(self,item,checked=True):
         path = self.check_box_view.tree.item(item)["values"][0]
         if not os.path.exists(path):
             self.check_box_view.clear()
-            return
-        if self.check_box_view.tree.GetSelectionItem() == item and not force:
-            for i in range(self.listbox.GetCount()):
-                if checked:
-                    if not self.check_listbox.IsChecked(i):
-                        self.check_listbox.Check(i,True)
-                else:
-                    if self.check_listbox.IsChecked(i):
-                        self.check_listbox.Check(i,False)
-                    
             return
         self.check_listbox.clear()
         files = os.listdir(path)
@@ -150,29 +222,56 @@ class ImportfilesPage(projectwizard.BitmapTitledWizardPage):
                 self.check_listbox.tree.Check(i,checked)
 
     def Finish(self):
+        global DEFAULT_PROMPT_MESSAGE_ID
+        #强制显示项目视图
+        GetApp().MainFrame.GetProjectView(show=True)
         file_list = self.GetImportFileList()
         if 0 == len(file_list):
             return False
+
+        self.GetDestpath()
         if not hasattr(self,"cur_prog_val"):
-            self.ShowProgress(5)
+            self.ShowProgress(self._progress_row)
 
         self.DisableUI()
-        self.master.master.ok_button['state'] = tk.DISABLED
-        self.master.master.prev_button['state'] = tk.DISABLED
+        if self._is_wizard:
+            self.master.master.ok_button['state'] = tk.DISABLED
+            self.master.master.prev_button['state'] = tk.DISABLED
+        else:
+            self.master.master.ok_button['state'] = tk.DISABLED
         self.pb["maximum"] = len(file_list)
-
-        project_path = os.path.dirname(self.project_browser.GetView().GetDocument().GetFilename())
-        #目的路径必须用相对路径
-        dest_path = os.path.basename(project_path)
         prev_page = self.GetPrev()
-        if GetApp().GetDefaultLangId() == lang.ID_LANG_PYTHON:
-            if prev_page._project_configuration.PythonpathMode == baseconfig.NewProjectConfiguration.PROJECT_ADD_SRC_PATH:
+        if GetApp().GetDefaultLangId() == lang.ID_LANG_PYTHON and self._is_wizard:
+            if prev_page._new_project_configuration.PythonpathMode == baseconfig.NewProjectConfiguration.PROJECT_ADD_SRC_PATH:
                 #目的路径为Src路径
-                dest_path = os.path.join(dest_path,baseconfig.NewProjectConfiguration.DEFAULT_PROJECT_SRC_PATH)
+                self.dest_path = os.path.join(self.dest_path,baseconfig.NewProjectConfiguration.DEFAULT_PROJECT_SRC_PATH)
         root_path = self.check_box_view.tree.item(self.root_item)["values"][0]
-       # ProjectUI.PromptMessageDialog.DEFAULT_PROMPT_MESSAGE_ID = wx.ID_YESTOALL
-        self.project_browser.StartCopyFilesToProject(self,file_list,root_path,dest_path)
+        self.check_box_view.tree.item(self.root_item,open=True)       
+        if not self._is_wizard:
+            if self.overwrite_chkboxVar.get():
+                DEFAULT_PROMPT_MESSAGE_ID = constants.ID_YESTOALL
+            if self.root_folder_chkboxVar.get():
+                self.dest_path = os.path.join(self.dest_path,self.check_box_view.tree.item(self.root_item,"text"))
+            
+        self.notify_queue = queue.Queue()
+        GetApp().MainFrame.after(1000,self.ShowImportProgress)
+        self.project_browser.StartCopyFilesToProject(self,file_list,root_path,self.dest_path,self.notify_queue)
         return False
+
+    def ShowImportProgress(self):
+        GetApp().after(400,self.ShowImportProgress)
+        while not self.notify_queue.empty():
+            try:
+                msg = self.notify_queue.get()
+                if msg[0] == None:
+                    utils.get_logger().info("finish import code files")
+                    self.master.master.destroy()
+                else:
+                    cur_val,filename = msg
+                    self.cur_prog_val.set(cur_val)
+                    self.label_var.set(_("importing file:") + filename)
+            except queue.Empty:
+                pass
         
     def GetImportFileList(self):
         file_list = []
@@ -236,11 +335,17 @@ class ImportfilesPage(projectwizard.BitmapTitledWizardPage):
         if self.root_item is None:
             return
         self.check_box_view.tree.CheckItem(self.root_item)
+        self.CheckListbox(True)
+        
+    def CheckListbox(self,check=True):
+        for i in range(self.check_listbox.tree.GetCount()):
+            self.check_listbox.tree.Check(i,check)
         
     def UnselectAll(self):
         if self.root_item is None:
             return
         self.check_box_view.tree.CheckItem(self.root_item,False)
+        self.CheckListbox(False)
         
     def Validate(self):
         if self.root_item is None or not self.check_box_view.tree.IsItemChecked(self.root_item):
@@ -248,12 +353,73 @@ class ImportfilesPage(projectwizard.BitmapTitledWizardPage):
             return False
         return True
         
-    def SetProgress(self,value,is_cancel):
-       ### print value,self.pb["maximum"],is_cancel,"==================="
-        self.cur_prog_val.set(value)
-        if is_cancel:
-            print ('user cancel import ,will destroy wizard')
-            self.parent.destroy()
-        
     def Cancel(self):
-        self.project_browser.StopImport()
+        self.is_cancel = True
+        if hasattr(self,"cur_prog_val"):
+            self.label_var.set("cancel importing file.....")
+
+class ImportfilesDialog(ui_base.CommonModaldialog):
+    
+    def __init__(self, master,folderPath):
+        ui_base.CommonModaldialog.__init__(self, master, takefocus=1)
+        self.title(_("Import Files"))
+        self.main_frame.content_page = self.main_frame
+        project_template = GetApp().GetDocumentManager().FindTemplateForTestPath(consts.PROJECT_EXTENSION)
+        #rejects为项目禁止导入的文件类型列表
+        self.import_page = ImportfilesPage(self.main_frame,is_wizard=False,folderPath=folderPath,rejects=project_template.GetDocumentType().BIN_FILE_EXTS)
+        self.import_page.pack(fill="both",expand=1,padx=consts.DEFAUT_CONTRL_PAD_X)
+        #初始化目的地址
+        self.import_page.InitDestpath()
+        self.AddokcancelButton()
+        self.ok_button.configure(text=_("&Import"),default="active")
+        self.FormatTkButtonText(self.ok_button)
+
+    def _ok(self,event=None):
+        if not self.import_page.Validate() or not self.import_page.Finish():
+            return
+        ui_base.CommonModaldialog._ok(self,event)
+
+    def _cancel(self):
+        self.import_page.Cancel()
+        ui_base.CommonModaldialog._cancel(self)
+
+
+class FileFilterDialog(ui_base.CommonModaldialog):
+    def __init__(self,parent,filters,rejects=[]):
+        self.filters = filters
+        ui_base.CommonModaldialog.__init__(self,parent)
+        self.title(_("File Filters"))
+        ttk.Label(self.main_frame, text=_("Please select file types to to allow added to project:")).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
+        
+        self.check_listbox_view =treeviewframe.TreeViewFrame(self.main_frame,treeview_class=checklistbox.CheckListbox,borderwidth=1,relief="solid")
+        self.check_listbox_view.pack(fill="both",expand=1,padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
+        self.listbox = self.check_listbox_view.tree
+        ttk.Label(self.main_frame, text=_("Other File Extensions:(seperated by ';')")).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
+        self.other_extensions_var = tk.StringVar()
+        other_extensions_ctrl = ttk.Entry(self.main_frame,textvariable=self.other_extensions_var)
+        other_extensions_ctrl.pack(fill="x",expand=1,padx=consts.DEFAUT_CONTRL_PAD_X)
+        self.InitFilters()
+        
+        self.AddokcancelButton()
+
+    def _ok(self,event=None):
+        filters = []
+        for i in range(self.listbox.GetCount()):
+            if self.listbox.IsChecked(i):
+               filters.append(self.listbox.GetString(i))
+        extension_value = self.other_extensions_var.get().strip()
+        if extension_value != "":
+            extensions = extension_value.split(";")
+            filters.extend(extensions)
+        self.filters = [fitler.replace("*","").replace(".","") for fitler in filters]
+        ui_base.CommonModaldialog._ok(self,event)
+        
+    def InitFilters(self):
+        descr = ''
+        for temp in GetApp().GetDocumentManager().GetTemplates():
+            if temp.IsVisible() and temp.GetDocumentName() != 'Project Document':
+                filters = temp.GetFileFilter().split(";")
+                for filter in filters:
+                    i = self.listbox.Append(filter)
+                    if str(filter.replace("*","").replace(".","")) in self.filters:
+                        self.listbox.Check(i)

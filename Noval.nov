@@ -609,5 +609,8 @@
   <noval:file filePath="./noval/outputthread.py" logicalFolder="noval" isStartup="false"/>
   <noval:file filePath="./tests/test_app_config.py" logicalFolder="tests" isStartup="false"/>
   <noval:file filePath="./noval/find/findtext.py" logicalFolder="noval/find" isStartup="false"/>
+  <noval:file filePath="G:/work/project/Noval/pyinstaller.novalide.python.debug.spec" isStartup="false"/>
+  <noval:file filePath="./pyinstaller.novalide.python.spec" isStartup="false"/>
+  <noval:file filePath="./noval/ui_constants.py" logicalFolder="noval" isStartup="false"/>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>

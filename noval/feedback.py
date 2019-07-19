@@ -60,6 +60,7 @@ class FeedbackDialog(ui_base.CommonModaldialog):
         text_frame.pack(fill="both",expand=1,padx=consts.DEFAUT_CONTRL_PAD_X,)
         self.AddokcancelButton()
         self.ok_button.configure(text=_("&Send"),default="active")
+        self.FormatTkButtonText(self.ok_button)
         
     def screenshot(self):
         """Take a screenshot, crop and save"""
@@ -78,7 +79,7 @@ class FeedbackDialog(ui_base.CommonModaldialog):
         screenshot.save(screenshot_image_path)
         return screenshot_image_path
         
-    def _ok(self):
+    def _ok(self,event=None):
         content = self.content_ctrl.GetValue().strip()
         if content == "":
             messagebox.showerror(GetApp().GetAppName(),_("Content could not be empty!"))
@@ -93,7 +94,7 @@ class FeedbackDialog(ui_base.CommonModaldialog):
         subject = u"%s【%s】" % (self._title_var.get().strip(),self._feedback_category_var.get())
         if mailutils.send_mail(subject,content,attach_files=[screenshot_image_path]):
             messagebox.showinfo(GetApp().GetAppName(),_("Send mail success,Thanks for your feedback!"))
-            ui_base.CommonModaldialog._ok(self)
+            ui_base.CommonModaldialog._ok(self,event)
 
 class FeedBack(plugin.Plugin):
     plugin.Implements(iface.MainWindowI)

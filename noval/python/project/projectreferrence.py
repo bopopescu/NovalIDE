@@ -34,8 +34,7 @@ class ProjectReferrencePanel(ui_utils.BaseConfigurationPanel):
         return os.path.basename(self._current_project.GetFilename())
         
     def OnOK(self,optionsDialog):
-        ref_projects = self.GetReferenceProjects()
-        ref_project_names = [ref_project.GetModel().Name for ref_project in ref_projects]
+        ref_project_names = self.GetReferenceProjects()
         utils.profile_set(self._current_project.GetKey() + "/ReferenceProjects",ref_project_names)
         return True
         
@@ -50,17 +49,14 @@ class ProjectReferrencePanel(ui_utils.BaseConfigurationPanel):
                 self.listbox.Check(i,False)
         
     def LoadProjects(self):
-        str_project_names = utils.profile_get(self._current_project.GetKey() + "/ReferenceProjects","")
-        try:
-            ref_project_names = eval(str_project_names)
-        except:
-            ref_project_names = []
+        ref_project_names = utils.profile_get(self._current_project.GetKey() + "/ReferenceProjects",[])
         current_project_document = GetApp().MainFrame.GetProjectView(generate_event=False).GetCurrentProject()
-        for document in GetApp().MainFrame.GetProjectView(generate_event=False).GetView().Documents:
+        for document in GetApp().MainFrame.GetProjectView(generate_event=False).GetOpenProjects():
             if document == current_project_document:
                 continue
             project_name = document.GetModel().Name
             i = self.listbox.Append(project_name)
+            self.listbox.SetData(i,document.GetFilename())
             if project_name in ref_project_names:
                 self.listbox.Check(i,True)
             
@@ -68,7 +64,7 @@ class ProjectReferrencePanel(ui_utils.BaseConfigurationPanel):
         projects = []
         for i in range(self.listbox.GetCount()):
             if self.listbox.IsChecked(i):
-                projects.append(self.listbox.GetClientData(i))
+                projects.append(self.listbox.GetData(i))
         return projects
 
 class ProjectReferrencePageLoader(plugin.Plugin):

@@ -358,13 +358,19 @@ def copyDir(src, dest):
     """Copies dir 'src' into dir 'dest'. Creates 'dest' if it does not exist."""
     shutil.copytree(src, dest)
 
-def remove(file):
+def safe_remove(file):
     if not os.path.exists(file):
         return
     if os.path.isfile(file):
-        os.remove(file)
+        try:
+            os.remove(file)
+        except:
+            pass
     elif os.path.isdir(file):
-        shutil.rmtree(file)
+        try:
+            shutil.rmtree(file)
+        except:
+            pass
 
 #@accepts str, dict, str, str, boolean
 def replaceToken(infilepath, tokens={}, outfilepath=None, delim="@@",\
@@ -514,11 +520,13 @@ def GetDirFiles(path,file_list,filters=[],rejects=[]):
     for f in os.listdir(path):
         file_path = os.path.join(path, f)
         if os.path.isfile(file_path):
+            ext = strutils.get_file_extension(file_path)
+            if ext in rejects :
+                continue
             if filters == []:
                 file_list.append(file_path)
             else:
-                ext = strutils.get_file_extension(file_path)
-                if ext not in rejects and ext in filters:
+                if ext in filters:
                     file_list.append(file_path)
                         
 

@@ -104,7 +104,7 @@ class ColorFontOptionsPanel(ui_utils.BaseConfigurationPanel):
         row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_HALF_CONTRL_PAD_Y))
 
         #默认文本控件高度超过面板高度了,这里指定一个小的高度,下面设置控件铺满面板
-        text_frame = textframe.TextFrame(self,borderwidth=1,relief="solid",text_class=CodeSampleCtrl)
+        text_frame = textframe.TextFrame(self,borderwidth=1,relief="solid",text_class=CodeSampleCtrl,undo=False)
         self.code_sample_ctrl = text_frame.text
         text_frame.pack(fill="both",expand=1,padx=consts.DEFAUT_CONTRL_PAD_X)
         self.OnSelectLexer()

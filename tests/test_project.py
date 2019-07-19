@@ -20,7 +20,7 @@ class TestPythonProject(unittest.TestCase):
         pj.SetDocCallback('dddddd')
         pj.Name = 'hahahah'
         pj.SetInterpreter('yyyyyyy')
-        pj.AddFile(r"D:\env\Noval\noval\parser\intellisence.py")
+        pj.AddFile(r"D:\env\Noval\noval\parser\dd.dddpy")
         pj.AddFile(r"D:\env\Noval\noval\parser\intellisence.py")
         pj.AddFile(r"D:\env\Noval\noval\parser\factory.py")
         pj.AddFile(r"D:\env\Noval\noval\tool\ProjectEditor.py")

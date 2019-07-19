@@ -417,8 +417,10 @@ class BaseEnvironmentUI(ttk.Frame):
         
     def GetEnviron(self):
         dct = {}
-        for child in self.listview.tree.get_children():
-            dct[self.listview.tree.item(child)['values'][0]] = self.listview.tree.item(child)['values'][1]
+        for item in self.listview.tree.get_children():
+            value = self.listview.tree.item(item)['values']
+            #存储值会把数字字符串自动转换成整形,这里需要转换成字符串类型
+            dct[value[0]] = str(value[1])
         return dct
         
 

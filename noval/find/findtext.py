@@ -9,6 +9,7 @@
 # Copyright:   (c) wukan 2019
 # Licence:     GPL-3.0
 #-------------------------------------------------------------------------------
+from noval import _
 import re
 import tkinter as tk
 
@@ -191,14 +192,14 @@ class FindTextEngine:
                 elif self.last_processed_index[0] == line and self.last_processed_index[1] >= col:
                     wrap_search = True
                 if wrap_search:
-                    info_label_var.set("search from the document begging!")
+                    info_label_var.set(_("search from the document begging!"))
             else:
                 if self.last_processed_index[0] < line:
                     wrap_search = True
                 elif self.last_processed_index[0] == line and self.last_processed_index[1] <= col:
                     wrap_search = True
                 if wrap_search:
-                    info_label_var.set("search from the document endding!")
+                    info_label_var.set(_("search from the document endding!"))
                     
         self.last_processed_index = line,col
         if wrap_search:

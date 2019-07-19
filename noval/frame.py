@@ -20,6 +20,7 @@ import noval.plugin as plugin
 import noval.plugin_joint as plugin_joint
 import noval.util.utils as utils
 import noval.statusbar as statusbar
+import noval.misc as misc
         
 class DocTabbedParentFrame(ttk.Frame):
 
@@ -377,7 +378,9 @@ class DocTabbedParentFrame(ttk.Frame):
         Toggles whether the ToolBar is visible.
         """
         self.GetToolBar().Show(not self._toolbar.IsShown())
-
+        #更新工具栏菜单按钮状态
+        self.after(200,self.UpdateToolbar)
+                
     def OnViewStatusBar(self):
         """
         Toggles whether the StatusBar is visible.

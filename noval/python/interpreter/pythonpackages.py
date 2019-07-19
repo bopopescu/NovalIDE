@@ -305,23 +305,26 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
         self.EnableCheckSourcButton(True)
         
     def SelectBestPipSource(self):
-        index = -1
-        values = list(self._pipSourceCombo['values'])
-        for i,value in enumerate(values):
-            if value.find(_("The Best Source")) != -1:
-                values.remove(value)
-                values.insert(i,self.SOURCE_NAME_LIST[i])
-                break
-        for i,pip_source in enumerate(self.SOURCE_LIST):
-            if pip_source == self.BEST_PIP_SOURCE:
-                best_source_name = self.SOURCE_NAME_LIST[i] + "(" + _("The Best Source") + ")"
-                values.remove(self.SOURCE_NAME_LIST[i])
-                values.insert(i,best_source_name)
-                index = i
-                break
-        self._pipSourceCombo['values'] = tuple(values)
-        if index != -1:
-            self._pipSourceCombo.current(index)
+        try:
+            index = -1
+            values = list(self._pipSourceCombo['values'])
+            for i,value in enumerate(values):
+                if value.find(_("The Best Source")) != -1:
+                    values.remove(value)
+                    values.insert(i,self.SOURCE_NAME_LIST[i])
+                    break
+            for i,pip_source in enumerate(self.SOURCE_LIST):
+                if pip_source == self.BEST_PIP_SOURCE:
+                    best_source_name = self.SOURCE_NAME_LIST[i] + "(" + _("The Best Source") + ")"
+                    values.remove(self.SOURCE_NAME_LIST[i])
+                    values.insert(i,best_source_name)
+                    index = i
+                    break
+            self._pipSourceCombo['values'] = tuple(values)
+            if index != -1:
+                self._pipSourceCombo.current(index)
+        except tk.TclError:
+            pass
 
     def CheckTheBestSource(self):
         self.CheckBestPipSource()
@@ -444,7 +447,7 @@ class PackagePanel(ttk.Frame):
     def GetPackageItem(self,package_name):
         childs = self.listview.tree.get_children()
         for child in childs:
-            column_value = self.listview.tree.item(child)['values'][0]
+            column_value = str(self.listview.tree.item(child)['values'][0])
             if column_value.lower() == package_name.lower():
                 return child,column_value
         return None,""

@@ -137,7 +137,7 @@ class AddInterpreterDialog(ui_base.CommonModaldialog):
         self._id_modify_dlg = id_modify_dlg
         self.title(title)
         row = ttk.Frame(self.main_frame)
-        ttk.Label(row,text=_("Interpreter Path:")).pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        ttk.Label(row,text=_("Path:")).pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
         self.path_var = tk.StringVar()
         self.path_ctrl = ttk.Entry(row,text="",textvariable=self.path_var)
         if sysutils.is_windows():
@@ -149,7 +149,7 @@ class AddInterpreterDialog(ui_base.CommonModaldialog):
         self.browser_btn.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
         row.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         row = ttk.Frame(self.main_frame)
-        ttk.Label(row, text=_("Interpreter Name:")).pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        ttk.Label(row, text=_("Name:")).pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
         self.name_var = tk.StringVar()
         self.name_ctrl = ttk.Entry(row,textvariable=self.name_var)
         self.name_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
@@ -541,10 +541,10 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
             
     def OnOK(self,optionsDialog):
         
-        is_pythonpath_changed = self.path_panel.GetPythonPathList()
+        is_pythonpath_changed = self.path_panel.CheckPythonPathList()
         self._configuration_changed = self._configuration_changed or is_pythonpath_changed
         try:
-            is_environment_changed = self.environment_panel.GetEnviron()
+            is_environment_changed = self.environment_panel.CheckEnviron()
             self._configuration_changed = self._configuration_changed or is_environment_changed
         except PromptErrorException as e:
             wx.MessageBox(e.msg,_("Environment Variable Error"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())

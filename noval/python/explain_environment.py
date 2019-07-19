@@ -145,7 +145,9 @@ if __name__ == "__main__":
     _clear_screen()
     print("*" * 80)
     print("Some Python commands in the PATH of this session:")
-    
+    #删除路径列表中的当前目录,否则会出现Module use of python36.dll conflicts with this version of Python
+    if os.environ['MAIN_MODULE_APTH'] in sys.path:
+        sys.path.remove(os.environ['MAIN_MODULE_APTH'])
     sys_real = normpath_with_actual_case(equivalent_realpath(sys.executable))
     sys_executable = normpath_with_actual_case(sys.executable)
     

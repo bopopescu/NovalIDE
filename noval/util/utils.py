@@ -103,14 +103,11 @@ class Config(object):
                 return default
             
         def ReadInt(self,key,default=-1):
-            if not self.Exist(key):
-                assert(isinstance(default,int))
-                return default
-            return int(self.Read(key))
+            return int(self.Read(key,str(int(default))))
             
         def Write(self,key,value):
-            dest_key_reg,last_key = self.GetDestRegKey(key)
             try:
+                dest_key_reg,last_key = self.GetDestRegKey(key)
                 val_type = REG_SZ
                 if is_py3_plus() and type(value) == bytes:
                     val_type = REG_BINARY
@@ -119,8 +116,11 @@ class Config(object):
                 get_logger().exception("write reg key %s fail" % key)
                 
         def WriteInt(self,key,value):
-            dest_key_reg,last_key = self.GetDestRegKey(key)
-            dest_key_reg.WriteValueEx(last_key,value,val_type=REG_DWORD)
+            try:
+                dest_key_reg,last_key = self.GetDestRegKey(key)
+                dest_key_reg.WriteValueEx(last_key,value,val_type=REG_DWORD)
+            except:
+                get_logger().exception("write reg key %s fail" % key)
                 
         def Exist(self,key):
             try:
@@ -192,9 +192,11 @@ class Config(object):
                 return default
             
         def ReadInt(self,key,default=-1):
+            section,last_key = self.GetDestSection(key,ensure_open=False)
             try:
-                return int(self.Read(key))
+                return self.cfg.getint(section,last_key)
             except:
+                assert(isinstance(default,int) or isinstance(default,bool))
                 return default
             
         def Write(self,key,value):
@@ -215,7 +217,8 @@ class Config(object):
             #python3 configparser不支持写入整形变量,必须先转换为字符串
             if is_py3_plus():
                 value = str(value)
-            self.cfg.set(section,last_key,value)
+            #必须将整形转换为字符串写入
+            self.cfg.set(section,last_key,str(value))
             
         def Save(self):
             with open(self.config_path,"w") as f:

@@ -334,7 +334,7 @@ class ProjectAddFilesCommand(Command):
         
 class ProjectAddProgressFilesCommand(Command):
 
-    def __init__(self, progress_ui,projectDoc, filePaths, folderPath=None, types=None, names=None,range_value=0):
+    def __init__(self, progress_ui,projectDoc, filePaths, que,folderPath=None, types=None, names=None,range_value=0):
         Command.__init__(self, canUndo = False)
         self._projectDoc = projectDoc
         self._allFilePaths = filePaths
@@ -342,13 +342,14 @@ class ProjectAddProgressFilesCommand(Command):
         self._types = types
         self._names = names
         self._progress_ui = progress_ui
+        self._que = que
         
         if not self._types:
             self._types = []
         self._range_value = range_value
 
     def Do(self):
-        return self._projectDoc.AddProgressFiles(self._progress_ui,self._allFilePaths, self._folderPath, \
+        return self._projectDoc.AddProgressFiles(self._progress_ui,self._que,self._allFilePaths, self._folderPath, \
                     self._types, self._names,self._range_value)
         
     def Undo(self):
