@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from noval import GetApp,_
 import threading
 import noval.util.appdirs as appdirs
@@ -72,6 +73,7 @@ class FileDownloader(object):
 
 def CheckAppUpdate(ignore_error = False):
     api_addr = '%s/member/get_update' % (UserDataDb.HOST_SERVER_ADDR)
+    #获取语言的类似en_US,zh_CN这样的名称
     lang = GetApp().locale.GetLanguageCanonicalName()
     app_version = apputils.get_app_version()
     data = urlutils.RequestData(api_addr,arg = {'app_version':app_version,'lang':lang})

@@ -130,8 +130,7 @@ class App(tk.Tk):
     def OpenFileWithArgs(self,args):
         for arg in args:
             if (not apputils.is_windows() or arg[0] != "/") and arg[0] != '-' and os.path.exists(arg):
-                arg = arg.decode(apputils.get_default_encoding())
-                self.GetDocumentManager().CreateDocument(os.path.normpath(arg), wx.lib.docview.DOC_SILENT)
+                self.GetDocumentManager().CreateDocument(os.path.normpath(arg), DOC_SILENT)
 
     def GetDocumentManager(self):
         """
@@ -230,11 +229,12 @@ class App(tk.Tk):
             if self._singleInstanceChecker.IsAnotherRunning():
                 utils.get_logger().info('another instance is running,exit now....')
                 # have running single instance open file arguments
+                
                 data = pickle.dumps(sys.argv[1:])
                 while 1:
                     self._sharedMemory.seek(0)
                     marker = self._sharedMemory.read_byte()
-                    if marker == '\0' or marker == '*' or marker == ord('*'):        # available buffer
+                    if marker == '\0' or marker == ord('\0') or marker == '*' or marker == ord('*'):        # available buffer
                         self._sharedMemory.seek(0)
                         if type(marker) == int:
                             self._sharedMemory.write_byte(ord('-'))     # set writing marker

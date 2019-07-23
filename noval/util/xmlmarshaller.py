@@ -451,6 +451,7 @@ class XMLObjectFactory(xml.sax.ContentHandler):
         
     ## ContentHandler methods
     def startElement(self, name, attrs):
+        print (name,attrs,attrs.copy(),type(name))
 ##        print '[startElement] <%s>' % (name)
         if name == 'xs:annotation' or name == 'xsd:annotation': # should use namespace mapping here
             self.skipper = True
@@ -471,6 +472,7 @@ class XMLObjectFactory(xml.sax.ContentHandler):
         else:
             nsname = None
         element = Element(name, attrs.copy(), xsname=xsname)
+        print (element.content,type(element.content),"========")
         # if the element has namespace attributes, process them and add them to our stack
         nse = NsElement()
         objtype = None
@@ -513,7 +515,7 @@ class XMLObjectFactory(xml.sax.ContentHandler):
             self.collectContent = element
 
     def characters(self, content):
-##        print '[characters] "%s" (%s)' % (content, type(content))
+        print ('[characters] "%s" (%s)' % (content, type(content)))
         if (content != None):
             if self.collectContent != None:
                 self.collectContent.content += content
@@ -540,6 +542,7 @@ class XMLObjectFactory(xml.sax.ContentHandler):
                 self.collectContent = None
         oldChildren = self.elementstack[-1].children
         element, nse = self.popElementStack()
+        print (element.content,"22222222")
         if ((len(self.elementstack) > 1) and (self.elementstack[-1].getobjtype() == "None")):
             parentElement = self.elementstack[-2]
         elif (len(self.elementstack) > 0):

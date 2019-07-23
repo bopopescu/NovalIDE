@@ -17,14 +17,9 @@ import sys
 import noval.util.fileutils as fileutils
 
 def _load_tkdnd(master):
-    dnd_root_path = os.path.normpath(os.path.join(utils.get_app_path(),"tk/%s" % sys.platform))
-    if utils.is_py2():
-        tkdndlib = os.path.join(dnd_root_path,"tkdnd2.9")
-    elif utils.is_py3_plus():
-        tkdndlib = os.path.join(dnd_root_path,"tkdnd2.9")
+    tkdndlib = os.path.normpath(os.path.join(utils.get_app_path(),"tkdnd"))
     if tkdndlib:
         master.tk.eval('global auto_path; lappend auto_path {%s}' % tkdndlib)
-        
     try:
         master.tk.eval('package require tkdnd')
         master._tkdnd_loaded = True
@@ -136,5 +131,4 @@ class FileDropTarget(object):
         return file_list
         
     def OnDropFiles(self, x, y, filenames):
-        pass
-        print (x,y,filenames)
+        return False

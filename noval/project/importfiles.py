@@ -223,8 +223,6 @@ class ImportfilesPage(projectwizard.BitmapTitledWizardPage):
 
     def Finish(self):
         global DEFAULT_PROMPT_MESSAGE_ID
-        #强制显示项目视图
-        GetApp().MainFrame.GetProjectView(show=True)
         file_list = self.GetImportFileList()
         if 0 == len(file_list):
             return False
@@ -375,7 +373,11 @@ class ImportfilesDialog(ui_base.CommonModaldialog):
         self.FormatTkButtonText(self.ok_button)
 
     def _ok(self,event=None):
-        if not self.import_page.Validate() or not self.import_page.Finish():
+        if not self.import_page.Validate():
+            return
+        #导入文件时强制显示项目视图
+        GetApp().MainFrame.GetProjectView(show=True)
+        if not self.import_page.Finish():
             return
         ui_base.CommonModaldialog._ok(self,event)
 

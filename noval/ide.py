@@ -208,6 +208,9 @@ class IDEApplication(core.App):
         self._default_command_ids.append(command_id)
         
     def InitTkDnd(self):
+        '''
+            初始化文件拖拽
+        '''
         core.App.InitTkDnd(self)
         if self.dnd is not None:
             self.event_generate("InitTkDnd")

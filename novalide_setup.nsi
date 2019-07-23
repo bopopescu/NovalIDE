@@ -2,7 +2,7 @@
 
 ; 安装程序初始定义常量
 !define PRODUCT_NAME "NovalIDE"
-!define PRODUCT_VERSION "1.1.4"
+!define PRODUCT_VERSION "1.1.5beta"
 !define PRODUCT_PUBLISHER "wukan"
 !define PRODUCT_WEB_SITE "http://www.genetalks.com"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\NovalIDE.exe"
@@ -135,6 +135,9 @@ Section "MainSection" SEC01
   SetOutPath "$INSTDIR\PIL"
   File /r "dist\${PRODUCT_NAME}\PIL\*.*"
 
+  SetOutPath "$INSTDIR\tkdnd"
+  File /r "dist\${PRODUCT_NAME}\tkdnd\*.*"
+
   SetOutPath "$INSTDIR\win32com\shell"
   File /r "dist\${PRODUCT_NAME}\win32com\shell\*.*"
 
@@ -247,6 +250,7 @@ Section Uninstall
   RMDir /r "$INSTDIR\lib2to3"
   RMDir /r "$INSTDIR\certifi"
   RMDir /r "$INSTDIR\PIL"
+  RMDir /r "$INSTDIR\tkdnd"
   RMDir /r "$INSTDIR\win32com"
 
   RMDir "$INSTDIR"

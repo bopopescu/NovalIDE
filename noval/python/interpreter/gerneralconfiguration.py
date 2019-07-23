@@ -27,13 +27,7 @@ class InterpreterGeneralConfigurationPanel(ui_utils.BaseConfigurationPanel):
     """description of class"""
     
     def __init__(self,parent):
-        ui_utils.BaseConfigurationPanel.__init__(self, parent)
-        
-        self._warnInterpreterPathVar = tk.IntVar(value=utils.profile_get_int("WarnInterpreterPath", True))
-        warnInterpreterPathCheckBox = ttk.Checkbutton(self, text= _("Warn when interpreter path contain no asc character on debug and run"),\
-                variable=self._warnInterpreterPathVar)
-        warnInterpreterPathCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-           
+        ui_utils.BaseConfigurationPanel.__init__(self, parent)           
         #是否显示内建解释器窗口,读取注册表里面存储解释器窗口是否显示的值
         self._showBuiltinInterpreterWindowVar = tk.IntVar(value=utils.profile_get_int(consts.PYTHON_INTERPRETER_VIEW_NAME + "ViewVisible", False))
         showBuiltinInterpreterWindowCheckBox = ttk.Checkbutton(self,text=_("Show the builtin interpreter window"),variable=self._showBuiltinInterpreterWindowVar)
@@ -172,7 +166,6 @@ class InterpreterGeneralConfigurationPanel(ui_utils.BaseConfigurationPanel):
             self.neverUpdateRadioBtn.SetValue(True)
         
     def OnOK(self,optionsDialog):
-        utils.profile_set("WarnInterpreterPath",int(self._warnInterpreterPathVar.get()))
         GetApp().MainFrame.ShowView(consts.PYTHON_INTERPRETER_VIEW_NAME,hidden=not self._showBuiltinInterpreterWindowVar.get(),toogle_visibility_flag=True)
         utils.profile_set(consts.PYTHON_INTERPRETER_VIEW_NAME + "ViewVisible",int(self._showBuiltinInterpreterWindowVar.get()))
         utils.profile_set("DatabaseUpdateInterval",self.GetUpdateIntervalOption())

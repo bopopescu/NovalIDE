@@ -152,7 +152,8 @@ class UserDataDb(BaseDb):
                     'sn':sn,
                     'os_bit':result[3],
                     'os_name':result[5],
-                    'user_name':result[2]
+                    'user_name':result[2],
+                    'version':apputils.get_app_version()
                 }
                 data = urlutils.RequestData(api_addr,arg = args,method='post')
             if data is not None and data['code'] == 0:

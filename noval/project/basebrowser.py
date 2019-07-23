@@ -28,7 +28,6 @@ class EntryPopup(tk.Entry):
         self.item = item
 
         self.insert(0, text) 
-      #  self['state'] = 'readonly'
         self['readonlybackground'] = 'white'
         self['selectbackground'] = '#1BA1E2'
         self['exportselection'] = False
@@ -254,7 +253,6 @@ class ProjectTreeCtrl(ttk.Treeview):
                 return item
                 
         return None
-
 
     def FindClosestFolder(self, x, y):
         item, flags = self.HitTest((x,y))
@@ -573,11 +571,7 @@ class BaseProjectbrowser(ttk.Frame):
         if not project_path:
             return
         project_path = fileutils.opj(project_path)
-        docs = GetApp().GetDocumentManager().CreateDocument(project_path, core.DOC_SILENT|core.DOC_OPEN_ONCE)
-        if not docs:  # project already open
-            self.SetProject(project_path)
-        elif docs:
-            baseviewer.AddProjectMapping(docs[0])
+        self.GetView().OpenProject(project_path)
           
     @misc.update_toolbar  
     def CloseProject(self):

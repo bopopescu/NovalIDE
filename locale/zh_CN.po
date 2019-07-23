@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2019-07-18 09:32+ÖÐ¹ú±ê×¼Ê±¼ä\n"
-"PO-Revision-Date: 2019-07-19 09:31+0800\n"
+"PO-Revision-Date: 2019-07-22 08:36+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -973,7 +973,7 @@ msgid ""
 msgstr ""
 "文件'%s'在'%s'中不存在.\n"
 "\n"
-"你想浏览打开该文件吗?"
+"你想查找该文件吗?"
 
 #: G:\work\project\Noval\noval\project\basebrowser.py:388
 msgid "Choose a file"
@@ -1148,7 +1148,7 @@ msgstr ""
 
 #: G:\work\project\Noval\noval\project\baseviewer.py:873
 msgid "No directory.  Please provide a directory."
-msgstr ""
+msgstr "项目存储路径不能为空."
 
 #: G:\work\project\Noval\noval\project\baseviewer.py:876
 msgid "Wrong delimiter '/' found in directory path.  Use '%s' as delimiter."

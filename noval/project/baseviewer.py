@@ -942,7 +942,8 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledWizardPage):
         doc.GetModel().SetInterpreter(self._new_project_configuration.Interpreter)
         if not doc.OnSaveDocument(fullProjectPath):
             return False
-        view = GetApp().MainFrame.GetProjectView().GetView()
+        #强制显示项目视图
+        view = GetApp().MainFrame.GetProjectView(show=True).GetView()
         view.AddProjectToView(doc)
         return True
         
@@ -1175,34 +1176,6 @@ class ProjectView(misc.AlarmEventView):
         else:
             filename = ''
        # self._projectChoice.SetToolTipString(filename)
-
-    def OnBeginDrag(self, event):
-        if self.GetMode() == ProjectView.RESOURCE_VIEW:
-            return
-            
-        item = event.GetItem()
-        if item.IsOk():
-            self._draggingItems = []
-            for item in self._treeCtrl.GetSelections():
-                if self._IsItemFile(item):
-                    self._draggingItems.append(item)
-            if len(self._draggingItems):
-                event.Allow()
-
-
-    def OnEndDrag(self, event):
-        item = event.GetItem()
-        if item.IsOk():
-            files = []
-            for ditem in self._draggingItems:
-                file = self._GetItemFile(ditem)
-                if file not in files:
-                    files.append(file)
-                    
-            folderPath = self._GetItemFolderPath(item)
-
-            self.GetDocument().GetCommandProcessor().Submit(ProjectMoveFilesCommand(self.GetDocument(), files, folderPath))
-
 
     def WriteProjectConfig(self):
         config = GetApp().GetConfig()
@@ -1533,6 +1506,16 @@ class ProjectView(misc.AlarmEventView):
         self._bold_item = item
         self.GetDocument().GetModel().StartupFile = pjfile
         self.GetDocument().Modify(True)
+
+    def OpenProject(self,project_path):
+        docs = GetApp().GetDocumentManager().CreateDocument(project_path, core.DOC_SILENT|core.DOC_OPEN_ONCE)
+        if not docs:  # project already open
+            self.SetProject(project_path)
+        elif docs:
+            if docs[0] not in self.GetDocumentManager().GetDocuments():
+                utils.get_logger().error('open project %s error',project_path)
+                return
+            AddProjectMapping(docs[0])
                 
     def SaveProject(self):
         doc = self.GetDocument()
@@ -2042,7 +2025,7 @@ class ProjectView(misc.AlarmEventView):
 
     def DoAddFilesToProject(self, filePaths, folderPath):
         # method used by Drag-n-Drop to add files to current Project
-        self.GetDocument().GetCommandProcessor().Submit(ProjectAddFilesCommand(self.GetDocument(), filePaths, folderPath))
+        self.GetDocument().GetCommandProcessor().Submit(projectcommand.ProjectAddFilesCommand(self.GetDocument(), filePaths, folderPath))
 
     def OnRename(self):
         items = self._treeCtrl.selection()
@@ -2698,14 +2681,27 @@ class ProjectFileDropTarget(newTkDnD.FileDropTarget):
         self._view = view
 
     def OnDropFiles(self, x, y, filePaths):
+        #添加到项目中的文件
+        addto_project_filePaths = []
+        for filePath in filePaths:
+            #项目文件直接打开
+            if filePath.endswith(consts.PROJECT_EXTENSION):
+                self._view.OpenProject(filePath)
+            else:
+                addto_project_filePaths.append(filePath)
         """ Do actual work of dropping files into project """
         if self._view.GetDocument():
+            if not addto_project_filePaths:
+                return False
             folderPath = None
-            folderItem = self._view._treeCtrl.FindClosestFolder(x,y)
+            folderItem = self._view._treeCtrl.GetSingleSelectItem()
             if folderItem:
                 folderPath = self._view._GetItemFolderPath(folderItem)
-            self._view.DoAddFilesToProject(filePaths, folderPath)
+            self._view.DoAddFilesToProject(addto_project_filePaths, folderPath)
             return True
+        else:
+            if addto_project_filePaths:
+                messagebox.showwinfo(GetApp().GetAppName(),_('There is no available project yet.'),self._view.GetFrame())
         return False
 
 

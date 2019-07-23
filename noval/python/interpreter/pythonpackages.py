@@ -189,7 +189,7 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
                 messagebox.showinfo(GetApp().GetAppName(),_("Uninstall Success"))
                 ret_suc = True
         if ret_suc:
-            ui_base.CommonModaldialog._ok(self)
+            self.destroy()
         else:
             if self._manage_action == self.MANAGE_INSTALL_PACKAGE:
                 messagebox.showerror(GetApp().GetAppName(),_("Install Fail"))

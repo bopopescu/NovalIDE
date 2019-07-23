@@ -87,9 +87,12 @@ class FeedbackDialog(ui_base.CommonModaldialog):
         screenshot_image_path = self.screenshot()
         result = UserDataDb().GetUserInfo()
         os_system = result[5]
-        if utils.is_py3():
+        if utils.is_py3_plus():
             os_system = compat.ensure_string(result[5])
-        content =  CONTENT_TEMPLATE % (os_system,result[3],result[1],utils.get_app_version(),pyutils.get_python_version_string().strip(),\
+        os_bit =  result[3]
+        if utils.is_py3():
+            os_bit = compat.ensure_string(result[3])
+        content =  CONTENT_TEMPLATE % (os_system,os_bit,result[1],utils.get_app_version(),pyutils.get_python_version_string().strip(),\
                                 pyutils.get_tk_version_str(),0,self.content_ctrl.GetValue().strip())
         subject = u"%s【%s】" % (self._title_var.get().strip(),self._feedback_category_var.get())
         if mailutils.send_mail(subject,content,attach_files=[screenshot_image_path]):
