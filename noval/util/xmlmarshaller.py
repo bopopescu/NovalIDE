@@ -515,7 +515,8 @@ class XMLObjectFactory(xml.sax.ContentHandler):
             self.collectContent = element
 
     def characters(self, content):
-        print ('[characters] "%s" (%s)' % (content, type(content)))
+        print ('[characters] "%s" (%s)' % (content, type(content))
+)
         if (content != None):
             if self.collectContent != None:
                 self.collectContent.content += content
