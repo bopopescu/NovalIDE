@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from noval import GetApp,_
 from tkinter import messagebox
 import sys
@@ -40,11 +41,31 @@ def get_override_runparameter(run_parameter):
     if consts.PYTHON_PATH_NAME in environ and environment is not None:
         environ = update_pythonpath_env(environ,environment.get(consts.PYTHON_PATH_NAME,''))
     environ = ui_utils.update_environment_with_overrides(environ)
+
+    interpreter_specific_keys = [
+        "TCL_LIBRARY",
+        "TK_LIBRARY",
+        "LD_LIBRARY_PATH",
+        "DYLD_LIBRARY_PATH",
+        "SSL_CERT_DIR",
+        "SSL_CERT_FILE",
+        "PYTHONHOME",
+        "PYTHONNOUSERSITE",
+        "PYTHONUSERBASE",
+    ]
     if len(environ) > 0:
         if environment is None:
             environment = environ
         else:
             environment.update(environ)
+
+    #软件安装路径下面的tk版本和解释器自带的tk版本会混淆,故必须去除系统环境变量中类似TCL_LIBRARY,TK_LIBRARY的变量
+    #如果不去除会出现如下类似错误:
+    #version conflict for package "Tcl": have 8.5.15, need exactly 8.6.6
+    #TODO:必须去除的变量为TCL_LIBRARY,TK_LIBRARY,其它变量是否必须去除待定
+    for key in interpreter_specific_keys:
+        if key in os.environ:
+            del environment[key]
         #in windows and if is python3 interpreter ,shoud add 'SYSTEMROOT' Environment Variable
         #othersise it will raise progblem below when add a Environment Variable
         #Fatal Python error: failed to get random numbers to initialize Python

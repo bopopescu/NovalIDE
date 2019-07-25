@@ -11,10 +11,10 @@ import noval.util.singleton as singleton
 import noval.consts as consts
 import noval.ui_base as ui_base
 import noval.ttkwidgets.treeviewframe as treeviewframe
-
+import six
 RESOURCE_ITEM_NAME = "Resource"
 
-@singleton.Singleton
+
 class PropertiesService:
     """
     Service that installs under the File menu to show the properties of the file associated
@@ -25,55 +25,61 @@ class PropertiesService:
         """
         Initializes the PropertyService.
         """
-        self._file_optionsPanels = []
-        self._folder_optionsPanels = []
-        self._project_optionsPanels = []
-        self.AddFileOptionsPanel(RESOURCE_ITEM_NAME,proejctresource.ResourcePanel)
-        self.AddFolderOptionsPanel(RESOURCE_ITEM_NAME,proejctresource.ResourcePanel)
-        self.AddProjectOptionsPanel(RESOURCE_ITEM_NAME,proejctresource.ResourcePanel)
+        self._optionsPanelClasses = []
+        self.current_project_document = GetApp().MainFrame.GetProjectView(generate_event=False).GetCurrentProject()
+        pages = self.current_project_document.GetModel().GetPropertiPages()
+        for page in pages:
+            self.AddOptionsPanelClass(page.item,page.name,page.objclass)
+        
+    def AddOptionsPanelClass(self,item,name,optionsPanelClass):
+        #这里针对python2和python3中各自的string类型进行了区分:在python2中,使用的为basestring;在python3中,使用的为str
+        if isinstance(optionsPanelClass,six.string_types[0]):
+            try:
+                page_class_parts = optionsPanelClass.split(".")
+                page_module_name = ".".join(page_class_parts[0:-1])
+                page_class_name = page_class_parts[-1]
+                #如果模块名称包含多级层,必须设置fromlist参数为True
+                #必须先导入模块,再获取模块里面的方法,不要直接导入类
+                page_module = __import__(page_module_name,fromlist=True)
+                optionsPanelClass = getattr(page_module,page_class_name)
+            except Exception as e:
+                utils.get_logger().error('load property page %s error',optionsPanelClass)
+                return
+        self._optionsPanelClasses.append((item,name,optionsPanelClass),)
+        
+    def GetOptionPanelClasses(self):
+        return self._optionsPanels
 
-    def AddFileOptionsPanel(self,name,optionsPanelClass):
-        self._file_optionsPanels.append((name,optionsPanelClass),)
-        
-    def AddFolderOptionsPanel(self,name,optionsPanelClass):
-        self._folder_optionsPanels.append((name,optionsPanelClass),)
-        
-    def AddProjectOptionsPanel(self,name,optionsPanelClass):
-        self._project_optionsPanels.append((name,optionsPanelClass),)
-        
-    def GetFileOptionPages(self):
-        return self._file_optionsPanels
-        
-    def GetFolderOptionPages(self):
-        return self._folder_optionsPanels
-        
-    def GetProjectOptionPages(self):
-        return self._project_optionsPanels
+    def GetItemOptionsPanelClasses(self,item):
+        option_panel_classes = []
+        for optionsPanelClass in self._optionsPanelClasses:
+            if optionsPanelClass[0] == item:
+                option_panel_classes.append(optionsPanelClass)
+        return option_panel_classes
 
     def ShowPropertyDialog(self,item,option_name=None):
         """
         Shows the PropertiesDialog for the specified file.
         """
         is_project = False
-        current_project_document = GetApp().MainFrame.GetProjectView(generate_event=False).GetCurrentProject()
-        project_view = current_project_document.GetFirstView()
+        project_view = self.current_project_document.GetFirstView()
         option_pages = {}
         if item == project_view._treeCtrl.GetRootItem():
             title = _("Project Property")
-            file_path = current_project_document.GetFilename()
+            file_path = self.current_project_document.GetFilename()
          #   self.AddOptionsPanel(INTERPRETER_ITEM_NAME,PythonInterpreterPanel)
           #  self.AddOptionsPanel(PYTHONPATH_ITEM_NAME,PythonPathPanel)
            # self.AddOptionsPanel(PROJECT_REFERENCE_ITEM_NAME,ProjectReferrencePanel)
-            option_pages = self.GetProjectOptionPages()
+            option_pages = self.GetItemOptionsPanelClasses('root')
             is_project = True
         elif project_view._IsItemFile(item):
             title = _("File Property")
             file_path = project_view._GetItemFilePath(item)
-            option_pages = self.GetFileOptionPages()
+            option_pages = self.GetItemOptionsPanelClasses('file')
         else:
             title = _("Folder Property")
             file_path = project_view._GetItemFolderPath(item)
-            option_pages = self.GetFolderOptionPages()
+            option_pages = self.GetItemOptionsPanelClasses('folder')
             
         propertyDialog = PropertyDialog(GetApp().GetTopWindow(),title,item,option_pages,option_name)
         propertyDialog.ShowModal()
@@ -128,7 +134,7 @@ class PropertyDialog(ui_base.CommonModaldialog):
             selection = option_name
         else:
             selection = utils.profile_get(current_project_document.GetKey("Selection"),"")
-        for name,optionsPanelClass in option_pages:
+        for item,name,optionsPanelClass in option_pages:
             item = self.tree.insert("","end",text=_(name),values=(name,))
             option_panel = optionsPanelClass(page_frame,item = self._selected_project_item,current_project=self._current_project_document)
             self._optionsPanels[name] = option_panel

@@ -77,9 +77,9 @@ class PythonProjectDocument(ProjectDocument):
         if len(python_path) > 0:
             paths.add(str(python_path))
         env[consts.PYTHON_PATH_NAME] = os.pathsep.join(list(paths))
-        return PythonRunconfig(GetApp().GetCurrentInterpreter(),start_up_file.filePath,initialArgs,env,startIn,project=self)
+        #获取项目的运行配置类
+        return self.GetRunconfigClass()(GetApp().GetCurrentInterpreter(),start_up_file.filePath,initialArgs,env,startIn,project=self)
         
-
 class PythonProjectTemplate(ProjectTemplate):
     
     def CreateDocument(self, path, flags):
@@ -87,6 +87,9 @@ class PythonProjectTemplate(ProjectTemplate):
 
 class NewPythonProjectWizard(NewProjectWizard):
     def LoadDefaultProjectTemplates(self):
+        '''
+            这里不能加载默认模板了,已经通过默认插件加载了对应的模板
+        '''
         pass
         
 class PythonProjectNameLocationPage(ProjectNameLocationPage):

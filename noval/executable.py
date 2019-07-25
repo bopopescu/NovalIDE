@@ -16,40 +16,19 @@ import noval.util.strutils as strutils
 import os
 
 
-EXECUTABLE_INTERPRETER_TYPE = "Interpreter"
+
 UNKNOWN_VERSION_NAME = "Unknown Version"
 
 class Executable(object):
     
-    def __init__(self,name,path,type_name=EXECUTABLE_INTERPRETER_TYPE):
+    def __init__(self,name,path):
         self._path = path
         self._install_path = os.path.dirname(self._path)
         self._name = name
-        self._type_name = type_name
         
     @property
     def Path(self):
         return self._path
-        
-    @property
-    def UnicodePath(self):
-        return self.GetUnicodePath()
-        
-    def GetUnicodePath(self):
-        default_encoding = apputils.get_default_encoding()
-        assert(not strutils.is_none_or_empty(default_encoding))
-        if apputils.is_py2():
-            unicode_path = self.Path.decode(default_encoding)
-            return unicode_path
-        return self.Path
-        
-    def CheckPathEncoding(self):
-        '''
-            检查路径是否包含中文字符等
-        '''
-        unicode_path = self.GetUnicodePath()
-        if unicode_path != self.Path:
-            messagebox.showwarning(_("Warning"),_("%s path '%s' contains no asc character") % (self.TypeName,unicode_path))
         
     @property
     def InstallPath(self):
@@ -67,7 +46,4 @@ class Executable(object):
     def Name(self,name):
         self._name = name
         
-    @property
-    def TypeName(self):
-        return self._type_name
 

@@ -271,13 +271,7 @@ class EditorNotebook(ui_base.ClosableNotebook):
         self.CloseAllWithoutDoc(closeall=True)
         
     def OpenPathInExplorer(self):
-        try:
-            fileutils.open_file_directory(self._current_document.GetFilename())
-        except RuntimeError as e:
-            if utils.is_py2():
-                messagebox.showerror(_("Error"),str(e).decode(utils.get_default_encoding()))
-            else:
-                messagebox.showerror(_("Error"),str(e))
+        fileutils.safe_open_file_directory(self._current_document.GetFilename())
             
     def OpenPathInTerminator(self):
         GetApp().OpenTerminator(self._current_document.GetFilename())
@@ -371,7 +365,11 @@ class EditorNotebook(ui_base.ClosableNotebook):
                                             default_tester=True,default_command=True)
         GetApp().AddCommand(constants.ID_DEDENT_LINES,_("&Format"),_("&Dedent Lines"),lambda:formatter.formatter.DedentRegion(self.get_current_editor()),image=GetApp().GetImage("dedent.png"),\
                                             default_tester=True,default_command=True)
-                
+
+        advanceMenu = tkmenu.PopupMenu()
+        edit_menu.AppendMenu(constants.ID_ADVANCE, _("&Advance"),advanceMenu)
+        GetApp().AddMenuCommand(constants.ID_UPPERCASE,advanceMenu,_("Conert To UPPERCASE"),None,default_tester=True,default_command=True,image="uppercase.png")
+        GetApp().AddMenuCommand(constants.ID_LOWERCASE,advanceMenu, _("Conert To lowercase"),None,default_tester=True,default_command=True,image="lowercase.png")     
      
         view_menu = GetApp().Menubar.GetMenu(_("&View"))
         zoom_menu = tkmenu.PopupMenu()

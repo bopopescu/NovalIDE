@@ -304,9 +304,7 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
             return True
             
     def GotoPath(self,interpreter):
-        err_code,msg = fileutils.open_file_directory(interpreter.Path)
-        if err_code != ERROR_OK:
-            wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
+        fileutils.safe_open_file_directory(interpreter.Path)
             
     def CreateVirtualEnv(self,name,location,include_site_packages,interpreter,progress_dlg):
         t = threading.Thread(target=self.CreatePythonVirtualEnv,args=(name,location,include_site_packages,interpreter,progress_dlg))

@@ -23,6 +23,7 @@ import types
 import noval.util.utillang as utillang
 import noval.util.datetimeparser as datetimeparser
 from types import *
+import noval.util.utils as utils
 
 FUNCTION_HAS_ATTR = '_hasAttr'
 FUNCTION_GET_ATTR = '_getAttr'
@@ -157,7 +158,10 @@ def newInstance(className, objargs=None):
     if className == "str" or className == "unicode": # don't strip: blanks are significant
         if len(objargs) > 0:
             try:
-                return utillang.unescape(objargs[0]).encode()
+                if utils.is_py2():
+                    return utillang.unescape(objargs[0]).encode()
+                else:
+                    return utillang.unescape(objargs[0])
             except:
                 return "?"
         else:

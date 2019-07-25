@@ -30,7 +30,6 @@ from noval.syntax import synglob,syntax
 from noval.util import record
 import noval.menu as tkmenu
 import noval.editor.code as codeeditor
-from noval.python.interpreter import interpretermanager
 import noval.update as updateutils
 import noval.syntax.lang as lang
 import noval.preference as preference
@@ -386,6 +385,7 @@ class IDEApplication(core.App):
     
         '''
             tester表示菜单状态更新的回调函数,返回bool值
+            default_command表示菜单是否在文本编辑区为空白时(即没有一个文本编辑窗口),菜单状态为灰选
         '''
         
         if image is not None and type(image) == str:
@@ -463,11 +463,19 @@ class IDEApplication(core.App):
     def DebugRun(self):
         raise Exception("This method must be implemented in derived class")
         
-    def OpenTerminator(self):
-        if utils.is_windows():
-            subprocess.Popen('start cmd.exe',shell=True)
+    def OpenTerminator(self,filename=None):
+        if filename:
+            if os.path.isdir(filename):
+                cwd = filename
+            else:
+                cwd = os.path.dirname(filename)
         else:
-            subprocess.Popen('gnome-terminal',shell=True)
+            cwd = os.getcwd()
+
+        if utils.is_windows():
+            subprocess.Popen('start cmd.exe',shell=True,cwd=cwd)
+        else:
+            subprocess.Popen('gnome-terminal',shell=True,cwd=cwd)
         
     def GetImage(self,file_name):
         return imageutils.load_image("",file_name)
@@ -679,7 +687,9 @@ class IDEApplication(core.App):
         utils.profile_set(consts.FRAME_MAXIMIZED_KEY, misc.get_zoomed(self))
         if not misc.get_zoomed(self):
             # can't restore zoom on mac without setting actual dimensions
+            #程序退出时记住界面的坐标位置以及宽高
             utils.profile_set(consts.FRAME_TOP_LOC_KEY, self.winfo_y())
+            #TODO:这里可能会出现错误:OverflowError: can't convert negative value to unsigned int
             utils.profile_set(consts.FRAME_LEFT_LOC_KEY, self.winfo_x())
             utils.profile_set(consts.FRAME_WIDTH_KEY, self.winfo_width())
             utils.profile_set(consts.FRAME_HEIGHT_KEY, self.winfo_height())
@@ -877,9 +887,6 @@ class IDEApplication(core.App):
                             
     def GotoWebsite(self,):
         os.startfile(UserDataDb.HOST_SERVER_ADDR)
-        
-    def GetInterpreterManager(self):
-        return interpretermanager.InterpreterManager()
         
     def OnOptions(self):
         preference_dlg = preference.PreferenceDialog(self,selection=utils.profile_get("PrefereceOptionName",''))

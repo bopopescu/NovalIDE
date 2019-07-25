@@ -118,6 +118,9 @@ class ProjectDocument(core.Document):
     def GetProjectModel():
         return projectlib.Project()
 
+    def GetRunconfigClass(self):
+        raise NotImplementedError('you must implement this in derived class')
+
     def GetRunConfiguration(self,start_up_file):
         file_key = self.GetFileKey(start_up_file)
         run_configuration_name = utils.ProfileGet(file_key + "/RunConfigurationName","")
@@ -738,6 +741,25 @@ class ProjectDocument(core.Document):
         call this; override OnCreateCommandProcessor instead.
         """
         self._commandProcessor = processor
+
+    def GetRunconfigClass(self):
+        '''
+            获取项目的运行配置类,是项目文件的_runinfo下面的RunConfig值
+        '''
+        run_config_name = self.GetModel()._runinfo.RunConfig
+        if not run_config_name:
+            raise RuntimeError(_("We don't know how to run the program"))
+        try:
+            parts = run_config_name.split(".")
+            run_config_module_name = ".".join(parts[0:-1])
+            run_class_name = parts[-1]
+            #如果模块名称包含多级层,必须设置fromlist参数为True
+            #必须先导入模块,再获取模块里面的方法,不要直接导入类
+            run_config_module = __import__(run_config_module_name,fromlist=True)
+            runConfigClass = getattr(run_config_module,run_class_name)
+            return runConfigClass
+        except Exception as e:
+            raise RuntimeError(_("Load run config object error"))
         
 
 class ProjectNameLocationPage(projectwizard.BitmapTitledWizardPage):
@@ -933,8 +955,7 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledWizardPage):
    
         self._new_project_configuration = self.GetNewPojectConfiguration()
         utils.profile_set(PROJECT_DIRECTORY_KEY, self._new_project_configuration.Location)
-        docManager = GetApp().GetDocumentManager()
-        template = docManager.FindTemplateForTestPath(consts.PROJECT_EXTENSION)
+        template = self.GetProjectTemplate()
         doc = template.CreateDocument(fullProjectPath, flags = core.DOC_NEW)
         #set project name
         doc.GetModel().Name = self._new_project_configuration.Name
@@ -946,7 +967,10 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledWizardPage):
         view = GetApp().MainFrame.GetProjectView(show=True).GetView()
         view.AddProjectToView(doc)
         return True
-        
+
+    def GetProjectTemplate(self):
+        return GetApp().GetDocumentManager().FindTemplateForTestPath(consts.PROJECT_EXTENSION)
+
     def GetNewPojectConfiguration(self):
         return baseconfig.NewProjectConfiguration(self.name_var.get(),self.dir_entry_var.get(),self.project_dir_chkvar.get())
         
@@ -990,7 +1014,8 @@ class NewProjectWizard(projectwizard.BaseWizard):
 
     def LoadProjectTemplates(self):
         self.LoadDefaultProjectTemplates()
-        for template_catlog in self.project_templates:
+        for project_template in self.project_templates:
+            template_catlog = list(project_template.keys())[0]
             catlogs = template_catlog.split('/')
             path = ''
             for i,catlog_name in enumerate(catlogs):
@@ -998,12 +1023,13 @@ class NewProjectWizard(projectwizard.BaseWizard):
                     path += catlog_name
                 else:
                     path += "/" + catlog_name
+                
                 #found表示是否已经存在改路径的节点,node_id,表示从该节点下面插入
                 found,node_id = self.GetProjectTemplateNode(path)
                 if not found:
                     node_id = self.tree.insert(node_id, "end", text=_(catlog_name),image=self.project_template_icon,values=path)
                     self.tree.selection_set(node_id)
-            for template_name,pages in self.project_templates[template_catlog]:
+            for template_name,pages in project_template[template_catlog]:
                 template_path = template_catlog + "/" + template_name
                 template_node_id = self.tree.insert(node_id, "end", text=_(template_name),values=(template_path,))
                 page_instances = self.InitPageInstances(pages)
@@ -1052,7 +1078,7 @@ class NewProjectWizard(projectwizard.BaseWizard):
     def GetProjectTemplatePathNode(self, folderPath,item=None):
         for child in self.tree.get_children(item):
             #获取存储的路径值
-            path = self.tree.set(child, "path")
+            path = self.tree.item(child, "values")[0]
             if folderPath == path:
                 return child
             else:
@@ -1728,7 +1754,9 @@ class ProjectView(misc.AlarmEventView):
                         item = rootItem
                         
                     fileItem = self._treeCtrl.AppendItem(item, os.path.basename(file.filePath), file)
-                    if file.IsStartup:
+                    startupFile = document.GetModel().RunInfo.StartupFile
+                    #设置项目启动
+                    if startupFile and document.GetModel().fullPath(startupFile) == file.filePath:
                         self._bold_item = fileItem
                         self._treeCtrl.SetItemBold(fileItem)
                         document.GetModel().StartupFile = file

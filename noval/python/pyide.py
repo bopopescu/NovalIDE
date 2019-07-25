@@ -106,6 +106,10 @@ class PyIDEApplication(ide.IDEApplication):
         self.AddCommand(constants.ID_RUN_LAST,_("&Run"),_("&Run Using Last Settings"),self.RunLast,default_tester=True,default_command=True)
         self.AddCommand(constants.ID_DEBUG_LAST,_("&Run"),_("&Debug Using Last Settings"),self.DebugLast,default_tester=True,default_command=True)     
         return True
+
+
+    def GetInterpreterManager(self):
+        return interpretermanager.InterpreterManager()
         
     @ui_utils.no_implemented_yet
     def SetExceptionBreakPoint(self):
@@ -255,9 +259,16 @@ class PyIDEApplication(ide.IDEApplication):
 
     def OpenTerminator(self,filename=None):
         if filename:
-            cwd = os.path.dirname(filename)
+            if os.path.isdir(filename):
+                cwd = filename
+            else:
+                cwd = os.path.dirname(filename)
         else:
             cwd = os.getcwd()
+        #打开终端时不嵌入解释器环境
+        if not utils.profile_get_int("EmbedInterpreterInterminator", True):
+            ide.IDEApplication.OpenTerminator(self,filename)
+            return 
             
         interpreter = self.GetCurrentInterpreter()
         if interpreter is None:

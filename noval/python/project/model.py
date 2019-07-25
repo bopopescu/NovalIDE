@@ -9,6 +9,21 @@ class PythonProject(basemodel.BaseProject):
         super(PythonProject,self).__init__()
         self.interpreter = None
         self.python_path_list = []
+        self._properties.AddPage("Resource","root","noval.project.resource.ResourcePanel")
+        self._properties.AddPage("Debug/Run","root","noval.python.project.debugrun.DebugRunPanel")
+        self._properties.AddPage("PythonPath","root","noval.python.project.pythonpath.PythonPathPanel")
+        self._properties.AddPage("Interpreter","root","noval.python.project.pythoninterpreter.PythonInterpreterPanel")
+        self._properties.AddPage("Project References","root","noval.python.project.projectreferrence.ProjectReferrencePanel")
+
+        self._properties.AddPage("Resource","file","noval.project.resource.ResourcePanel")
+        self._properties.AddPage("Debug/Run","file","noval.python.project.debugrun.DebugRunPanel")
+
+        self._properties.AddPage("Resource","folder","noval.project.resource.ResourcePanel")
+        self._properties.AddPage("Debug/Run","folder","noval.python.project.debugrun.DebugRunPanel")
+
+        self._runinfo.RunConfig = "noval.python.project.runconfig.PythonRunconfig"
+        self._runinfo.DocumentTemplate = "noval.python.project.viewer.PythonProjectTemplate"
+        
         
     def SetInterpreter(self,name):
         self.interpreter = ProjectInterpreter(self,name)
@@ -46,4 +61,5 @@ class ProjectInterpreter(object):
         
 
 basemodel.KNOWNTYPES = {"%s:project" % PROJECT_NAMESPACE_URL : PythonProject, "%s:file" % PROJECT_NAMESPACE_URL : basemodel.ProjectFile,\
-                        "%s:interpreter" % PROJECT_NAMESPACE_URL:ProjectInterpreter}
+                        "%s:interpreter" % PROJECT_NAMESPACE_URL:ProjectInterpreter,"%s:_properties" % PROJECT_NAMESPACE_URL:basemodel.ProjectProperty\
+                ,"%s:_runinfo" % PROJECT_NAMESPACE_URL:basemodel.RunInfo,"%s:page" % PROJECT_NAMESPACE_URL:basemodel.PropertyPage}

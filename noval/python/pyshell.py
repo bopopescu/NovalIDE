@@ -879,7 +879,7 @@ class PythonInteractiveInterpreter(InteractiveInterpreter):
         stdin, stdout, stderr = sys.stdin, sys.stdout, sys.stderr
         sys.stdin, sys.stdout, sys.stderr = \
                    self.stdin, self.stdout, self.stderr
-        more = InteractiveInterpreter.runsource(self, source)
+        more = InteractiveInterpreter.runsource(self, source,"<editor selection>","exec")
         # this was a cute idea, but didn't work...
         #more = self.runcode(compile(source,'',
         #               ('exec' if self.useExecMode else 'single')))
@@ -1148,6 +1148,11 @@ class PyShell(ttk.Frame):
         if prompt: self.prompt()
         if verbose: self.write(command)
         self.push(command)
+
+    def runsource(self,source):
+        self.write('\n')
+        self.interp.runsource(source.strip())
+        self.prompt()
             
     def prompt(self):
         """Display proper prompt for the context: ps1, ps2 or ps3.

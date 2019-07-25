@@ -90,17 +90,6 @@ class PythonpathMixin:
             self.menu.Append(ID_GOTO_PATH, _("&Goto Path"),handler=lambda:self.TreeCtrlEvent(ID_GOTO_PATH))
             self.menu.Append(ID_REMOVE_PATH, _("&Remove Path"),handler=lambda:self.TreeCtrlEvent(ID_REMOVE_PATH))
         self.menu.tk_popup(event.x_root, event.y_root)
-        
-    def TreeCtrlEvent(self,id): 
-        if id == ID_GOTO_PATH:
-            item = self.treeview.tree.selection()[0]
-            fileutils.open_file_directory(self.treeview.tree.item(item,"text"))
-            return True
-        elif id == ID_REMOVE_PATH:
-            self.RemovePath()
-            return True
-        else:
-            return True
             
     def GetRootItem(self):
         if self.has_root:

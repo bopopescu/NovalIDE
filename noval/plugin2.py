@@ -8,7 +8,7 @@
 # Copyright:   (c) wukan 2019
 # Licence:     GPL-3.0
 #-------------------------------------------------------------------------------
-from noval import GetApp
+from noval import GetApp,_
 import os
 import sys
 import shutil
@@ -153,7 +153,7 @@ class Plugin(object):
         @return: version str
 
         """
-        return utils.GetAppVersion()
+        return utils.get_app_version()
 
     def InstallHook(self):
         """Override in subclasses to allow the plugin to be loaded

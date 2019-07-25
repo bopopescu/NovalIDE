@@ -312,6 +312,9 @@ class PythonCtrl(codeeditor.CodeCtrl):
         menuBar = GetApp().Menubar
         menu_item = menuBar.FindItemById(constants.ID_GOTO_DEFINITION)
         self._popup_menu.AppendMenuItem(menu_item,handler=self.GotoDefinition)
+
+        item = tkmenu.MenuItem(constants.ID_EXECUTE_CODE,_("&Execute Code in interpreter"), None,None,self.HasSelection)
+        self._popup_menu.AppendMenuItem(item,handler=self.ExecCode)
         
         
         menu_item = menuBar.FindItemById(constants.ID_RUN)
@@ -342,6 +345,12 @@ class PythonCtrl(codeeditor.CodeCtrl):
 ##            menu.AppendItem(item)
 ##            wx.EVT_MENU(self, constants.ID_ADD_TO_WATCH, self.AddtoWatch)
             
+    def ExecCode(self):
+        first,last = self.get_selection()
+        code = self.get(first,last)
+        GetApp().MainFrame.ShowView(consts.PYTHON_INTERPRETER_VIEW_NAME,toogle_visibility_flag=True)
+        python_interpreter_view = GetApp().MainFrame.GetCommonView(consts.PYTHON_INTERPRETER_VIEW_NAME)
+        python_interpreter_view.runsource(code)
         
     def SyncOutline(self):
         line_no = self.GetCurrentLine()

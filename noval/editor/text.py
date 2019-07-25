@@ -550,6 +550,8 @@ class TextView(misc.AlarmEventView):
             return self.GetCtrl().CanCopy()
         elif command_id == constants.ID_PASTE:
             return True
+        elif command_id in [constants.ID_UPPERCASE,constants.ID_LOWERCASE]:
+            return self.GetCtrl().HasSelection()
         return True
         
 class TextCtrl(ui_base.TweakableText):

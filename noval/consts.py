@@ -29,10 +29,12 @@ EDITOR_FONT_SIZE_KEY = "EditorFontSize"
 IO_FONT_FAMILY_KEY =  "IoFontFamily"
 SYNTAX_THEME_KEY = "SyntaxThemeName"
 FRAME_MAXIMIZED_KEY = "MDIFrameMaximized"
+#MDIFrame key表示主界面的坐标以及宽高
 FRAME_TOP_LOC_KEY = "MDIFrameTopLoc"
 FRAME_LEFT_LOC_KEY = "MDIFrameLeftLoc"
 FRAME_WIDTH_KEY = "MDIFrameWidth"
 FRAME_HEIGHT_KEY = "MDIFrameHeight"
+
 FRAME_VIEW_VISIBLE_KEY = "%sViewVisible"
 RECENT_FILES_KEY = "RecentFiles"
 CURRENT_PROJECT_KEY = "ProjectCurrent"

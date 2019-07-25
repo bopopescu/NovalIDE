@@ -25,6 +25,7 @@ import noval.util.txtutils as txtutils
 import noval.syntax.lang as lang
 import noval.syntax.syntax as syntax
 global fileutilsLogger
+from tkinter import messagebox
 fileutilsLogger = logging.getLogger("activegrid.util.fileutils")
 _Checker = txtutils.FileTypeChecker()
 
@@ -611,3 +612,9 @@ def get_filepath_from_path(path):
     Returns the filename for a full path.
     """
     return os.path.split(path)[0]
+
+def safe_open_file_directory(path):
+    try:
+        open_file_directory(path)
+    except RuntimeError as e:
+        messagebox.showerror(_("Error"),str(e))

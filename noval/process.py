@@ -412,7 +412,7 @@ _SaferCreateProcess(appName=%r,
                     uenv = {}
                     for key, val in env.items():
                         try:
-                            uenv[unicode(key)] = unicode(val)   # default encoding
+                            uenv[str(key)] = str(val)   # default encoding
                         except UnicodeError:
                             try:
                                 uenv[unicode(key, 'iso-8859-1')] = unicode(val, 'iso-8859-1')   # backup encoding

@@ -21,9 +21,8 @@ class NewProjectConfiguration:
         return self._is_project_dir_created
         
 class BaseRunconfig():
-    def __init__(self,exe_path,run_file_path,arg='',env=None,start_up=None,project=None):
+    def __init__(self,exe_path,arg='',env=None,start_up=None,project=None):
         self._exe = exe_path
-        self._file_path = run_file_path
         self._arg = arg
         self._env = env
         self._start_up_path = start_up
@@ -32,10 +31,6 @@ class BaseRunconfig():
     @property
     def ExePath(self):
         return self._exe
-        
-    @property
-    def FilePath(self):
-        return self._file_path
         
     @property
     def Arg(self):

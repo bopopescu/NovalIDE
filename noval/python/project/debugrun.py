@@ -8,8 +8,6 @@ import noval.python.interpreter.interpretermanager as interpretermanager
 import noval.project.variables as variablesutils
 import noval.python.project.runconfiguration as runconfiguration
 from noval.util import utils
-import noval.iface as iface
-import noval.plugin as plugin
 import noval.consts as consts
 import noval.ui_utils as ui_utils
 import noval.project.property as projectproperty
@@ -171,7 +169,7 @@ class StartupPage(BasePage):
             other_startup_path = python_variable_manager.EvalulateValue(other_startup_path)
             
         except RuntimeError as e:
-            wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR,self)
+            messagebox.showerror(_("Error"),str(e),parent=self)
             return False
             
         main_module_file = self.ProjectDocument.GetModel().FindFile(main_module_path)
@@ -214,13 +212,16 @@ class ArgumentsPage(BasePage):
         
     def OnOK(self):
         try:
-            arguments_text = self.program_argument_textctrl.GetValue()
-            python_variable_manager = variablesutils.GetProjectVariableManager(self.ProjectDocument)
-            arguments_text = python_variable_manager.EvalulateValue(arguments_text)
+            self.GetArgumentsText()
         except RuntimeError as e:
-            wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR,self)
+            messagebox.showerror(_("Error"),str(e),parent=self)
             return False
         return True
+
+    def GetArgumentsText(self):
+        python_variable_manager = variablesutils.GetProjectVariableManager(self.ProjectDocument)
+        arguments_text = python_variable_manager.EvalulateValue(self.program_argument_textctrl.GetValue())
+        return arguments_text
         
     def GetConfiguration(self):
         main_module_file = self.master.master.master.GetMainModuleFile()
@@ -439,6 +440,15 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
         self.copy_configuration_btn.pack(padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0),pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y))
         right.pack(side=tk.LEFT,fill="y")
         row.pack(fill="both",expand=1)
+        
+        #windows系统添加一个选项,如果是windows程序,则调用解释器可执行程序pythonw.exe
+        if utils.is_windows():
+            end = ttk.Frame(self)
+            self._isWindowsApplicationVar = tk.IntVar(value=utils.profile_get_int(self.current_project_document.GetKey('IsWindowsApplication'), False))
+            isWindowsApplicationCheckBox = ttk.Checkbutton(end,text=_("Windows Application"),variable=self._isWindowsApplicationVar)
+            isWindowsApplicationCheckBox.pack(fill="x")
+            end.pack(fill="x")
+
         #should use Layout ,could not use Fit method
         #disable all buttons when file is not python file or is folder
         if not self.IsPythonFile() or self.is_folder:
@@ -536,6 +546,8 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
                 configuration_names = [run_configuration.Name for run_configuration in self._configuration_list]
                 utils.profile_set(pj_file_key + "/ConfigurationList",configuration_names)
                 utils.profile_set(pj_file_key + "/RunConfigurationName",selected_configuration_name)
+        if utils.is_windows():
+            utils.profile_set(self.current_project_document.GetKey('IsWindowsApplication'),self._isWindowsApplicationVar.get())
         return True
         
     def SetStartupFile(self):
@@ -668,11 +680,3 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
                 self.configuration_ListCtrl.selection_set(item)
             
 
-class DebugrunPageLoader(plugin.Plugin):
-    plugin.Implements(iface.CommonPluginI)
-    def Load(self):
-        projectproperty.PropertiesService().AddProjectOptionsPanel("Debug/Run",DebugRunPanel)
-        projectproperty.PropertiesService().AddFileOptionsPanel("Debug/Run",DebugRunPanel)
-        projectproperty.PropertiesService().AddFolderOptionsPanel("Debug/Run",DebugRunPanel)
-
-consts.DEFAULT_PLUGINS += ('noval.python.project.debugrun.DebugrunPageLoader',)

@@ -153,11 +153,12 @@ class DocTabbedParentFrame(ttk.Frame):
         # Setup Plugins after locale as they may have resource that need to be loaded.
         plgmgr = plugin.PluginManager()
         GetApp().SetPluginManager(plgmgr)
-        main_window_addon = plugin_joint.MainWindowAddOn(plgmgr)
-        main_window_addon.Init(self)
-        
+
         common_plugin_loader = plugin_joint.CommonPluginLoader(plgmgr)
         common_plugin_loader.Load()
+
+        main_window_addon = plugin_joint.MainWindowAddOn(plgmgr)
+        main_window_addon.Init(self)
             
     def RemoveNotebookPage(self,panel):
         self._editor_notebook.close_editor(panel)

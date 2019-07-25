@@ -157,7 +157,6 @@ class ProjectBrowser(BaseProjectbrowser):
         GetApp().InsertCommand(constants.ID_ADD_FOLDER,constants.ID_ADD_PACKAGE_FOLDER,_("&Project"),_("New Package Folder"),image=GetApp().GetImage("project/python/package.png"),\
                                handler=lambda:self.ProcessEvent(constants.ID_ADD_PACKAGE_FOLDER),tester=lambda:self.GetView().UpdateUI(constants.ID_ADD_PACKAGE_FOLDER))
         
-
     def GetPopupFolderItemIds(self):
         folder_item_ids = BaseProjectbrowser.GetPopupFolderItemIds(self)
         i = folder_item_ids.index(constants.ID_ADD_FOLDER)
@@ -170,11 +169,6 @@ class ProjectBrowser(BaseProjectbrowser):
             i = project_item_ids.index(constants.ID_ADD_FOLDER)
             project_item_ids.insert(i+1,constants.ID_ADD_PACKAGE_FOLDER)
         return project_item_ids
-        
-    def OpenPromptPath(self):
-        item = self.tree.GetSingleSelectItem()
-        filePath = self.GetItemPath(item)
-        GetApp().OpenTerminator(filename=filePath)
     
 class ProjectViewLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)

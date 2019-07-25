@@ -2,8 +2,6 @@ from noval import _,NewId
 import tkinter as tk
 from tkinter import ttk,messagebox
 import os
-import noval.iface as iface
-import noval.plugin as plugin
 import noval.consts as consts
 import noval.python.parser.utils as parserutils
 import noval.util.apputils as sysutils
@@ -12,7 +10,6 @@ import noval.util.utils as utils
 import noval.ui_utils as ui_utils
 import noval.python.interpreter.pythonpathmixin as pythonpathmixin
 import noval.python.project.runconfiguration as runconfiguration
-import noval.ui_utils as ui_utils
 import noval.project.property as projectproperty
 import noval.imageutils as imageutils
 import noval.ttkwidgets.treeviewframe as treeviewframe
@@ -189,10 +186,3 @@ class PythonPathPanel(ui_utils.BaseConfigurationPanel):
         return python_path_list
         
 
-
-class PythonpathPageLoader(plugin.Plugin):
-    plugin.Implements(iface.CommonPluginI)
-    def Load(self):
-        projectproperty.PropertiesService().AddProjectOptionsPanel("PythonPath",PythonPathPanel)
-
-consts.DEFAULT_PLUGINS += ('noval.python.project.pythonpath.PythonpathPageLoader',)

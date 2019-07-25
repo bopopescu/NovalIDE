@@ -766,22 +766,19 @@ class BaseProjectbrowser(ttk.Frame):
             
     def OpenProjectPath(self):
         document = self.GetCurrentProject()
-        fileutils.open_file_directory(document.GetFilename())
+        fileutils.safe_open_file_directory(document.GetFilename())
         
     def OpenFolderPath(self):
         document = self.GetCurrentProject()
         project_path = os.path.dirname(document.GetFilename())
         item = self.tree.GetSingleSelectItem()
         filePath = self.GetItemPath(item)
-        fileutils.open_file_directory(filePath)
+        fileutils.safe_open_file_directory(filePath)
         
     def OpenPromptPath(self):
-        document = self.GetCurrentProject()
         item = self.tree.GetSingleSelectItem()
         filePath = self.GetItemPath(item)
-        if self.GetView()._IsItemFile(item):
-            filePath = os.path.dirname(filePath)
-        terminal.open_system_shell(cwd=filePath)
+        GetApp().OpenTerminator(filename=filePath)
             
     def CopyPath(self):
         document = self.GetCurrentProject()

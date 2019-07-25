@@ -65,10 +65,8 @@ elif utils.is_py3_plus():
     import noval.python.debugger.debuggerharness3 as debuggerharness
     
 import noval.python.pyutils as pyutils
-from noval.util.exceptions import StartupPathNotExistError
 import noval.terminal as terminal
 import noval.toolbar as toolbar
-import noval.process as process
 import noval.menu as tkmenu
 import noval.python.project.viewer as projectviewer
 import noval.consts as consts
@@ -76,83 +74,43 @@ import noval.misc as misc
 from noval.python.parser.utils import py_cmp,py_sorted
 import noval.python.pyeditor as pyeditor
 import noval.python.project.runconfiguration as runconfiguration
+import noval.project.executor as executor
 
 #VERBOSE mode will invoke threading.Thread _VERBOSE,which will print a lot of thread debug text on screen
 _VERBOSE = False
 _WATCHES_ON = True
 
 
-EVT_UPDATE_STDTEXT = "UpdateOutputText"
-EVT_UPDATE_ERRTEXT = "UpdateErrorText"
-
-class OutputReaderThread(threading.Thread):
-    def __init__(self, file, callback_function, callbackOnExit=None, accumulate=True):
-        threading.Thread.__init__(self)
-        self._file = file
-        self._callback_function = callback_function
-        self._keepGoing = True
-        self._lineCount = 0
-        self._accumulate = accumulate
-        self._callbackOnExit = callbackOnExit
-        self.setDaemon(True)
-
-    def __del__(self):
-        # See comment on PythonDebuggerUI.StopExecution
-        self._keepGoing = False
-
-    def run(self):
-        file = self._file
-        start = time.time()
-        output = ""
-        while self._keepGoing:
-            try:
-                # This could block--how to handle that?
-                text = file.readline()
-                if text == '' or text == None:
-                    self._keepGoing = False
-                elif not self._accumulate and self._keepGoing:
-                    self._callback_function(text)
-                else:
-                    # Should use a buffer? StringIO?
-                    output += text
-                # Seems as though the read blocks if we got an error, so, to be
-                # sure that at least some of the exception gets printed, always
-                # send the first hundred lines back as they come in.
-                if self._lineCount < 100 and self._keepGoing:
-                    self._callback_function(output)
-                    self._lineCount += 1
-                    output = ""
-                elif time.time() - start > 0.25 and self._keepGoing:
-                    try:
-                        self._callback_function(output)
-                    except wx._core.PyDeadObjectError:
-                        # GUI was killed while we were blocked.
-                        self._keepGoing = False
-                    start = time.time()
-                    output = ""
-                elif not self._keepGoing:
-                    self._callback_function(output)
-                    output = ""
-            #except TypeError:
-            #    pass
-            except:
-                tp, val, tb = sys.exc_info()
-                print ("Exception in OutputReaderThread.run():", tp, val)
+def common_run_exception(func):
+    '''
+        调式运行公共异常处理函数,装饰调式运行函数,做同样的异常处理
+    '''
+    def _wrapper(*args, **kwargs): 
+        try:
+            func(*args, **kwargs)
+        except executor.StartupPathNotExistError as e:
+            e.ShowMessageBox()
+        except Exception as e:
+            if not isinstance(e,RuntimeError):
                 utils.get_logger().exception("")
-                self._keepGoing = False
-        if self._callbackOnExit:
-            try:
-                self._callbackOnExit()
-            except Exception as e:
-                utils.get_logger().exception("")
-                pass
-        if _VERBOSE: print ("Exiting OutputReaderThread")
-
-    def AskToStop(self):
-        self._keepGoing = False
+            messagebox.showerror(_("Run Error"),str(e),parent=GetApp().GetTopWindow())
+    return _wrapper 
 
 
-class Executor(object):
+class CommonExecutorMixin:
+    def __init__(self):
+        self.is_windows_application = self._run_parameter.IsWindowsApplication()
+        #如果是windows应用程序则使用pythonw.exe解释器来运行程序
+        if self.is_windows_application:
+            self._path = self._run_parameter.Interpreter.WindowPath
+        #否则默认使用python.exe
+        else:
+            self._path = self._run_parameter.Interpreter.Path
+        self._cmd = strutils.emphasis_path(self._path)
+        if self._run_parameter.InterpreterOption and self._run_parameter.InterpreterOption != ' ':
+            self._cmd = self._cmd + " " + self._run_parameter.InterpreterOption
+
+class PythonExecutor(executor.Executor,CommonExecutorMixin):
     def GetPythonExecutablePath():
         current_interpreter = GetApp().GetCurrentInterpreter()
         if current_interpreter:
@@ -163,84 +121,34 @@ class Executor(object):
     GetPythonExecutablePath = staticmethod(GetPythonExecutablePath)
 
     def __init__(self, run_parameter, wxComponent, callbackOnExit=None,cmd_contain_path = True):
-        self._run_parameter = run_parameter
-        self._stdOutCallback = self.OutCall
-        self._stdErrCallback = self.ErrCall
-        self._callbackOnExit = callbackOnExit
-        self._wxComponent = wxComponent
+        executor.Executor.__init__(self,run_parameter,wxComponent,callbackOnExit)
         assert(self._run_parameter.Interpreter != None)
-        if sysutilslib.is_windows():
-            #should convert to unicode when interpreter path contains chinese character
-            self._path = self._run_parameter.Interpreter.GetUnicodePath()
-        else:
-            self._path = self._run_parameter.Interpreter.Path
-            
-        self._cmd = strutils.emphasis_path(self._path)
-        if self._run_parameter.InterpreterOption and self._run_parameter.InterpreterOption != ' ':
-            self._cmd = self._cmd + " " + self._run_parameter.InterpreterOption
+        CommonExecutorMixin.__init__(self)
         if cmd_contain_path:
             self._cmd += self.spaceAndQuote(self._run_parameter.FilePath)
 
         self._stdOutReader = None
         self._stdErrReader = None
         self._process = None
+
+class PythonrunExecutor(executor.TerminalExecutor):
+    def __init__(self, run_parameter):
+        executor.TerminalExecutor.__init__(self,run_parameter)
+        CommonExecutorMixin.__init__(self)
+        self._cmd += self.spaceAndQuote(self._run_parameter.FilePath)
+
+    def Execute(self):
+        command = self.GetExecuteCommand()
+        #点击Run按钮或菜单时,如果是windows应用程序则直接使用pythonw.exe解释器来运行程序
+        if self.is_windows_application:
+            utils.get_logger().debug("start run executable: %s",command)
+            subprocess.Popen(command,shell = False,cwd=self._run_parameter.StartupPath,env=self._run_parameter.Environment)
+        #否则在控制台终端中运行程序,并且在程序运行结束时暂停,方便用户查看运行输出结果
+        else:
+            executor.TerminalExecutor.Execute(self)
         
     #Better way to do this? Quotes needed for windows file paths.
-    def spaceAndQuote(self,text):
-        if text.startswith("\"") and text.endswith("\""):
-            return  ' ' + text
-        else:
-            return ' \"' + text + '\"'
-
-    def OutCall(self, text):
-        GetApp().event_generate(EVT_UPDATE_STDTEXT,value=text,interface=self._wxComponent)
-
-    def ErrCall(self, text):
-        GetApp().event_generate(EVT_UPDATE_ERRTEXT,value=text,interface=self._wxComponent)
-
-    def Execute(self, arguments, startIn=None, environment=None):
-        if not startIn:
-            startIn = str(os.getcwd())
-        ###startIn = os.path.abspath(startIn)
-        if not os.path.exists(startIn):
-            msg = _("Startup path \"%s\" is not exist") % startIn
-            raise RuntimeError(msg)
-
-        if arguments and arguments != " ":
-            command = self._cmd + ' ' + arguments
-        else:
-            command = self._cmd
-
-        if _VERBOSE: print ("start debugger executable: " + command + "\n")
-        utils.get_logger().debug("start debugger executable: %s",command)
-        self._process = process.ProcessOpen(command, mode='b', cwd=startIn, env=environment)
-        # Kick off threads to read stdout and stderr and write them
-        # to our text control.
-        self._stdOutReader = OutputReaderThread(self._process.stdout, self._stdOutCallback, callbackOnExit=self._callbackOnExit)
-        self._stdOutReader.start()
-        self._stdErrReader = OutputReaderThread(self._process.stderr, self._stdErrCallback, accumulate=False)
-        self._stdErrReader.start()
-
-    def DoStopExecution(self):
-        # See comment on PythonDebuggerUI.StopExecution
-        if(self._process != None):
-            self._stdOutReader.AskToStop()
-            self._stdErrReader.AskToStop()
-            try:
-                self._process.kill(gracePeriod=2.0)
-            except:
-                pass
-            self._process = None
-
-    def GetExecPath(self):
-        return self._path
-        
-    def WriteInput(self,text):
-        if None == self._process:
-            return
-        self._process.stdin.write(text)
-        
-class DebuggerExecutor(Executor):
+class PythonDebuggerExecutor(PythonExecutor):
     
     def __init__(self, debugger_fileName,run_parameter, wxComponent, arg1=None, arg2=None, arg3=None, arg4=None, arg5=None, arg6=None, arg7=None, arg8=None, arg9=None, callbackOnExit=None):
         
@@ -316,9 +224,9 @@ class RunCommandUI(ttk.Frame):
         self._textCtrl = self._output.GetOutputCtrl()
         self._stopped = False
         # Executor initialization
-        self._executor = Executor(self._run_parameter, self, callbackOnExit=self.ExecutorFinished)
-        self.evt_stdtext_binding = GetApp().bind(EVT_UPDATE_STDTEXT, self.AppendText,True)
-        self.evt_stdterr_binding = GetApp().bind(EVT_UPDATE_ERRTEXT, self.AppendErrorText,True)
+        self._executor = PythonExecutor(self._run_parameter, self, callbackOnExit=self.ExecutorFinished)
+        self.evt_stdtext_binding = GetApp().bind(executor.EVT_UPDATE_STDTEXT, self.AppendText,True)
+        self.evt_stdterr_binding = GetApp().bind(executor.EVT_UPDATE_ERRTEXT, self.AppendErrorText,True)
         self._output.SetExecutor(self._executor)
         RunCommandUI.runners.append(self)
         #重写关闭窗口事件,关闭窗口时检查进程是否在运行
@@ -332,21 +240,14 @@ class RunCommandUI(ttk.Frame):
     def GetOutputView(self):
         return self._output
 
-    def Execute(self,onWebServer = False):
+    @common_run_exception
+    def Execute(self):
         try:
-            initialArgs = self._run_parameter.Arg
-            startIn = self._run_parameter.StartupPath
-            environment = self._run_parameter.Environment
-            self._executor.Execute(initialArgs, startIn, environment)
-        except StartupPathNotExistError as e:
-            wx.MessageBox(e.msg,_("Startup path not exist"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
-            self.StopExecution()
-            self.ExecutorFinished()
+            self._executor.Execute()
         except Exception as e:
-            utils.get_logger().exception("")
-            messagebox.showerror(_("Run Error"),str(e),parent=GetApp().GetTopWindow())
             self.StopExecution()
             self.ExecutorFinished()
+            raise e
     
     def IsProcessRunning(self):
         process_runners = [runner for runner in self.runners if not runner.Stopped]
@@ -370,10 +271,10 @@ class RunCommandUI(ttk.Frame):
             self._stopped = True
             self._textCtrl.set_read_only(True)
             self.UpdateAllRunnerTerminateAllUI()
-        except Exception as e:
-            utils.get_logger().exception("")
-         ###   utils.GetLogger().warn("RunCommandUI object has been deleted, attribute access no longer allowed when finish executor")
+        except tk.TclError:
+            utils.get_logger().warn("RunCommandUI object has been deleted, attribute access no longer allowed when finish executor")
             return
+        #如果是点了重新执行按钮,程序执行完成后,需要再运行一次
         if self._restarted:
             self.RestartRunProcess()
             self._restarted = False
@@ -385,8 +286,8 @@ class RunCommandUI(ttk.Frame):
     def StopExecution(self,unbind_evt=False):
         if not self._stopped:
             if unbind_evt:
-                GetApp().unbind(EVT_UPDATE_STDTEXT,self.evt_stdtext_binding)
-                GetApp().unbind(EVT_UPDATE_ERRTEXT,self.evt_stdterr_binding)
+                GetApp().unbind(executor.EVT_UPDATE_STDTEXT,self.evt_stdtext_binding)
+                GetApp().unbind(executor.EVT_UPDATE_ERRTEXT,self.evt_stdterr_binding)
             self._executor.DoStopExecution()
             self._textCtrl.set_read_only(True)
 
@@ -2366,57 +2267,12 @@ class Debugger:
             if wx.GetApp().GetService(project.ProjectEditor.ProjectService).GetView().GetDocument() is None:
                 return self.HasAnyFiles() and self.GetActiveView().GetLangId() == lang.ID_LANG_PYTHON
             return True
-
-    def ProcessUpdateUIEvent(self, event):
-        if Service.Service.ProcessUpdateUIEvent(self, event):
-            return True
-
-        an_id = event.GetId()
-        if an_id == constants.ID_TOGGLE_BREAKPOINT:
-            currentView = self.GetDocumentManager().GetCurrentView()
-            event.Enable(isinstance(currentView, PythonEditor.PythonView))
-            return True
-        elif an_id == constants.ID_CLEAR_ALL_BREAKPOINTS:
-            event.Enable(self.HasBreakpointsSet())
-            return True
-        elif an_id == constants.ID_RUN_LAST:
-            interpreter = wx.GetApp().GetCurrentInterpreter()
-            if interpreter and interpreter.IsBuiltIn:
-                event.Enable(False)
-            else:
-                event.Enable(True)
-            return True
-        elif (an_id == constants.ID_RUN
-        or an_id == constants.ID_SET_EXCEPTION_BREAKPOINT):
-            event.Enable(self.IsRunFileEnable())
-            return True
-        elif (an_id == constants.ID_DEBUG
-        or an_id == constants.ID_START_WITHOUT_DEBUG
-        or an_id == constants.ID_CHECK_SYNTAX
-        or an_id == constants.ID_SET_PARAMETER_ENVIRONMENT):
-            if wx.GetApp().GetService(project.ProjectEditor.ProjectService).GetView().GetDocument() is None:
-                event.Enable(self.HasAnyFiles() and \
-                        self.GetActiveView().GetLangId() == lang.ID_LANG_PYTHON)
-            else:
-                event.Enable(True)
-            return True
-        elif (an_id == constants.ID_STEP_NEXT
-        or an_id == constants.ID_STEP_INTO):
-            if not self.IsRunFileEnable():
-                event.Enable(False)
-            elif self._debugger_ui is None or not BaseDebuggerUI.DebuggerRunning():
-                event.Enable(True)
-            else:
-                event.Enable(self._debugger_ui._tb.GetToolEnabled(self._debugger_ui.STEP_NEXT_ID))
-            return True
-        else:
-            return False
     #----------------------------------------------------------------------------
     # Class Methods
     #----------------------------------------------------------------------------
     
     def CheckScript(self):
-        if not Executor.GetPythonExecutablePath():
+        if not PythonExecutor.GetPythonExecutablePath():
             return
         interpreter = GetApp().GetCurrentInterpreter()
         doc_view = self.GetActiveView()
@@ -2540,7 +2396,7 @@ class Debugger:
         '''
             @is_break_debug:user force to debug breakpoint or not
         '''
-        if not Executor.GetPythonExecutablePath():
+        if not PythonExecutor.GetPythonExecutablePath():
             return None
         cur_project_document = self.GetCurrentProject()
         is_debug_breakpoint = False
@@ -2555,11 +2411,6 @@ class Debugger:
                 run_parameter = self.GetFileRunParameter(filetoRun,is_break_debug)
             else:
                 run_parameter = run_configuration.GetRunParameter()
-                #try:
-                 #   run_parameter = run_configuration.GetRunParameter()
-                #except PromptErrorException as e:
-                 #   wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR)
-                  #  return None
         else:
             run_parameter = self.GetFileRunParameter(filetoRun,is_break_debug)
         
@@ -2575,12 +2426,9 @@ class Debugger:
             
         run_parameter = pyutils.get_override_runparameter(run_parameter)
         run_parameter.IsBreakPointDebug = is_debug_breakpoint
-        #check interprter path contain chinese character or not
-        if utils.profile_get_int("WarnInterpreterPath", True):
-            #if path have chinese character,prompt a warning message
-            run_parameter.Interpreter.CheckPathEncoding()
         return run_parameter
         
+    @common_run_exception
     def DebugRun(self):
         run_parameter = self.GetRunParameter()
         if run_parameter is None:
@@ -2592,7 +2440,6 @@ class Debugger:
         self.AppendRunParameter(run_parameter)
             
     def DebugRunScript(self,run_parameter):
-      #  self.ShowWindow(True)
         if run_parameter.Interpreter.IsBuiltIn:
             self.DebugRunBuiltin(run_parameter)
             return
@@ -2601,7 +2448,7 @@ class Debugger:
         view = GetApp().MainFrame.AddView("Debugger"+ str(uuid.uuid1()).lower(),RunCommandUI,_("Running: ") + shortFile,"s",visible_by_default=True,\
                                    image_file="python/debugger/debug.ico",debugger=self, fileName=fileToRun,run_parameter=run_parameter,visible_in_menu=False)
         page = view['instance']
-        page.Execute(onWebServer = False)
+        page.Execute()
         GetApp().GetDocumentManager().ActivateView(self.GetView())
         
     def SetExceptionBreakPoint(self):
@@ -2613,7 +2460,8 @@ class Debugger:
         
     def OnRunWithoutDebug(self):
         self.RunWithoutDebug()
-        
+       
+    @common_run_exception 
     def RunWithoutDebug(self,filetoRun=None):
         run_parameter = self.GetRunParameter(filetoRun)
         if run_parameter is None:
@@ -2630,47 +2478,24 @@ class Debugger:
         run_parameter.IsBreakPointDebug = True
         self.DebugRunScriptBreakPoint(run_parameter,autoContinue=False)
         
+    @common_run_exception
     def Run(self,filetoRun=None):
         run_parameter = self.GetRunParameter(filetoRun)
         if run_parameter is None:
             return
-        try:
-            self.RunScript(run_parameter)
-        except StartupPathNotExistError as e:
-            messagebox.showerror(_("Startup path not exist"),str(e),parent=GetApp().GetTopWindow())
-            return
-        except Exception as e:
-            messagebox.showerror(_("Run Error"),str(e),parent=GetApp().GetTopWindow())
-            return
+        self.RunScript(run_parameter)
         self.AppendRunParameter(run_parameter)
             
     def RunScript(self,run_parameter):
         interpreter = run_parameter.Interpreter
+        #内建解释器只能调试代码,不能在终端中运行
         if interpreter.IsBuiltIn:
             return
-        if sysutilslib.is_windows():
-            #should convert to unicode when interpreter path contains chinese character
-            python_executable_path = interpreter.GetUnicodePath()
-        else:
-            python_executable_path = interpreter.Path
-        sys_encoding = sysutilslib.get_default_encoding()
-        fileToRun = run_parameter.FilePath
-        startIn,environment,initialArgs = run_parameter.StartupPath,run_parameter.Environment,run_parameter.Arg
-        if not os.path.exists(startIn):
-            raise StartupPathNotExistError(startIn)
-
-        if utils.is_py2():
-            initDir = startIn.encode(sys_encoding)
-        else:
-            initDir = startIn
-        
-        cmd = u"%s \"%s\"" % (strutils.emphasis_path(python_executable_path),fileToRun)
-        if initialArgs is not None:
-            cmd += " " + initialArgs
-        terminal.run_in_terminal(cmd,initDir,environment,keep_open=False,pause=True,title="abc")
+        executor = PythonrunExecutor(run_parameter)
+        executor.Execute()
             
     def GetLastRunParameter(self,is_debug):
-        if not Executor.GetPythonExecutablePath():
+        if not PythonExecutor.GetPythonExecutablePath():
             return None
         dlg_title = _('Run File')
         btn_name = _("Run")
@@ -2684,13 +2509,15 @@ class Debugger:
             projectDocument, fileToDebug, initialArgs, startIn, isPython, environment = dlg.GetSettings()
             #when show run dialog first,need to save parameter
             is_parameter_save = True
+        #直接从配置中读取运行参数,不显示对话框
         elif not showDialog:
             #隐藏窗口
             dlg.withdraw()
             projectDocument, fileToDebug, initialArgs, startIn, isPython, environment = dlg.GetSettings()
             dlg.destroy()
+        #取消
         else:
-            dlg.Destroy()
+            dlg.destroy()
             return None
         if projectDocument.GetFilename() != consts.NOT_IN_ANY_PROJECT and self.IsProjectContainBreakPoints(projectDocument.GetModel()):
             is_debug_breakpoint = True
@@ -2711,18 +2538,14 @@ class Debugger:
             self.DebugRunScript(run_parameter)
         else:
             self.DebugRunScriptBreakPoint(run_parameter)
-        
+       
+    @common_run_exception 
     def RunLast(self):
         run_parameter = self.GetLastRunParameter(False)
         if run_parameter is None:
             return
         run_parameter = pyutils.get_override_runparameter(run_parameter)
-        try:
-            self.RunScript(run_parameter)
-        except StartupPathNotExistError as e:
-            wx.MessageBox(e.msg,_("Startup path not exist"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
-        except Exception as e:
-            wx.MessageBox(str(e),_("Run Error"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
+        self.RunScript(run_parameter)
         
     def DebugRunScriptBreakPoint(self,run_parameter,autoContinue=True):
         '''
@@ -3071,6 +2894,7 @@ class CommandPropertiesDialog(ui_base.CommonModaldialog):
         self._selectedFileIndex = -1
         lastProject = utils.profile_get(self.GetKey("LastRunProject"))
         lastFile = utils.profile_get(self.GetKey("LastRunFile"))
+        #点击上一次配置按钮时,如果有保存上次运行的配置,则不显示对话框,否则要显示
         self._mustShow = not lastFile
 
         if lastProject in self._projectNameList:
@@ -3088,6 +2912,8 @@ class CommandPropertiesDialog(ui_base.CommonModaldialog):
         bottom_frame = ttk.Frame(self.main_frame)
         bottom_frame.grid(row=last_row,column=0,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),columnspan=3)
         self.AppendokcancelButton(bottom_frame)
+        self.ok_button.configure(text=okButtonName,default="active")
+        self.FormatTkButtonText(self.ok_button)
 
     def MustShowDialog(self):
         return self._mustShow

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from noval import GetApp,_
 from noval.util import utils
 import noval.python.interpreter.interpretermanager as interpretermanager
 import os
@@ -206,11 +207,15 @@ class RunConfiguration():
         
         interpreter = interpretermanager.InterpreterManager().GetInterpreterByName(interpreter_configuration.InterpreterName)
         if interpreter is None:
-            raise InterpreterNotExistError(interpreter_configuration.InterpreterName)
+            raise RuntimeError(_("Interpreter \"%s\" is not exist") % interpreter_configuration.InterpreterName)
             
         fileToRun = self.MainModuleFile.filePath
         initialArgs = arguments_configuration.GetArgs()
+        #参数里面可能有一些变量,需要将这些变量转换成实际值
+        if initialArgs:
+            initialArgs = variablesutils.VariablesManager(self.ProjectDocument).EvalulateValue(initialArgs)
         startIn = startup_configuration.StartupPath
+        #路径里面可能有一些变量,需要将这些变量转换成变量对应的值
         if startup_configuration.StartupPathPattern != StartupConfiguration.DEFAULT_PROJECT_DIR_PATH:
             startIn = variablesutils.VariablesManager(self.ProjectDocument).EvalulateValue(startIn)
         interpreter_option = arguments_configuration.GetInterpreterOption()
@@ -247,7 +252,11 @@ class FileConfiguration(BaseConfiguration):
         
         startup_key = self.GetConfigurationKey(configuration_name,StartupConfiguration.CONFIGURATION_NAME)
         startup_path_pattern = utils.profile_get_int(startup_key + "/StartupPathPattern",StartupConfiguration.DEFAULT_PROJECT_DIR_PATH)
-        startup_path = utils.profile_get(startup_key + "/StartupPath","")
+        #如果是默认路径,不能读取注册表的值
+        if startup_path_pattern == StartupConfiguration.DEFAULT_PROJECT_DIR_PATH:
+            startup_path = ''
+        else:
+            startup_path = utils.profile_get(startup_key + "/StartupPath","")
         
         arguments_key = self.GetConfigurationKey(configuration_name,AugumentsConfiguration.CONFIGURATION_NAME)
         interpreter_option = utils.profile_get(arguments_key + "/InterpreterOptions","")
@@ -306,9 +315,7 @@ class ProjectConfiguration(BaseConfiguration):
         return ref_project_names
         
     def GetProjectPath(self,project_name):
-        projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
-        current_project_document = projectService.GetCurrentProject()
-        for document in projectService.GetView().Documents:
+        for document in GetApp().MainFrame.GetProjectView(generate_event=False).GetOpenProjects():
             if project_name == document.GetModel().Name:
                 return document.GetPath()
         return None
@@ -321,7 +328,7 @@ class ProjectConfiguration(BaseConfiguration):
             if project_path is not None:
                 project_path_list.append(project_path)
             else:
-                utils.GetLogger().warn("project %s is not exist",ref_project_name)
+                utils.get_logger().warn("project %s is not exist",ref_project_name)
         return project_path_list
         
     def LoadPythonPath(self):

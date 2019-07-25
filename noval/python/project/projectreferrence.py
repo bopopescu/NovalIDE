@@ -2,8 +2,6 @@ from noval import _,GetApp
 import tkinter as tk
 from tkinter import ttk
 import os
-import noval.iface as iface
-import noval.plugin as plugin
 import noval.consts as consts
 from noval.util import utils
 import noval.ui_utils as ui_utils
@@ -57,7 +55,7 @@ class ProjectReferrencePanel(ui_utils.BaseConfigurationPanel):
             project_name = document.GetModel().Name
             i = self.listbox.Append(project_name)
             self.listbox.SetData(i,document.GetFilename())
-            if project_name in ref_project_names:
+            if document.GetFilename() in ref_project_names:
                 self.listbox.Check(i,True)
             
     def GetReferenceProjects(self):
@@ -67,9 +65,4 @@ class ProjectReferrencePanel(ui_utils.BaseConfigurationPanel):
                 projects.append(self.listbox.GetData(i))
         return projects
 
-class ProjectReferrencePageLoader(plugin.Plugin):
-    plugin.Implements(iface.CommonPluginI)
-    def Load(self):
-        projectproperty.PropertiesService().AddProjectOptionsPanel("Project References",ProjectReferrencePanel)
 
-consts.DEFAULT_PLUGINS += ('noval.python.project.projectreferrence.ProjectReferrencePageLoader',)

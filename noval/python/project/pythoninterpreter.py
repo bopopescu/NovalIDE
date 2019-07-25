@@ -3,8 +3,6 @@ import tkinter as tk
 from tkinter import ttk
 import noval.python.interpreter.interpretermanager as interpretermanager
 import noval.util.utils as utils
-import noval.iface as iface
-import noval.plugin as plugin
 import noval.consts as consts
 import noval.python.project.runconfiguration as runconfiguration
 import noval.project.property as projectproperty
@@ -49,9 +47,3 @@ class PythonInterpreterPanel(ui_utils.BaseConfigurationPanel):
         return interpretermanager.InterpreterManager().interpreters[self.interpreterCombo.current()]
 
 
-class PythonInterpreterPageLoader(plugin.Plugin):
-    plugin.Implements(iface.CommonPluginI)
-    def Load(self):
-        projectproperty.PropertiesService().AddProjectOptionsPanel("Interpreter",PythonInterpreterPanel)
-
-consts.DEFAULT_PLUGINS += ('noval.python.project.pythoninterpreter.PythonInterpreterPageLoader',)

@@ -301,30 +301,31 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
         best_source,elapse = sorted(sort_pip_source_dct.items(),key = lambda x:x[1],reverse = False)[0]
         utils.get_logger().info("the best pip source is %s,response time is %.2fs",best_source,elapse)
         ManagePackagesDialog.BEST_PIP_SOURCE = best_source
-        self.SelectBestPipSource()
-        self.EnableCheckSourcButton(True)
-        
-    def SelectBestPipSource(self):
         try:
-            index = -1
-            values = list(self._pipSourceCombo['values'])
-            for i,value in enumerate(values):
-                if value.find(_("The Best Source")) != -1:
-                    values.remove(value)
-                    values.insert(i,self.SOURCE_NAME_LIST[i])
-                    break
-            for i,pip_source in enumerate(self.SOURCE_LIST):
-                if pip_source == self.BEST_PIP_SOURCE:
-                    best_source_name = self.SOURCE_NAME_LIST[i] + "(" + _("The Best Source") + ")"
-                    values.remove(self.SOURCE_NAME_LIST[i])
-                    values.insert(i,best_source_name)
-                    index = i
-                    break
-            self._pipSourceCombo['values'] = tuple(values)
-            if index != -1:
-                self._pipSourceCombo.current(index)
+            self.SelectBestPipSource()
+            self.EnableCheckSourcButton(True)
         except tk.TclError:
             pass
+        
+    def SelectBestPipSource(self):
+        index = -1
+        values = list(self._pipSourceCombo['values'])
+        for i,value in enumerate(values):
+            if value.find(_("The Best Source")) != -1:
+                values.remove(value)
+                values.insert(i,self.SOURCE_NAME_LIST[i])
+                break
+        for i,pip_source in enumerate(self.SOURCE_LIST):
+            if pip_source == self.BEST_PIP_SOURCE:
+                best_source_name = self.SOURCE_NAME_LIST[i] + "(" + _("The Best Source") + ")"
+                values.remove(self.SOURCE_NAME_LIST[i])
+                values.insert(i,best_source_name)
+                index = i
+                break
+        self._pipSourceCombo['values'] = tuple(values)
+        if index != -1:
+            self._pipSourceCombo.current(index)
+  
 
     def CheckTheBestSource(self):
         self.CheckBestPipSource()

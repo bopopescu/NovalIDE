@@ -114,9 +114,7 @@ class ResourcePanel(ui_utils.BaseConfigurationPanel):
         
     def IntoExplorer(self):
         location = self.dest_path
-        err_code,msg = fileutils.open_file_directory(location)
-        if err_code != ERROR_OK:
-            wx.MessageBox(msg,style = wx.OK|wx.ICON_ERROR)
+        fileutils.safe_open_file_directory(location)
             
     def CopyPath(self):
         path = self.dest_path

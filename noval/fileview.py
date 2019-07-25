@@ -323,10 +323,7 @@ class MainFileBrowser(BaseFileBrowser):
         
     def OpenPathInexplower(self):
         selected_path = self.get_selected_path()
-        try:
-            fileutils.open_file_directory(selected_path)
-        except RuntimeError as e:
-            showerror(_("Error"),e)
+        fileutils.safe_open_file_directory(selected_path)
         
     def OpenPathInterminal(self):
         selected_path = self.get_selected_path()

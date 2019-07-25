@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:        model.py
 # Purpose:
@@ -28,6 +29,7 @@ import noval.util.utils as utils
 PROJECT_VERSION_050730 = '10'
 PROJECT_VERSION_050826 = '11'
 
+PROJECT_VERSION_190719 = '12'
 
 #----------------------------------------------------------------------------
 # Classes
@@ -45,7 +47,7 @@ class BaseProject(object):
 
     def __init__(self):
         self.__xmlnamespaces__ = { PROJECT_NAMESPACE_URL : xmlutils.AG_NS_URL }
-        self.version = PROJECT_VERSION_050826
+        self.version = PROJECT_VERSION_190719
         self._files = []
         self._projectDir = None  # default for homeDir, set on load
         self._homeDir = None         # user set homeDir for use in calculating relative path
@@ -53,6 +55,15 @@ class BaseProject(object):
         self.name = ''
         self.id = ''
         self._startupfile = None
+        self._properties = ProjectProperty(self)
+        self._runinfo = RunInfo(self)
+
+    def GetPropertiPages(self):
+        return self._properties._pages
+
+    @property
+    def RunInfo(self):
+        return self._runinfo
             
     @property
     def StartupFile(self):
@@ -65,6 +76,8 @@ class BaseProject(object):
         self._startupfile = startupfile
         if self._startupfile is not None:
             self._startupfile.IsStartup = True
+            #设置启动文件
+            self._runinfo.StartupFile = self.GetRelativePath(self._startupfile)
             
     @property
     def Id(self):
@@ -212,8 +225,6 @@ class BaseProject(object):
     # BaseDocumentMgr methods
     #----------------------------------------------------------------------------
     def fullPath(self, fileName):
-        fileName = super(BaseProject, self).fullPath(fileName)
-
         if os.path.isabs(fileName):
             absPath = fileName
         elif self.homeDir:
@@ -268,12 +279,9 @@ class Project(BaseProject):
     pass
         
 class ProjectFile(object):
-    
-    STARTUP_TRUE_NAME = 'true'
-    STARTUP_FALSE_NAME = 'false'
     __xmlname__ = "file"
-    __xmlexclude__ = ('_parentProj', '_getDocCallback', '_docCallbackCacheReturnValue', '_docModelCallbackCacheReturnValue', '_doc',)
-    __xmlattributes__ = ["filePath", "logicalFolder", "type", "name","isStartup"]
+    __xmlexclude__ = ('_parentProj', '_getDocCallback', '_docCallbackCacheReturnValue', '_docModelCallbackCacheReturnValue', '_doc','isStartup')
+    __xmlattributes__ = ["filePath", "logicalFolder", "type", "name"]
     __xmldefaultnamespace__ = xmlutils.AG_NS_URL
 
 
@@ -287,25 +295,20 @@ class ProjectFile(object):
         self._docCallbackCacheReturnValue = None
         self._docModelCallbackCacheReturnValue = None
         self._doc = None
-        self.isStartup = ProjectFile.STARTUP_FALSE_NAME
+        self.isStartup = False
         
     @property
     def IsStartup(self):
-        if self.isStartup == ProjectFile.STARTUP_TRUE_NAME:
-            return True
-        elif self.isStartup == ProjectFile.STARTUP_FALSE_NAME:
+        #兼容老版本,老版本file格式为:
+        # <noval:file filePath="./flows/meta/annotation.py" logicalFolder="flows/meta" isStartup="false"/>
+        #老版本的文件统统设置为非启动文件
+        if type(self.isStartup) == str:
             return False
-        else:
-            assert(False)
+        return self.isStartup
             
     @IsStartup.setter
     def IsStartup(self,is_startup):
-        if is_startup == True:
-            self.isStartup = ProjectFile.STARTUP_TRUE_NAME
-        elif is_startup == False:
-            self.isStartup = ProjectFile.STARTUP_FALSE_NAME
-        else:
-            assert(False)
+        self.isStartup = is_startup
 
     def _GetDocumentModel(self):
         if (self._docCallbackCacheReturnValue
@@ -535,6 +538,48 @@ class ProjectFile(object):
         return self._GetDoc().GetAppDocMgr().fullPath(pyFilename)
 
 
+
+class ProjectProperty(object):
+    __xmlexclude__ = ('_parentProj',)
+    __xmlname__ = "property"
+    __xmlflattensequence__ = { "_pages":("page",) }
+    __xmlattributes__ = []
+    __xmldefaultnamespace__ = xmlutils.AG_NS_URL
+    
+    def __init__(self,parent=None):
+        self._parentProj = parent
+        self._pages = []
+        
+    def AddPage(self,name,item,objclass):
+        page = PropertyPage(name,item,objclass,self)
+        self._pages.append(page)
+
+
+class PropertyPage(object):
+    __xmlexclude__ = ('_parentProj',)
+    __xmlname__ = "page"
+    __xmlattributes__ = ["name",'item','objclass']
+    __xmldefaultnamespace__ = xmlutils.AG_NS_URL
+    
+    def __init__(self,name=None,item=None,objclass=None,parent=None):
+        self._parentProj = parent
+        self.name = name
+        self.item = item
+        self.objclass = objclass
+
+class RunInfo(object):
+
+    __xmlexclude__ = ('_parentProj',)
+    __xmlname__ = "runInfo"
+    __xmldefaultnamespace__ = xmlutils.AG_NS_URL
+    
+    def __init__(self,parent=None):
+        self._parentProj = parent
+        self.RunConfig = None
+        self.StartupFile = None
+        self.DocumentTemplate = None
+    
+
 #----------------------------------------------------------------------------
 # Old Classes
 #----------------------------------------------------------------------------
@@ -575,7 +620,7 @@ class Project_10:
 def load(fileObject):
     version = xmlutils.getAgVersion(fileObject.name)
     # most current versions on top
-    if version == PROJECT_VERSION_050826:
+    if version >= PROJECT_VERSION_050826:
         fileObject.seek(0)
         project = xmlutils.load(fileObject.name, knownTypes=KNOWNTYPES, knownNamespaces=xmlutils.KNOWN_NAMESPACES, createGenerics=True)
     elif version == PROJECT_VERSION_050730:

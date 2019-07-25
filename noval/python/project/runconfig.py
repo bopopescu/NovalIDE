@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 from noval.project.baseconfig import *
+import noval.util.utils as utils
 
 class PythonNewProjectConfiguration(NewProjectConfiguration):
     
@@ -21,13 +23,20 @@ class PythonNewProjectConfiguration(NewProjectConfiguration):
         
 class PythonRunconfig(BaseRunconfig):
     def __init__(self,interpreter,file_path,arg='',env=None,start_up=None,is_debug_breakpoint=False,project=None,interpreter_option=""):
-        BaseRunconfig.__init__(self,interpreter,file_path,arg,env,start_up,project)
+        BaseRunconfig.__init__(self,interpreter.Path,interpreter_option,env,start_up,project)
+        self._interpreter = interpreter
+        self._file_path = file_path
         self._is_debug_breakpoint = is_debug_breakpoint
         self._interpreter_option = interpreter_option
+        self._file_arg = arg
+
+    @property
+    def FilePath(self):
+        return self._file_path
         
     @property
     def Interpreter(self):
-        return self.ExePath
+        return self._interpreter
         
     @property
     def IsBreakPointDebug(self):
@@ -39,5 +48,17 @@ class PythonRunconfig(BaseRunconfig):
         
     @property
     def InterpreterOption(self):
-        return self._interpreter_option
+        return self._arg
+
+    @property
+    def Arg(self):
+        return self._file_arg
+
+    def IsWindowsApplication(self):
+        '''
+            是否是windows应用程序,如果是则使用pythonw.exe解释器来运行程序,否则默认使用python.exe
+        '''
+        if not self.Project:
+            return False
+        return utils.profile_get_int(self.Project.GetKey('IsWindowsApplication'),False) and utils.is_windows()
     
