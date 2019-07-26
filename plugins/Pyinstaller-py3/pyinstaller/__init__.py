@@ -14,7 +14,7 @@ import noval.plugin as plugin
 import noval.util.utils as utils
 import noval.constants as constants
 from noval.project.templatemanager import ProjectTemplateManager
-from noval.project.debugger import CommonRunCommandUI
+from noval.project.debugger import OutputRunCommandUI
 from noval.python.debugger.output import *
 from noval.project.baseconfig import *
 
@@ -27,17 +27,17 @@ import pyinstaller.pyinstall as pyinstall
 #wx.GetApp().AddMessageCatalog('calculator', __name__)
 #-----------------------------------------------------------------------------#
 
-class OutputView(CommonRunCommandUI):
+class OutputView(OutputRunCommandUI):
     def __init__(self,master):
-        CommonRunCommandUI.__init__(self,master,GetApp().GetDebugger(),None)
-
+        OutputRunCommandUI.__init__(self,master,GetApp().GetDebugger())
 
     def ExecutorFinished(self,stopped=True):
-        CommonRunCommandUI.ExecutorFinished(self,stopped=stopped)
+        OutputRunCommandUI.ExecutorFinished(self,stopped=stopped)
         if not self._stopped:
             target_exe_path = self._run_parameter.GetTargetPath()
             print ('target exe path is',target_exe_path)
             view = GetApp().MainFrame.GetCommonView("Output")
+            view.GetOutputview().SetTraceLog(True)
             run_parameter = BaseRunconfig(target_exe_path)
             view._textCtrl.ClearOutput()
             view.SetRunParameter(run_parameter)

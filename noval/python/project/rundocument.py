@@ -174,7 +174,7 @@ class PythonProjectDocument(ProjectDocument):
         fileToRun = run_parameter.FilePath
         shortFile = os.path.basename(fileToRun)
         view = GetApp().MainFrame.AddView("Debugger"+ str(uuid.uuid1()).lower(),RunCommandUI,_("Running: ") + shortFile,"s",visible_by_default=True,\
-                                   image_file="python/debugger/debug.ico",debugger=self, run_parameter=run_parameter,visible_in_menu=False)
+                                   image_file="python/debugger/debug.ico",debugger=self.GetDebugger(), run_parameter=run_parameter,visible_in_menu=False)
         page = view['instance']
         page.Execute()
         GetApp().GetDocumentManager().ActivateView(self.GetDebugger().GetView())

@@ -5,7 +5,7 @@ __revision__ = "$Revision: 850 $"
 #--------------------------------------------------------------------------#
 # Dependancies
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk,messagebox
 from noval import _
 import noval.util.utils as utils
 import noval.project.wizard as projectwizard
@@ -20,11 +20,6 @@ import noval.util.strutils as strutils
 import noval.python.parser.utils as parserutils
 from noval.project.executor import *
 import noval.terminal as terminal
-#--------------------------------------------------------------------------#
-#ID_CALC = wx.NewId()
-
-#-----------------------------------------------------------------------------#
-#ID_CHAR_DSP = wx.NewId()
 
 SINGLE_SPEC_FILE_TEMPLATE = '''
 # -*- mode: python ; coding: utf-8 -*-
@@ -151,14 +146,12 @@ class PyinstallerProjectDocument(PythonProjectDocument):
         run_configuration_name = utils.profile_get(file_key + "/RunConfigurationName","")
         return run_configuration_name
 
- #   def Run(self):
-   #     self.RunTarget()
+    def CheckIsbuiltinInterpreter(self,run_parameter):
+        if run_parameter.Interpreter.IsBuiltIn:
+            raise RuntimeError(_('Builtin Interpreter is not support to run pyinstaller project'))      
 
     def RunScript(self,run_parameter):
-        interpreter = run_parameter.Interpreter
-        #内建解释器只能调试代码,不能在终端中运行
-        if interpreter.IsBuiltIn:
-            return
+        self.CheckIsbuiltinInterpreter(run_parameter)
         executor = TerminalExecutor(run_parameter)
         command1 = executor.GetExecuteCommand()
         target_exe_path = run_parameter.GetTargetPath()
@@ -177,13 +170,7 @@ class PyinstallerProjectDocument(PythonProjectDocument):
         run_parameter = self.GetRunParameter()
         if run_parameter is None:
             return
-        if run_parameter.Interpreter.IsBuiltIn:
-            return
-        view = GetApp().MainFrame.GetCommonView("Output")
-        view.SetRunParameter(run_parameter)
-        view.CreateExecutor(finish_stopped=False)
-        view.Execute()
-        GetApp().GetDocumentManager().ActivateView(self.GetDebugger().GetView())
+        self.DebugRunScript(run_parameter)
 
     def GetRunConfiguration(self):
         pass
@@ -193,8 +180,17 @@ class PyinstallerProjectDocument(PythonProjectDocument):
         
     def DebugRunTarget(self,run_parameter):
         target_exe_path = self.GetTargetPath()
-        
 
+    def DebugRunScript(self,run_parameter):
+        self.CheckIsbuiltinInterpreter(run_parameter)
+        fileToRun = run_parameter.filepath
+        shortFile = os.path.basename(fileToRun)
+        view = GetApp().MainFrame.GetCommonView("Output")
+        view.SetRunParameter(run_parameter)
+        view.GetOutputview().SetTraceLog(True)
+        view.CreateExecutor(source="Build",finish_stopped=False)
+        view.Execute()
+        GetApp().GetDocumentManager().ActivateView(self.GetDebugger().GetView())
         
 
 class PyinstallerProjectTemplate(PythonProjectTemplate):
@@ -220,7 +216,7 @@ class PyinstallerProjectNameLocationPage(PythonProjectNameLocationPage):
         PythonProjectNameLocationPage.__init__(self,master,**kwargs)
 
     def GetProjectTemplate(self):
-        PyinstallerProjectTemplate.CreateProjectTemplate()
+        return PyinstallerProjectTemplate.CreateProjectTemplate()
 
 class PyinstallerDubugrunConfigurationPage(projectwizard.BitmapTitledWizardPage):
     """Creates the calculators interface

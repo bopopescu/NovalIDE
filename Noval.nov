@@ -1,616 +1,638 @@
 <?xml version="1.0" encoding="utf-8"?>
 <noval:project xmlns:noval="http://www.novalide.com/noval.xsd" version="11" name="Noval" id="C30979CF-3D7B-11E8-ACDF-60EB694D72B8">
-  <noval:file filePath="./noval/__init__.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./CHANGES.md" isStartup="false"/>
-  <noval:file filePath="./LICENSE.md" isStartup="false"/>
-  <noval:file filePath="./license.txt" isStartup="false"/>
-  <noval:file filePath="./noval.ico" isStartup="false"/>
-  <noval:file filePath="./NovalIDE.py" isStartup="true"/>
-  <noval:file filePath="./README.md" isStartup="false"/>
-  <noval:file filePath="./setup.py" isStartup="false"/>
-  <noval:file filePath="./translate.py" isStartup="false"/>
-  <noval:file filePath="./version.txt" isStartup="false"/>
-  <noval:file filePath="./noval/util/appdirs.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/util/datetimeparser.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/util/fileutils.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/util/logger.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/util/objutils.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/util/parser.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/util/strutils.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/util/utillang.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/util/xmlmarshaller.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/util/xmlprettyprinter.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/util/xmlutils.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/util/__init__.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./novalide_setup.nsi" isStartup="false"/>
-  <noval:file filePath="./buildide" isStartup="false"/>
-  <noval:file filePath="./template.xml" isStartup="false"/>
-  <noval:file filePath="./noval/util/utils.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/iface.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/constants.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./dummy/__init__.py" logicalFolder="dummy" isStartup="false"/>
-  <noval:file filePath="./dummy/basedb.py" logicalFolder="dummy" isStartup="false"/>
-  <noval:file filePath="./dummy/sql.py" logicalFolder="dummy" isStartup="false"/>
-  <noval:file filePath="./dummy/userdb.py" logicalFolder="dummy" isStartup="false"/>
-  <noval:file filePath="./locale/en_US/LC_MESSAGES/novalide.mo" logicalFolder="locale/en_US/LC_MESSAGES" isStartup="false"/>
-  <noval:file filePath="./locale/en_US.po" logicalFolder="locale" isStartup="false"/>
-  <noval:file filePath="./locale/novalide.pot" logicalFolder="locale" isStartup="false"/>
-  <noval:file filePath="./locale/wxstd.mo" logicalFolder="locale" isStartup="false"/>
-  <noval:file filePath="./locale/wxstd.po" logicalFolder="locale" isStartup="false"/>
-  <noval:file filePath="./locale/wxstock.mo" logicalFolder="locale" isStartup="false"/>
-  <noval:file filePath="./locale/wxstock.po" logicalFolder="locale" isStartup="false"/>
-  <noval:file filePath="./locale/wxstock.pot" logicalFolder="locale" isStartup="false"/>
-  <noval:file filePath="./locale/zh_CN.mo" logicalFolder="locale" isStartup="false"/>
-  <noval:file filePath="./locale/zh_CN.po" logicalFolder="locale" isStartup="false"/>
-  <noval:file filePath="./locale/zh_CN/LC_MESSAGES/novalide.mo" logicalFolder="locale/zh_CN/LC_MESSAGES" isStartup="false"/>
-  <noval:file filePath="./locale/zh_CN/LC_MESSAGES/wxstd.mo" logicalFolder="locale/zh_CN/LC_MESSAGES" isStartup="false"/>
-  <noval:file filePath="./locale/zh_CN/LC_MESSAGES/wxstock.mo" logicalFolder="locale/zh_CN/LC_MESSAGES" isStartup="false"/>
-  <noval:file filePath="./noval/util/apputils.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/about.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/arrow_refresh.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/backward.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/blank.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/builtin.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/class.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/clearbk.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/cmd.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/comment.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/config.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/configure.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/cpp.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/css.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/custom_init.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/c_file.gif" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/dedent.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/delete.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/doc_props.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/environment.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/exit.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/file.gif" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/folder2.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/forward.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/from_import.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/func.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/goto.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/help.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/highlighter-text.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/h_file.gif" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/import.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/indent.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/interpreter.ico" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/interpreter.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/jar_l_obj.gif" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/javaScript.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/library_obj.gif" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/linebreak.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/lineno.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/logo.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/lowercase.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/mainfunction.gif" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/maximize_editor.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/minus.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/module.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/monitor.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/new.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/next.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/nextbk.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/noval.ico" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/outline.ico" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/packagefolder_obj.gif" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/packagefolder_obj_remove.gif" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/package_obj.gif" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/page.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/plus.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/prevbk.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/previous.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project.ico" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project_source_folder.gif" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/property.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/pydoc.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/python_logo.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/python_module.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/python_nature.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/restore_editor.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/search.ico" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/shell.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/tooglebk.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/tt.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/uncomment.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/unittest_wizard.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/uppercase.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/web.png" logicalFolder="noval/bmp_source" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/archive.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/copy.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/folder.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/folder_close.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/folder_open.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/import.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/into.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/new.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/new_file.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/open.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/openpath.gif" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/package.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/parameter.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/project.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/project_view.ico" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/properties.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/runconfig.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/run_wizard.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/save.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/startup.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/trash.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/variable.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/ViewLarge.ico" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/ViewSmall.ico" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/project/zip.png" logicalFolder="noval/bmp_source/project" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/toolbar/about.png" logicalFolder="noval/bmp_source/toolbar" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/toolbar/copy.png" logicalFolder="noval/bmp_source/toolbar" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/toolbar/cut.png" logicalFolder="noval/bmp_source/toolbar" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/toolbar/debug.png" logicalFolder="noval/bmp_source/toolbar" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/toolbar/find.png" logicalFolder="noval/bmp_source/toolbar" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/toolbar/new.png" logicalFolder="noval/bmp_source/toolbar" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/toolbar/open.png" logicalFolder="noval/bmp_source/toolbar" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/toolbar/paste.png" logicalFolder="noval/bmp_source/toolbar" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/toolbar/preview.png" logicalFolder="noval/bmp_source/toolbar" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/toolbar/print.png" logicalFolder="noval/bmp_source/toolbar" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/toolbar/redo.png" logicalFolder="noval/bmp_source/toolbar" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/toolbar/run.png" logicalFolder="noval/bmp_source/toolbar" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/toolbar/save.png" logicalFolder="noval/bmp_source/toolbar" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/toolbar/saveall.png" logicalFolder="noval/bmp_source/toolbar" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/toolbar/undo.png" logicalFolder="noval/bmp_source/toolbar" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/toolbar/zoomin.png" logicalFolder="noval/bmp_source/toolbar" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/toolbar/zoomout.png" logicalFolder="noval/bmp_source/toolbar" isStartup="false"/>
-  <noval:file filePath="./noval/data/sample/cpp.sample" logicalFolder="noval/data/sample" isStartup="false"/>
-  <noval:file filePath="./noval/data/sample/css.sample" logicalFolder="noval/data/sample" isStartup="false"/>
-  <noval:file filePath="./noval/data/sample/html.sample" logicalFolder="noval/data/sample" isStartup="false"/>
-  <noval:file filePath="./noval/data/sample/ini.sample" logicalFolder="noval/data/sample" isStartup="false"/>
-  <noval:file filePath="./noval/data/sample/python.sample" logicalFolder="noval/data/sample" isStartup="false"/>
-  <noval:file filePath="./noval/data/sample/txt.sample" logicalFolder="noval/data/sample" isStartup="false"/>
-  <noval:file filePath="./noval/data/sample/xml.sample" logicalFolder="noval/data/sample" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/web/fresh.png" logicalFolder="noval/bmp_source/web" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/web/go.png" logicalFolder="noval/bmp_source/web" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/web/go_back.png" logicalFolder="noval/bmp_source/web" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/web/go_forward.png" logicalFolder="noval/bmp_source/web" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/web/stop.png" logicalFolder="noval/bmp_source/web" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/array.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/array.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/binascii.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/binascii.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/cmath.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/cmath.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/cPickle.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/cPickle.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/cStringIO.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/cStringIO.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/datetime.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/datetime.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/errno.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/errno.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/exceptions.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/exceptions.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/fcntl.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/fcntl.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/gc.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/gc.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/grp.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/grp.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/imp.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/imp.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/itertools.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/itertools.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/marshal.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/marshal.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/math.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/math.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/operator.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/operator.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/posix.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/posix.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/pwd.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/pwd.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/select.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/select.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/signal.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/signal.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/spwd.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/spwd.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/strop.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/strop.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/sys.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/sys.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/syslog.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/syslog.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/thread.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/thread.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/time.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/time.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/unicodedata.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/unicodedata.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/xxsubtype.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/xxsubtype.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/zipimport.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/zipimport.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/zlib.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/zlib.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_ast.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_ast.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_bisect.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_bisect.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_codecs.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_codecs.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_collections.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_collections.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_functools.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_functools.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_heapq.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_heapq.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_io.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_io.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_locale.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_locale.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_md5.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_md5.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_random.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_random.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_sha.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_sha.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_sha256.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_sha256.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_sha512.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_sha512.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_socket.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_socket.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_sre.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_sre.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_struct.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_struct.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_symtable.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_symtable.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_warnings.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_warnings.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_weakref.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/_weakref.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/__builtin__.$memberlist" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/2/__builtin__.$members" logicalFolder="noval/data/intellisence/builtins/2" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/array.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/array.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/atexit.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/atexit.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/binascii.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/binascii.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/builtins.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/builtins.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/errno.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/errno.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/faulthandler.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/faulthandler.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/fcntl.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/fcntl.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/gc.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/gc.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/grp.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/grp.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/itertools.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/itertools.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/marshal.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/marshal.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/math.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/math.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/posix.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/posix.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/pwd.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/pwd.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/pyexpat.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/pyexpat.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/select.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/select.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/spwd.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/spwd.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/sys.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/sys.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/syslog.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/syslog.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/time.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/time.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/unicodedata.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/unicodedata.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/xxsubtype.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/xxsubtype.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/zipimport.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/zipimport.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/zlib.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/zlib.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_ast.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_ast.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_bisect.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_bisect.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_codecs.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_codecs.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_collections.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_collections.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_datetime.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_datetime.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_elementtree.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_elementtree.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_functools.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_functools.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_heapq.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_heapq.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_imp.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_imp.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_io.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_io.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_locale.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_locale.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_md5.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_md5.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_operator.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_operator.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_pickle.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_pickle.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_posixsubprocess.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_posixsubprocess.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_random.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_random.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_sha1.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_sha1.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_sha256.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_sha256.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_sha512.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_sha512.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_signal.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_signal.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_socket.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_socket.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_sre.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_sre.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_stat.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_stat.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_string.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_string.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_struct.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_struct.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_symtable.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_symtable.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_thread.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_thread.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_tracemalloc.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_tracemalloc.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_warnings.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_warnings.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_weakref.$memberlist" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/data/intellisence/builtins/3/_weakref.$members" logicalFolder="noval/data/intellisence/builtins/3" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/add.ico" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/default-small.bmp" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/default.bmp" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/delete.ico" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/django_16x16.bmp" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/down.ico" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/html-small.bmp" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/html.bmp" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/ini-small.bmp" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/ini.bmp" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/js-small.bmp" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/js.bmp" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/packagefolder_obj.bmp" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/python-small.bmp" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/python.bmp" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/refresh.ico" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/txt-small.bmp" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/txt.bmp" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/up.ico" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/xml-small.bmp" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/template/xml.bmp" logicalFolder="noval/bmp_source/template" isStartup="false"/>
-  <noval:file filePath="./noval/data/template/EmptyPythonModule.tar.bz2" logicalFolder="noval/data/template" isStartup="false"/>
-  <noval:file filePath="./noval/data/template/HtmlFile.tar.bz2" logicalFolder="noval/data/template" isStartup="false"/>
-  <noval:file filePath="./noval/data/template/IniFile.tar.bz2" logicalFolder="noval/data/template" isStartup="false"/>
-  <noval:file filePath="./noval/data/template/JavaScript.tar.bz2" logicalFolder="noval/data/template" isStartup="false"/>
-  <noval:file filePath="./noval/data/template/PyClass.tar.bz2" logicalFolder="noval/data/template" isStartup="false"/>
-  <noval:file filePath="./noval/data/template/PythonFile.tar.bz2" logicalFolder="noval/data/template" isStartup="false"/>
-  <noval:file filePath="./noval/data/template/Stylesheet.tar.bz2" logicalFolder="noval/data/template" isStartup="false"/>
-  <noval:file filePath="./noval/data/template/TextFile.tar.bz2" logicalFolder="noval/data/template" isStartup="false"/>
-  <noval:file filePath="./noval/data/template/XmlFile.tar.bz2" logicalFolder="noval/data/template" isStartup="false"/>
-  <noval:file filePath="./noval/data/tips.txt" logicalFolder="noval/data" isStartup="false"/>
-  <noval:file filePath="./noval/data/tips_zh_CN.txt" logicalFolder="noval/data" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/debugger/addToWatch.png" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/debugger/breakmark.png" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/debugger/breakpoint.png" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/debugger/breakpoints.png" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/debugger/debug.ico" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/debugger/debugger.png" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/debugger/delete.png" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/debugger/error.png" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/debugger/flag.ico" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/debugger/interact.png" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/debugger/newWatch.png" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/debugger/restart.png" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/debugger/restart_debugger.png" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/debugger/runconfig.png" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/debugger/terminate_all.png" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/debugger/watch.png" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/debugger/watches.png" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/debugger/watch_exp.png" logicalFolder="noval/bmp_source/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/EOLFormat.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/alipay.jpg" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/banner_01.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/banner_02.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/banner_03.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/banner_04.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/banner_06.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/banner_07.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/banner_08.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/configuration.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/debugger1.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/debugger2.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/debugger3.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/debugger4.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/importfile.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/interpreter.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/project.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/run1.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/run2.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/watch1.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/watch2.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/wechatpay.jpg" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/windows_insall.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/bmp_source/images/zh_en.png" logicalFolder="noval/bmp_source/images" isStartup="false"/>
-  <noval:file filePath="./noval/project/__init__.py" logicalFolder="noval/project" isStartup="false"/>
-  <noval:file filePath="./tests/test_buffer.py" logicalFolder="tests" isStartup="false"/>
-  <noval:file filePath="./tests/test_input_output.py" logicalFolder="tests" isStartup="false"/>
-  <noval:file filePath="./tests/test_interpreter.py" logicalFolder="tests" isStartup="false"/>
-  <noval:file filePath="./tests/test_lang.py" logicalFolder="tests" isStartup="false"/>
-  <noval:file filePath="./tests/test_project.py" logicalFolder="tests" isStartup="false"/>
-  <noval:file filePath="./tests/test_python3_dbb.py" logicalFolder="tests" isStartup="false"/>
-  <noval:file filePath="./tests/test_user_db.py" logicalFolder="tests" isStartup="false"/>
-  <noval:file filePath="./tests/test_utils.py" logicalFolder="tests" isStartup="false"/>
-  <noval:file filePath="./noval/python/debugger/__init__.py" logicalFolder="noval/python/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/python/syntax/lexer/_python.py" logicalFolder="noval/python/syntax/lexer" isStartup="false"/>
-  <noval:file filePath="./noval/python/parser/__init__.py" logicalFolder="noval/python/parser" isStartup="false"/>
-  <noval:file filePath="./noval/python/parser/codeparser.py" logicalFolder="noval/python/parser" isStartup="false"/>
-  <noval:file filePath="./noval/python/parser/config.py" logicalFolder="noval/python/parser" isStartup="false"/>
-  <noval:file filePath="./noval/python/parser/fileparser.py" logicalFolder="noval/python/parser" isStartup="false"/>
-  <noval:file filePath="./noval/python/parser/intellisence.py" logicalFolder="noval/python/parser" isStartup="false"/>
-  <noval:file filePath="./noval/python/parser/nodeast.py" logicalFolder="noval/python/parser" isStartup="false"/>
-  <noval:file filePath="./noval/python/parser/scope.py" logicalFolder="noval/python/parser" isStartup="false"/>
-  <noval:file filePath="./noval/python/parser/utils.py" logicalFolder="noval/python/parser" isStartup="false"/>
-  <noval:file filePath="./noval/python/__init__.py" logicalFolder="noval/python" isStartup="false"/>
-  <noval:file filePath="./noval/python/syntax/__init__.py" logicalFolder="noval/python/syntax" isStartup="false"/>
-  <noval:file filePath="./noval/python/interpreter/__init__.py" logicalFolder="noval/python/interpreter" isStartup="false"/>
-  <noval:file filePath="./noval/launcher.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/ide.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/util/singleton.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/util/mailutils.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/util/urlutils.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/python/pyide.py" logicalFolder="noval/python" isStartup="false"/>
-  <noval:file filePath="./noval/menu.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/frame.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/util/which.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/python/analyzer.py" logicalFolder="noval/python" isStartup="false"/>
-  <noval:file filePath="./noval/model.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/toolbar.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/ui_common.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/statusbar.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/core.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/python/parser/run.py" logicalFolder="noval/python/parser" isStartup="false"/>
-  <noval:file filePath="./noval/python/parser/builtinmodule.py" logicalFolder="noval/python/parser" isStartup="false"/>
-  <noval:file filePath="./noval/executable.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/util/check.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/util/timer.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./tests/test_reg_key.py" logicalFolder="tests" isStartup="false"/>
-  <noval:file filePath="./noval/util/registry.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/consts.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/misc.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/ui_base.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/editor/__init__.py" logicalFolder="noval/editor" isStartup="false"/>
-  <noval:file filePath="./noval/filewatcher.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/syntax/__init__.py" logicalFolder="noval/syntax" isStartup="false"/>
-  <noval:file filePath="./noval/syntax/syndata.py" logicalFolder="noval/syntax" isStartup="false"/>
-  <noval:file filePath="./noval/syntax/synglob.py" logicalFolder="noval/syntax" isStartup="false"/>
-  <noval:file filePath="./noval/syntax/syntax.py" logicalFolder="noval/syntax" isStartup="false"/>
-  <noval:file filePath="./noval/syntax/lexer/_txt.py" logicalFolder="noval/syntax/lexer" isStartup="false"/>
-  <noval:file filePath="./noval/python/pyshell.py" logicalFolder="noval/python" isStartup="false"/>
-  <noval:file filePath="./noval/python/pyeditor.py" logicalFolder="noval/python" isStartup="false"/>
-  <noval:file filePath="./noval/editor/notebook.py" logicalFolder="noval/editor" isStartup="false"/>
-  <noval:file filePath="./noval/editor/text.py" logicalFolder="noval/editor" isStartup="false"/>
-  <noval:file filePath="./noval/editor/code.py" logicalFolder="noval/editor" isStartup="false"/>
-  <noval:file filePath="./noval/util/txtutils.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/imageutils.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/editor/imageviewer.py" logicalFolder="noval/editor" isStartup="false"/>
-  <noval:file filePath="./noval/ui_lang.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/syntax/lang.py" logicalFolder="noval/syntax" isStartup="false"/>
-  <noval:file filePath="./noval/feedback.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/syntax_themes.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/plugin_joint.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/plugin3.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/plugin2.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/plugin.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/python/outline.py" logicalFolder="noval/python" isStartup="false"/>
-  <noval:file filePath="./noval/fileview.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/project/basebrowser.py" logicalFolder="noval/project" isStartup="false"/>
-  <noval:file filePath="./noval/project/basemodel.py" logicalFolder="noval/project" isStartup="false"/>
-  <noval:file filePath="./noval/python/project/browser.py" logicalFolder="noval/python/project" isStartup="false"/>
-  <noval:file filePath="./noval/python/project/model.py" logicalFolder="noval/python/project" isStartup="false"/>
-  <noval:file filePath="./noval/python/project/parser.py" logicalFolder="noval/python/project" isStartup="false"/>
-  <noval:file filePath="./noval/python/project/__init__.py" logicalFolder="noval/python/project" isStartup="false"/>
-  <noval:file filePath="./noval/project/baseviewer.py" logicalFolder="noval/project" isStartup="false"/>
-  <noval:file filePath="./noval/python/project/viewer.py" logicalFolder="noval/python/project" isStartup="false"/>
-  <noval:file filePath="./noval/util/hiscache.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/util/record.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/binds.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/base_ui_themes.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/clean_ui_themes.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/find/__init__.py" logicalFolder="noval/find" isStartup="false"/>
-  <noval:file filePath="./noval/find/find.py" logicalFolder="noval/find" isStartup="false"/>
-  <noval:file filePath="./noval/find/findindir.py" logicalFolder="noval/find" isStartup="false"/>
-  <noval:file filePath="./noval/find/findresult.py" logicalFolder="noval/find" isStartup="false"/>
-  <noval:file filePath="./noval/paren_matcher.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/project/importfiles.py" logicalFolder="noval/project" isStartup="false"/>
-  <noval:file filePath="./noval/ttkwidgets/__init__.py" logicalFolder="noval/ttkwidgets" isStartup="false"/>
-  <noval:file filePath="./noval/ttkwidgets/linklabel.py" logicalFolder="noval/ttkwidgets" isStartup="false"/>
-  <noval:file filePath="./noval/ttkwidgets/checkboxtreeview.py" logicalFolder="noval/ttkwidgets" isStartup="false"/>
-  <noval:file filePath="./noval/ttkwidgets/checklistbox.py" logicalFolder="noval/ttkwidgets" isStartup="false"/>
-  <noval:file filePath="./noval/ttkwidgets/treeviewframe.py" logicalFolder="noval/ttkwidgets" isStartup="false"/>
-  <noval:file filePath="./noval/project/templatemanager.py" logicalFolder="noval/project" isStartup="false"/>
-  <noval:file filePath="./noval/python/project/runconfig.py" logicalFolder="noval/python/project" isStartup="false"/>
-  <noval:file filePath="./noval/project/command.py" logicalFolder="noval/project" isStartup="false"/>
-  <noval:file filePath="./noval/docposition.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/logmanager.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/python/unittest.py" logicalFolder="noval/python" isStartup="false"/>
-  <noval:file filePath="./noval/about.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/preference.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/update.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/mttkinter/__init__.py" logicalFolder="noval/mttkinter" isStartup="false"/>
-  <noval:file filePath="./noval/mttkinter/mtTkinter.py" logicalFolder="noval/mttkinter" isStartup="false"/>
-  <noval:file filePath="./noval/formatter.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/python/explain_environment.py" logicalFolder="noval/python" isStartup="false"/>
-  <noval:file filePath="./noval/generalopt.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/newTkDnD.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/colorfont.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/terminal.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/autocomplete.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/ui_utils.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/python/interpreter/gerneralconfiguration.py" logicalFolder="noval/python/interpreter" isStartup="false"/>
-  <noval:file filePath="./noval/ttkwidgets/listboxframe.py" logicalFolder="noval/ttkwidgets" isStartup="false"/>
-  <noval:file filePath="./noval/docoption.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./noval/python/pyutils.py" logicalFolder="noval/python" isStartup="false"/>
-  <noval:file filePath="./noval/syntax/lexer/_c.py" logicalFolder="noval/syntax/lexer" isStartup="false"/>
-  <noval:file filePath="./noval/syntax/lexer/_cpp.py" logicalFolder="noval/syntax/lexer" isStartup="false"/>
-  <noval:file filePath="./noval/syntax/lexer/_h.py" logicalFolder="noval/syntax/lexer" isStartup="false"/>
-  <noval:file filePath="./noval/util/compat.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/util/exceptions.py" logicalFolder="noval/util" isStartup="false"/>
-  <noval:file filePath="./noval/python/debugger/output.py" logicalFolder="noval/python/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/python/debugger/watchs.py" logicalFolder="noval/python/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/python/debugger/breakpoints.py" logicalFolder="noval/python/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/python/debugger/debugger.py" logicalFolder="noval/python/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/project/property.py" logicalFolder="noval/project" isStartup="false"/>
-  <noval:file filePath="./noval/project/resource.py" logicalFolder="noval/project" isStartup="false"/>
-  <noval:file filePath="./noval/python/project/debugrun.py" logicalFolder="noval/python/project" isStartup="false"/>
-  <noval:file filePath="./noval/python/project/pythonpath.py" logicalFolder="noval/python/project" isStartup="false"/>
-  <noval:file filePath="./noval/python/project/pythoninterpreter.py" logicalFolder="noval/python/project" isStartup="false"/>
-  <noval:file filePath="./noval/python/project/projectreferrence.py" logicalFolder="noval/python/project" isStartup="false"/>
-  <noval:file filePath="./noval/project/baseconfig.py" logicalFolder="noval/project" isStartup="false"/>
-  <noval:file filePath="./noval/python/interpreter/environment.py" logicalFolder="noval/python/interpreter" isStartup="false"/>
-  <noval:file filePath="./noval/python/interpreter/pythonpath.py" logicalFolder="noval/python/interpreter" isStartup="false"/>
-  <noval:file filePath="./noval/python/interpreter/pythonpackages.py" logicalFolder="noval/python/interpreter" isStartup="false"/>
-  <noval:file filePath="./noval/python/interpreter/pythonbuiltins.py" logicalFolder="noval/python/interpreter" isStartup="false"/>
-  <noval:file filePath="./noval/python/interpreter/interpretermanager.py" logicalFolder="noval/python/interpreter" isStartup="false"/>
-  <noval:file filePath="./noval/python/interpreter/interpreter.py" logicalFolder="noval/python/interpreter" isStartup="false"/>
-  <noval:file filePath="./noval/python/interpreter/interpreterconfigruation.py" logicalFolder="noval/python/interpreter" isStartup="false"/>
-  <noval:file filePath="./noval/python/debugger/debuggerharness.py" logicalFolder="noval/python/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/python/debugger/debuggerharness3.py" logicalFolder="noval/python/debugger" isStartup="false"/>
-  <noval:file filePath="./noval/project/variables.py" logicalFolder="noval/project" isStartup="false"/>
-  <noval:file filePath="./noval/project/wizard.py" logicalFolder="noval/project" isStartup="false"/>
-  <noval:file filePath="./noval/python/interpreter/pythonpathmixin.py" logicalFolder="noval/python/interpreter" isStartup="false"/>
-  <noval:file filePath="./tests/test_strutils.py" logicalFolder="tests" isStartup="false"/>
-  <noval:file filePath="./noval/python/project/runconfiguration.py" logicalFolder="noval/python/project" isStartup="false"/>
-  <noval:file filePath="./noval/ttkwidgets/textframe.py" logicalFolder="noval/ttkwidgets" isStartup="false"/>
-  <noval:file filePath="./noval/project/newfile.py" logicalFolder="noval/project" isStartup="false"/>
-  <noval:file filePath="./noval/outputthread.py" logicalFolder="noval" isStartup="false"/>
-  <noval:file filePath="./tests/test_app_config.py" logicalFolder="tests" isStartup="false"/>
-  <noval:file filePath="./noval/find/findtext.py" logicalFolder="noval/find" isStartup="false"/>
-  <noval:file filePath="G:/work/project/Noval/pyinstaller.novalide.python.debug.spec" isStartup="false"/>
-  <noval:file filePath="./pyinstaller.novalide.python.spec" isStartup="false"/>
-  <noval:file filePath="./noval/ui_constants.py" logicalFolder="noval" isStartup="false"/>
+  <noval:file filePath="./noval/__init__.py" logicalFolder="noval"/>
+  <noval:file filePath="./CHANGES.md"/>
+  <noval:file filePath="./LICENSE.md"/>
+  <noval:file filePath="./license.txt"/>
+  <noval:file filePath="./noval.ico"/>
+  <noval:file filePath="./NovalIDE.py"/>
+  <noval:file filePath="./README.md"/>
+  <noval:file filePath="./setup.py"/>
+  <noval:file filePath="./translate.py"/>
+  <noval:file filePath="./version.txt"/>
+  <noval:file filePath="./noval/util/appdirs.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/util/datetimeparser.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/util/fileutils.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/util/logger.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/util/objutils.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/util/parser.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/util/strutils.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/util/utillang.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/util/xmlmarshaller.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/util/xmlprettyprinter.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/util/xmlutils.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/util/__init__.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./novalide_setup.nsi"/>
+  <noval:file filePath="./buildide"/>
+  <noval:file filePath="./template.xml"/>
+  <noval:file filePath="./noval/util/utils.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/iface.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/constants.py" logicalFolder="noval"/>
+  <noval:file filePath="./dummy/__init__.py" logicalFolder="dummy"/>
+  <noval:file filePath="./dummy/basedb.py" logicalFolder="dummy"/>
+  <noval:file filePath="./dummy/sql.py" logicalFolder="dummy"/>
+  <noval:file filePath="./dummy/userdb.py" logicalFolder="dummy"/>
+  <noval:file filePath="./locale/en_US/LC_MESSAGES/novalide.mo" logicalFolder="locale/en_US/LC_MESSAGES"/>
+  <noval:file filePath="./locale/en_US.po" logicalFolder="locale"/>
+  <noval:file filePath="./locale/novalide.pot" logicalFolder="locale"/>
+  <noval:file filePath="./locale/wxstd.mo" logicalFolder="locale"/>
+  <noval:file filePath="./locale/wxstd.po" logicalFolder="locale"/>
+  <noval:file filePath="./locale/wxstock.mo" logicalFolder="locale"/>
+  <noval:file filePath="./locale/wxstock.po" logicalFolder="locale"/>
+  <noval:file filePath="./locale/wxstock.pot" logicalFolder="locale"/>
+  <noval:file filePath="./locale/zh_CN.mo" logicalFolder="locale"/>
+  <noval:file filePath="./locale/zh_CN.po" logicalFolder="locale"/>
+  <noval:file filePath="./locale/zh_CN/LC_MESSAGES/novalide.mo" logicalFolder="locale/zh_CN/LC_MESSAGES"/>
+  <noval:file filePath="./locale/zh_CN/LC_MESSAGES/wxstd.mo" logicalFolder="locale/zh_CN/LC_MESSAGES"/>
+  <noval:file filePath="./locale/zh_CN/LC_MESSAGES/wxstock.mo" logicalFolder="locale/zh_CN/LC_MESSAGES"/>
+  <noval:file filePath="./noval/util/apputils.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/bmp_source/about.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/arrow_refresh.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/backward.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/blank.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/builtin.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/class.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/clearbk.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/cmd.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/comment.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/config.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/configure.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/cpp.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/css.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/custom_init.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/c_file.gif" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/dedent.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/delete.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/doc_props.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/environment.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/exit.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/file.gif" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/folder2.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/forward.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/from_import.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/func.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/goto.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/help.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/highlighter-text.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/h_file.gif" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/import.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/indent.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/interpreter.ico" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/interpreter.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/jar_l_obj.gif" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/javaScript.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/library_obj.gif" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/linebreak.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/lineno.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/logo.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/lowercase.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/mainfunction.gif" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/maximize_editor.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/minus.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/module.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/monitor.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/new.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/next.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/nextbk.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/noval.ico" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/outline.ico" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/packagefolder_obj.gif" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/packagefolder_obj_remove.gif" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/package_obj.gif" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/page.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/plus.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/prevbk.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/previous.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/project.ico" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/project_source_folder.gif" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/property.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/pydoc.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/python_logo.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/python_module.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/python_nature.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/restore_editor.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/search.ico" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/shell.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/tooglebk.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/tt.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/uncomment.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/unittest_wizard.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/uppercase.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/web.png" logicalFolder="noval/bmp_source"/>
+  <noval:file filePath="./noval/bmp_source/project/archive.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/copy.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/folder.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/folder_close.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/folder_open.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/import.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/into.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/new.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/new_file.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/open.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/openpath.gif" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/package.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/parameter.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/project.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/project_view.ico" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/properties.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/runconfig.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/run_wizard.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/save.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/startup.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/trash.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/variable.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/ViewLarge.ico" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/ViewSmall.ico" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/project/zip.png" logicalFolder="noval/bmp_source/project"/>
+  <noval:file filePath="./noval/bmp_source/toolbar/about.png" logicalFolder="noval/bmp_source/toolbar"/>
+  <noval:file filePath="./noval/bmp_source/toolbar/copy.png" logicalFolder="noval/bmp_source/toolbar"/>
+  <noval:file filePath="./noval/bmp_source/toolbar/cut.png" logicalFolder="noval/bmp_source/toolbar"/>
+  <noval:file filePath="./noval/bmp_source/toolbar/debug.png" logicalFolder="noval/bmp_source/toolbar"/>
+  <noval:file filePath="./noval/bmp_source/toolbar/find.png" logicalFolder="noval/bmp_source/toolbar"/>
+  <noval:file filePath="./noval/bmp_source/toolbar/new.png" logicalFolder="noval/bmp_source/toolbar"/>
+  <noval:file filePath="./noval/bmp_source/toolbar/open.png" logicalFolder="noval/bmp_source/toolbar"/>
+  <noval:file filePath="./noval/bmp_source/toolbar/paste.png" logicalFolder="noval/bmp_source/toolbar"/>
+  <noval:file filePath="./noval/bmp_source/toolbar/preview.png" logicalFolder="noval/bmp_source/toolbar"/>
+  <noval:file filePath="./noval/bmp_source/toolbar/print.png" logicalFolder="noval/bmp_source/toolbar"/>
+  <noval:file filePath="./noval/bmp_source/toolbar/redo.png" logicalFolder="noval/bmp_source/toolbar"/>
+  <noval:file filePath="./noval/bmp_source/toolbar/run.png" logicalFolder="noval/bmp_source/toolbar"/>
+  <noval:file filePath="./noval/bmp_source/toolbar/save.png" logicalFolder="noval/bmp_source/toolbar"/>
+  <noval:file filePath="./noval/bmp_source/toolbar/saveall.png" logicalFolder="noval/bmp_source/toolbar"/>
+  <noval:file filePath="./noval/bmp_source/toolbar/undo.png" logicalFolder="noval/bmp_source/toolbar"/>
+  <noval:file filePath="./noval/bmp_source/toolbar/zoomin.png" logicalFolder="noval/bmp_source/toolbar"/>
+  <noval:file filePath="./noval/bmp_source/toolbar/zoomout.png" logicalFolder="noval/bmp_source/toolbar"/>
+  <noval:file filePath="./noval/data/sample/cpp.sample" logicalFolder="noval/data/sample"/>
+  <noval:file filePath="./noval/data/sample/css.sample" logicalFolder="noval/data/sample"/>
+  <noval:file filePath="./noval/data/sample/html.sample" logicalFolder="noval/data/sample"/>
+  <noval:file filePath="./noval/data/sample/ini.sample" logicalFolder="noval/data/sample"/>
+  <noval:file filePath="./noval/data/sample/python.sample" logicalFolder="noval/data/sample"/>
+  <noval:file filePath="./noval/data/sample/txt.sample" logicalFolder="noval/data/sample"/>
+  <noval:file filePath="./noval/data/sample/xml.sample" logicalFolder="noval/data/sample"/>
+  <noval:file filePath="./noval/bmp_source/web/fresh.png" logicalFolder="noval/bmp_source/web"/>
+  <noval:file filePath="./noval/bmp_source/web/go.png" logicalFolder="noval/bmp_source/web"/>
+  <noval:file filePath="./noval/bmp_source/web/go_back.png" logicalFolder="noval/bmp_source/web"/>
+  <noval:file filePath="./noval/bmp_source/web/go_forward.png" logicalFolder="noval/bmp_source/web"/>
+  <noval:file filePath="./noval/bmp_source/web/stop.png" logicalFolder="noval/bmp_source/web"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/array.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/array.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/binascii.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/binascii.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/cmath.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/cmath.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/cPickle.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/cPickle.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/cStringIO.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/cStringIO.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/datetime.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/datetime.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/errno.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/errno.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/exceptions.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/exceptions.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/fcntl.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/fcntl.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/gc.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/gc.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/grp.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/grp.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/imp.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/imp.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/itertools.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/itertools.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/marshal.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/marshal.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/math.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/math.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/operator.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/operator.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/posix.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/posix.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/pwd.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/pwd.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/select.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/select.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/signal.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/signal.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/spwd.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/spwd.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/strop.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/strop.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/sys.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/sys.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/syslog.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/syslog.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/thread.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/thread.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/time.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/time.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/unicodedata.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/unicodedata.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/xxsubtype.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/xxsubtype.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/zipimport.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/zipimport.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/zlib.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/zlib.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_ast.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_ast.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_bisect.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_bisect.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_codecs.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_codecs.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_collections.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_collections.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_functools.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_functools.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_heapq.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_heapq.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_io.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_io.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_locale.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_locale.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_md5.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_md5.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_random.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_random.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_sha.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_sha.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_sha256.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_sha256.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_sha512.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_sha512.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_socket.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_socket.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_sre.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_sre.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_struct.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_struct.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_symtable.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_symtable.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_warnings.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_warnings.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_weakref.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/_weakref.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/__builtin__.$memberlist" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/2/__builtin__.$members" logicalFolder="noval/data/intellisence/builtins/2"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/array.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/array.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/atexit.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/atexit.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/binascii.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/binascii.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/builtins.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/builtins.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/errno.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/errno.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/faulthandler.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/faulthandler.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/fcntl.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/fcntl.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/gc.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/gc.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/grp.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/grp.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/itertools.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/itertools.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/marshal.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/marshal.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/math.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/math.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/posix.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/posix.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/pwd.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/pwd.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/pyexpat.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/pyexpat.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/select.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/select.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/spwd.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/spwd.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/sys.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/sys.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/syslog.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/syslog.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/time.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/time.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/unicodedata.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/unicodedata.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/xxsubtype.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/xxsubtype.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/zipimport.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/zipimport.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/zlib.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/zlib.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_ast.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_ast.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_bisect.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_bisect.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_codecs.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_codecs.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_collections.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_collections.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_datetime.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_datetime.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_elementtree.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_elementtree.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_functools.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_functools.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_heapq.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_heapq.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_imp.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_imp.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_io.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_io.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_locale.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_locale.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_md5.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_md5.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_operator.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_operator.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_pickle.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_pickle.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_posixsubprocess.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_posixsubprocess.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_random.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_random.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_sha1.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_sha1.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_sha256.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_sha256.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_sha512.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_sha512.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_signal.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_signal.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_socket.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_socket.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_sre.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_sre.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_stat.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_stat.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_string.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_string.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_struct.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_struct.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_symtable.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_symtable.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_thread.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_thread.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_tracemalloc.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_tracemalloc.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_warnings.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_warnings.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_weakref.$memberlist" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/data/intellisence/builtins/3/_weakref.$members" logicalFolder="noval/data/intellisence/builtins/3"/>
+  <noval:file filePath="./noval/bmp_source/template/add.ico" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/bmp_source/template/default-small.bmp" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/bmp_source/template/default.bmp" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/bmp_source/template/delete.ico" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/bmp_source/template/django_16x16.bmp" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/bmp_source/template/down.ico" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/bmp_source/template/html-small.bmp" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/bmp_source/template/html.bmp" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/bmp_source/template/ini-small.bmp" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/bmp_source/template/ini.bmp" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/bmp_source/template/js-small.bmp" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/bmp_source/template/js.bmp" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/bmp_source/template/packagefolder_obj.bmp" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/bmp_source/template/python-small.bmp" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/bmp_source/template/python.bmp" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/bmp_source/template/refresh.ico" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/bmp_source/template/txt-small.bmp" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/bmp_source/template/txt.bmp" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/bmp_source/template/up.ico" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/bmp_source/template/xml-small.bmp" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/bmp_source/template/xml.bmp" logicalFolder="noval/bmp_source/template"/>
+  <noval:file filePath="./noval/data/template/EmptyPythonModule.tar.bz2" logicalFolder="noval/data/template"/>
+  <noval:file filePath="./noval/data/template/HtmlFile.tar.bz2" logicalFolder="noval/data/template"/>
+  <noval:file filePath="./noval/data/template/IniFile.tar.bz2" logicalFolder="noval/data/template"/>
+  <noval:file filePath="./noval/data/template/JavaScript.tar.bz2" logicalFolder="noval/data/template"/>
+  <noval:file filePath="./noval/data/template/PyClass.tar.bz2" logicalFolder="noval/data/template"/>
+  <noval:file filePath="./noval/data/template/PythonFile.tar.bz2" logicalFolder="noval/data/template"/>
+  <noval:file filePath="./noval/data/template/Stylesheet.tar.bz2" logicalFolder="noval/data/template"/>
+  <noval:file filePath="./noval/data/template/TextFile.tar.bz2" logicalFolder="noval/data/template"/>
+  <noval:file filePath="./noval/data/template/XmlFile.tar.bz2" logicalFolder="noval/data/template"/>
+  <noval:file filePath="./noval/data/tips.txt" logicalFolder="noval/data"/>
+  <noval:file filePath="./noval/data/tips_zh_CN.txt" logicalFolder="noval/data"/>
+  <noval:file filePath="./noval/bmp_source/debugger/addToWatch.png" logicalFolder="noval/bmp_source/debugger"/>
+  <noval:file filePath="./noval/bmp_source/debugger/breakmark.png" logicalFolder="noval/bmp_source/debugger"/>
+  <noval:file filePath="./noval/bmp_source/debugger/breakpoint.png" logicalFolder="noval/bmp_source/debugger"/>
+  <noval:file filePath="./noval/bmp_source/debugger/breakpoints.png" logicalFolder="noval/bmp_source/debugger"/>
+  <noval:file filePath="./noval/bmp_source/debugger/debug.ico" logicalFolder="noval/bmp_source/debugger"/>
+  <noval:file filePath="./noval/bmp_source/debugger/debugger.png" logicalFolder="noval/bmp_source/debugger"/>
+  <noval:file filePath="./noval/bmp_source/debugger/delete.png" logicalFolder="noval/bmp_source/debugger"/>
+  <noval:file filePath="./noval/bmp_source/debugger/error.png" logicalFolder="noval/bmp_source/debugger"/>
+  <noval:file filePath="./noval/bmp_source/debugger/flag.ico" logicalFolder="noval/bmp_source/debugger"/>
+  <noval:file filePath="./noval/bmp_source/debugger/interact.png" logicalFolder="noval/bmp_source/debugger"/>
+  <noval:file filePath="./noval/bmp_source/debugger/newWatch.png" logicalFolder="noval/bmp_source/debugger"/>
+  <noval:file filePath="./noval/bmp_source/debugger/restart.png" logicalFolder="noval/bmp_source/debugger"/>
+  <noval:file filePath="./noval/bmp_source/debugger/restart_debugger.png" logicalFolder="noval/bmp_source/debugger"/>
+  <noval:file filePath="./noval/bmp_source/debugger/runconfig.png" logicalFolder="noval/bmp_source/debugger"/>
+  <noval:file filePath="./noval/bmp_source/debugger/terminate_all.png" logicalFolder="noval/bmp_source/debugger"/>
+  <noval:file filePath="./noval/bmp_source/debugger/watch.png" logicalFolder="noval/bmp_source/debugger"/>
+  <noval:file filePath="./noval/bmp_source/debugger/watches.png" logicalFolder="noval/bmp_source/debugger"/>
+  <noval:file filePath="./noval/bmp_source/debugger/watch_exp.png" logicalFolder="noval/bmp_source/debugger"/>
+  <noval:file filePath="./noval/EOLFormat.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/bmp_source/images/alipay.jpg" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/banner_01.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/banner_02.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/banner_03.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/banner_04.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/banner_06.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/banner_07.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/banner_08.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/configuration.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/debugger1.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/debugger2.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/debugger3.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/debugger4.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/importfile.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/interpreter.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/project.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/run1.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/run2.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/watch1.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/watch2.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/wechatpay.jpg" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/windows_insall.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/bmp_source/images/zh_en.png" logicalFolder="noval/bmp_source/images"/>
+  <noval:file filePath="./noval/project/__init__.py" logicalFolder="noval/project"/>
+  <noval:file filePath="./tests/test_buffer.py" logicalFolder="tests"/>
+  <noval:file filePath="./tests/test_input_output.py" logicalFolder="tests"/>
+  <noval:file filePath="./tests/test_interpreter.py" logicalFolder="tests"/>
+  <noval:file filePath="./tests/test_lang.py" logicalFolder="tests"/>
+  <noval:file filePath="./tests/test_project.py" logicalFolder="tests"/>
+  <noval:file filePath="./tests/test_python3_dbb.py" logicalFolder="tests"/>
+  <noval:file filePath="./tests/test_user_db.py" logicalFolder="tests"/>
+  <noval:file filePath="./tests/test_utils.py" logicalFolder="tests"/>
+  <noval:file filePath="./noval/python/debugger/__init__.py" logicalFolder="noval/python/debugger"/>
+  <noval:file filePath="./noval/python/syntax/lexer/_python.py" logicalFolder="noval/python/syntax/lexer"/>
+  <noval:file filePath="./noval/python/parser/__init__.py" logicalFolder="noval/python/parser"/>
+  <noval:file filePath="./noval/python/parser/codeparser.py" logicalFolder="noval/python/parser"/>
+  <noval:file filePath="./noval/python/parser/config.py" logicalFolder="noval/python/parser"/>
+  <noval:file filePath="./noval/python/parser/fileparser.py" logicalFolder="noval/python/parser"/>
+  <noval:file filePath="./noval/python/parser/intellisence.py" logicalFolder="noval/python/parser"/>
+  <noval:file filePath="./noval/python/parser/nodeast.py" logicalFolder="noval/python/parser"/>
+  <noval:file filePath="./noval/python/parser/scope.py" logicalFolder="noval/python/parser"/>
+  <noval:file filePath="./noval/python/parser/utils.py" logicalFolder="noval/python/parser"/>
+  <noval:file filePath="./noval/python/__init__.py" logicalFolder="noval/python"/>
+  <noval:file filePath="./noval/python/syntax/__init__.py" logicalFolder="noval/python/syntax"/>
+  <noval:file filePath="./noval/python/interpreter/__init__.py" logicalFolder="noval/python/interpreter"/>
+  <noval:file filePath="./noval/launcher.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/ide.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/util/singleton.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/util/mailutils.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/util/urlutils.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/python/pyide.py" logicalFolder="noval/python"/>
+  <noval:file filePath="./noval/menu.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/frame.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/util/which.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/python/analyzer.py" logicalFolder="noval/python"/>
+  <noval:file filePath="./noval/model.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/toolbar.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/ui_common.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/statusbar.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/core.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/python/parser/run.py" logicalFolder="noval/python/parser"/>
+  <noval:file filePath="./noval/python/parser/builtinmodule.py" logicalFolder="noval/python/parser"/>
+  <noval:file filePath="./noval/executable.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/util/check.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/util/timer.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./tests/test_reg_key.py" logicalFolder="tests"/>
+  <noval:file filePath="./noval/util/registry.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/consts.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/misc.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/ui_base.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/editor/__init__.py" logicalFolder="noval/editor"/>
+  <noval:file filePath="./noval/filewatcher.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/syntax/__init__.py" logicalFolder="noval/syntax"/>
+  <noval:file filePath="./noval/syntax/syndata.py" logicalFolder="noval/syntax"/>
+  <noval:file filePath="./noval/syntax/synglob.py" logicalFolder="noval/syntax"/>
+  <noval:file filePath="./noval/syntax/syntax.py" logicalFolder="noval/syntax"/>
+  <noval:file filePath="./noval/syntax/lexer/_txt.py" logicalFolder="noval/syntax/lexer"/>
+  <noval:file filePath="./noval/python/pyshell.py" logicalFolder="noval/python"/>
+  <noval:file filePath="./noval/python/pyeditor.py" logicalFolder="noval/python"/>
+  <noval:file filePath="./noval/editor/notebook.py" logicalFolder="noval/editor"/>
+  <noval:file filePath="./noval/editor/text.py" logicalFolder="noval/editor"/>
+  <noval:file filePath="./noval/editor/code.py" logicalFolder="noval/editor"/>
+  <noval:file filePath="./noval/util/txtutils.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/imageutils.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/editor/imageviewer.py" logicalFolder="noval/editor"/>
+  <noval:file filePath="./noval/ui_lang.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/syntax/lang.py" logicalFolder="noval/syntax"/>
+  <noval:file filePath="./noval/feedback.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/syntax_themes.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/plugin_joint.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/plugin3.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/plugin2.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/plugin.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/python/outline.py" logicalFolder="noval/python"/>
+  <noval:file filePath="./noval/fileview.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/project/basebrowser.py" logicalFolder="noval/project"/>
+  <noval:file filePath="./noval/project/basemodel.py" logicalFolder="noval/project"/>
+  <noval:file filePath="./noval/python/project/browser.py" logicalFolder="noval/python/project"/>
+  <noval:file filePath="./noval/python/project/model.py" logicalFolder="noval/python/project"/>
+  <noval:file filePath="./noval/python/project/parser.py" logicalFolder="noval/python/project"/>
+  <noval:file filePath="./noval/python/project/__init__.py" logicalFolder="noval/python/project"/>
+  <noval:file filePath="./noval/project/baseviewer.py" logicalFolder="noval/project"/>
+  <noval:file filePath="./noval/python/project/viewer.py" logicalFolder="noval/python/project"/>
+  <noval:file filePath="./noval/util/hiscache.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/util/record.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/binds.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/base_ui_themes.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/clean_ui_themes.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/find/__init__.py" logicalFolder="noval/find"/>
+  <noval:file filePath="./noval/find/find.py" logicalFolder="noval/find"/>
+  <noval:file filePath="./noval/find/findindir.py" logicalFolder="noval/find"/>
+  <noval:file filePath="./noval/find/findresult.py" logicalFolder="noval/find"/>
+  <noval:file filePath="./noval/paren_matcher.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/project/importfiles.py" logicalFolder="noval/project"/>
+  <noval:file filePath="./noval/ttkwidgets/__init__.py" logicalFolder="noval/ttkwidgets"/>
+  <noval:file filePath="./noval/ttkwidgets/linklabel.py" logicalFolder="noval/ttkwidgets"/>
+  <noval:file filePath="./noval/ttkwidgets/checkboxtreeview.py" logicalFolder="noval/ttkwidgets"/>
+  <noval:file filePath="./noval/ttkwidgets/checklistbox.py" logicalFolder="noval/ttkwidgets"/>
+  <noval:file filePath="./noval/ttkwidgets/treeviewframe.py" logicalFolder="noval/ttkwidgets"/>
+  <noval:file filePath="./noval/project/templatemanager.py" logicalFolder="noval/project"/>
+  <noval:file filePath="./noval/python/project/runconfig.py" logicalFolder="noval/python/project"/>
+  <noval:file filePath="./noval/project/command.py" logicalFolder="noval/project"/>
+  <noval:file filePath="./noval/docposition.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/logmanager.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/python/unittest.py" logicalFolder="noval/python"/>
+  <noval:file filePath="./noval/about.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/preference.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/update.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/mttkinter/__init__.py" logicalFolder="noval/mttkinter"/>
+  <noval:file filePath="./noval/mttkinter/mtTkinter.py" logicalFolder="noval/mttkinter"/>
+  <noval:file filePath="./noval/formatter.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/python/explain_environment.py" logicalFolder="noval/python"/>
+  <noval:file filePath="./noval/generalopt.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/newTkDnD.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/colorfont.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/terminal.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/autocomplete.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/ui_utils.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/python/interpreter/gerneralconfiguration.py" logicalFolder="noval/python/interpreter"/>
+  <noval:file filePath="./noval/ttkwidgets/listboxframe.py" logicalFolder="noval/ttkwidgets"/>
+  <noval:file filePath="./noval/docoption.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/python/pyutils.py" logicalFolder="noval/python"/>
+  <noval:file filePath="./noval/syntax/lexer/_c.py" logicalFolder="noval/syntax/lexer"/>
+  <noval:file filePath="./noval/syntax/lexer/_cpp.py" logicalFolder="noval/syntax/lexer"/>
+  <noval:file filePath="./noval/syntax/lexer/_h.py" logicalFolder="noval/syntax/lexer"/>
+  <noval:file filePath="./noval/util/compat.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/python/debugger/output.py" logicalFolder="noval/python/debugger"/>
+  <noval:file filePath="./noval/python/debugger/watchs.py" logicalFolder="noval/python/debugger"/>
+  <noval:file filePath="./noval/python/debugger/breakpoints.py" logicalFolder="noval/python/debugger"/>
+  <noval:file filePath="./noval/python/debugger/debugger.py" logicalFolder="noval/python/debugger"/>
+  <noval:file filePath="./noval/project/property.py" logicalFolder="noval/project"/>
+  <noval:file filePath="./noval/project/resource.py" logicalFolder="noval/project"/>
+  <noval:file filePath="./noval/python/project/debugrun.py" logicalFolder="noval/python/project"/>
+  <noval:file filePath="./noval/python/project/pythonpath.py" logicalFolder="noval/python/project"/>
+  <noval:file filePath="./noval/python/project/pythoninterpreter.py" logicalFolder="noval/python/project"/>
+  <noval:file filePath="./noval/python/project/projectreferrence.py" logicalFolder="noval/python/project"/>
+  <noval:file filePath="./noval/project/baseconfig.py" logicalFolder="noval/project"/>
+  <noval:file filePath="./noval/python/interpreter/environment.py" logicalFolder="noval/python/interpreter"/>
+  <noval:file filePath="./noval/python/interpreter/pythonpath.py" logicalFolder="noval/python/interpreter"/>
+  <noval:file filePath="./noval/python/interpreter/pythonpackages.py" logicalFolder="noval/python/interpreter"/>
+  <noval:file filePath="./noval/python/interpreter/pythonbuiltins.py" logicalFolder="noval/python/interpreter"/>
+  <noval:file filePath="./noval/python/interpreter/interpretermanager.py" logicalFolder="noval/python/interpreter"/>
+  <noval:file filePath="./noval/python/interpreter/interpreter.py" logicalFolder="noval/python/interpreter"/>
+  <noval:file filePath="./noval/python/interpreter/interpreterconfigruation.py" logicalFolder="noval/python/interpreter"/>
+  <noval:file filePath="./noval/python/debugger/debuggerharness.py" logicalFolder="noval/python/debugger"/>
+  <noval:file filePath="./noval/python/debugger/debuggerharness3.py" logicalFolder="noval/python/debugger"/>
+  <noval:file filePath="./noval/project/variables.py" logicalFolder="noval/project"/>
+  <noval:file filePath="./noval/project/wizard.py" logicalFolder="noval/project"/>
+  <noval:file filePath="./noval/python/interpreter/pythonpathmixin.py" logicalFolder="noval/python/interpreter"/>
+  <noval:file filePath="./tests/test_strutils.py" logicalFolder="tests"/>
+  <noval:file filePath="./noval/python/project/runconfiguration.py" logicalFolder="noval/python/project"/>
+  <noval:file filePath="./noval/ttkwidgets/textframe.py" logicalFolder="noval/ttkwidgets"/>
+  <noval:file filePath="./noval/project/newfile.py" logicalFolder="noval/project"/>
+  <noval:file filePath="./noval/outputthread.py" logicalFolder="noval"/>
+  <noval:file filePath="./tests/test_app_config.py" logicalFolder="tests"/>
+  <noval:file filePath="./noval/find/findtext.py" logicalFolder="noval/find"/>
+  <noval:file filePath="./pyinstaller.novalide.python.debug.spec"/>
+  <noval:file filePath="./pyinstaller.novalide.python.spec"/>
+  <noval:file filePath="./noval/ui_constants.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/project/executor.py" logicalFolder="noval/project"/>
+  <noval:file filePath="./noval/process.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/project/debugger.py" logicalFolder="noval/project"/>
+  <noval:file filePath="./noval/project/output.py" logicalFolder="noval/project"/>
+  <noval:file filePath="./noval/python/debugger/commandproperty.py" logicalFolder="noval/python/debugger"/>
+  <noval:file filePath="./noval/python/project/rundocument.py" logicalFolder="noval/python/project"/>
+  <noval:file filePath="./noval/project/document.py" logicalFolder="noval/project"/>
+  <noval:_properties>
+    <noval:page name="Resource" item="root" objclass="noval.project.resource.ResourcePanel"/>
+    <noval:page name="Debug/Run" item="root" objclass="noval.python.project.debugrun.DebugRunPanel"/>
+    <noval:page name="PythonPath" item="root" objclass="noval.python.project.pythonpath.PythonPathPanel"/>
+    <noval:page name="Interpreter" item="root" objclass="noval.python.project.pythoninterpreter.PythonInterpreterPanel"/>
+    <noval:page name="Project References" item="root" objclass="noval.python.project.projectreferrence.ProjectReferrencePanel"/>
+    <noval:page name="Resource" item="file" objclass="noval.project.resource.ResourcePanel"/>
+    <noval:page name="Debug/Run" item="file" objclass="noval.python.project.debugrun.DebugRunPanel"/>
+    <noval:page name="Resource" item="folder" objclass="noval.project.resource.ResourcePanel"/>
+    <noval:page name="Debug/Run" item="folder" objclass="noval.python.project.debugrun.DebugRunPanel"/>
+  </noval:_properties>
+  <noval:_runinfo>
+    <noval:DocumentTemplate>noval.python.project.viewer.PythonProjectTemplate</noval:DocumentTemplate>
+    <noval:RunConfig>noval.python.project.runconfig.PythonRunconfig</noval:RunConfig>
+    <noval:StartupFile>NovalIDE.py</noval:StartupFile>
+  </noval:_runinfo>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>

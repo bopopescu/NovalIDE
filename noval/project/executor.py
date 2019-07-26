@@ -13,6 +13,8 @@ import noval.terminal as terminal
 EVT_UPDATE_STDTEXT = "UpdateOutputText"
 EVT_UPDATE_ERRTEXT = "UpdateErrorText"
 
+SOURCE_DEBUG = 'Debug'
+
 
 class StartupPathNotExistError(RuntimeError):
     
@@ -132,7 +134,7 @@ class TerminalExecutor(object):
         return self._path
 
 class Executor(TerminalExecutor):
-    def __init__(self, run_parameter, wxComponent, callbackOnExit=None):
+    def __init__(self, run_parameter, wxComponent,callbackOnExit=None,source=SOURCE_DEBUG):
         TerminalExecutor.__init__(self,run_parameter)
         self._stdOutCallback = self.OutCall
         self._stdErrCallback = self.ErrCall
@@ -141,12 +143,13 @@ class Executor(TerminalExecutor):
         self._stdOutReader = None
         self._stdErrReader = None
         self._process = None
+        self.source = source
 
     def OutCall(self, text):
-        GetApp().event_generate(EVT_UPDATE_STDTEXT,value=text,interface=self._wxComponent)
+        GetApp().event_generate(EVT_UPDATE_STDTEXT,value=text,interface=self._wxComponent,source=self.source)
 
     def ErrCall(self, text):
-        GetApp().event_generate(EVT_UPDATE_ERRTEXT,value=text,interface=self._wxComponent)
+        GetApp().event_generate(EVT_UPDATE_ERRTEXT,value=text,interface=self._wxComponent,source=self.source)
 
     def Execute(self):
         command = self.GetExecuteCommand()

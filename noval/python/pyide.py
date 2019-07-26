@@ -330,7 +330,7 @@ class PyIDEApplication(ide.IDEApplication):
         return ide.IDEApplication.UpdateUI(self,command_id)
         
     def GetDebugviewClass(self):
-        return Debugger.DebuggerView
+        return self.GetDebugger().DebuggerView
 
     def GetDebuggerClass(self):
         return pythondebugger.PythonDebugger

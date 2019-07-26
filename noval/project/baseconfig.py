@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 
 class NewProjectConfiguration:
@@ -43,8 +44,11 @@ class BaseRunconfig():
     @property
     def StartupPath(self):
         if not self._start_up_path:
-            #没有指定程序启动路径,以exe文件的路径为启动路径
-            return os.path.dirname(self.ExePath)
+            #项目为空,以exe文件的路径为启动路径
+            if self._project is None:
+                return os.path.dirname(self.ExePath)
+            #否则以项目路径为启动路径
+            return self._project.GetPath()
         return self._start_up_path
 
     @property

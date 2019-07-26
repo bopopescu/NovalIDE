@@ -99,8 +99,8 @@ class PythonExecutor(executor.Executor,CommonExecutorMixin):
         return None
     GetPythonExecutablePath = staticmethod(GetPythonExecutablePath)
 
-    def __init__(self, run_parameter, wxComponent, callbackOnExit=None,cmd_contain_path = True):
-        executor.Executor.__init__(self,run_parameter,wxComponent,callbackOnExit)
+    def __init__(self, run_parameter, wxComponent, callbackOnExit=None,source=executor.SOURCE_DEBUG,cmd_contain_path = True):
+        executor.Executor.__init__(self,run_parameter,wxComponent,callbackOnExit,source)
         assert(self._run_parameter.Interpreter != None)
         CommonExecutorMixin.__init__(self)
         if cmd_contain_path:
@@ -200,9 +200,9 @@ class RunCommandUI(CommonRunCommandUI):
         for runner in self.runners:
             runner.UpdateTerminateAllUI()
         
-    def ExecutorFinished(self):
+    def ExecutorFinished(self,stopped=True):
         self.UpdateFinishedPagePaneText()
-        CommonRunCommandUI.ExecutorFinished(self)
+        CommonRunCommandUI.ExecutorFinished(self,stopped=stopped)
             
     #when process finished,update tag page text
     def UpdateFinishedPagePaneText(self):
@@ -242,7 +242,7 @@ class RunCommandUI(CommonRunCommandUI):
         '''
         #如果调式运行的文件属于这个项目,则保存项目所有文件
         if self._debugger.GetCurrentProject().GetModel().FindFile(self._run_parameter.FilePath):
-            currentProj.PromptToSaveFiles()
+            self._debugger.GetCurrentProject().PromptToSaveFiles()
         else:
             #如果调式运行的文件不属于这个项目,则只保存该文件
             openDoc = GetApp().GetDocumentManager().GetDocument(self._run_parameter.FilePath)

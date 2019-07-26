@@ -47,7 +47,7 @@ class CommonRunCommandUI(ttk.Frame):
         self._restarted = False
         self._stopped = False
         # GUI Initialization follows
-        self._tb = tb = toolbar.ToolBar(self,orient=toolbar_orient)
+        self._tb = toolbar.ToolBar(self,orient=toolbar_orient)
         if toolbar_orient == tk.HORIZONTAL:
             self._tb.pack(fill="x",expand=0)
         else:
@@ -62,7 +62,6 @@ class CommonRunCommandUI(ttk.Frame):
         
         self._tb.AddButton(self.TERMINATE_ALL_PROCESS_ID,self.terminate_all_image,_("Stop All the Run."),lambda:self.OnToolClicked(self.TERMINATE_ALL_PROCESS_ID))
         self._tb.AddButton(self.RESTART_PROCESS_ID,self.restart_image,_("Restart the Run."),lambda:self.OnToolClicked(self.RESTART_PROCESS_ID))
-
         self._output = self.GetOutputviewClass()(self) #id)
         self._output.pack(side=tk.LEFT,fill="both",expand=1)
         self._textCtrl = self._output.GetOutputCtrl()
@@ -73,12 +72,13 @@ class CommonRunCommandUI(ttk.Frame):
     def SetRunParameter(self,run_parameter):
         self._run_parameter = run_parameter
 
-    def CreateExecutor(self,finish_stopped=True):
+    def CreateExecutor(self,source=SOURCE_DEBUG,finish_stopped=True):
         '''
             finish_stopped表示该执行器支持完成后,是否表示整个运行完成,大部分情况下一个进程执行完成,就表示改运行完成
             考虑到一次完整的运行可能需要连续执行几个进程,第一个进程执行完后并不表示整个执行完成,要接着执行下一个,直到最后一个进程执行完成才表示运行完成
+            source表示输出日志来源,比如有的是build输出,有的是debug输出,默认是debug输出
         '''
-        self._executor = self.GetExecutorClass()(self._run_parameter, self, callbackOnExit=lambda:self.ExecutorFinished(finish_stopped))
+        self._executor = self.GetExecutorClass()(self._run_parameter, self, callbackOnExit=lambda:self.ExecutorFinished(finish_stopped),source=source)
         self.evt_stdtext_binding = GetApp().bind(executor.EVT_UPDATE_STDTEXT, self.AppendText,True)
         self.evt_stdterr_binding = GetApp().bind(executor.EVT_UPDATE_ERRTEXT, self.AppendErrorText,True)
         self._output.SetExecutor(self._executor)
@@ -147,13 +147,13 @@ class CommonRunCommandUI(ttk.Frame):
         if event.get('interface') != self:
             utils.get_logger().debug('run view interface receive other stdout msg,ignore it')
             return
-        self._textCtrl.AppendText(event.get('value'))
+        self._textCtrl.AppendText(event.get('source'),event.get('value'))
 
     def AppendErrorText(self, event):
         if event.get('interface') != self:
             utils.get_logger().debug('run view interface receive other stderr msg,ignore it')
             return
-        self._textCtrl.AppendErrorText(event.get('value'))
+        self._textCtrl.AppendErrorText(event.get('source'),event.get('value'))
 
     def StopAndRemoveUI(self):
         '''
@@ -261,5 +261,30 @@ class Debugger(object):
     def Run(self):
         self.GetCurrentProject().Run()
 
+
+class OutputRunCommandUI(CommonRunCommandUI):
+    def __init__(self,master,debugger):
+        CommonRunCommandUI.__init__(self,master,debugger,None)
+        self._tb.AddLabel(text=" " + _("Source:") + " ",pos=0)
+        self.combo = self._tb.AddCombox(pos=1)
+
+    def AppendText(self, event):
+        CommonRunCommandUI.AppendText(self,event)
+        self.AddSource(event.get('source'))
+
+    def AppendErrorText(self, event):
+        CommonRunCommandUI.AppendErrorText(self,event)
+        self.AddSource(event.get('source'))
+
+    def AddSource(self,source):
+        '''
+            把输出来源归类
+        '''
+        if source not in self.combo['values']:
+            if not self.combo['values']:
+                self.combo['values'] = (source,)
+            else:
+                self.combo['values'] = self.combo['values'] + (source,)
+        
 #----------------------------------------------------------------------
 

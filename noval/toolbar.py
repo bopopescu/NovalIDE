@@ -26,7 +26,7 @@ class ToolBar(ui_base.DockFrame):
         self._orient = orient
         self._commands = []
 
-    def AddButton(self,command_id,image,command_label,handler,accelerator=None,tester=None):
+    def AddButton(self,command_id,image,command_label,handler,accelerator=None,tester=None,pos=-1):
         
         slaves = self.grid_slaves(0, self.toolbar_group)
         if len(slaves) == 0:
@@ -45,16 +45,12 @@ class ToolBar(ui_base.DockFrame):
             compound=None,
             pad=None,
         )
-        if self._orient == tk.HORIZONTAL:
-            button.pack(side=tk.LEFT)
-        elif self._orient == tk.VERTICAL:
-            button.pack(side=tk.TOP)
+        self.SetControlPos(command_id,button,pos)
         button.tester = tester
         tooltip_text = MenuBar.FormatMenuName(command_label)
         if accelerator:
             tooltip_text += " (" + accelerator + ")"
         misc.create_tooltip(button, tooltip_text)
-        self._commands.append([command_id,button])
 
     def IsDefaultShown(self):
         toolbar_key = self.GetToolbarKey()
@@ -67,26 +63,65 @@ class ToolBar(ui_base.DockFrame):
         if not self.winfo_ismapped():
            return
         for group_frame in self.grid_slaves(0):
-            for button in group_frame.pack_slaves():
+            for button in group_frame.grid_slaves():
                 if isinstance(button,ttk.Button):
                     if button.tester and not button.tester():
                         button["state"] = tk.DISABLED
                     else:
                         button["state"] = tk.NORMAL
         
-    def AddCombox(self):
+    def AddCombox(self,pos=-1):
         slaves = self.grid_slaves(0, self.toolbar_group)
         group_frame = slaves[0]
         combo = ttk.Combobox(group_frame)
-        combo.pack(side=tk.LEFT)
+        self.SetControlPos(-1,combo,pos)
         combo.state(['readonly'])
         return combo
+
+    def AddLabel(self,text,pos=-1):
+        slaves = self.grid_slaves(0, self.toolbar_group)
+        group_frame = slaves[0]
+        label = ttk.Label(group_frame,text=text)
+        self.SetControlPos(-1,label,pos)
+
+    def SetControlPos(self,command_id,ctrl,pos):
+        '''
+            pos为-1表示在最后添加控件,不为-1表示在某个位置插入控件
+        '''
+        update_layout = False
+        if pos == -1:
+            pos = len(self._commands)
+            self._commands.append([command_id,ctrl])
+        #这里要插入控件,插入控件后需要重新排列控件
+        else:
+            update_layout = True
+            self._commands.insert(pos,[command_id,ctrl])
+
+        if self._orient == tk.HORIZONTAL:
+            ctrl.grid(row=0,column=pos)
+        elif self._orient == tk.VERTICAL:
+            ctrl.grid(row=pos,column=0)
         
-    def AddSeparator(self):
+        if update_layout:
+            #重新调整控件的位置
+            self.UpdateLayout(pos)
+
+    def UpdateLayout(self,pos):
+        for i,data in enumerate(self._commands):
+            ctrl = data[1]
+            #所有位置大于pos的控件都需要重新排列
+            if i>pos:
+                if self._orient == tk.HORIZONTAL:
+                    ctrl.grid(row=0,column=i)
+                elif self._orient == tk.VERTICAL:
+                    ctrl.grid(row=i,column=0)
+
+    def AddSeparator(self,pos=-1):
         slaves = self.grid_slaves(0, self.toolbar_group)
         group_frame = slaves[0]
         separator = ttk.Separator (group_frame, orient = tk.VERTICAL)
         separator.pack(side=tk.LEFT,expand=1,fill="y",pady = 3)
+       # separator.grid(row=0,column=pos)
         return separator
         
     def EnableTool(self,button_id,enable=True):

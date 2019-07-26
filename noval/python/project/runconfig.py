@@ -61,4 +61,14 @@ class PythonRunconfig(BaseRunconfig):
         if not self.Project:
             return False
         return utils.profile_get_int(self.Project.GetKey('IsWindowsApplication'),False) and utils.is_windows()
+
+    @property
+    def StartupPath(self):
+        if not self._start_up_path:
+            #项目为空,以运行脚本文件的路径为启动路径
+            if self._project is None:
+                return os.path.dirname(self.FilePath)
+            #否则以项目路径为启动路径
+            return self._project.GetPath()
+        return self._start_up_path
     

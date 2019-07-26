@@ -19,12 +19,16 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
     TEXT_WRAP_ID = NewId()
     EXPORT_TEXT_ID = NewId()
   
-    def __init__(self, parent,**kwargs):
+    def __init__(self, parent,trace_log=False,**kwargs):
+        '''
+            trace_log表示是否追踪日志输出,即保存日志输出,方便输出框清空以后查看
+        '''
         texteditor.TextCtrl.__init__(self, parent,**kwargs)
         findtext.FindTextEngine.__init__(self)
         self._first_input = True
         self._input_start_pos = 0
         self._executor = None
+        self.trace_log = trace_log
         self.bind('<Double-Button-1>',self.OnDoubleClick)
         #鼠标和键盘松开时激活视图
         self.bind("<<ActivateView>>", self.ActivateView)
@@ -50,6 +54,7 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         )
         self._is_wrap = tk.IntVar(value=False)
         self.SetWrap()
+        self.logs = {}
             
     @property
     def IsFirstInput(self):
@@ -129,7 +134,7 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
     def OnDoubleClick(self, event):
         pass
 
-    def AppendText(self, text,last_readonly=False):
+    def AppendText(self,source,text,last_readonly=False):
         self.set_read_only(False)
         self.AddText(text)
         self.ScrolltoEnd()
@@ -137,16 +142,30 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         self.InputStartPos = self.GetCurrentPos()
         if last_readonly:
             self.SetReadOnly(True)
+        self.AppendLogs(source,text)
+
+    def SetTraceLog(self,trace_log):
+        self.trace_log = trace_log
+
+    def AppendLogs(self,source,txt):
+        if not self.trace_log:
+            return
+        #将日志输出按来源归类保存
+        if source in self.logs:
+            self.logs[source].append(txt)
+        else:
+            self.logs[source] = [txt]
 
     def AddText(self,txt):
         self.insert(tk.END, txt)
 
-    def AppendErrorText(self, text,last_readonly=False):
+    def AppendErrorText(self, source,text,last_readonly=False):
         self.set_read_only(False)
         tags = ("io",'stderr')
         texteditor.TextCtrl.intercept_insert(self, "insert", text, tags)
         if last_readonly:
             self.SetReadOnly(True)
+        self.AppendLogs(source,text)
 
     def OnModify(self,event):
         if self.GetCurrentPos() <= self.InputStartPos:
@@ -201,7 +220,7 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         
 
 class CommononOutputview(ttk.Frame):
-    def __init__(self, master,is_debug=False):
+    def __init__(self, master,trace_log=False,is_debug=False):
         ttk.Frame.__init__(self, master)
         self.vert_scrollbar = ui_base.SafeScrollbar(self, orient=tk.VERTICAL)
         self.vert_scrollbar.grid(row=0, column=1, sticky=tk.NSEW)
@@ -212,7 +231,7 @@ class CommononOutputview(ttk.Frame):
         #设置查找结果文本字体为小一号的字体并且控件为只读状态,inactiveselectbackground表示查找并选择文本时的选中颜色
         #禁止undo操作
         self.text = self.GetOuputctrlClass()(self,font="SmallEditorFont",inactiveselectbackground="gray",read_only=True,yscrollcommand=self.vert_scrollbar.set,\
-                                borderwidth=0,undo=False,xscrollcommand=self.horizontal_scrollbar.set)
+                                borderwidth=0,undo=False,xscrollcommand=self.horizontal_scrollbar.set,trace_log=trace_log)
         self.text.grid(row=0, column=0, sticky=tk.NSEW)
         #关联垂直滚动条和文本控件
         self.vert_scrollbar["command"] = self.text.yview
@@ -229,3 +248,7 @@ class CommononOutputview(ttk.Frame):
 
     def GetOuputctrlClass(self):
         return CommonOutputctrl
+
+    def SetTraceLog(self,trace_log):
+        self.text.SetTraceLog(trace_log)
+
