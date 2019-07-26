@@ -35,13 +35,7 @@ class PropertiesService:
         #这里针对python2和python3中各自的string类型进行了区分:在python2中,使用的为basestring;在python3中,使用的为str
         if isinstance(optionsPanelClass,six.string_types[0]):
             try:
-                page_class_parts = optionsPanelClass.split(".")
-                page_module_name = ".".join(page_class_parts[0:-1])
-                page_class_name = page_class_parts[-1]
-                #如果模块名称包含多级层,必须设置fromlist参数为True
-                #必须先导入模块,再获取模块里面的方法,不要直接导入类
-                page_module = __import__(page_module_name,fromlist=True)
-                optionsPanelClass = getattr(page_module,page_class_name)
+                optionsPanelClass = utils.GetClassFromDynamicImportModule(optionsPanelClass)
             except Exception as e:
                 utils.get_logger().error('load property page %s error',optionsPanelClass)
                 return

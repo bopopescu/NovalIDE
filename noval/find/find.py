@@ -248,7 +248,7 @@ class FindDialog(tk.Toplevel):
         
     def GetCtrl(self) :
         current_view = GetApp().GetDocumentManager().GetCurrentView()
-        if isinstance(current_view,texteditor.TextView) or isinstance(current_view,GetApp().GetDebuggerView()):
+        if isinstance(current_view,texteditor.TextView) or isinstance(current_view,GetApp().GetDebugviewClass()):
             self.text = current_view.GetCtrl()
         return self.text
         

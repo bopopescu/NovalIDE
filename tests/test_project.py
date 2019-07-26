@@ -13,7 +13,7 @@ class TestPythonProject(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def testSetInterpreter(self):
+    def testSetInterprete1111r(self):
         
         f = file("test3.agp","w")
         pj = project.PythonProject()

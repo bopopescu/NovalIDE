@@ -30,6 +30,7 @@ import noval.model as model
 import os
 import noval.project.baseviewer as baseprojectviewer
 import noval.python.project.viewer as projectviewer
+import noval.python.project.rundocument as runprojectdocument
 from noval.syntax import synglob
 import noval.syntax.lang as lang
 import noval.ui_utils as ui_utils
@@ -41,8 +42,9 @@ import noval.python.pyeditor as pyeditor
 import noval.preference as preference
 import noval.python.interpreter.gerneralconfiguration as interpretergerneralconfiguration
 import noval.python.interpreter.interpreterconfigruation as interpreterconfigruation
-import noval.python.debugger.debugger as Debugger
+import noval.python.debugger.debugger as pythondebugger
 import noval.ui_common as ui_common
+from noval.project.document import ProjectDocument
 import noval.misc as misc
 #这些导入模块未被引用,用于py2exe打包模块进library.zip里面去
 import noval.python.outline
@@ -53,29 +55,25 @@ import noval.python.project.pythoninterpreter
 import noval.python.project.pythonpath
 import noval.python.project.projectreferrence
 
-_debugger = None
-
 class PyIDEApplication(ide.IDEApplication):
 
     def __init__(self):
         ide.IDEApplication.__init__(self)
 
     def OnInit(self):
-        global _debugger
         if not ide.IDEApplication.OnInit(self):
             return False
         #关闭软件启动图片
         self.CloseSplash()
         #设置Python文本视图在大纲中显示语法树
         self.MainFrame.GetOutlineView().AddViewTypeForBackgroundHandler(pyeditor.PythonView)
-        
-        _debugger = Debugger.Debugger()
+        #pyc和pyo二进制文件类型禁止添加到项目中
+        ProjectDocument.BIN_FILE_EXTS = ProjectDocument.BIN_FILE_EXTS + ['pyc','pyo']
         self.interpreter_combo = self.MainFrame.GetToolBar().AddCombox()
         self.interpreter_combo.bind("<<ComboboxSelected>>",self.OnCombo)
         
         self.LoadDefaultInterpreter()
         self.AddInterpreters()
-        #projectService.SetCurrentProject()
         intellisence.IntellisenceManager().generate_default_intellisence_data()
       
         if utils.is_windows():
@@ -124,16 +122,16 @@ class PyIDEApplication(ide.IDEApplication):
         pass
         
     def DebugLast(self):
-        _debugger.DebugRunLast()
+        self.GetDebugger().DebugLast()
         
     def RunLast(self):
-        _debugger.RunLast()
+        self.GetDebugger().RunLast()
 
     def CheckSyntax(self):
-        _debugger.CheckScript()
+        self.GetDebugger().CheckScript()
         
     def SetParameterEnvironment(self):
-        _debugger.SetParameterAndEnvironment()
+        self.GetDebugger().SetParameterAndEnvironment()
         
     @misc.update_toolbar
     def LoadDefaultInterpreter(self):
@@ -149,18 +147,11 @@ class PyIDEApplication(ide.IDEApplication):
         if dlg.CreateUnitTestFrame():
             dlg.ShowModal()
         
-    def CreateProjectTemplate(self):
-        projectTemplate = projectviewer.PythonProjectTemplate(self.GetDocumentManager(),
-                _("Project File"),
-                "*%s" % consts.PROJECT_EXTENSION,
-                os.getcwd(),
-                consts.PROJECT_EXTENSION,
-                "Project Document",
-                _("Project Viewer"),
-                projectviewer.PythonProjectDocument,
-                projectviewer.PythonProjectView,
-                icon = imageutils.getProjectIcon())
-        self.GetDocumentManager().AssociateTemplate(projectTemplate)
+    def GetProjectTemplateClassData(self):
+        '''
+            返回python项目实际的模板类,文档类,以及视图类
+        '''
+        return projectviewer.PythonProjectTemplate,runprojectdocument.PythonProjectDocument,projectviewer.PythonProjectView
         
     def CreateLexerTemplates(self):
         ide.IDEApplication.CreateLexerTemplates(self)
@@ -297,18 +288,8 @@ class PyIDEApplication(ide.IDEApplication):
                 cmd = ["source", activate, ";"] + cmd 
         return terminal.run_in_terminal(cmd, cwd, env_overrides, True)
 
-    def Run(self):
-        _debugger.Run()
-        
-    def DebugRun(self):
-        _debugger.DebugRun()
-
     def RunWithoutDebug(self):
-        _debugger.OnRunWithoutDebug()
-        
-    def GetDebugger(self):
-        global _debugger
-        return _debugger
+        self.GetDebugger().RunWithoutDebug()
 
     def InsertEncodingDeclare(self,text_view = None):
         if text_view is None:
@@ -348,11 +329,9 @@ class PyIDEApplication(ide.IDEApplication):
                 return True
         return ide.IDEApplication.UpdateUI(self,command_id)
         
-    def AllowClose(self):
-        if not _debugger.CloseDebugger():
-            return False
-        return ide.IDEApplication.AllowClose(self)
-        
-    def GetDebuggerView(self):
+    def GetDebugviewClass(self):
         return Debugger.DebuggerView
+
+    def GetDebuggerClass(self):
+        return pythondebugger.PythonDebugger
             

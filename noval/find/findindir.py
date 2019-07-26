@@ -27,7 +27,7 @@ import noval.util.utils as utils
 import noval.ui_base as ui_base
 import queue
 import noval.util.singleton as singleton
-from noval.project.baseviewer import ProjectDocument
+from noval.project.document import ProjectDocument
 
 #----------------------------------------------------------------------------
 # Constants

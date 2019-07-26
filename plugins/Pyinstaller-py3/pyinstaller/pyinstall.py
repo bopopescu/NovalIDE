@@ -12,21 +12,26 @@ import noval.project.wizard as projectwizard
 from noval.project.baseconfig import *
 from noval.python.project.viewer import *
 from noval.python.project.model import *
+from noval.python.project.rundocument import *
 import noval.consts as consts
 import noval.imageutils as imageutils
 import os
+import noval.util.strutils as strutils
+import noval.python.parser.utils as parserutils
+from noval.project.executor import *
+import noval.terminal as terminal
 #--------------------------------------------------------------------------#
 #ID_CALC = wx.NewId()
 
 #-----------------------------------------------------------------------------#
 #ID_CHAR_DSP = wx.NewId()
 
-SPEC_FILE_TEMPLATE = '''
+SINGLE_SPEC_FILE_TEMPLATE = '''
 # -*- mode: python ; coding: utf-8 -*-
 block_cipher = None
 datas = []
-a = Analysis(['{SOURCE_FILEN_NAME}'],
-             pathex=['{SOURCE_PATH}'],
+a = Analysis([r'{SOURCE_FILEN_PATH}'],
+             pathex=[r'{SOURCE_PATH}'],
              binaries=[],
              datas=datas,
              hiddenimports=[],
@@ -49,6 +54,9 @@ exe = EXE(pyz,
           strip=False,
           upx=True,
           console={IS_CONSOLE} , icon='{ICON_PATH}')
+'''
+
+SPEC_FILE_TEMPLATE = SINGLE_SPEC_FILE_TEMPLATE + '''
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
@@ -61,17 +69,23 @@ coll = COLLECT(exe,
 '''
 
 class PyinstallerRunconfig(BaseRunconfig):
-    def __init__(self,interpreter,file_path,arg='',env=None,start_up=None,is_console=True,icon_path='',project=None):
-        self.file_path = os.path.dirname(file_path)
+    def __init__(self,interpreter,file_path,arg='',env=None,start_up=None,project=None,is_console=True,icon_path=''):
+        self._interpreter = interpreter
+        self._project = project
+        self.filepath = file_path
         self.file_name = os.path.basename(file_path)
         self.is_console = is_console
         self.icon_path = icon_path
-        spec_path = self.GetSpecfilePath()
         pyinstaller_tool_path = self.GetPyinstallerToolPath(interpreter)
-        BaseRunconfig.__init__(self,pyinstaller_tool_path,spec_path,None,None,project)
+        spec_path = self.GetSpecfilePath()
+        BaseRunconfig.__init__(self,pyinstaller_tool_path,spec_path,env,start_up,project)
+
+    @property
+    def Interpreter(self):
+        return self._interpreter
 
     def GetPyinstallerToolPath(self,interpreter):
-        interpreter_path = interpreter.InstallPath()
+        interpreter_path = interpreter.InstallPath
         pyinstaller_tool_path = os.path.join(interpreter_path,"Scripts","pyinstaller.exe")
         if not os.path.exists(pyinstaller_tool_path):
             raise RuntimeError('ggggg')
@@ -79,19 +93,30 @@ class PyinstallerRunconfig(BaseRunconfig):
 
     def GetSpecfilePath(self,file_name=None):
         spec_path = os.path.join(utils.get_user_data_path(),"pyinstaller",self.Project.GetModel().Id)
+        if file_name is None:
+            file_name = os.path.basename(self.Project.GetStartupFile().filePath)
         spec_file_name = "noval.python.%s.%s.spec" %(self.Project.GetModel().Name,strutils.get_filename_without_ext(file_name))
         spec_file_path = os.path.join(spec_path,spec_file_name)
-        if not os.path.exists(spec_file_path):
-            self.GenerateSepcFile(spec_file_path)
+        #if not os.path.exists(spec_file_path):
+        self.GenerateSepcFile(spec_file_path)
         return spec_file_path
 
     def GenerateSepcFile(self,spec_file_path):
         exe_name = strutils.get_filename_without_ext(self.file_name)
-        content = SPEC_FILE_TEMPLATE.format(SOURCE_FILEN_NAME=self.file_name,SOURCE_PATH=self.file_path,TARGET_EXE_NAME=exe_name,\
+        content = SPEC_FILE_TEMPLATE.format(SOURCE_FILEN_PATH=self.filepath,SOURCE_PATH=os.path.dirname(self.filepath),TARGET_EXE_NAME=exe_name,\
                 IS_CONSOLE=self.is_console,ICON_PATH=self.icon_path,TARGET_FOLDER_NAME=self.Project.GetModel().Name)
-        
-        with open(spec_file_path) as f:
+        spec_dir_path = os.path.dirname(spec_file_path)
+        if not os.path.exists(spec_dir_path):
+            parserutils.MakeDirs(spec_dir_path)
+        with open(spec_file_path,"w") as f:
             f.write(content)
+
+    def GetTargetPath(self):
+        project_path = self.Project.GetPath()
+        dist_path = os.path.join(project_path,'dist')
+        dist_project_path = os.path.join(dist_path,self.Project.GetModel().Name)
+        target_exe_path = os.path.join(dist_project_path,"%s.exe"%strutils.get_filename_without_ext(self.file_name))
+        return target_exe_path
 
 class PyinstallerProject(PythonProject):
     def __init__(self):
@@ -109,8 +134,8 @@ class PyinstallerProject(PythonProject):
         self._properties.AddPage("Resource","folder","noval.project.resource.ResourcePanel")
         self._properties.AddPage("Debug/Run","folder","noval.python.project.debugrun.DebugRunPanel")
 
-        self._runinfo.RunConfig = "pyinstaller.PyinstallerRunconfig"
-        self._runinfo.DocumentTemplate = "pyinstaller.PyinstallerProjectTemplate"
+        self._runinfo.RunConfig = "pyinstaller.pyinstall.PyinstallerRunconfig"
+        self._runinfo.DocumentTemplate = "pyinstaller.pyinstall.PyinstallerProjectTemplate"
 
 class PyinstallerProjectDocument(PythonProjectDocument):
 
@@ -125,46 +150,40 @@ class PyinstallerProjectDocument(PythonProjectDocument):
         file_key = self.GetFileKey(start_up_file)
         run_configuration_name = utils.profile_get(file_key + "/RunConfigurationName","")
         return run_configuration_name
+
+ #   def Run(self):
+   #     self.RunTarget()
+
+    def RunScript(self,run_parameter):
+        interpreter = run_parameter.Interpreter
+        #内建解释器只能调试代码,不能在终端中运行
+        if interpreter.IsBuiltIn:
+            return
+        executor = TerminalExecutor(run_parameter)
+        command1 = executor.GetExecuteCommand()
+        target_exe_path = run_parameter.GetTargetPath()
+        print ('run target exe path',target_exe_path,'in terminal')
+        run_parameter = BaseRunconfig(target_exe_path)
+        executor = TerminalExecutor(run_parameter)
+        command2 = executor.GetExecuteCommand()
+
+        command = command1 + " && " +  command2
         
-    def GetRunParameter(self,start_up_file):
-        #check the run configuration first,if exist,use run configuration
-        run_configuration_name = self.GetRunConfiguration(start_up_file)
-        if run_configuration_name:
-            file_configuration = RunConfiguration.FileConfiguration(self,start_up_file)
-            run_configuration = file_configuration.LoadConfiguration(run_configuration_name)
-            try:
-                return run_configuration.GetRunParameter()
-            except PromptErrorException as e:
-                wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR)
-                return None
-            
-
-        use_argument = utils.profile_get_int(self.GetFileKey(start_up_file,"UseArgument"),True)
-        if use_argument:
-            initialArgs = utils.profile_get(self.GetFileKey(start_up_file,"RunArguments"),"")
-        else:
-            initialArgs = ''
-        python_path = utils.profile_get(self.GetFileKey(start_up_file,"PythonPath"),"")
-        startIn = utils.profile_get(self.GetFileKey(start_up_file,"RunStartIn"),"")
-        if startIn == '':
-            startIn = os.path.dirname(self.GetFilename())
-        env = {}
-        paths = set()
-        path_post_end = utils.profile_get_int(self.GetKey("PythonPathPostpend"), True)
-        if path_post_end:
-            paths.add(str(os.path.dirname(self.GetFilename())))
-        #should avoid environment contain unicode string,such as u'xxx'
-        if len(python_path) > 0:
-            paths.add(str(python_path))
-        env[consts.PYTHON_PATH_NAME] = os.pathsep.join(list(paths))
-        #获取项目的运行配置类
-        return self.GetRunconfigClass()(GetApp().GetCurrentInterpreter(),start_up_file.filePath,initialArgs,env,startIn,project=self)
-
-    def Run(self):
-        self.RunTarget()
+        utils.get_logger().debug("start run executable: %s in terminal",command)
+        startIn = executor.GetStartupPath()
+        terminal.run_in_terminal(command,startIn,os.environ,keep_open=False,pause=True,title="abc")
 
     def Debug(self):
-        pass
+        run_parameter = self.GetRunParameter()
+        if run_parameter is None:
+            return
+        if run_parameter.Interpreter.IsBuiltIn:
+            return
+        view = GetApp().MainFrame.GetCommonView("Output")
+        view.SetRunParameter(run_parameter)
+        view.CreateExecutor(finish_stopped=False)
+        view.Execute()
+        GetApp().GetDocumentManager().ActivateView(self.GetDebugger().GetView())
 
     def GetRunConfiguration(self):
         pass
@@ -175,22 +194,13 @@ class PyinstallerProjectDocument(PythonProjectDocument):
     def DebugRunTarget(self,run_parameter):
         target_exe_path = self.GetTargetPath()
         
-    def GetTargetPath(self,file_name):
-        project_path = self.GetPath()
-        dist_path = os.path.join(project_path,'dist')
-        dist_project_path = os.path.join(dist_path,self.GetModel().Name)
-        target_exe_path = os.path.join(dist_project_path,"%s.exe"%strutils.get_filename_without_ext(file_name))
+
         
 
 class PyinstallerProjectTemplate(PythonProjectTemplate):
-    pass
-
-class PyinstallerProjectNameLocationPage(PythonProjectNameLocationPage):
-
-    def __init__(self,master,**kwargs):
-        PythonProjectNameLocationPage.__init__(self,master,**kwargs)
-
-    def GetProjectTemplate(self):
+    
+    @staticmethod
+    def CreateProjectTemplate():
         projectTemplate = PyinstallerProjectTemplate(GetApp().GetDocumentManager(),
                 _("Project File"),
                 "*%s" % consts.PROJECT_EXTENSION,
@@ -202,6 +212,15 @@ class PyinstallerProjectNameLocationPage(PythonProjectNameLocationPage):
                 PythonProjectView,
                 icon = imageutils.getProjectIcon())
         return projectTemplate
+    
+
+class PyinstallerProjectNameLocationPage(PythonProjectNameLocationPage):
+
+    def __init__(self,master,**kwargs):
+        PythonProjectNameLocationPage.__init__(self,master,**kwargs)
+
+    def GetProjectTemplate(self):
+        PyinstallerProjectTemplate.CreateProjectTemplate()
 
 class PyinstallerDubugrunConfigurationPage(projectwizard.BitmapTitledWizardPage):
     """Creates the calculators interface

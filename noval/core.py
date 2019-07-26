@@ -592,7 +592,7 @@ class DocManager(object):
             templates.sort(tempcmp)
 
 
-        default_document_type = utils.profile_get(consts.DEFAULT_DOCUMENT_TYPE_KEY,GetApp().GetDefaultDocumentType())
+        default_document_type = utils.profile_get(consts.DEFAULT_DOCUMENT_TYPE_KEY,GetApp().GetDefaultTextDocumentType())
         default_document_template = self.FindTemplateForDocumentType(default_document_type)
         strings = []
         default_document_selection = -1
@@ -622,10 +622,10 @@ class DocManager(object):
         
     def CreateTemplateDocument(self, template,path, flags=0):
         #the document has been opened,switch to the document view
-        if path and flags & wx.lib.docview.DOC_OPEN_ONCE:
-            found_view = utils.GetOpenView(path)
+        if path and flags & DOC_OPEN_ONCE:
+            found_view = self.GetDocument(path)
             if found_view:
-                if found_view and found_view.GetFrame() and not (flags & wx.lib.docview.DOC_NO_VIEW):
+                if found_view and found_view.GetFrame() and not (flags & DOC_NO_VIEW):
                     found_view.GetFrame().SetFocus()  # Not in wxWindows code but useful nonetheless
                     if hasattr(found_view.GetFrame(), "IsIconized") and found_view.GetFrame().IsIconized():  # Not in wxWindows code but useful nonetheless
                         found_view.GetFrame().Iconize(False)
@@ -673,6 +673,8 @@ class DocManager(object):
         times will just return the same document.
         if wx.lib.docview.DOC_NO_VIEW is present, opening a file will generate the document,
         but not generate a corresponding view.
+            manager里面CreateDocument除了创建文档,还加载文档内容
+            template里面CreateDocument只是创建文档对象,并没有加载文档内容
         """
         templates = []
         for temp in self._templates:
@@ -1274,6 +1276,7 @@ class DocTemplate(object):
         Creates a new instance of the associated document class. If you have
         not supplied a class to the template constructor, you will need to
         override this function to return an appropriate document instance.
+            这里CreateDocument只是创建文档对象,并不加载文档内容
         """
         doc = self._docType()
         doc.SetFilename(path)

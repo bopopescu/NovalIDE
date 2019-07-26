@@ -18,7 +18,7 @@ from noval.python.parser.utils import py_cmp,py_sorted
 import noval.terminal as terminal
 import noval.project.property as projectproperty
 import time
-
+import noval.project.document as projectdocument
 
 class EntryPopup(tk.Entry):
 
@@ -516,7 +516,7 @@ class BaseProjectbrowser(ttk.Frame):
         retval = []
         for document in GetApp().GetDocumentManager().GetDocuments():
             #文档类型为项目文档
-            if document.GetDocumentTemplate().GetDocumentType() == baseviewer.ProjectDocument:
+            if document.GetDocumentTemplate().GetDocumentType() == projectdocument.ProjectDocument:
                 if document.GetFilename() == filename:
                     retval.append(document)
                 #项目文档是否包含该文件

@@ -11,7 +11,6 @@
 #-------------------------------------------------------------------------------
 from noval import _,GetApp
 from tkinter import messagebox
-import noval.python.project.model as pyprojectlib
 from noval.project.baseviewer import *
 import tkinter as tk
 from tkinter import ttk
@@ -27,58 +26,8 @@ import noval.iface as iface
 import noval.plugin as plugin
 import noval.ui_common as ui_common
 import noval.ui_utils as ui_utils
-
 import noval.project.variables as variablesutils
-
-class PythonProjectDocument(ProjectDocument):
-
-    #pyc和pyo二进制文件类型禁止添加到项目中
-    BIN_FILE_EXTS = ['pyc','pyo'] + ProjectDocument.BIN_FILE_EXTS
-    def __init__(self, model=None):
-        ProjectDocument.__init__(self,model)
-        
-    @staticmethod
-    def GetProjectModel():
-        return pyprojectlib.PythonProject()
-
-    def GetRunConfiguration(self,start_up_file):
-        file_key = self.GetFileKey(start_up_file)
-        run_configuration_name = utils.profile_get(file_key + "/RunConfigurationName","")
-        return run_configuration_name
-        
-    def GetRunParameter(self,start_up_file):
-        #check the run configuration first,if exist,use run configuration
-        run_configuration_name = self.GetRunConfiguration(start_up_file)
-        if run_configuration_name:
-            file_configuration = RunConfiguration.FileConfiguration(self,start_up_file)
-            run_configuration = file_configuration.LoadConfiguration(run_configuration_name)
-            try:
-                return run_configuration.GetRunParameter()
-            except PromptErrorException as e:
-                wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR)
-                return None
-            
-
-        use_argument = utils.profile_get_int(self.GetFileKey(start_up_file,"UseArgument"),True)
-        if use_argument:
-            initialArgs = utils.profile_get(self.GetFileKey(start_up_file,"RunArguments"),"")
-        else:
-            initialArgs = ''
-        python_path = utils.profile_get(self.GetFileKey(start_up_file,"PythonPath"),"")
-        startIn = utils.profile_get(self.GetFileKey(start_up_file,"RunStartIn"),"")
-        if startIn == '':
-            startIn = os.path.dirname(self.GetFilename())
-        env = {}
-        paths = set()
-        path_post_end = utils.profile_get_int(self.GetKey("PythonPathPostpend"), True)
-        if path_post_end:
-            paths.add(str(os.path.dirname(self.GetFilename())))
-        #should avoid environment contain unicode string,such as u'xxx'
-        if len(python_path) > 0:
-            paths.add(str(python_path))
-        env[consts.PYTHON_PATH_NAME] = os.pathsep.join(list(paths))
-        #获取项目的运行配置类
-        return self.GetRunconfigClass()(GetApp().GetCurrentInterpreter(),start_up_file.filePath,initialArgs,env,startIn,project=self)
+from noval.project.document import ProjectDocument
         
 class PythonProjectTemplate(ProjectTemplate):
     
@@ -272,6 +221,6 @@ class DefaultProjectTemplateLoader(plugin.Plugin):
         #导入代码时默认不创建项目目录,并且项目创建页面不能做完成操作,只能下一步和上一部操作,导入代码页面才能做完成操作
         ProjectTemplateManager().AddProjectTemplate("General","New Project From Existing Code",\
                     [("noval.python.project.viewer.PythonProjectNameLocationPage",{'can_finish':False,\
-                        'pythonpath_pattern':PythonNewProjectConfiguration.PROJECT_PATH_ADD_TO_PYTHONPATH,'create_project_dir':False}),("noval.project.importfiles.ImportfilesPage",{'rejects':PythonProjectDocument.BIN_FILE_EXTS})])
+                        'pythonpath_pattern':PythonNewProjectConfiguration.PROJECT_PATH_ADD_TO_PYTHONPATH,'create_project_dir':False}),("noval.project.importfiles.ImportfilesPage",{'rejects':ProjectDocument.BIN_FILE_EXTS})])
 
 consts.DEFAULT_PLUGINS += ('noval.python.project.viewer.DefaultProjectTemplateLoader',)

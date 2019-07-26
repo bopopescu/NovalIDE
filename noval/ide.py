@@ -38,6 +38,7 @@ import subprocess
 import noval.generalopt as generalopt
 import noval.ui_common as ui_common
 import noval.project.baseviewer as baseprojectviewer
+import noval.project.document as projectdocument
 import noval.docposition as docposition
 import noval.ui_utils as ui_utils
 import noval.ui_lang as ui_lang
@@ -52,7 +53,7 @@ import noval.clean_ui_themes as base_ui_themes
 import noval.paren_matcher as paren_matcher
 import noval.feedback as feedback
 import noval.syntax.syndata as syndata
-
+import noval.project.debugger as basedebugger
 #----------------------------------------------------------------------------
 # Classes
 #----------------------------------------------------------------------------
@@ -221,7 +222,7 @@ class IDEApplication(core.App):
         '''
         openDocs = self.GetDocumentManager().GetDocuments()
         for doc in openDocs:
-            if isinstance(doc,baseprojectviewer.ProjectDocument):
+            if isinstance(doc,projectdocument.ProjectDocument):
                 view = self.MainFrame.GetProjectView(False).GetView()
             else:
                 view = doc.GetFirstView()
@@ -255,7 +256,18 @@ class IDEApplication(core.App):
         synglob.LexerFactory().LoadLexerTemplates(self.GetDocumentManager())
         
     def CreateProjectTemplate(self):
-        raise Exception("This method must be implemented in derived class")
+        template_class,document_class,view_class = self.GetProjectTemplateClassData()
+        projectTemplate = template_class(self.GetDocumentManager(),
+                _("Project File"),
+                "*%s" % consts.PROJECT_EXTENSION,
+                os.getcwd(),
+                consts.PROJECT_EXTENSION,
+                "Project Document",
+                _("Project Viewer"),
+                document_class,
+                view_class,
+                icon = imageutils.getProjectIcon())
+        self.GetDocumentManager().AssociateTemplate(projectTemplate)
         
     def GetDefaultLangId(self):
         return lang.ID_LANG_TXT
@@ -307,12 +319,12 @@ class IDEApplication(core.App):
         self._pluginmgr = pluginmgr
 
     def AddMessageCatalog(self, name, path):
-        """Add a catalog lookup path to the app
-        @param name: name of catalog (i.e 'projects')
-        @param path: catalog lookup path
-
+        """
+            添加翻译文件的查找路径,在插件中使用,如果插件需要翻译,可以在egg文件里面添加翻译文件在egg文件里面的相对路径
         """
         if self.locale is not None:
+            #这里会把egg文件解压到一个临时的目录,以便程序能搜索到翻译文件的绝对路径
+            #windows egg文件的临时目录类似:C:\Users\Administrator\AppData\Roaming\Python-Eggs\calculator-0.6-py2.7.egg-tmp\calculator\locale
             path = resource_filename(path, 'locale')
             self.locale.AddCatalogLookupPathPrefix(path)
             self.locale.AddCatalog(name)
@@ -446,7 +458,7 @@ class IDEApplication(core.App):
         self.AddCommand(constants.ID_SHOW_FULLSCREEN,_("&View"),_("Show FullScreen"),self.ShowFullScreen,image="monitor.png")
 
         self.AddCommand(constants.ID_RUN,_("&Run"),_("&Start Running"),self.Run,image="toolbar/run.png",include_in_toolbar=True,default_tester=True,default_command=True)
-        self.AddCommand(constants.ID_DEBUG,_("&Run"),_("&Start Debugging"),self.DebugRun,image="toolbar/debug.png",include_in_toolbar=True,default_tester=True,default_command=True)
+        self.AddCommand(constants.ID_DEBUG,_("&Run"),_("&Start Debugging"),self.Debug,image="toolbar/debug.png",include_in_toolbar=True,default_tester=True,default_command=True)
         self.AddCommand(constants.ID_OPEN_TERMINAL,_("&Tools"),_("&Terminator"),self.OpenTerminator,image="cmd.png")
         
         self.AddCommand(constants.ID_CHECK_UPDATE,_("&Help"),_("&Check for Updates"),handler=lambda:self.CheckUpdate(ignore_error=False))
@@ -458,10 +470,16 @@ class IDEApplication(core.App):
         aboutdlg.ShowModal()
         
     def Run(self):
-        raise Exception("This method must be implemented in derived class")
+        '''
+            在终端中运行程序
+        '''
+        self.GetDebugger().Run()
         
-    def DebugRun(self):
-        raise Exception("This method must be implemented in derived class")
+    def Debug(self):
+        '''
+            在程序调试窗口中运行程序
+        '''
+        self.GetDebugger().Debug()
         
     def OpenTerminator(self,filename=None):
         if filename:
@@ -675,7 +693,10 @@ class IDEApplication(core.App):
             return size
             
     def AllowClose(self):
-        #先查询是否允许关闭所有窗口
+        #先询问是否允许关闭调试器
+        if not self.GetDebuggerClass().CloseDebugger():
+            return False
+        #查询是否允许关闭所有窗口
         if not self.MainFrame.CloseWindows():
             return False
         if not self.GetDocumentManager().Clear(force=False):
@@ -898,11 +919,29 @@ class IDEApplication(core.App):
         else:
             ui_utils.GetFullscreenDialog().CloseDialog()
             
-    def GetDefaultDocumentType(self):
+    def GetDefaultTextDocumentType(self):
+        '''
+            默认新建文本文档类型
+        '''
         return syntax.SyntaxThemeManager().GetLexer(self.GetDefaultLangId()).GetDocTypeName()
         
-    def GetDebuggerView(self):
+    def GetDebugviewClass(self):
         return None
+
+    def GetDebuggerClass(self):
+        return basedebugger.Debugger
+
+    def GetDebugger(self):
+        debugger = self.GetDebuggerClass()()
+        current_project = self.MainFrame.GetProjectView(False).GetCurrentProject()
+        debugger.SetCurrentProject(current_project)
+        return debugger
+
+    def GetProjectTemplateClassData(self):
+        '''
+            返回项目实际的模板类,文档类,以及视图类
+        '''
+        return baseprojectviewer.ProjectTemplate,projectdocument.ProjectDocument,baseprojectviewer.ProjectView
 
 class AppEvent(record.Record):
     def __init__(self, sequence, **kwargs):

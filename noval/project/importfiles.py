@@ -7,7 +7,6 @@ import noval.util.apputils as sysutilslib
 import noval.util.fileutils as fileutils
 import threading
 import time
-#import ProjectUI
 import noval.util.strutils as strutils
 import noval.project.wizard as projectwizard
 import noval.consts as consts
@@ -20,6 +19,7 @@ import queue
 import noval.util.utils as utils
 import noval.ui_base as ui_base
 import noval.constants as constants
+import noval.project.document as projectdocument
 
 #添加项目文件覆盖已有文件时默认处理方式
 DEFAULT_PROMPT_MESSAGE_ID = constants.ID_YES
@@ -82,7 +82,7 @@ class ImportfilesPage(projectwizard.BitmapTitledWizardPage):
         self.file_filter_btn.grid(column=0, row=0, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         #文件类型过滤列表
         self.filters = filters
-        self.rejects = rejects
+        self.rejects = rejects + projectdocument.ProjectDocument.BIN_FILE_EXTS
         self.select_all_btn = ttk.Button(
             sizer_frame, text=_("Select All"), command=self.SelectAll
         )

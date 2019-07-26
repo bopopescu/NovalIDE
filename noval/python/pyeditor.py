@@ -35,6 +35,7 @@ import noval.constants as constants
 import noval.python.project.viewer as projectviewer
 import noval.python.project.runconfig as runconfig
 import noval.ui_utils as ui_utils
+from noval.python.project.rundocument import *
 
 class PythonDocument(codeeditor.CodeDocument): 
 
@@ -48,7 +49,7 @@ class PythonDocument(codeeditor.CodeDocument):
         
     def GetRunParameter(self):
         fileToRun = self.GetFilename()
-        unprojProj = projectviewer.PythonProjectDocument.GetUnProjectDocument()
+        unprojProj = PythonProjectDocument.GetUnProjectDocument()
         initialArgs = utils.profile_get(unprojProj.GetUnProjectFileKey(fileToRun,"RunArguments"),"")
         python_path = utils.profile_get(unprojProj.GetUnProjectFileKey(fileToRun,"PythonPath"),"")
         startIn = utils.profile_get(unprojProj.GetUnProjectFileKey(fileToRun,"RunStartIn"),"")

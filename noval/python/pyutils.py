@@ -172,4 +172,3 @@ class SelectModuleFileDialog(ui_base.CommonModaldialog):
     def IsFileFiltered(self,file_path):
         file_ext = strutils.get_file_extension(file_path)
         return file_ext in self.filters
-    

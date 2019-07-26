@@ -115,7 +115,7 @@ class DocumentOptionsPanel(ui_utils.BaseConfigurationPanel):
 
     def GetDocumentTypes(self):
         type_names = []
-        default_document_typename = utils.profile_get("DefaultDocumentType",GetApp().GetDefaultDocumentType())
+        default_document_typename = utils.profile_get("DefaultDocumentType",GetApp().GetDefaultTextDocumentType())
         current_document_typename = ''
         templates = []
         for temp in GetApp().GetDocumentManager().GetTemplates():

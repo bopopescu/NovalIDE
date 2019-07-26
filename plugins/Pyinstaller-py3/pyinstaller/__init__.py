@@ -14,7 +14,9 @@ import noval.plugin as plugin
 import noval.util.utils as utils
 import noval.constants as constants
 from noval.project.templatemanager import ProjectTemplateManager
-from noval.python.debugger.output import OutputView
+from noval.project.debugger import CommonRunCommandUI
+from noval.python.debugger.output import *
+from noval.project.baseconfig import *
 
 # Local imports
 import pyinstaller.pyinstall as pyinstall
@@ -24,6 +26,26 @@ import pyinstaller.pyinstall as pyinstall
 
 #wx.GetApp().AddMessageCatalog('calculator', __name__)
 #-----------------------------------------------------------------------------#
+
+class OutputView(CommonRunCommandUI):
+    def __init__(self,master):
+        CommonRunCommandUI.__init__(self,master,GetApp().GetDebugger(),None)
+
+
+    def ExecutorFinished(self,stopped=True):
+        CommonRunCommandUI.ExecutorFinished(self,stopped=stopped)
+        if not self._stopped:
+            target_exe_path = self._run_parameter.GetTargetPath()
+            print ('target exe path is',target_exe_path)
+            view = GetApp().MainFrame.GetCommonView("Output")
+            run_parameter = BaseRunconfig(target_exe_path)
+            view._textCtrl.ClearOutput()
+            view.SetRunParameter(run_parameter)
+            view.CreateExecutor()
+            view.Execute()
+
+    def GetOuputctrlClass(self):
+        return DebugOutputctrl
 
 class Pyinstaller(plugin.Plugin):
     """Simple Programmer's Calculator"""
@@ -35,7 +57,7 @@ class Pyinstaller(plugin.Plugin):
                         ("noval.project.importfiles.ImportfilesPage",{'rejects':[]})])
         ProjectTemplateManager().AddProjectTemplate("Python/Pyinstaller",_("Windows Application"),[pyinstall.PyinstallerProjectNameLocationPage,pyinstall.PyinstallerDubugrunConfigurationPage,\
                         ("noval.project.importfiles.ImportfilesPage",{'rejects':[]})])
-        ProjectTemplateManager().AddProjectTemplate("Python/Pyinstaller",_("A simple helloworld demo"),[pyinstall.PyinstallerProjectNameLocationPage,pyinstall.PyinstallerDubugrunConfigurationPage,])
+        ProjectTemplateManager().AddProjectTemplate("Python/Pyinstaller",_("A simple helloworld demo"),[pyinstall.PyinstallerProjectNameLocationPage,pyinstall.PyinstallerDubugrunConfigurationPage,"noval.xx"])
 
  
         GetApp().MainFrame.AddView("Output",OutputView, _("Output"), "s",image_file="search.ico")

@@ -46,7 +46,6 @@ import noval.python.parser.intellisence as intellisence
 import noval.python.interpreter.interpretermanager as interpretermanager
 import noval.util.strutils as strutils
 import noval.python.parser.utils as parserutils
-import noval.util.fileutils as fileutils
 import copy
 import noval.util.appdirs as appdirs
 import noval.util.utils as utils
@@ -66,36 +65,16 @@ elif utils.is_py3_plus():
     
 import noval.python.pyutils as pyutils
 import noval.terminal as terminal
-import noval.toolbar as toolbar
 import noval.menu as tkmenu
-import noval.python.project.viewer as projectviewer
 import noval.consts as consts
-import noval.misc as misc
-from noval.python.parser.utils import py_cmp,py_sorted
-import noval.python.pyeditor as pyeditor
 import noval.python.project.runconfiguration as runconfiguration
 import noval.project.executor as executor
+from noval.project.debugger import *
+from noval.python.debugger.output import *
 
 #VERBOSE mode will invoke threading.Thread _VERBOSE,which will print a lot of thread debug text on screen
 _VERBOSE = False
 _WATCHES_ON = True
-
-
-def common_run_exception(func):
-    '''
-        调式运行公共异常处理函数,装饰调式运行函数,做同样的异常处理
-    '''
-    def _wrapper(*args, **kwargs): 
-        try:
-            func(*args, **kwargs)
-        except executor.StartupPathNotExistError as e:
-            e.ShowMessageBox()
-        except Exception as e:
-            if not isinstance(e,RuntimeError):
-                utils.get_logger().exception("")
-            messagebox.showerror(_("Run Error"),str(e),parent=GetApp().GetTopWindow())
-    return _wrapper 
-
 
 class CommonExecutorMixin:
     def __init__(self):
@@ -175,14 +154,8 @@ class PythonDebuggerExecutor(PythonExecutor):
         if(arg9 != None):
             self._cmd += self.spaceAndQuote(arg9)
 
-class RunCommandUI(ttk.Frame):
+class RunCommandUI(CommonRunCommandUI):
     runners = []
-    
-    KILL_PROCESS_ID = NewId()
-    CLOSE_TAB_ID = NewId()
-    TERMINATE_ALL_PROCESS_ID = NewId()
-    RESTART_PROCESS_ID = NewId()
-
     def ShutdownAllRunners():
         # See comment on PythonDebuggerUI.StopExecution
         for runner in RunCommandUI.runners:
@@ -198,110 +171,42 @@ class RunCommandUI(ttk.Frame):
     def StopAndRemoveAllUI():
         return GetApp().GetDebugger().CloseAllPages()
 
-    def __init__(self,parent, debugger, fileName,run_parameter):
-        ttk.Frame.__init__(self, parent)
-        self._debugger = debugger
+    def __init__(self,parent, debugger,run_parameter):
+        #toolbar使用垂直布局
+        CommonRunCommandUI.__init__(self, parent,debugger,run_parameter,toolbar_orient=tk.VERTICAL)
         self._noteBook = parent
-        self._run_parameter = run_parameter
-        self._restarted = False
         threading._VERBOSE = _VERBOSE
-        # GUI Initialization follows
-        self._tb = tb = toolbar.ToolBar(self,orient=tk.VERTICAL)
-        self._tb.pack(side=tk.LEFT,fill="y",expand=0)
-        self.terminate_all_image = GetApp().GetImage("python/debugger/terminate_all.png")
-        self.restart_image = GetApp().GetImage("python/debugger/restart.png")
-        self.close_img = GetApp().GetImage("python/debugger/close.png")
-        self.stop_img = GetApp().GetImage("python/debugger/stop.png")
-        
-        self._tb.AddButton(self.CLOSE_TAB_ID,self.close_img,_("Close Window"),lambda:self.OnToolClicked(self.CLOSE_TAB_ID))
-        self._tb.AddButton(self.KILL_PROCESS_ID,self.stop_img,_("Stop the Run."),lambda:self.OnToolClicked(self.KILL_PROCESS_ID))
-        
-        self._tb.AddButton(self.TERMINATE_ALL_PROCESS_ID,self.terminate_all_image,_("Stop All the Run."),lambda:self.OnToolClicked(self.TERMINATE_ALL_PROCESS_ID))
-        self._tb.AddButton(self.RESTART_PROCESS_ID,self.restart_image,_("Restart the Run."),lambda:self.OnToolClicked(self.RESTART_PROCESS_ID))
-
-        self._output = debugoutput.OutputView(self) #id)
-        self._output.pack(side=tk.LEFT,fill="both",expand=1)
-        self._textCtrl = self._output.GetOutputCtrl()
-        self._stopped = False
-        # Executor initialization
-        self._executor = PythonExecutor(self._run_parameter, self, callbackOnExit=self.ExecutorFinished)
-        self.evt_stdtext_binding = GetApp().bind(executor.EVT_UPDATE_STDTEXT, self.AppendText,True)
-        self.evt_stdterr_binding = GetApp().bind(executor.EVT_UPDATE_ERRTEXT, self.AppendErrorText,True)
-        self._output.SetExecutor(self._executor)
         RunCommandUI.runners.append(self)
         #重写关闭窗口事件,关闭窗口时检查进程是否在运行
         self.master.close = self.Close
 
+    def GetOutputviewClass(self):
+        return DebugOutputView
+
     def __del__(self):
         # See comment on PythonDebuggerUI.StopExecution
-        self._executor.DoStopExecution()
+        CommonRunCommandUI.__del__(self)
         RunCommandUI.runners.remove(self)
-        
-    def GetOutputView(self):
-        return self._output
 
-    @common_run_exception
-    def Execute(self):
-        try:
-            self._executor.Execute()
-        except Exception as e:
-            self.StopExecution()
-            self.ExecutorFinished()
-            raise e
+    def GetExecutorClass(self):
+        #python执行器
+        return PythonExecutor
     
     def IsProcessRunning(self):
         process_runners = [runner for runner in self.runners if not runner.Stopped]
         return True if len(process_runners) > 0 else False
-    
-    @property
-    def Stopped(self):
-        return self._stopped
-        
-    def UpdateTerminateAllUI(self):
-        self._tb.EnableTool(self.TERMINATE_ALL_PROCESS_ID, self.IsProcessRunning())
         
     def UpdateAllRunnerTerminateAllUI(self):
         for runner in self.runners:
             runner.UpdateTerminateAllUI()
         
     def ExecutorFinished(self):
-        try:
-            self._tb.EnableTool(self.KILL_PROCESS_ID, False)
-            self.UpdateFinishedPagePaneText()
-            self._stopped = True
-            self._textCtrl.set_read_only(True)
-            self.UpdateAllRunnerTerminateAllUI()
-        except tk.TclError:
-            utils.get_logger().warn("RunCommandUI object has been deleted, attribute access no longer allowed when finish executor")
-            return
-        #如果是点了重新执行按钮,程序执行完成后,需要再运行一次
-        if self._restarted:
-            self.RestartRunProcess()
-            self._restarted = False
+        self.UpdateFinishedPagePaneText()
+        CommonRunCommandUI.ExecutorFinished(self)
             
     #when process finished,update tag page text
     def UpdateFinishedPagePaneText(self):
         self.UpdatePagePaneText(_("Running"),_("Finished Running"))
-
-    def StopExecution(self,unbind_evt=False):
-        if not self._stopped:
-            if unbind_evt:
-                GetApp().unbind(executor.EVT_UPDATE_STDTEXT,self.evt_stdtext_binding)
-                GetApp().unbind(executor.EVT_UPDATE_ERRTEXT,self.evt_stdterr_binding)
-            self._executor.DoStopExecution()
-            self._textCtrl.set_read_only(True)
-
-    def AppendText(self, event):
-        if event.get('interface') != self:
-            utils.get_logger().debug('run view interface receive other stdout msg,ignore it')
-            return
-        self._textCtrl.AppendText(event.get('value'))
-
-    def AppendErrorText(self, event):
-        if event.get('interface') != self:
-            utils.get_logger().debug('run view interface receive other stderr msg,ignore it')
-            return
-        self._textCtrl.AppendErrorText(event.get('value'))
 
     def StopAndRemoveUI(self):
         if not self._stopped:
@@ -313,28 +218,10 @@ class RunCommandUI(ttk.Frame):
         #关闭调试窗口,关闭notebook的子窗口
         self.master.master.close_child(self.master)
         return True
-        
-    def RestartProcess(self):
-        currentProj = GetApp().MainFrame.GetProjectView(False).GetCurrentProject()
-        if currentProj is not None and currentProj.GetModel().FindFile(self._run_parameter.FilePath):
-            self._debugger.PromptToSaveFiles(currentProj)
-        else:
-            openDoc = GetApp().GetDocumentManager().GetDocument(self._run_parameter.FilePath)
-            if openDoc:
-                openDoc.Save()
-        if not self._stopped:
-            self._restarted = True
-            self.StopExecution()
-        else:
-            self.RestartRunProcess()
-            
+
     def RestartRunProcess(self):
-        self._textCtrl.ClearOutput()
-        self._tb.EnableTool(self.KILL_PROCESS_ID, True)
-        self._tb.EnableTool(self.TERMINATE_ALL_PROCESS_ID, True)
-        self._stopped = False
+        CommonRunCommandUI.RestartRunProcess(self)
         self.UpdateRestartPagePaneText()
-        self.Execute()
         
     def UpdatePagePaneText(self,src_text,to_text):
         nb = self.master.master
@@ -349,32 +236,18 @@ class RunCommandUI(ttk.Frame):
     def UpdateRestartPagePaneText(self):
         self.UpdatePagePaneText(_("Finished Running"), _("Running"))
 
-    #------------------------------------------------------------------------------
-    # Event handling
-    #-----------------------------------------------------------------------------
-
-    def OnToolClicked(self, id):
-        if id == self.KILL_PROCESS_ID:
-            self.StopExecution()
-
-        elif id == self.CLOSE_TAB_ID:
-            self.StopAndRemoveUI()
-            
-        elif id == self.TERMINATE_ALL_PROCESS_ID:
-            self.ShutdownAllRunners()
-            
-        elif id == self.RESTART_PROCESS_ID:
-            self.RestartProcess()
-                
-    def ProcessUpdateUIEvent(self,event):
-        return self._textCtrl.ProcessUpdateUIEvent(event)
-        
-    def ProcessEvent(self,event):
-        return self._textCtrl.ProcessEvent(event)
-        
-
-    def Close(self):
-        self.StopAndRemoveUI()
+    def SaveProjectFiles(self):
+        '''
+            调式运行python时保存文件策略,由于运行python文件时有多个调式页面,而且还可以运行单个文件,故保存文件策略比较复杂
+        '''
+        #如果调式运行的文件属于这个项目,则保存项目所有文件
+        if self._debugger.GetCurrentProject().GetModel().FindFile(self._run_parameter.FilePath):
+            currentProj.PromptToSaveFiles()
+        else:
+            #如果调式运行的文件不属于这个项目,则只保存该文件
+            openDoc = GetApp().GetDocumentManager().GetDocument(self._run_parameter.FilePath)
+            if openDoc:
+                openDoc.Save()
 
 DEFAULT_PORT = 32032
 DEFAULT_HOST = 'localhost'
@@ -1887,7 +1760,6 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
     def StopWait(self):
         assert(self._waiting)
         self.ShutdownServer()
-        
 
 class DebuggerView(core.View):
     def __init__(self,debugger):
@@ -1905,39 +1777,11 @@ class DebuggerView(core.View):
         page = tab_page.winfo_children()[0]
         return page
 
-class Debugger:
-
+class PythonDebugger(Debugger):
     #----------------------------------------------------------------------------
     # Constants
     #----------------------------------------------------------------------------
     RUN_PARAMETERS = []
-    
-    def AppendRunParameter(self,run_paramteter):
-        if len(self.RUN_PARAMETERS) > 0:
-            self.SaveRunParameter(self.RUN_PARAMETERS[-1])
-        self.RUN_PARAMETERS.append(run_paramteter)
-        
-    def ComparePaths(first, second):
-        one = DebuggerService.ExpandPath(first)
-        two = DebuggerService.ExpandPath(second)
-        if _WINDOWS:
-            return one.lower() == two.lower()
-        else:
-            return one == two
-    ComparePaths = staticmethod(ComparePaths)
-
-    # Make sure we're using an expanded path on windows.
-    def ExpandPath(path):
-        if _WINDOWS:
-            try:
-                return win32api.GetLongPathName(path)
-            except:
-                if _VERBOSE:
-                    print ("Cannot get long path for %s" % path)
-
-        return path
-
-    ExpandPath = staticmethod(ExpandPath)
 
     #----------------------------------------------------------------------------
     # Overridden methods
@@ -1963,19 +1807,14 @@ class Debugger:
        # self.dbgLanguage = projectmodel.LANGUAGE_DEFAULT
         self._debugger_ui = None
 
-
         self.bottomTab = GetApp().MainFrame._view_notebooks['s']
         self.bottomTab.bind("<ButtonPress-3>", self._right_btn_press, True)
         self._tabs_menu = None
         self._popup_index = -1
         self._watch_separater = None
-        self._view = self._CreateView()
         
     def _CreateView(self):
         return DebuggerView(self)
-        
-    def GetView(self):
-        return self._view
 
     def _right_btn_press(self, event):
         try:
@@ -2034,239 +1873,9 @@ class Debugger:
             menu.Append(constants.ID_CLOSE_ALL,_("Close All"),handler=self.CloseAllPages)
         self._tabs_menu.tk_popup(*self.bottomTab.winfo_toplevel().winfo_pointerxy())
 
-
-    def CloseDebugger(self):
-        # IS THIS THE RIGHT PLACE?
-        try:
-          #  config = wx.ConfigBase_Get()
-           # config.Write(self.BREAKPOINT_DICT_STRING, pickle.dumps(self._masterBPDict))
-            #Watchs.Watch.Dump(self.watchs)
-            if not RunCommandUI.StopAndRemoveAllUI():
-                return False
-        except:
-            tp,val,tb = sys.exc_info()
-            traceback.print_exception(tp, val, tb)
-        return True
-
     #----------------------------------------------------------------------------
     # Service specific methods
     #----------------------------------------------------------------------------
-
-    def ShowHideDebuggerMenu(self,show=True):
-        menuBar = wx.GetApp().GetTopWindow().GetMenuBar()
-        runMenuIndex = menuBar.FindMenu(_("&Run"))
-        runMenu = menuBar.GetMenu(runMenuIndex)
-        ###BaseDebuggerUI.DebuggerRunning() 
-        if show:
-            menu_index = 3
-            
-            if self._watch_separater is None:
-                self._watch_separater = runMenu.InsertSeparator(8)
-            else:
-                runMenu.InsertItem(8,self._watch_separater)
-            if not menuBar.FindItemById(constants.ID_ADD_WATCH):
-                item = wx.MenuItem(runMenu,constants.ID_ADD_WATCH, _("&Add Watch"), _("Add a Watch"))
-                item.SetBitmap(Watchs.getAddWatchBitmap())
-                runMenu.InsertItem(8,item)
-                wx.EVT_MENU(self._frame, constants.ID_ADD_WATCH, self.ProcessEvent)
-            
-            if not menuBar.FindItemById(constants.ID_QUICK_ADD_WATCH):
-                item = wx.MenuItem(runMenu,constants.ID_QUICK_ADD_WATCH, _("&Quick add Watch"), _("Quick add a Watch"))
-                item.SetBitmap(Watchs.getQuickAddWatchBitmap())
-                runMenu.InsertItem(8,item)
-                wx.EVT_MENU(self._frame, constants.ID_QUICK_ADD_WATCH, self.ProcessEvent)
-                
-            if not menuBar.FindItemById(constants.ID_STEP_OUT):
-                item = wx.MenuItem(runMenu,constants.ID_STEP_OUT, _("&Step Out\tShift+F11"), _("Step out the function"))
-                item.SetBitmap(getStepReturnBitmap())
-                runMenu.InsertItem(7,item)
-                wx.EVT_MENU(self._frame, constants.ID_STEP_OUT, self.ProcessEvent)
-
-            if not menuBar.FindItemById(constants.ID_RESTART_DEBUGGER):
-                item = wx.MenuItem(runMenu,constants.ID_RESTART_DEBUGGER, _("&Restart"), _("Restart Debugging"))
-                item.SetBitmap(getRestartDebuggerBitmap())
-                runMenu.InsertItem(menu_index,item)
-                wx.EVT_MENU(self._frame, constants.ID_RESTART_DEBUGGER, self.ProcessEvent)
-                
-
-            if not menuBar.FindItemById(constants.ID_TERMINATE_DEBUGGER):
-                item = wx.MenuItem(runMenu,constants.ID_TERMINATE_DEBUGGER, _("&Stop Debugging"), _("Stop the debugger"))
-                item.SetBitmap(getStopBitmap())
-                runMenu.InsertItem(menu_index,item)
-                wx.EVT_MENU(self._frame, constants.ID_TERMINATE_DEBUGGER, self.ProcessEvent)
-                
-            if not menuBar.FindItemById(constants.ID_BREAK_INTO_DEBUGGER):
-                item = wx.MenuItem(runMenu,constants.ID_BREAK_INTO_DEBUGGER, _("&Break"), _("Break into the debugger"))
-                item.SetBitmap(getBreakBitmap())
-                runMenu.InsertItem(menu_index,item)
-                wx.EVT_MENU(self._frame, constants.ID_BREAK_INTO_DEBUGGER, self.ProcessEvent)
-                
-            if not menuBar.FindItemById(constants.ID_STEP_CONTINUE):
-                item = wx.MenuItem(runMenu,constants.ID_STEP_CONTINUE, _("&Continue"), _("Continue the debugger"))
-                item.SetBitmap(getContinueBitmap())
-                runMenu.InsertItem(menu_index,item)
-                wx.EVT_MENU(self._frame, constants.ID_STEP_CONTINUE, self.ProcessEvent)
-        else:
-            ###TODO:Removes the menu item from the menu but doesn't delete the associated C++ object.
-            ###we should use destroy to delete the menu permanently 
-            if menuBar.FindItemById(constants.ID_STEP_OUT):
-                runMenu.Remove(constants.ID_STEP_OUT)
-            if menuBar.FindItemById(constants.ID_TERMINATE_DEBUGGER):
-                runMenu.Remove(constants.ID_TERMINATE_DEBUGGER)
-            if menuBar.FindItemById(constants.ID_STEP_CONTINUE):
-                runMenu.Remove(constants.ID_STEP_CONTINUE)
-            if menuBar.FindItemById(constants.ID_BREAK_INTO_DEBUGGER):
-                runMenu.Remove(constants.ID_BREAK_INTO_DEBUGGER)
-            if menuBar.FindItemById(constants.ID_RESTART_DEBUGGER):
-                runMenu.Remove(constants.ID_RESTART_DEBUGGER)
-
-            if menuBar.FindItemById(constants.ID_ADD_WATCH):
-                runMenu.Remove(constants.ID_ADD_WATCH)
-            if menuBar.FindItemById(constants.ID_QUICK_ADD_WATCH):
-                runMenu.Remove(constants.ID_QUICK_ADD_WATCH)
-                runMenu.RemoveItem(self._watch_separater)
-    #----------------------------------------------------------------------------
-    # Event Processing Methods
-    #----------------------------------------------------------------------------
-    def OnCombo(self, event):
-        cb = wx.GetApp().ToolbarCombox
-        selection = event.GetSelection()
-        prompt = False
-        if selection == cb.GetCount() - 1:
-            if BaseDebuggerUI.DebuggerRunning():
-                prompt = True
-            else:
-                UICommon.ShowInterpreterOptionPage()
-        else:
-            interpreter = cb.GetClientData(selection)
-            if interpreter != wx.GetApp().GetCurrentInterpreter() and BaseDebuggerUI.DebuggerRunning():
-                prompt = True
-            else:
-                self.SelectInterpreter(interpreter)
-        if prompt:
-            wx.MessageBox(_("Please stop the debugger first!"),style=wx.OK|wx.ICON_WARNING)
-            wx.GetApp().SetCurrentInterpreter()
-           
-    def SelectInterpreter(self,interpreter):
-        if interpreter != interpretermanager.InterpreterManager.GetCurrentInterpreter():
-            interpretermanager.InterpreterManager.SetCurrentInterpreter(interpreter)
-            if intellisence.IntellisenceManager().IsRunning:
-                return
-            intellisence.IntellisenceManager().load_intellisence_data(interpreter)
-        
-    def ProcessEventBeforeWindows(self, event):
-        return False
-
-    def ProcessEvent(self, event):
-        if Service.Service.ProcessEvent(self, event):
-            return True
-
-        an_id = event.GetId()
-        if an_id == constants.ID_TOGGLE_BREAKPOINT:
-            self.OnToggleBreakpoint(event)
-            return True
-        elif an_id == constants.ID_CLEAR_ALL_BREAKPOINTS:
-            self.ClearAllBreakpoints()
-            return True
-        elif an_id == constants.ID_RUN:
-            self.OnRun(event)
-            return True
-        elif an_id == constants.ID_DEBUG:
-            self.OnDebugRun(event)
-            return True
-        elif an_id == constants.ID_BREAK_INTO_DEBUGGER:
-            self.OnBreakDebugger()
-            return True
-        elif an_id == constants.ID_START_WITHOUT_DEBUG:
-            self.OnRunWithoutDebug(event)
-            return True
-        elif an_id == constants.ID_SET_EXCEPTION_BREAKPOINT:
-            self.SetExceptionBreakPoint()
-            return True
-        elif an_id == constants.ID_CHECK_SYNTAX:
-            self.CheckScript(event)
-            return True
-        elif an_id == constants.ID_RUN_LAST:
-            self.RunLast(event)
-            return True
-        elif an_id == constants.ID_DEBUG_LAST:
-            self.DebugRunLast(event)
-            return True
-        elif an_id == DebuggerService.DEBUG_WEBSERVER_ID:
-            self.OnDebugWebServer(event)
-            return True
-        elif an_id == DebuggerService.DEBUG_WEBSERVER_CONTINUE_ID:
-            self.OnDebugWebServerContinue(event)
-            return True
-        elif an_id == DebuggerService.DEBUG_WEBSERVER_NOW_RUN_PROJECT_ID:
-            self.WaitDebuggerThenRunProject()
-            return True
-        elif an_id == DebuggerService.RUN_WEBSERVER_ID:
-            self.OnRunWebServer(event)
-            return True
-        elif an_id == constants.ID_SET_PARAMETER_ENVIRONMENT:
-            self.SetParameterAndEnvironment()
-            return True
-        elif an_id == constants.ID_TERMINATE_DEBUGGER:
-            self._debugger_ui.StopExecution(None)
-            return True
-        elif an_id == constants.ID_STEP_INTO:
-            self.OnStepInto()
-            return True
-        elif an_id == constants.ID_STEP_NEXT:
-            self.OnStepNext()
-            return True
-        elif an_id == constants.ID_STEP_OUT:
-            self._debugger_ui.OnStepOut(None)
-            return True
-        elif an_id == constants.ID_STEP_CONTINUE:
-            self._debugger_ui.OnContinue(None)
-            return True
-
-        elif an_id == constants.ID_QUICK_ADD_WATCH:
-            active_text_view = self.GetActiveView()
-            if active_text_view is not None:
-                active_text_view.GetCtrl().QuickAddWatch(None)
-            else:
-                self.AddWatch(None,True)
-            return True
-
-        elif an_id == constants.ID_ADD_WATCH:
-            active_text_view = self.GetActiveView()
-            if active_text_view is not None:
-                active_text_view.GetCtrl().AddWatch(None)
-            else:
-                self.AddWatch(None,False)
-            return True
-
-        elif an_id == constants.ID_RESTART_DEBUGGER:
-            self._debugger_ui.RestartDebugger(None)
-            return True
-        return False
-        
-    def OnStepNext(self):
-        if BaseDebuggerUI.DebuggerRunning():
-            self._debugger_ui.OnNext(None)
-        else:
-            self.BreakIntoDebugger()
-        
-    def OnStepInto(self):
-        if BaseDebuggerUI.DebuggerRunning():
-            self._debugger_ui.OnSingleStep(None)
-        else:
-            self.BreakIntoDebugger()
-            
-    def OnBreakDebugger(self):
-        self._debugger_ui.BreakExecution(None)
-        
-    def IsRunFileEnable(self):
-        interpreter = wx.GetApp().GetCurrentInterpreter()
-        if interpreter and interpreter.IsBuiltIn:
-            return False
-        else:
-            if wx.GetApp().GetService(project.ProjectEditor.ProjectService).GetView().GetDocument() is None:
-                return self.HasAnyFiles() and self.GetActiveView().GetLangId() == lang.ID_LANG_PYTHON
-            return True
     #----------------------------------------------------------------------------
     # Class Methods
     #----------------------------------------------------------------------------
@@ -2292,471 +1901,53 @@ class Debugger:
         messagebox.showerror(GetApp().GetAppName(),msg,parent=doc_view.GetFrame())
         if line > 0:
             doc_view.GotoLine(line)
-            
-    def GetKey(self, currentProj,lastPart):
-        if currentProj:
-            return currentProj.GetKey(lastPart)
-        return lastPart
-            
-    def SaveRunParameter(self,run_parameter):
-        cur_project_document = GetApp().MainFrame.GetProjectView(generate_event=False).GetCurrentProject()
-        if cur_project_document is None:
-            project_name = consts.NOT_IN_ANY_PROJECT
-            cur_project_document = projectviewer.PythonProjectDocument()
-        else:
-            project_name = os.path.basename(cur_project_document.GetFilename())
-        utils.profile_set(self.GetKey(cur_project_document,"LastRunProject"), project_name)
-        utils.profile_set(self.GetKey(cur_project_document,"LastRunFile"), run_parameter.FilePath)
-        # Don't update the arguments or starting directory unless we're runing python.
-        utils.profile_set(self.GetKey(cur_project_document,"LastRunArguments"), run_parameter.Arg)
-        utils.profile_set(self.GetKey(cur_project_document,"LastRunStartIn"), run_parameter.StartupPath)
-        if run_parameter.Environment is not None and consts.PYTHON_PATH_NAME in run_parameter.Environment:
-            utils.profile_set(self.GetKey(cur_project_document,"LastPythonPath"),run_parameter.Environment[consts.PYTHON_PATH_NAME])
 
-    def DebugRunBuiltin(self,run_parameter):
-        fileToRun = run_parameter.FilePath
-        GetApp().MainFrame.ShowView(consts.PYTHON_INTERPRETER_VIEW_NAME,toogle_visibility_flag=True)
-        python_interpreter_view = GetApp().MainFrame.GetCommonView(consts.PYTHON_INTERPRETER_VIEW_NAME)
-        old_argv = sys.argv
-        environment,initialArgs = run_parameter.Environment,run_parameter.Arg
-        sys.argv = [fileToRun]
-        command = 'execfile(r"%s")' % fileToRun
-        python_interpreter_view.run(command)
-        sys.argv = old_argv
+    @common_run_exception 
+    def RunWithoutDebug(self,filetoRun=None):
+        self.GetCurrentProject().RunWithoutDebug(filetoRun)
 
-    def IsProjectContainBreakPoints(self,cur_project):
-        for key in self._masterBPDict:
-            if cur_project.FindFile(key) and len(self._masterBPDict[key]) > 0:
-                return True
-        return False
+    @common_run_exception 
+    def RunLast(self):
+        self.GetCurrentProject().RunLast()
+
+    @common_run_exception
+    def DebugLast(self):
+        self.GetCurrentProject().DebugRunLast()
         
-    def GetProjectStartupFile(self,project_document):
-        startup_file = project_document.GetStartupFile()
-        if startup_file is None:
-            messagebox.showerror(GetApp().GetAppName(),_("Your project needs a Python script marked as startup file to perform this action"))
-            #show the property dialog to remind user to set the startup file
-            GetApp().MainFrame.GetProjectView(generate_event=False).OnProjectProperties(item_name="Debug/Run")
-            return None
-        return startup_file
-        
+    @common_run_exception
+    def RunLast(self):
+        self.GetCurrentProject().RunLast()
+
+    def SetParameterAndEnvironment(self):
+        self.GetCurrentProject().SetParameterAndEnvironment()
+
+    @staticmethod
+    def CloseDebugger():
+        # IS THIS THE RIGHT PLACE?
+        try:
+          #  config = wx.ConfigBase_Get()
+           # config.Write(self.BREAKPOINT_DICT_STRING, pickle.dumps(self._masterBPDict))
+            #Watchs.Watch.Dump(self.watchs)
+            if not RunCommandUI.StopAndRemoveAllUI():
+                return False
+        except:
+            tp,val,tb = sys.exc_info()
+            traceback.print_exception(tp, val, tb)
+        return True
+    
+    def AppendRunParameter(self,run_paramteter):
+        if len(self.RUN_PARAMETERS) > 0:
+            self.GetCurrentProject().SaveRunParameter(self.RUN_PARAMETERS[-1])
+        self.RUN_PARAMETERS.append(run_paramteter)
+
     def IsFileContainBreakPoints(self,document):
+        '''
+            判断单个文件是否包含断点信息
+        '''
         doc_path = document.GetFilename()
         if doc_path in self._masterBPDict and len(self._masterBPDict[doc_path]) > 0:
             return True
         return False
-        
-    def GetRunConfiguration(self):
-        '''
-            get selected run configuration of current project
-        '''
-        cur_project_document = self.GetCurrentProject()
-        if cur_project_document is None:
-            return ''
-        pj_key = cur_project_document.GetKey()
-        run_configuration_name = utils.profile_get(pj_key + "/RunConfigurationName","")
-        return run_configuration_name
-        
-    def GetCurrentProject(self):
-        return GetApp().MainFrame.GetProjectView(generate_event=False).GetCurrentProject()
-        
-    def GetActiveView(self):
-        return GetApp().GetDocumentManager().GetCurrentView()
-        
-    def GetFileRunParameter(self,filetoRun=None,is_break_debug=False):
-        cur_project_document = self.GetCurrentProject()
-        
-        #when there is not project or run file is not in current project
-        # run one single python file
-        if cur_project_document is None or (filetoRun is not None and \
-                    cur_project_document.GetModel().FindFile(filetoRun) is None):
-            doc_view = self.GetActiveView()
-            if doc_view:
-                document = doc_view.GetDocument()
-                if not document.Save() or document.IsNewDocument:
-                    return None
-                if self.IsFileContainBreakPoints(document) or is_break_debug:
-                    wx.MessageBox(_("Debugger can only run in active project"),style=wx.OK|wx.ICON_WARNING)
-            else:
-                return None
-            run_parameter = document.GetRunParameter()
-        else:
-            #run project
-            if filetoRun is None:
-                #default run project start up file
-                start_up_file = self.GetProjectStartupFile(cur_project_document)
-            else:
-                start_up_file = cur_project_document.GetModel().FindFile(filetoRun)
-            if not start_up_file:
-                return None
-            self.PromptToSaveFiles(cur_project_document)
-            run_parameter = cur_project_document.GetRunParameter(start_up_file)
-        return run_parameter
-        
-    def GetRunParameter(self,filetoRun=None,is_break_debug=False):
-        '''
-            @is_break_debug:user force to debug breakpoint or not
-        '''
-        if not PythonExecutor.GetPythonExecutablePath():
-            return None
-        cur_project_document = self.GetCurrentProject()
-        is_debug_breakpoint = False
-        #load project configuration first,if have one run configuration,the run it
-        run_configuration_name = self.GetRunConfiguration()
-        #if user force run one project file ,then will not run configuration from config
-        if filetoRun is None and run_configuration_name:
-            project_configuration = runconfiguration.ProjectConfiguration(cur_project_document)
-            run_configuration = project_configuration.LoadConfiguration(run_configuration_name)
-            #if run configuration name does not exist,then run in normal
-            if not run_configuration:
-                run_parameter = self.GetFileRunParameter(filetoRun,is_break_debug)
-            else:
-                run_parameter = run_configuration.GetRunParameter()
-        else:
-            run_parameter = self.GetFileRunParameter(filetoRun,is_break_debug)
-        
-        #invalid run parameter
-        if run_parameter is None:
-                return None
-                    
-        #check project files has breakpoint,if has one breakpoint,then run in debugger mode
-        if cur_project_document is not None:
-            cur_project = cur_project_document.GetModel()
-            if self.IsProjectContainBreakPoints(cur_project):
-                is_debug_breakpoint = True
-            
-        run_parameter = pyutils.get_override_runparameter(run_parameter)
-        run_parameter.IsBreakPointDebug = is_debug_breakpoint
-        return run_parameter
-        
-    @common_run_exception
-    def DebugRun(self):
-        run_parameter = self.GetRunParameter()
-        if run_parameter is None:
-            return
-        if not run_parameter.IsBreakPointDebug:
-            self.DebugRunScript(run_parameter)
-        else:
-            self.DebugRunScriptBreakPoint(run_parameter)
-        self.AppendRunParameter(run_parameter)
-            
-    def DebugRunScript(self,run_parameter):
-        if run_parameter.Interpreter.IsBuiltIn:
-            self.DebugRunBuiltin(run_parameter)
-            return
-        fileToRun = run_parameter.FilePath
-        shortFile = os.path.basename(fileToRun)
-        view = GetApp().MainFrame.AddView("Debugger"+ str(uuid.uuid1()).lower(),RunCommandUI,_("Running: ") + shortFile,"s",visible_by_default=True,\
-                                   image_file="python/debugger/debug.ico",debugger=self, fileName=fileToRun,run_parameter=run_parameter,visible_in_menu=False)
-        page = view['instance']
-        page.Execute()
-        GetApp().GetDocumentManager().ActivateView(self.GetView())
-        
-    def SetExceptionBreakPoint(self):
-        exception_dlg = BreakPoints.BreakpointExceptionDialog(wx.GetApp().GetTopWindow(),-1,_("Add Python Exception Breakpoint"))
-        exception_dlg.CenterOnParent()
-        if exception_dlg.ShowModal() == wx.ID_OK:
-            wx.GetApp().GetService(DebuggerService).SetExceptions(exception_dlg.exceptions)
-        exception_dlg.Destroy()
-        
-    def OnRunWithoutDebug(self):
-        self.RunWithoutDebug()
-       
-    @common_run_exception 
-    def RunWithoutDebug(self,filetoRun=None):
-        run_parameter = self.GetRunParameter(filetoRun)
-        if run_parameter is None:
-            return
-        run_parameter.IsBreakPointDebug = False
-        self.DebugRunScript(run_parameter)
-        self.AppendRunParameter(run_parameter)
-        
-    def BreakIntoDebugger(self,filetoRun=None):
-        run_parameter = self.GetRunParameter(filetoRun,is_break_debug=True)
-        #debugger must run in project
-        if run_parameter is None or run_parameter.Project is None:
-            return
-        run_parameter.IsBreakPointDebug = True
-        self.DebugRunScriptBreakPoint(run_parameter,autoContinue=False)
-        
-    @common_run_exception
-    def Run(self,filetoRun=None):
-        run_parameter = self.GetRunParameter(filetoRun)
-        if run_parameter is None:
-            return
-        self.RunScript(run_parameter)
-        self.AppendRunParameter(run_parameter)
-            
-    def RunScript(self,run_parameter):
-        interpreter = run_parameter.Interpreter
-        #内建解释器只能调试代码,不能在终端中运行
-        if interpreter.IsBuiltIn:
-            return
-        executor = PythonrunExecutor(run_parameter)
-        executor.Execute()
-            
-    def GetLastRunParameter(self,is_debug):
-        if not PythonExecutor.GetPythonExecutablePath():
-            return None
-        dlg_title = _('Run File')
-        btn_name = _("Run")
-        if is_debug:
-           dlg_title = _('Debug File')
-           btn_name = _("Debug")
-        dlg = CommandPropertiesDialog(GetApp().GetTopWindow(),dlg_title, GetApp().MainFrame.GetProjectView(), okButtonName=btn_name, debugging=is_debug,is_last_config=True)
-        showDialog = dlg.MustShowDialog()
-        is_parameter_save = False
-        if showDialog and dlg.ShowModal() == constants.ID_OK:
-            projectDocument, fileToDebug, initialArgs, startIn, isPython, environment = dlg.GetSettings()
-            #when show run dialog first,need to save parameter
-            is_parameter_save = True
-        #直接从配置中读取运行参数,不显示对话框
-        elif not showDialog:
-            #隐藏窗口
-            dlg.withdraw()
-            projectDocument, fileToDebug, initialArgs, startIn, isPython, environment = dlg.GetSettings()
-            dlg.destroy()
-        #取消
-        else:
-            dlg.destroy()
-            return None
-        if projectDocument.GetFilename() != consts.NOT_IN_ANY_PROJECT and self.IsProjectContainBreakPoints(projectDocument.GetModel()):
-            is_debug_breakpoint = True
-        else:
-            is_debug_breakpoint = False
-        run_parameter = runconfig.PythonRunconfig(GetApp().GetCurrentInterpreter(),\
-                            fileToDebug,initialArgs,environment,startIn,is_debug_breakpoint)
-        if is_parameter_save:
-            self.SaveRunParameter(run_parameter)
-        return run_parameter
-            
-    def DebugRunLast(self):
-        run_parameter = self.GetLastRunParameter(True)
-        if run_parameter is None:
-            return
-        run_parameter = pyutils.get_override_runparameter(run_parameter)
-        if not run_parameter.IsBreakPointDebug:
-            self.DebugRunScript(run_parameter)
-        else:
-            self.DebugRunScriptBreakPoint(run_parameter)
-       
-    @common_run_exception 
-    def RunLast(self):
-        run_parameter = self.GetLastRunParameter(False)
-        if run_parameter is None:
-            return
-        run_parameter = pyutils.get_override_runparameter(run_parameter)
-        self.RunScript(run_parameter)
-        
-    def DebugRunScriptBreakPoint(self,run_parameter,autoContinue=True):
-        '''
-            autoContinue will determine whether debugger break first 
-        '''
-        if _WINDOWS and not _PYWIN32_INSTALLED:
-            wx.MessageBox(_("Python for Windows extensions (pywin32) is required to debug on Windows machines. Please download and install pywin32 via pip tool"))
-            return
-        if BaseDebuggerUI.DebuggerRunning():
-            wx.MessageBox(_("A debugger is already running. Please shut down the other debugger first."), _("Debugger Running"))
-            return
-        config = wx.ConfigBase_Get()
-        host = config.Read("DebuggerHostName", DEFAULT_HOST)
-        if not host:
-            wx.MessageBox(_("No debugger host set. Please go to Tools->Options->Debugger and set one."), _("No Debugger Host"))
-            return
-        self.ShowWindow(True)
-        fileToDebug = run_parameter.FilePath
-        fileToDebug = DebuggerService.ExpandPath(fileToDebug)
-        shortFile = os.path.basename(fileToDebug)
-
-        self._debugger_ui = PythonDebuggerUI(self._frame, -1, str(fileToDebug),self,run_parameter,autoContinue=autoContinue)
-        target_pane = self.GetTargetPane(aui.AUI_DOCK_BOTTOM)
-        pane_info = self.CreatePane(aui.AUI_DOCK_BOTTOM,target=target_pane,control=self._debugger_ui,caption=_("Debugging: ") + shortFile,\
-                                    name= self.GetServiceName() + str(uuid.uuid1()).lower(),icon=self.GetBreakDebugIcon())
-        self._frame._mgr.Update()
-        
-        self._debugger_ui.Execute()
-
-    def HasAnyFiles(self):
-        docs = wx.GetApp().GetDocumentManager().GetDocuments()
-        return len(docs) > 0 and self.GetActiveView() != None
-
-    def PromptToSaveFiles(self, cur_project_document):
-        def save_docs():
-            for modify_doc in modify_docs:
-                modify_doc.Save()
-            
-        filesModified = False
-        modify_docs = []
-        docs = GetApp().GetDocumentManager().GetDocuments()
-        for doc in docs:
-              if doc.IsModified() and (cur_project_document == GetApp().MainFrame.GetProjectView(show=False,generate_event=False).FindProjectFromMapping(doc) or\
-                                     cur_project_document.GetModel().FindFile(doc.GetFilename())):
-                filesModified = True
-                modify_docs.append(doc)
-        if filesModified:
-            if utils.profile_get_int("PromptSaveProjectFile", True):
-                yesNoMsg = messagebox.askyesno(_("Run Project"),
-                          _("Files have been modified.\nWould you like to save all files before running?")
-                          )
-                if yesNoMsg == True:
-                    save_docs()
-            else:
-                save_docs()
-
-    def OnExit(self):
-        BaseDebuggerUI.ShutdownAllDebuggers()
-        RunCommandUI.ShutdownAllRunners()
-
-    def SetParameterAndEnvironment(self):
-        projectview = GetApp().MainFrame.GetProjectView()
-        dlg = CommandPropertiesDialog(GetApp().GetTopWindow(), _('Set Parameter And Environment'), projectview,okButtonName=_("&OK"))
-        dlg.ShowModal()
-
-    def OnToggleBreakpoint(self, event, line=-1, fileName=None):
-        if not fileName:
-            view = wx.GetApp().GetDocumentManager().GetCurrentView()
-            # Test to make sure we aren't the project view.
-            if not hasattr(view, 'MarkerExists'):
-                return
-            fileName = wx.GetApp().GetDocumentManager().GetCurrentDocument().GetFilename()
-            if line < 0:
-                line = view.GetCtrl().GetCurrentLine()
-        else:
-            view = None
-        if  self.BreakpointSet(fileName, line + 1):
-            self.ClearBreak(fileName, line + 1)
-            if view:
-                view.GetCtrl().Refresh()
-        else:
-            self.SetBreak(fileName, line + 1)
-            if view:
-                view.GetCtrl().Refresh()
-        # Now refresh all the markers icons in all the open views.
-        self.ClearAllBreakpointMarkers()
-        self.SetAllBreakpointMarkers()
-
-    def SilentToggleBreakpoint(self, fileName, line):
-        found = False
-        for lineNumber in self.GetBreakpointList(fileName):
-            if int(lineNumber) == int(line):
-                found = True
-                break
-        if found:
-            self.SetBreak(fileName, line)
-        else:
-            self.ClearBreak(fileName, line)
-
-    def SetBreak(self, fileName, line):
-        expandedName = DebuggerService.ExpandPath(fileName)
-        if not self._masterBPDict.has_key(expandedName):
-            self._masterBPDict[expandedName] = [line]
-        else:
-            self._masterBPDict[expandedName] += [line]
-        # If we're already debugging, pass this bp off to the PythonDebuggerCallback
-        self.NotifyDebuggersOfBreakpointChange()
-        
-    def GetExceptions(self):
-        return self._exceptions
-        
-    def SetExceptions(self,exceptions):
-        self._exceptions = exceptions
-
-    def NotifyDebuggersOfBreakpointChange(self):
-        BaseDebuggerUI.NotifyDebuggersOfBreakpointChange()
-
-    def GetBreakpointList(self, fileName):
-        expandedName = DebuggerService.ExpandPath(fileName)
-        if not self._masterBPDict.has_key(expandedName):
-            return []
-        else:
-            return self._masterBPDict[expandedName]
-
-    def SetBreakpointList(self, fileName, bplist):
-        expandedName = DebuggerService.ExpandPath(fileName)
-        self._masterBPDict[expandedName] = bplist
-
-    def BreakpointSet(self, fileName, line):
-        expandedName = DebuggerService.ExpandPath(fileName)
-        if not self._masterBPDict.has_key(expandedName):
-            return False
-        else:
-            newList = []
-            for number in self._masterBPDict[expandedName]:
-                if(int(number) == int(line)):
-                    return True
-        return False
-
-    def ClearBreak(self, fileName, line):
-        expandedName = DebuggerService.ExpandPath(fileName)
-        if not self._masterBPDict.has_key(expandedName):
-            print ("In ClearBreak: no key")
-            return
-        else:
-            newList = []
-            for number in self._masterBPDict[expandedName]:
-                if(int(number) != int(line)):
-                    newList.append(number)
-            self._masterBPDict[expandedName] = newList
-        self.NotifyDebuggersOfBreakpointChange()
-
-    def HasBreakpointsSet(self):
-        for key, value in self._masterBPDict.items():
-            if len(value) > 0:
-                return True
-        return False
-
-    def ClearAllBreakpoints(self):
-        self._masterBPDict = {}
-        self.NotifyDebuggersOfBreakpointChange()
-        self.ClearAllBreakpointMarkers()
-
-    def ClearAllBreakpointMarkers(self):
-        openDocs = wx.GetApp().GetDocumentManager().GetDocuments()
-        for openDoc in openDocs:
-            if isinstance(openDoc, CodeEditor.CodeDocument):
-                openDoc.GetFirstView().MarkerDeleteAll(CodeEditor.CodeCtrl.BREAKPOINT_MARKER_NUM)
-
-    def UpdateBreakpointsFromMarkers(self, view, fileName):
-        newbpLines = view.GetMarkerLines(CodeEditor.CodeCtrl.BREAKPOINT_MARKER_NUM)
-        self.SetBreakpointList(fileName, newbpLines)
-
-    def GetMasterBreakpointDict(self):
-        return self._masterBPDict
-
-    def SetAllBreakpointMarkers(self):
-        openDocs = wx.GetApp().GetDocumentManager().GetDocuments()
-        for openDoc in openDocs:
-            if(isinstance(openDoc, CodeEditor.CodeDocument)):
-                self.SetCurrentBreakpointMarkers(openDoc.GetFirstView())
-
-    def SetCurrentBreakpointMarkers(self, view):
-        if isinstance(view, CodeEditor.CodeView) and hasattr(view, 'GetDocument'):
-            view.MarkerDeleteAll(CodeEditor.CodeCtrl.BREAKPOINT_MARKER_NUM)
-            for linenum in self.GetBreakpointList(view.GetDocument().GetFilename()):
-                view.MarkerAdd(lineNum=int(linenum) - 1, marker_index=CodeEditor.CodeCtrl.BREAKPOINT_MARKER_NUM)
-
-    def GetPhpDbgParam(self):
-        return self.phpDbgParam
-
-    def SetPhpDbgParam(self, value = None):
-        self.phpDbgParam = value
-        
-    def GetBreakDebugIcon(self):
-        return images.load("debugger/debugger.png")
-        
-    def AppendWatch(self,watch_obj):
-        self.watchs.append(watch_obj)
-        
-    def AddtoWatch(self,watch_obj):
-        self._debugger_ui.framesTab.AddtoWatch(watch_obj)
-        
-    def AddWatch(self,watch_obj=None,is_quick_watch=False):
-        if is_quick_watch:
-            self._debugger_ui.framesTab.QuickAddWatch(watch_obj)
-        else:
-            self._debugger_ui.framesTab.AddWatch(watch_obj)
-        
-    def UpdateWatchs(self,reset=False):
-        self._debugger_ui.UpdateWatchs(reset)
 
 class DebuggerOptionsPanel(ttk.Frame):
 
@@ -2816,305 +2007,8 @@ class DebuggerOptionsPanel(ttk.Frame):
             config.WriteInt("DebuggerStartingPort", self._PortNumberTextCtrl.GetValue())
         return True
 
-
     def GetIcon(self):
         return getContinueIcon()
-
-
-class CommandPropertiesDialog(ui_base.CommonModaldialog):
-    def __init__(self, parent, title, projectview, okButtonName="&OK", debugging=False,is_last_config=False):
-        self._projectview = projectview
-        self._is_last_config = is_last_config
-        self._currentProj = self._projectview.GetCurrentProject()
-        self._projectNameList, self._projectDocumentList, selectedIndex = self.GetProjectList()
-        if not self._projectNameList:
-            wx.MessageBox(_("To run or debug you must have an open runnable file or project containing runnable files. Use File->Open to open the file you wish to run or debug."), _("Nothing to Run"))
-            raise Exception("Nothing to Run or Debug.")
-
-        ui_base.CommonModaldialog.__init__(self, parent)
-        self.title(title)
-        self.main_frame.columnconfigure(1, weight=1)
-
-        ttk.Label(self.main_frame, text=_("PYTHONPATH:")).grid(row=4,column=0,sticky=tk.NSEW,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-        ttk.Label(self.main_frame, text=_("Project:")).grid(row=0,column=0,sticky=tk.NSEW,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-        ttk.Label(self.main_frame, text=_("File:")).grid(row=1,column=0,sticky=tk.NSEW,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-        ttk.Label(self.main_frame, text=_("Arguments:")).grid(row=2,column=0,sticky=tk.NSEW,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-        ttk.Label(self.main_frame, text=_("Start in:")).grid(row=3,column=0,sticky=tk.NSEW,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-        
-        postpendStaticText = _("Postpend content root path")
-        self._projectNameVar = tk.StringVar()
-        self._projList = ttk.Combobox(self.main_frame, values=self._projectNameList,textvariable=self._projectNameVar)
-        self._projList['state'] = 'readonly'
-        self._projList.grid(row=0,column=1,sticky=tk.NSEW,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),columnspan=2,padx=(0,consts.DEFAUT_CONTRL_PAD_X))
-        self._projList.bind("<<ComboboxSelected>>",self.EvtListBox)
-
-        self._fileList = ttk.Combobox(self.main_frame)
-        self._fileList['state'] = 'readonly'
-        self._fileList.grid(row=1,column=1,sticky=tk.NSEW,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),columnspan=2,padx=(0,consts.DEFAUT_CONTRL_PAD_X))
-        self._fileList.bind("<<ComboboxSelected>>",self.OnFileSelected)
-  
-        self._lastArguments = utils.profile_get(self.GetKey("LastRunArguments"))
-        self._lastArgumentsVar = tk.StringVar(value=self._lastArguments)
-        row = ttk.Frame(self.main_frame)
-        self._argsEntry = ttk.Combobox(row,values=[],textvariable=self._lastArgumentsVar)
-        self._argsEntry.pack(side=tk.LEFT,fill="x",expand=1)
-             
-        self._useArgCheckBoxVar = tk.IntVar(value=1)
-        useArgCheckBox = ttk.Checkbutton(row, text= _("Use"),command=self.CheckUseArgument,variable=self._useArgCheckBoxVar)
-        useArgCheckBox.pack(side=tk.LEFT,fill="x",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0))
-        
-        row.grid(row=2,column=1,sticky=tk.NSEW,columnspan=2,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),padx=(0,consts.DEFAUT_HALF_CONTRL_PAD_X))
-
-        self._lastStartIn = utils.profile_get(self.GetKey("LastRunStartIn"),os.getcwd())
-        self._lastStartInVar = tk.StringVar(value=self._lastStartIn)
-        startEntry = ttk.Entry(self.main_frame, textvariable=self._lastStartInVar)
-        startEntry.grid(row=3,column=1,sticky=tk.NSEW,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),padx=(0,consts.DEFAUT_HALF_CONTRL_PAD_X))
-
-        self._findDir = ttk.Button(self.main_frame,text=_("Browse..."),command=self.OnFindDirClick)
-        self._findDir.grid(row=3,column=2,sticky=tk.NSEW,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),padx=(0,consts.DEFAUT_CONTRL_PAD_X))
-    
-        if 'PYTHONPATH' in os.environ:
-            startval = os.environ['PYTHONPATH']
-        else:
-            startval = ""
-        self._lastPythonPath = utils.profile_get(self.GetKey("LastPythonPath"), startval)
-        self._lastPythonPathVar = tk.StringVar(value=self._lastPythonPath)
-        pythonPathEntry = ttk.Entry(self.main_frame, textvariable=self._lastPythonPathVar)
-        pythonPathEntry.grid(row=4,column=1,sticky=tk.NSEW,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),columnspan=2,padx=(0,consts.DEFAUT_CONTRL_PAD_X))
-        misc.create_tooltip(pythonPathEntry,_('multiple path is seperated by %s') % os.pathsep)
-
-        last_row = 4
-        if self._projectview.GetCurrentProject() is not None:
-            last_row += 1
-            self._postpendCheckBoxVar = tk.IntVar(value=1)
-            self._postpendCheckBox = ttk.Checkbutton(self.main_frame, text=postpendStaticText,variable=self._postpendCheckBoxVar)
-            self._postpendCheckBox.grid(row=last_row,column=1,sticky=tk.NSEW,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),columnspan=2)
-        # Set up selections based on last values used.
-        self._fileNameList = None
-        self._selectedFileIndex = -1
-        lastProject = utils.profile_get(self.GetKey("LastRunProject"))
-        lastFile = utils.profile_get(self.GetKey("LastRunFile"))
-        #点击上一次配置按钮时,如果有保存上次运行的配置,则不显示对话框,否则要显示
-        self._mustShow = not lastFile
-
-        if lastProject in self._projectNameList:
-            selectedIndex = self._projectNameList.index(lastProject)
-        elif selectedIndex < 0:
-            selectedIndex = 0
-        self._projList.current(selectedIndex)
-        self._selectedProjectIndex = selectedIndex
-        self._selectedProjectDocument = self._projectDocumentList[selectedIndex]
-        self.PopulateFileList(self._selectedProjectDocument, lastFile)
-        
-        if not self._is_last_config:
-            self.SetEntryParams()
-        last_row += 1
-        bottom_frame = ttk.Frame(self.main_frame)
-        bottom_frame.grid(row=last_row,column=0,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),columnspan=3)
-        self.AppendokcancelButton(bottom_frame)
-        self.ok_button.configure(text=okButtonName,default="active")
-        self.FormatTkButtonText(self.ok_button)
-
-    def MustShowDialog(self):
-        return self._mustShow
-
-    def GetKey(self, lastPart):
-        if self._currentProj:
-            return self._currentProj.GetKey(lastPart)
-        return lastPart
-        
-    def GetProjectFileKey(self, filepath,lastPart):
-        if not self._currentProj:
-            return self.GetKey(lastPart)
-        if self._currentProj.GetFilename() == consts.NOT_IN_ANY_PROJECT:
-            return self._currentProj.GetUnProjectFileKey(filepath,lastPart)
-        else:
-            pj_file = self._currentProj.GetModel().FindFile(filepath)
-            if pj_file is None:
-                return self.GetKey(lastPart)
-            return self._currentProj.GetFileKey(pj_file,lastPart)
-            
-    def SetEntryParams(self):
-        self._lastArgumentsVar.set("")
-        if self._selectedFileIndex >= 0 and len(self._fileNameList) > self._selectedFileIndex:
-            selected_filename = self._fileNameList[self._selectedFileIndex]
-        else:
-            selected_filename = ""
-        argments = utils.profile_get(self.GetProjectFileKey(selected_filename,"RunArguments"),"")
-        self._lastArgumentsVar.set(argments)
-        self._lastPythonPathVar.set(utils.profile_get(self.GetProjectFileKey(selected_filename,"PythonPath"),""))
-        startin = utils.profile_get(self.GetProjectFileKey(selected_filename,"RunStartIn"),"")
-        self._lastStartInVar.set(startin)
-        saved_arguments = utils.profile_get(self.GetProjectFileKey(selected_filename,"FileSavedArguments"),[])
-        if saved_arguments:
-            self._argsEntry['values'] = saved_arguments
-        self._useArgCheckBoxVar.set(utils.profile_get_int(self.GetProjectFileKey(selected_filename,"UseArgument"),True))
-        self.CheckUseArgument()
-        
-        if hasattr(self, "_postpendCheckBox"):
-            if self._projectNameVar.get() == consts.NOT_IN_ANY_PROJECT:
-                self._postpendCheckBox['state'] = tk.DISABLED
-            else:
-                self._postpendCheckBox['state'] = tk.NORMAL
-                checked = bool(utils.profile_get_int(self.GetKey("PythonPathPostpend"), True))
-                self._postpendCheckBoxVar.set(checked)
-        
-    def _ok(self,event=None):
-        startIn = self._lastStartInVar.get().strip()
-        if self._selectedFileIndex >= 0 and len(self._fileNameList) > self._selectedFileIndex:
-            fileToRun = self._fileNameList[self._selectedFileIndex]
-        else:
-            fileToRun = ""
-        if not fileToRun:
-            messagebox.showinfo(GetApp().GetAppName(),_("You must select a file to proceed. Note that not all projects have files that can be run or debugged."))
-            return
-        isPython = fileutils.is_python_file(fileToRun)
-        if isPython and not os.path.exists(startIn) and startIn != '':
-            messagebox.showinfo(GetApp().GetAppName(),_("Starting directory does not exist. Please change this value."))
-            return
-        # Don't update the arguments or starting directory unless we're runing python.
-        if isPython:
-            utils.profile_set(self.GetProjectFileKey(fileToRun,"RunStartIn"), startIn)
-            utils.profile_set(self.GetProjectFileKey(fileToRun,"PythonPath"),self._lastPythonPathVar.get().strip())
-            utils.profile_set(self.GetProjectFileKey(fileToRun,"UseArgument"), self._useArgCheckBoxVar.get())
-            #when use argument is checked,save argument
-            if self._useArgCheckBoxVar.get():
-                utils.profile_set(self.GetProjectFileKey(fileToRun,"RunArguments"), self._lastArgumentsVar.get())
-                arguments = set()
-                values = self._argsEntry['values']
-                if not values:
-                    values = []
-                values = list(values)
-                values.append(self._lastArgumentsVar.get())
-                arguments = set(values)
-                utils.profile_set(self.GetProjectFileKey(fileToRun,"FileSavedArguments"),list(arguments))
-            if hasattr(self, "_postpendCheckBox"):
-                utils.profile_set(self.GetKey("PythonPathPostpend"), self._postpendCheckBoxVar.get())
-                
-        ui_base.CommonModaldialog._ok(self,event=None)
-
-    def GetSettings(self):
-        projectDocument = self._selectedProjectDocument
-        if self._selectedFileIndex >= 0 and len(self._fileNameList) > self._selectedFileIndex:
-            fileToRun = self._fileNameList[self._selectedFileIndex]
-        else:
-            fileToRun = ""
-        filename = utils.profile_get(self.GetKey("LastRunFile"),fileToRun)
-        args = self._lastArgumentsVar.get()
-        startIn = self._lastStartInVar.get().strip()
-        isPython = fileutils.is_python_file(filename)
-        env = {}
-        if hasattr(self, "_postpendCheckBox"):
-            postpend = self._postpendCheckBoxVar.get()
-        else:
-            postpend = False
-        if postpend:
-            env[consts.PYTHON_PATH_NAME] = str(self._lastPythonPathVar.get()) + os.pathsep + os.path.join(os.getcwd(), "3rdparty", "pywin32")
-        else:
-            #should avoid environment contain unicode string,such as u'xxx'
-            env[consts.PYTHON_PATH_NAME] = str(self._lastPythonPathVar.get())
-
-        return projectDocument, filename, args, startIn, isPython, env
-
-    def OnFileSelected(self, event):
-        self._selectedFileIndex = self._fileList.current()
-        self.SetEntryParams()
-
-    def OnFindDirClick(self):
-        path = filedialog.askdirectory(title=_("Choose a starting directory:"))
-        if not path:
-            return
-        self._lastStartInVar.set(fileutils.opj(path))
-        
-    def CheckUseArgument(self):
-        use_arg = self._useArgCheckBoxVar.get()
-        if use_arg:
-            self._argsEntry['state'] = tk.NORMAL 
-        else:
-            self._argsEntry['state'] = tk.DISABLED
-
-    def EvtListBox(self, event):
-        if self._projectNameVar.get():
-            index = self._projectNameList.index(self._projectNameVar.get())
-            self._selectedProjectDocument = self._projectDocumentList[index]
-            self._currentProj = self._selectedProjectDocument
-            self._selectedProjectIndex = index
-            self.PopulateFileList(self._selectedProjectDocument)
-            self.SetEntryParams()
-
-    def FilterFileList(self, file_list):
-        files = filter(lambda f:fileutils.is_python_file(f), file_list)
-        return list(files)
-
-    def PopulateFileList(self, project, shortNameToSelect=None):
-        project_startup_file = project.GetStartupFile()
-        if project_startup_file is None:
-            pj_files = project.GetFiles()[:]
-        else:
-            pj_files = [project_startup_file.filePath]
-        self._fileNameList = self.FilterFileList(pj_files)
-        if not self._fileNameList:
-            self._fileList['values'] = []
-            return
-        py_sorted(self._fileNameList, cmp_func=lambda a, b: py_cmp(os.path.basename(a).lower(), os.path.basename(b).lower()))
-        strings = list(map(lambda file: os.path.basename(file), self._fileNameList))
-        for index in range(0, len(self._fileNameList)):
-            if shortNameToSelect == self._fileNameList[index]:
-                self._selectedFileIndex = index
-                break
-
-        self._fileList['values'] = (strings)
-        if self._selectedFileIndex not in range(0, len(strings)):
-            # Pick first bpel file if there is one.
-            for index in range(0, len(strings)):
-                if strings[index].endswith('.bpel'):
-                    self._selectedFileIndex = index
-                    break
-        # Still no selected file, use first file.      
-        if self._selectedFileIndex not in range(0, len(strings)):
-            self._selectedFileIndex = 0
-        self._fileList.current(self._selectedFileIndex)
-
-    def GetProjectList(self):
-        docList = []
-        nameList = []
-        found = False
-        index = -1
-        count = 0
-        for document in GetApp().GetDocumentManager().GetDocuments():
-            if document.GetDocumentTemplate().GetDocumentType() == projectviewer.PythonProjectDocument:
-                docList.append(document)
-                nameList.append(os.path.basename(document.GetFilename()))
-                if document == self._currentProj:
-                    found = True
-                    index = count
-                count += 1
-        #Check for open files not in any of these projects and add them to a default project
-        def AlreadyInProject(fileName):
-            for projectDocument in docList:
-                if projectDocument.IsFileInProject(fileName):
-                    return True
-            return False
-
-        unprojectedFiles = []
-        for document in GetApp().GetDocumentManager().GetDocuments():
-            if type(document) == pyeditor.PythonDocument:
-                if not AlreadyInProject(document.GetFilename()):
-                    unprojectedFiles.append(document.GetFilename())
-        if unprojectedFiles:
-            unprojProj = projectviewer.PythonProjectDocument.GetUnProjectDocument()
-            unprojProj.AddFiles(unprojectedFiles)
-            docList.append(unprojProj)
-            nameList.append(consts.NOT_IN_ANY_PROJECT)
-            if self._currentProj is None:
-                self._currentProj = unprojProj
-                index = count
-        if self._currentProj is None:
-            unprojProj = projectviewer.PythonProjectDocument.GetUnProjectDocument()
-            docList.append(unprojProj)
-            nameList.append(consts.NOT_IN_ANY_PROJECT)
-            self._currentProj = unprojProj
-        return nameList, docList, index
     
 def getBreakPointBitmap():
     return images.load("debugger/breakpoint.png")

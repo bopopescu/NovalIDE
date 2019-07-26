@@ -14,7 +14,7 @@ class MainWindowAddOn(plugin.Plugin):
             try:
                 observer.PlugIt(window)
             except Exception as e:
-                utils.get_logger().error("MainWindowAddOn.Init plugin %s: %s" , observer.__class__,e)
+                utils.get_logger().exception("MainWindowAddOn.Init plugin %s: %s" , observer.__class__,e)
 
     def GetEventHandlers(self, ui_evt=False):
         """Get Event handlers and Id's from all observers

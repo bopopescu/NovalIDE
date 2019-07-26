@@ -43,7 +43,8 @@ class BaseRunconfig():
     @property
     def StartupPath(self):
         if not self._start_up_path:
-            return os.path.dirname(self.FilePath)
+            #没有指定程序启动路径,以exe文件的路径为启动路径
+            return os.path.dirname(self.ExePath)
         return self._start_up_path
 
     @property
