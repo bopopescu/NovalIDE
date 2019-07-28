@@ -11,7 +11,6 @@
 # License:      wxWindows License
 #----------------------------------------------------------------------------
 from noval import NewId,GetApp,_
-import noval.core as core
 import tkinter as tk
 from tkinter import ttk,messagebox,filedialog
 import sys
@@ -1761,22 +1760,6 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
         assert(self._waiting)
         self.ShutdownServer()
 
-class DebuggerView(core.View):
-    def __init__(self,debugger):
-        self._debugger = debugger
-        core.View.__init__(self)
-        
-    def GetCtrl(self):
-        select_page = self._debugger.bottomTab.get_current_child()
-        if select_page is None:
-            return None
-        debugger_page = self.GetInstancePage(select_page)
-        return debugger_page.GetOutputView().GetOutputCtrl()
-        
-    def GetInstancePage(self,tab_page):
-        page = tab_page.winfo_children()[0]
-        return page
-
 class PythonDebugger(Debugger):
     #----------------------------------------------------------------------------
     # Constants
@@ -1788,6 +1771,7 @@ class PythonDebugger(Debugger):
     #----------------------------------------------------------------------------
 
     def __init__(self):
+        Debugger.__init__(self)
         self.BREAKPOINT_DICT_STRING = "MasterBreakpointDict"
         pickledbps = utils.profile_get(self.BREAKPOINT_DICT_STRING)
         if pickledbps:
@@ -1806,15 +1790,10 @@ class PythonDebugger(Debugger):
         self.phpDbgParam = None
        # self.dbgLanguage = projectmodel.LANGUAGE_DEFAULT
         self._debugger_ui = None
-
-        self.bottomTab = GetApp().MainFrame._view_notebooks['s']
         self.bottomTab.bind("<ButtonPress-3>", self._right_btn_press, True)
         self._tabs_menu = None
         self._popup_index = -1
         self._watch_separater = None
-        
-    def _CreateView(self):
-        return DebuggerView(self)
 
     def _right_btn_press(self, event):
         try:
@@ -1901,6 +1880,9 @@ class PythonDebugger(Debugger):
         messagebox.showerror(GetApp().GetAppName(),msg,parent=doc_view.GetFrame())
         if line > 0:
             doc_view.GotoLine(line)
+
+    def Runfile(self,filetoRun=None):
+        self.GetCurrentProject().Run(filetoRun)
 
     @common_run_exception 
     def RunWithoutDebug(self,filetoRun=None):

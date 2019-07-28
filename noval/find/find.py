@@ -459,13 +459,8 @@ class FindReplaceDialog(FindDialog):
         prog = text.getprog()
         if not prog:
             return False
-        try:
-            first = pos = text.index("sel.first")
-            last = text.index("sel.last")
-        except TclError:
-            pos = None
-        if not pos:
-            first = last = pos = text.index("insert")
+        first,last = text.get_selection()
+        pos = first
         line, col = text.get_line_col(pos)
         chars = text.get("%d.0" % line, "%d.0" % (line+1))
         m = prog.match(chars, col)

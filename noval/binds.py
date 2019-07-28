@@ -29,5 +29,6 @@ DEFAULT_KEY_BINDS = {
     ID_STEP_NEXT        :   'F10',
     ID_CHECK_SYNTAX     :   'Ctrl+F3',
     ID_RUN_LAST         :   'Ctrl+R',
-   # ID_DEBUG_LAST       :   'Ctrl+D',
+   # ID_DEBUG_LAST       :   'Ctrl+R+D',
+    ID_PRINT            :   'Ctrl+P'
 }

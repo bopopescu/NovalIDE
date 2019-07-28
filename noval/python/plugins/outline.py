@@ -177,4 +177,4 @@ class PythonOutlineViewLoader(plugin.Plugin):
         GetApp().MainFrame.AddView(consts.OUTLINE_VIEW_NAME,PythonOutlineView, _("Outline"), "ne",image_file="python/outline/outline.ico")
         
 
-consts.DEFAULT_PLUGINS += ('noval.python.outline.PythonOutlineViewLoader',)
+

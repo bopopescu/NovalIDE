@@ -9,6 +9,9 @@
 # Copyright:   (c) wukan 2019
 # Licence:     GPL-3.0
 #-------------------------------------------------------------------------------
+'''
+    尽量少在文件头部导入太多模块,会导致程序启动很慢
+'''
 import tkinter as tk
 from noval import core,imageutils,consts,_,Locale,menu
 import noval.python.parser.utils as parserutils
@@ -21,7 +24,6 @@ import sys
 import noval.util.logger as logger
 import os
 import noval.frame as frame
-from noval.editor import text as texteditor
 from noval.editor import imageviewer as imageviewer
 import noval.misc as misc
 import tkinter.font as tk_font
@@ -35,25 +37,16 @@ import noval.syntax.lang as lang
 import noval.preference as preference
 from tkinter import messagebox
 import subprocess
-import noval.generalopt as generalopt
 import noval.ui_common as ui_common
 import noval.project.baseviewer as baseprojectviewer
 import noval.project.document as projectdocument
 import noval.docposition as docposition
 import noval.ui_utils as ui_utils
 import noval.ui_lang as ui_lang
-import noval.docoption as docoption
 import noval.about as about
-import noval.colorfont as colorfont
-#这些导入模块未被引用,用于py2exe打包模块进library.zip里面去
-import noval.fileview as fileview
-import noval.find.findresult as findresult
-import noval.base_ui_themes as base_ui_themes
-import noval.clean_ui_themes as base_ui_themes
-import noval.paren_matcher as paren_matcher
-import noval.feedback as feedback
-import noval.syntax.syndata as syndata
 import noval.project.debugger as basedebugger
+import noval.syntax.syndata as syndata
+
 #----------------------------------------------------------------------------
 # Classes
 #----------------------------------------------------------------------------
@@ -83,6 +76,11 @@ class IDEApplication(core.App):
             return False
 
     #    self.ShowSplash(self.GetIDESplashBitmap())
+        #尽量在这里导入模块
+        from noval.editor import text as texteditor
+        import noval.colorfont as colorfont
+        import noval.docoption as docoption
+        import noval.generalopt as generalopt
         self._open_project_path = None
         self.frame = None           
         self._pluginmgr = None
@@ -198,11 +196,15 @@ class IDEApplication(core.App):
         return True
         
     def InitPlugins(self):
+        self.LoadDefaultPlugins()
         self.MainFrame.InitPlugins()
         #在插件初始化完后才创建项目菜单和外观菜单
         self.MainFrame.GetProjectView()._InitCommands()
         self.InitThemeMenu()
         self.load_themes()
+
+    def LoadDefaultPlugins(self):
+        pass
         
     def AppendDefaultCommand(self,command_id):
         self._default_command_ids.append(command_id)
@@ -358,14 +360,17 @@ class IDEApplication(core.App):
     def InsertCommand(self,refer_item_id,command_id,main_menu_name,command_label,handler,accelerator=None,image = None,\
                       add_separator=False,kind=consts.NORMAL_MENU_ITEM_KIND,variable=None,tester=None,pos="after"):
 
+        if image is not None and type(image) == str:
+            image = self.GetImage(image)
         main_menu = self._menu_bar.GetMenu(main_menu_name)
         accelerator = self.AddAcceleratorCommand(command_id,accelerator,handler,tester)
         if pos == "after":
-            main_menu.InsertAfter(refer_item_id,command_id,command_label,handler=handler,img=image,accelerator=accelerator,\
+            menu_item = main_menu.InsertAfter(refer_item_id,command_id,command_label,handler=handler,img=image,accelerator=accelerator,\
                              kind=kind,variable=variable,tester=tester)
         elif pos == "before":
-            main_menu.InsertBefore(refer_item_id,command_id,command_label,handler=handler,img=image,accelerator=accelerator,\
+            menu_item = main_menu.InsertBefore(refer_item_id,command_id,command_label,handler=handler,img=image,accelerator=accelerator,\
                              kind=kind,variable=variable,tester=tester)
+        return menu_item
                             
     def AddAcceleratorCommand(self,command_id,accelerator,handler,tester,bell_when_denied = True,\
                               skip_sequence_binding=False,extra_sequences=[]):
@@ -926,7 +931,7 @@ class IDEApplication(core.App):
         return syntax.SyntaxThemeManager().GetLexer(self.GetDefaultLangId()).GetDocTypeName()
         
     def GetDebugviewClass(self):
-        return None
+        return basedebugger.DebugView
 
     def GetDebuggerClass(self):
         return basedebugger.Debugger

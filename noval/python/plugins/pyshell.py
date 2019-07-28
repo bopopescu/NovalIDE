@@ -1327,4 +1327,3 @@ class PyshellViewLoader(plugin.Plugin):
                             image_file="python/interpreter.ico",default_position_key=1)
 
 
-consts.DEFAULT_PLUGINS += ('noval.python.pyshell.PyshellViewLoader',)

@@ -398,8 +398,12 @@ class PopupMenu(tk.Menu):
             label= text,
             menu=menu
         )
+        return menu_menu_item
         
     def InsertMenuAfter(self,item_id,id_, text,menu):
+        '''
+            插入某个子菜单
+        '''
         pos = -1
         for i,menu_item in enumerate(self._items):
             if menu_item.id == item_id:
@@ -428,7 +432,7 @@ class PopupMenu(tk.Menu):
         @keyword kind: MenuItem type
         @keyword use_bmp: try and set a bitmap if an appropriate one is
                           available in the ArtProvider
-
+        插入某个菜单项
         """
         menu_item,kwargs = self.GetMenuData(id_,text,handler,img,accelerator,kind,variable,tester)
         self._items.insert(pos,menu_item)

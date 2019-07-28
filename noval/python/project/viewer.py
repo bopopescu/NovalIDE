@@ -188,7 +188,7 @@ class PythonProjectView(ProjectView):
         selected_file_path = self.GetSelectedFile()
         if selected_file_path is None and not fileutils.is_python_file(selected_file_path):
             return
-        GetApp().GetDebugger().Run(filetoRun = selected_file_path)
+        GetApp().GetDebugger().Runfile(filetoRun = selected_file_path)
         
     def DebugRun(self):
         selected_file_path = self.GetSelectedFile()
@@ -199,10 +199,6 @@ class PythonProjectView(ProjectView):
     @ui_utils.no_implemented_yet
     def BreakintoDebugger(self):
         pass
-        #selected_file_path = self.GetSelectedFile()
-        #if selected_file_path is None and not fileutils.is_python_file(selected_file_path):
-         #   return
-        #wx.GetApp().GetService(DebuggerService.DebuggerService).BreakIntoDebugger(selected_file_path)
         
     def AddPackageFolder(self, folderPath):
         self._treeCtrl.AddPackageFolder(folderPath)
@@ -223,4 +219,3 @@ class DefaultProjectTemplateLoader(plugin.Plugin):
                     [("noval.python.project.viewer.PythonProjectNameLocationPage",{'can_finish':False,\
                         'pythonpath_pattern':PythonNewProjectConfiguration.PROJECT_PATH_ADD_TO_PYTHONPATH,'create_project_dir':False}),("noval.project.importfiles.ImportfilesPage",{'rejects':ProjectDocument.BIN_FILE_EXTS})])
 
-consts.DEFAULT_PLUGINS += ('noval.python.project.viewer.DefaultProjectTemplateLoader',)

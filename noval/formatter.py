@@ -20,4 +20,19 @@ class Formatter(object):
     def DedentRegion(self,editor):
         editor.GetView().GetCtrl().dedent_region()
 
+    def UpperCase(self,editor):
+        ctrl = editor.GetView().GetCtrl()
+        selected_text = ctrl.GetSelectionText()
+        if not selected_text:
+            return
+        ctrl.do_replace(selected_text.upper())
+
+    def LowerCase(self,editor):
+        ctrl = editor.GetView().GetCtrl()
+        selected_text = ctrl.GetSelectionText()
+        if not selected_text:
+            return
+        ctrl.do_replace(selected_text.lower())
+        
+
 formatter = Formatter()

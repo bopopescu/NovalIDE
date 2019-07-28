@@ -1370,6 +1370,13 @@ class TextCtrl(ui_base.TweakableText):
         if first == last:
             return ''
         return self.get(first,last)
+
+    def do_replace(self,text):
+        first,last = self.get_selection()
+        self.mark_set("insert", first)
+        self.delete(first, last)
+        if text:
+            self.insert(first, text)
         
 
 class SyntaxTextCtrl(TextCtrl,findtext.FindTextEngine):

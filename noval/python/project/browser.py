@@ -102,34 +102,7 @@ class ProjectBrowser(BaseProjectbrowser):
             item = tkmenu.MenuItem(constants.ID_BREAK_INTO_DEBUGGER,_("&Break into Debugger"), None,None,None)
             debug_menu.AppendMenuItem(item,handler=lambda:self.ProcessEvent(constants.ID_BREAK_INTO_DEBUGGER))
             
-            menu.InsertAfter(debug_menu_id,constants.ID_SET_PROJECT_STARTUP_FILE,_("Set as Startup File..."),handler=lambda:self.ProcessEvent(constants.ID_SET_PROJECT_STARTUP_FILE))
-        
-          #  menu.InsertAfter(constants.ID_REMOVE_FROM_PROJECT,constants.ID_START_RUN,_("&Run"))
-##            menuBar = wx.GetApp().GetTopWindow().GetMenuBar()
-##            menu_item = menuBar.FindItemById(constants.ID_RUN)
-##            item = wx.MenuItem(menu,constants.ID_START_RUN,_("&Run"), kind = wx.ITEM_NORMAL)
-##            item.SetBitmap(menu_item.GetBitmap())
-##            menu.AppendItem(item)
-##            wx.EVT_MENU(self._treeCtrl, constants.ID_START_RUN, self.ProcessEvent)
-##            
-##            debug_menu = wx.Menu()
-##            menu.AppendMenu(wx.NewId(), _("Debug"), debug_menu)
-##
-##            menu_item = menuBar.FindItemById(constants.ID_DEBUG)
-##            item = wx.MenuItem(menu,constants.ID_START_DEBUG,_("&Debug"), kind = wx.ITEM_NORMAL)
-##            item.SetBitmap(menu_item.GetBitmap())
-##            debug_menu.AppendItem(item)
-##            wx.EVT_MENU(self._treeCtrl, constants.ID_START_DEBUG, self.ProcessEvent)
-##            
-##            item = wx.MenuItem(menu,constants.ID_BREAK_INTO_DEBUGGER,_("&Break into Debugger"), kind = wx.ITEM_NORMAL)
-##            debug_menu.AppendItem(item)
-##            wx.EVT_MENU(self._treeCtrl, constants.ID_BREAK_INTO_DEBUGGER, self.ProcessEvent)
-##            if tree_item != self._bold_item:
-##                menu.Append(constants.ID_SET_PROJECT_STARTUP_FILE, _("Set as Startup File..."), _("Set the start script of project"))
-##                wx.EVT_MENU(self._treeCtrl, constants.ID_SET_PROJECT_STARTUP_FILE, self.ProcessEvent)
-##                wx.EVT_UPDATE_UI(self._treeCtrl, constants.ID_SET_PROJECT_STARTUP_FILE, self.ProcessUpdateUIEvent)
-##            itemIDs.append(None)
-
+            menu.InsertAfter(debug_menu_id,constants.ID_SET_PROJECT_STARTUP_FILE,_("Set as Startup File..."),handler=lambda:self.ProcessEvent(constants.ID_SET_PROJECT_STARTUP_FILE))
  
         return menu
 
@@ -176,4 +149,3 @@ class ProjectViewLoader(plugin.Plugin):
         GetApp().MainFrame.AddView(consts.PROJECT_VIEW_NAME,ProjectBrowser, _("Project Browser"), "nw",default_position_key="A",image_file="project/project_view.ico")
 
 
-consts.DEFAULT_PLUGINS += ("noval.python.project.browser.ProjectViewLoader",)

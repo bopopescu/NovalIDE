@@ -16,16 +16,13 @@ import sys
 import noval.util.apputils as apputils
 import noval.util.appdirs as appdirs
 import noval.util.logger as logger
-import shutil
 import noval.python.interpreter.interpretermanager as interpretermanager
-import noval.python.interpreter.interpreter as pythoninterpreter
 import noval.python.parser.intellisence as intellisence
 from noval.util import strutils
 import noval.python.parser.utils as parserutils
 import noval.imageutils as imageutils
 from noval.util import utils
 import noval.constants as constants
-from pkg_resources import resource_filename
 import noval.model as model
 import os
 import noval.project.baseviewer as baseprojectviewer
@@ -40,20 +37,10 @@ import noval.terminal as terminal
 import noval.python.unittest as unittest
 import noval.python.pyeditor as pyeditor
 import noval.preference as preference
-import noval.python.interpreter.gerneralconfiguration as interpretergerneralconfiguration
-import noval.python.interpreter.interpreterconfigruation as interpreterconfigruation
 import noval.python.debugger.debugger as pythondebugger
 import noval.ui_common as ui_common
 from noval.project.document import ProjectDocument
 import noval.misc as misc
-#这些导入模块未被引用,用于py2exe打包模块进library.zip里面去
-import noval.python.outline
-import noval.python.project.browser
-import noval.python.pyshell
-import noval.python.project.debugrun
-import noval.python.project.pythoninterpreter
-import noval.python.project.pythonpath
-import noval.python.project.projectreferrence
 
 class PyIDEApplication(ide.IDEApplication):
 
@@ -65,6 +52,8 @@ class PyIDEApplication(ide.IDEApplication):
             return False
         #关闭软件启动图片
         self.CloseSplash()
+        import noval.python.interpreter.gerneralconfiguration as interpretergerneralconfiguration
+        import noval.python.interpreter.interpreterconfigruation as interpreterconfigruation
         #设置Python文本视图在大纲中显示语法树
         self.MainFrame.GetOutlineView().AddViewTypeForBackgroundHandler(pyeditor.PythonView)
         #pyc和pyo二进制文件类型禁止添加到项目中
@@ -146,6 +135,15 @@ class PyIDEApplication(ide.IDEApplication):
         dlg = unittest.UnitTestDialog(current_view.GetFrame(),current_view)
         if dlg.CreateUnitTestFrame():
             dlg.ShowModal()
+
+    def LoadDefaultPlugins(self):
+        '''
+            加载python默认插件
+        '''
+        consts.DEFAULT_PLUGINS += ("noval.python.project.browser.ProjectViewLoader",)
+        consts.DEFAULT_PLUGINS += ('noval.python.plugins.pyshell.PyshellViewLoader',)
+        consts.DEFAULT_PLUGINS += ('noval.python.plugins.outline.PythonOutlineViewLoader',)
+        consts.DEFAULT_PLUGINS += ('noval.python.project.viewer.DefaultProjectTemplateLoader',)
         
     def GetProjectTemplateClassData(self):
         '''
@@ -328,9 +326,6 @@ class PyIDEApplication(ide.IDEApplication):
             if command_id in all_item_ids:
                 return True
         return ide.IDEApplication.UpdateUI(self,command_id)
-        
-    def GetDebugviewClass(self):
-        return self.GetDebugger().DebuggerView
 
     def GetDebuggerClass(self):
         return pythondebugger.PythonDebugger

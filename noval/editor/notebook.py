@@ -368,8 +368,8 @@ class EditorNotebook(ui_base.ClosableNotebook):
 
         advanceMenu = tkmenu.PopupMenu()
         edit_menu.AppendMenu(constants.ID_ADVANCE, _("&Advance"),advanceMenu)
-        GetApp().AddMenuCommand(constants.ID_UPPERCASE,advanceMenu,_("Conert To UPPERCASE"),None,default_tester=True,default_command=True,image="uppercase.png")
-        GetApp().AddMenuCommand(constants.ID_LOWERCASE,advanceMenu, _("Conert To lowercase"),None,default_tester=True,default_command=True,image="lowercase.png")     
+        GetApp().AddMenuCommand(constants.ID_UPPERCASE,advanceMenu,_("Conert To UPPERCASE"),lambda:formatter.formatter.UpperCase(self.get_current_editor()),default_tester=True,default_command=True,image="uppercase.png")
+        GetApp().AddMenuCommand(constants.ID_LOWERCASE,advanceMenu, _("Conert To lowercase"),lambda:formatter.formatter.LowerCase(self.get_current_editor()),default_tester=True,default_command=True,image="lowercase.png")     
      
         view_menu = GetApp().Menubar.GetMenu(_("&View"))
         zoom_menu = tkmenu.PopupMenu()

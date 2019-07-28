@@ -51,9 +51,9 @@ DEFAULT_FONT_SIZE = 11
 
 DEFAULT_SYNTAX_THEME = "Default Light" 
 
-DEFAULT_PLUGINS = ("noval.fileview.FileViewLoader","noval.find.findresult.FindResultsviewLoader",\
-                   "noval.base_ui_themes.BaseUIThemeLoader","noval.clean_ui_themes.CleanUIThemeLoader",\
-                   "noval.paren_matcher.ParenMatcherPluginLoader","noval.feedback.FeedBack")
+DEFAULT_PLUGINS = ("noval.plugins.fileview.FileViewLoader","noval.find.findresult.FindResultsviewLoader",\
+                   "noval.plugins.base_ui_themes.BaseUIThemeLoader","noval.plugins.clean_ui_themes.CleanUIThemeLoader",\
+                   "noval.plugins.paren_matcher.ParenMatcherPluginLoader","noval.plugins.feedback.FeedBack","noval.plugins.printer.FilePrinterPluginLoader")
 
 
 NORMAL_MENU_ITEM_KIND = 0

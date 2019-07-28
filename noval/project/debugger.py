@@ -18,6 +18,7 @@ import noval.project.executor as executor
 import noval.toolbar as toolbar
 from noval.project.output import *
 from noval.project.executor import *
+import noval.core as core
 
 def common_run_exception(func):
     '''
@@ -203,6 +204,29 @@ class CommonRunCommandUI(ttk.Frame):
     def Close(self):
         self.StopAndRemoveUI()
 
+
+class DebugView(core.View):
+    '''
+        调试视图,所有调式输出窗口共用这个一个视图
+    '''
+    def __init__(self,debugger):
+        self._debugger = debugger
+        core.View.__init__(self)
+        
+    def GetCtrl(self):
+        '''
+            获取当前标签页的控件
+        '''
+        select_page = self._debugger.bottomTab.get_current_child()
+        if select_page is None:
+            return None
+        debug_page = self.GetDebugPage(select_page)
+        return debug_page.GetOutputview().GetOutputCtrl()
+        
+    def GetDebugPage(self,tab_page):
+        page = tab_page.winfo_children()[0]
+        return page
+
 class Debugger(object):
 
     DebugView = None
@@ -215,9 +239,10 @@ class Debugger(object):
         if Debugger.DebugView is None:
             Debugger.DebugView = self._CreateView()
         self.current_project = None
+        self.bottomTab = GetApp().MainFrame._view_notebooks['s']
         
     def _CreateView(self):
-        return None
+        return DebugView(self)
         
     def GetView(self):
         return self.DebugView

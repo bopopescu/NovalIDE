@@ -37,7 +37,7 @@ class PropertiesService:
             try:
                 optionsPanelClass = utils.GetClassFromDynamicImportModule(optionsPanelClass)
             except Exception as e:
-                utils.get_logger().error('load property page %s error',optionsPanelClass)
+                utils.get_logger().exception('load property page %s error',optionsPanelClass)
                 return
         self._optionsPanelClasses.append((item,name,optionsPanelClass),)
         
