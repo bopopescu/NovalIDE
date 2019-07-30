@@ -10,16 +10,16 @@ class PythonProject(basemodel.BaseProject):
         self.interpreter = None
         self.python_path_list = []
         self._properties.AddPage("Resource","root","noval.project.resource.ResourcePanel")
-        self._properties.AddPage("Debug/Run","root","noval.python.project.debugrun.DebugRunPanel")
-        self._properties.AddPage("PythonPath","root","noval.python.project.pythonpath.PythonPathPanel")
-        self._properties.AddPage("Interpreter","root","noval.python.project.pythoninterpreter.PythonInterpreterPanel")
-        self._properties.AddPage("Project References","root","noval.python.project.projectreferrence.ProjectReferrencePanel")
+        self._properties.AddPage("Debug/Run","root","noval.python.project.pages.debugrun.DebugRunPanel")
+        self._properties.AddPage("PythonPath","root","noval.python.project.pages.pythonpath.PythonPathPanel")
+        self._properties.AddPage("Interpreter","root","noval.python.project.pages.pythoninterpreter.PythonInterpreterPanel")
+        self._properties.AddPage("Project References","root","noval.python.project.pages.projectreferrence.ProjectReferrencePanel")
 
         self._properties.AddPage("Resource","file","noval.project.resource.ResourcePanel")
-        self._properties.AddPage("Debug/Run","file","noval.python.project.debugrun.DebugRunPanel")
+        self._properties.AddPage("Debug/Run","file","noval.python.project.pages.debugrun.DebugRunPanel")
 
         self._properties.AddPage("Resource","folder","noval.project.resource.ResourcePanel")
-        self._properties.AddPage("Debug/Run","folder","noval.python.project.debugrun.DebugRunPanel")
+        self._properties.AddPage("Debug/Run","folder","noval.python.project.pages.debugrun.DebugRunPanel")
 
         self._runinfo.RunConfig = "noval.python.project.runconfig.PythonRunconfig"
         self._runinfo.DocumentTemplate = "noval.python.project.viewer.PythonProjectTemplate"

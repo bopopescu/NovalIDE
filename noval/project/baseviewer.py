@@ -1109,7 +1109,7 @@ class ProjectView(misc.AlarmEventView):
 
     def ClearFolderState(self):
         config = GetApp().GetConfig()
-        config.DeleteGroup(getProjectKeyName(self.GetDocument().GetModel().Id))
+        config.DeleteGroup(getProjectKeyName(self.GetDocument()))
         
 
     def SaveFolderState(self, event=None):
@@ -1242,13 +1242,16 @@ class ProjectView(misc.AlarmEventView):
         )
         if not paths:
             return
-
+        newPaths = []
+        #必须先格式化所有路径
+        for path in paths:
+            newPaths.append(fileutils.opj(path))
         folderPath = None
         item = self._treeCtrl.GetSingleSelectItem()
         if item:
             if not self._IsItemFile(item):
                 folderPath = self._GetItemFolderPath(item)
-        self.GetDocument().GetCommandProcessor().Submit(projectcommand.ProjectAddFilesCommand(self.GetDocument(), paths, folderPath=folderPath))
+        self.GetDocument().GetCommandProcessor().Submit(projectcommand.ProjectAddFilesCommand(self.GetDocument(), newPaths, folderPath=folderPath))
         self.Activate()  # after add, should put focus on project editor
 
 
@@ -1707,7 +1710,7 @@ class ProjectView(misc.AlarmEventView):
         
         self.ClearFolderState()  # remove from registry folder settings
         #delete project regkey config
-        GetApp().GetConfig().DeleteGroup(getProjectKeyName(doc.GetModel().Id))
+        GetApp().GetConfig().DeleteGroup(getProjectKeyName(doc))
 
         # close project
         if doc:            
@@ -2059,7 +2062,7 @@ class ProjectOptionsPanel(ui_utils.BaseConfigurationPanel):
 
     def __init__(self, master,**kwargs):
         ui_utils.BaseConfigurationPanel.__init__(self,master=master,**kwargs)
-        self.projectsavedoc_chkvar = tk.IntVar(value=utils.profile_get_int("ProjectSaveDocs", True))
+        self.projectsavedoc_chkvar = tk.IntVar(value=utils.profile_get_int(consts.PROJECT_DOCS_SAVED_KEY, True))
         projSaveDocsCheckBox = ttk.Checkbutton(self, text=_("Remember open projects"),variable=self.projectsavedoc_chkvar)
         projSaveDocsCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         
@@ -2096,7 +2099,7 @@ class ProjectOptionsPanel(ui_utils.BaseConfigurationPanel):
 
 
     def OnOK(self, optionsDialog):
-        utils.profile_set("ProjectSaveDocs", self.projectsavedoc_chkvar.get())
+        utils.profile_set(consts.PROJECT_DOCS_SAVED_KEY, self.projectsavedoc_chkvar.get())
         utils.profile_set("PromptSaveProjectFile", self.promptSavedoc_chkvar.get())
         utils.profile_set("LoadFolderState", self.loadFolderState_chkvar.get())
        # if not ACTIVEGRID_BASE_IDE:

@@ -267,6 +267,9 @@ class App(tk.Tk):
         """
         Open any files specified in the given command line argument passed in via shared memory
         """
+        if not hasattr(self, "_singleInstanceChecker"):
+            utils.get_logger().warn('application has been quit,stop background listen and load')
+            return
         self.after(1000,self.DoBackgroundListenAndLoad)
         self._sharedMemory.seek(0)
         byte = self._sharedMemory.read_byte()

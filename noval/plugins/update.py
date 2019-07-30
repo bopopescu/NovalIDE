@@ -13,6 +13,10 @@ from tkinter import messagebox
 import noval.util.urlutils as urlutils
 import sys
 import requests
+import noval.iface as iface
+import noval.plugin as plugin
+import noval.constants as constants
+import noval.consts as consts
 
 class DownloadProgressDialog(ui_base.GenericProgressDialog):
     
@@ -130,4 +134,15 @@ def Install(app_path):
         app_startup_path = whichpath.GuessPath("NovalIDE")
         #wait a moment to avoid single instance limit
         subprocess.Popen("/bin/sleep 2;%s" % app_startup_path,shell=True)
-    GetApp().MainFrame.OnExit(None)
+    GetApp().Quit()
+
+class UpdateLoader(plugin.Plugin):
+    plugin.Implements(iface.CommonPluginI)
+    def Load(self):
+        GetApp().InsertCommand(constants.ID_GOTO_OFFICIAL_WEB,constants.ID_CHECK_UPDATE,_("&Help"),_("&Check for Updates"),\
+                    handler=lambda:self.CheckUpdate(ignore_error=False),pos="before")
+        if utils.profile_get_int(consts.CHECK_UPDATE_ATSTARTUP_KEY, True):
+            GetApp().after(1000,self.CheckUpdate)
+
+    def CheckUpdate(self,ignore_error=True):
+        CheckAppUpdate(ignore_error)

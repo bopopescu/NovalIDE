@@ -12,20 +12,14 @@
 from noval import _,consts
 from tkinter import messagebox
 import noval.ide as ide
-import sys
 import noval.util.apputils as apputils
-import noval.util.appdirs as appdirs
-import noval.util.logger as logger
 import noval.python.interpreter.interpretermanager as interpretermanager
 import noval.python.parser.intellisence as intellisence
 from noval.util import strutils
-import noval.python.parser.utils as parserutils
-import noval.imageutils as imageutils
 from noval.util import utils
 import noval.constants as constants
 import noval.model as model
 import os
-import noval.project.baseviewer as baseprojectviewer
 import noval.python.project.viewer as projectviewer
 import noval.python.project.rundocument as runprojectdocument
 from noval.syntax import synglob
@@ -34,8 +28,6 @@ import noval.ui_utils as ui_utils
 import subprocess
 import noval.util.fileutils as fileutils
 import noval.terminal as terminal
-import noval.python.unittest as unittest
-import noval.python.pyeditor as pyeditor
 import noval.preference as preference
 import noval.python.debugger.debugger as pythondebugger
 import noval.ui_common as ui_common
@@ -54,8 +46,7 @@ class PyIDEApplication(ide.IDEApplication):
         self.CloseSplash()
         import noval.python.interpreter.gerneralconfiguration as interpretergerneralconfiguration
         import noval.python.interpreter.interpreterconfigruation as interpreterconfigruation
-        #设置Python文本视图在大纲中显示语法树
-        self.MainFrame.GetOutlineView().AddViewTypeForBackgroundHandler(pyeditor.PythonView)
+        
         #pyc和pyo二进制文件类型禁止添加到项目中
         ProjectDocument.BIN_FILE_EXTS = ProjectDocument.BIN_FILE_EXTS + ['pyc','pyo']
         self.interpreter_combo = self.MainFrame.GetToolBar().AddCombox()
@@ -63,14 +54,14 @@ class PyIDEApplication(ide.IDEApplication):
         
         self.LoadDefaultInterpreter()
         self.AddInterpreters()
-        intellisence.IntellisenceManager().generate_default_intellisence_data()
+        self.intellisence_mananger = intellisence.IntellisenceManager()
+        self.intellisence_mananger.generate_default_intellisence_data()
       
         if utils.is_windows():
             self.InsertCommand(consts.ID_FEEDBACK,constants.ID_OPEN_PYTHON_HELP,_("&Help"),_("&Python Help Document"),handler=self.OpenPythonHelpDocument,image=self.GetImage("pydoc.png"),pos="before")
             
         self.AddCommand(constants.ID_GOTO_DEFINITION,_("&Edit"),_("Goto Definition"),self.GotoDefinition,default_tester=True,default_command=True)
         self.InsertCommand(consts.ID_FEEDBACK,constants.ID_GOTO_PYTHON_WEB,_("&Help"),_("&Python Website"),handler=self.GotoPythonWebsite,pos="before")
-        self.AddCommand(constants.ID_UNITTEST,_("&Tools"),_("&UnitTest"),self.OnUnittestDlg,default_tester=True,default_command=True)
         self.AddCommand(constants.ID_OPEN_INTERPRETER,_("&Tools"),_("&Interpreter"),self.OpenInterpreter,image=self.GetImage("python/interpreter.png"))
         self.AddCommand(constants.ID_PREFERENCES,_("&Tools"),_("&Options..."),self.OnOptions,image=self.GetImage("prefer.png"),add_separator=True,\
                                         separator_location="top")
@@ -130,12 +121,6 @@ class PyIDEApplication(ide.IDEApplication):
         current_view = self.GetDocumentManager().GetCurrentView()
         current_view.GetCtrl().GotoDefinition()
 
-    def OnUnittestDlg(self):
-        current_view = self.GetDocumentManager().GetCurrentView()
-        dlg = unittest.UnitTestDialog(current_view.GetFrame(),current_view)
-        if dlg.CreateUnitTestFrame():
-            dlg.ShowModal()
-
     def LoadDefaultPlugins(self):
         '''
             加载python默认插件
@@ -144,6 +129,7 @@ class PyIDEApplication(ide.IDEApplication):
         consts.DEFAULT_PLUGINS += ('noval.python.plugins.pyshell.PyshellViewLoader',)
         consts.DEFAULT_PLUGINS += ('noval.python.plugins.outline.PythonOutlineViewLoader',)
         consts.DEFAULT_PLUGINS += ('noval.python.project.viewer.DefaultProjectTemplateLoader',)
+        consts.DEFAULT_PLUGINS += ('noval.python.plugins.unittest.UnittestLoader',)
         
     def GetProjectTemplateClassData(self):
         '''
@@ -161,7 +147,7 @@ class PyIDEApplication(ide.IDEApplication):
     def Quit(self):
         if not self.AllowClose():
             return
-        intellisence.IntellisenceManager().Stop()
+        self.intellisence_mananger.Stop()
         ide.IDEApplication.Quit(self)
     
     @property
@@ -223,9 +209,9 @@ class PyIDEApplication(ide.IDEApplication):
     def SelectInterpreter(self,interpreter):
         if interpreter != interpretermanager.InterpreterManager().GetCurrentInterpreter():
             interpretermanager.InterpreterManager().SetCurrentInterpreter(interpreter)
-            if intellisence.IntellisenceManager().IsRunning:
+            if self.intellisence_mananger.IsRunning:
                 return
-            intellisence.IntellisenceManager().load_intellisence_data(interpreter)
+            self.intellisence_mananger.load_intellisence_data(interpreter)
             
     def GetDefaultLangId(self):
         return lang.ID_LANG_PYTHON

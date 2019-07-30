@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os.path
 import tempfile
 import webbrowser
@@ -7,21 +8,27 @@ from noval import GetApp,_
 import noval.iface as iface
 import noval.plugin as plugin
 import noval.constants as constants
+import noval.util.utils as utils
 
 def print_current_script():
     editor = _get_current_editor()
     assert editor is not None
 
     template_fn = os.path.join(os.path.dirname(__file__), "template.html")
-    with open(template_fn, encoding="utf-8") as f:
+    kwargs = {}
+    if utils.is_py3_plus():
+        kwargs = dict(encoding="utf-8")
+
+    with open(template_fn,**kwargs) as f:
         template_html = f.read()
+
 
     script_html = _export_text_as_html(editor.GetView().GetCtrl())
     title_html = escape_html(os.path.basename(editor.GetView().GetDocument().GetFilename()))
     full_html = template_html.replace("%title%", title_html).replace("%script%", script_html)
 
     temp_handle, temp_fn = tempfile.mkstemp(suffix=".html", prefix="novalide_")
-    with os.fdopen(temp_handle, "w", encoding="utf-8") as f:
+    with os.fdopen(temp_handle, "w", **kwargs) as f:
         f.write(full_html)
 
     if platform.system() == "Darwin":
@@ -82,3 +89,5 @@ class FilePrinterPluginLoader(plugin.Plugin):
         file_menu = menuBar.GetFileMenu()
         menu_item = GetApp().InsertCommand(constants.ID_EXIT,constants.ID_PRINT,_("&File"),_("Print..."),handler=print_current_script,tester=can_print_current_script,pos="before",image="toolbar/print.png")
         GetApp().MainFrame.GetToolBar().AddButton(constants.ID_PRINT,menu_item.image,_("Print"),handler=print_current_script,tester=menu_item.tester,pos=4,accelerator=menu_item.accelerator)
+        #使用默认tester函数,必须添加到默认id列表中
+        GetApp().AppendDefaultCommand(constants.ID_PRINT)

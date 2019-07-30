@@ -507,6 +507,9 @@ class TextView(misc.AlarmEventView):
         self._asking_about_external_change = False
         misc.AlarmEventView.check_for_external_changes(self)
 
+    def ZoomView(self,delta = 0):
+        self.UpdateFontSize(delta)
+
     def UpdateFontSize(self, delta = 0):
         editor_font = tkfont.nametofont("EditorFont")
         default_editor_font_size = editor_font['size']

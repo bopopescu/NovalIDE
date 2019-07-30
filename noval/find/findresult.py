@@ -60,9 +60,11 @@ class FindResultsview(ttk.Frame):
             defLineNum = self.text.GetCurrentLine()
   
         lineText = self.text.GetLineText(defLineNum)
-        if lineText == "\n" or lineText.find(FILENAME_MARKER) != -1 or lineText.find(PROJECT_MARKER) != -1 or lineText.find(FILE_MARKER) != -1:
+        #忽略查找结果框第一行,第一行不是查找结果
+        if lineText == "\n" or lineText.find(FILENAME_MARKER) != -1 or lineText.find(PROJECT_MARKER) != -1 or lineText.find(FILE_MARKER) != -1 or defLineNum == 1:
             return
         lineEnd = lineText.find(":")
+        #忽略最后一行
         if lineEnd == -1:
             return
         else:

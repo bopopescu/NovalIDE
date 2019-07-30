@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from noval import GetApp,_
 import os
 import tkinter as tk

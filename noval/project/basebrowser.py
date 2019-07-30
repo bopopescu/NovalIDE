@@ -365,11 +365,11 @@ class BaseProjectbrowser(ttk.Frame):
         doc = None
         try:
             item = selections[0]
-            filepath = self.GetItemPath(item)
-            #标准化文件路径
-            filepath = fileutils.opj(filepath)
+            filepath = self.GetView()._GetItemFilePath(item)
             file_template = None
             if filepath:
+                #标准化文件路径
+                filepath = fileutils.opj(filepath)
                 if not os.path.exists(filepath):
                     msgTitle = GetApp().GetAppName()
                     if not msgTitle:

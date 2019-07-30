@@ -128,7 +128,7 @@ class TerminalExecutor(object):
         command = self.GetExecuteCommand()
         utils.get_logger().debug("start run executable: %s in terminal",command)
         startIn = self.GetStartupPath()
-        terminal.run_in_terminal(command,startIn,self._run_parameter.Environment,keep_open=False,pause=True,title="abc")
+        terminal.run_in_terminal(command,startIn,self._run_parameter.Environment,keep_open=False,pause=True,title="abc",overwrite_env=False)
 
     def GetExecPath(self):
         return self._path

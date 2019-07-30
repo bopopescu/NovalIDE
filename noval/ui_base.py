@@ -658,7 +658,7 @@ class SafeScrollbar(ttk.Scrollbar):
         try:
             ttk.Scrollbar.set(self, first, last)
         except Exception:
-            traceback.print_exc()
+            utils.get_logger().exception('scrollbar set error:')
             
 class OutlineView(ttk.Frame):
     #不排序

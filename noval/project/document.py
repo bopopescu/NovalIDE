@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from noval import GetApp,_
 from tkinter import messagebox
 import os
@@ -31,7 +32,6 @@ class ProjectDocument(core.Document):
         unprojProj = cls.GetUnProjectDocument()
         unprojProj.AddFile(file_path)
         return unprojProj.GetFileKey(file_path,lastPart)
-        #return "%s/{%s}/%s/%s" % (PROJECT_KEY, ProjectDocument.UNPROJECT_MODEL_ID, file_path.replace(os.sep, '|'),lastPart)
 
 
     def __init__(self, model=None):
@@ -166,7 +166,7 @@ class ProjectDocument(core.Document):
                 self.Destroy()
             return True  # if we return False, the Project View is destroyed, Service windows shouldn't be destroyed
 
-        GetApp().GetTopWindow().PushStatusText(_("Loading project %s.")%filePath)
+        GetApp().GetTopWindow().PushStatusText(_("Loading project \"%s\".")%filePath)
         fileObject = open(filePath, 'r')
         try:
             self.LoadObject(fileObject)
@@ -180,7 +180,7 @@ class ProjectDocument(core.Document):
             #TODO:this may cause problem ,should watch some time to check effection
             if self in self.GetDocumentManager().GetDocuments():
                 self.Destroy()
-            GetApp().GetTopWindow().PushStatusText(_("Load project %s fail.")%filePath)
+            GetApp().GetTopWindow().PushStatusText(_("Load project \"%s\" fail.")%filePath)
             fileObject.close()
             return True  # if we return False, the Project View is destroyed, Service windows shouldn't be destroyed
 
@@ -209,7 +209,7 @@ class ProjectDocument(core.Document):
         self._savedYet = True
         view.Activate()
         self.document_watcher.AddFileDoc(self)
-        GetApp().GetTopWindow().PushStatusText(_("Load project %s success.")%filePath)
+        GetApp().GetTopWindow().PushStatusText(_("Load project \"%s\" success.")%filePath)
         return True
 
     def OnSaveDocument(self, filename):

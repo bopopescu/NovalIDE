@@ -13,12 +13,7 @@
 import logging
 import traceback
 import sys
-import os
-try:
-    import __builtin__
-except ImportError:
-    import builtins as __builtin__
-    
+import os    
 import types
 import noval.util.utillang as utillang
 import noval.util.datetimeparser as datetimeparser

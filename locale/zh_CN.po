@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2019-07-18 09:32+ÖÐ¹ú±ê×¼Ê±¼ä\n"
-"PO-Revision-Date: 2019-07-22 08:36+0800\n"
+"POT-Creation-Date: 2019-07-29 17:06+ÖÐ¹ú±ê×¼Ê±¼ä\n"
+"PO-Revision-Date: 2019-07-29 17:06+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -29,18 +29,6 @@ msgstr "Unix (\\n)"
 msgid "Windows (\\r\\n)"
 msgstr "Windows (\\r\\n)"
 
-#: G:\work\project\Noval\noval\about.py:30
-msgid "About "
-msgstr "关于"
-
-#: G:\work\project\Noval\noval\about.py:99
-#: G:\work\project\Noval\noval\python\debugger\breakpoints.py:52
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2788
-#: G:\work\project\Noval\noval\python\debugger\watchs.py:108
-#: G:\work\project\Noval\noval\ui_base.py:937
-msgid "&OK"
-msgstr "确定"
-
 #: G:\work\project\Noval\noval\colorfont.py:48
 msgid "Lexers:"
 msgstr "编辑器支持语言:"
@@ -62,8 +50,8 @@ msgid "Code Sample(P):"
 msgstr "代码示例(P):"
 
 #: G:\work\project\Noval\noval\colorfont.py:96
-msgid "Themes:"
-msgstr "主题:"
+msgid "Syntax Themes:"
+msgstr "语法主题:"
 
 #: G:\work\project\Noval\noval\colorfont.py:176
 msgid ""
@@ -72,88 +60,87 @@ msgid ""
 msgstr "字体与颜色配置已经被修改,需要保存当前配置吗?"
 
 #: G:\work\project\Noval\noval\colorfont.py:176
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:585
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:583
 msgid "Save configuration"
 msgstr "保持配置"
 
-#: G:\work\project\Noval\noval\core.py:726
-#: G:\work\project\Noval\noval\core.py:1821
-#: G:\work\project\Noval\noval\core.py:1836
-#: G:\work\project\Noval\noval\executable.py:52
+#: G:\work\project\Noval\noval\core.py:728
+#: G:\work\project\Noval\noval\core.py:1824
+#: G:\work\project\Noval\noval\core.py:1839
 #: G:\work\project\Noval\noval\project\variables.py:195
 #: G:\work\project\Noval\noval\python\interpreter\environment.py:89
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:449
 #: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:451
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:453
 #: G:\work\project\Noval\noval\ui_utils.py:405
 msgid "Warning"
 msgstr "警告"
 
-#: G:\work\project\Noval\noval\core.py:728
+#: G:\work\project\Noval\noval\core.py:730
 #: G:\work\project\Noval\noval\editor\text.py:492
 msgid "File \"%s\" has already been modified outside,Do You Want to reload it?"
 msgstr "文件 \"%s\" 已经在外部被改变，要重载文档内容吗？"
 
-#: G:\work\project\Noval\noval\core.py:728
+#: G:\work\project\Noval\noval\core.py:730
 #: G:\work\project\Noval\noval\editor\text.py:492
 msgid "Reload.."
 msgstr "重载文档..."
 
-#: G:\work\project\Noval\noval\core.py:731
+#: G:\work\project\Noval\noval\core.py:733
 msgid "Couldn't reload '%s'.  Unable to close current '%s'."
 msgstr ""
 
-#: G:\work\project\Noval\noval\core.py:957
+#: G:\work\project\Noval\noval\core.py:959
 #, fuzzy
 #| msgid "Select a document type:"
 msgid "Select a document view:"
 msgstr "选择文档类型:"
 
-#: G:\work\project\Noval\noval\core.py:958
+#: G:\work\project\Noval\noval\core.py:960
 #, fuzzy
 #| msgid "View"
 msgid "Views"
 msgstr "查看"
 
-#: G:\work\project\Noval\noval\core.py:1046
+#: G:\work\project\Noval\noval\core.py:1048
 #, fuzzy
 #| msgid "Untitled%s"
 msgid "Untitled %d"
 msgstr "未命名%s"
 
-#: G:\work\project\Noval\noval\core.py:1589
+#: G:\work\project\Noval\noval\core.py:1592
 #, fuzzy
 #| msgid "Location:"
 msgid "Application"
 msgstr "位置:"
 
-#: G:\work\project\Noval\noval\core.py:1591
-#: G:\work\project\Noval\noval\core.py:1823
+#: G:\work\project\Noval\noval\core.py:1594
+#: G:\work\project\Noval\noval\core.py:1826
 msgid ""
 "'%s' has been modified outside of %s.  Overwrite '%s' with current changes?"
 msgstr "文件'%s'已经在%s外部被改变，要覆盖文件'%s'现有内容吗？"
 
-#: G:\work\project\Noval\noval\core.py:1654
-#: G:\work\project\Noval\noval\core.py:1719
-#: G:\work\project\Noval\noval\core.py:2308
+#: G:\work\project\Noval\noval\core.py:1657
+#: G:\work\project\Noval\noval\core.py:1722
+#: G:\work\project\Noval\noval\core.py:2304
 #: G:\work\project\Noval\noval\editor\text.py:158
 #: G:\work\project\Noval\noval\editor\text.py:255
-#: G:\work\project\Noval\noval\ide.py:702
-#: G:\work\project\Noval\noval\project\basebrowser.py:414
-#: G:\work\project\Noval\noval\project\baseviewer.py:198
-#: G:\work\project\Noval\noval\project\baseviewer.py:213
-#: G:\work\project\Noval\noval\python\debugger\output.py:162
+#: G:\work\project\Noval\noval\ide.py:763
+#: G:\work\project\Noval\noval\project\basebrowser.py:412
+#: G:\work\project\Noval\noval\project\document.py:162
+#: G:\work\project\Noval\noval\project\document.py:178
+#: G:\work\project\Noval\noval\python\debugger\output.py:38
 msgid "File Error"
 msgstr ""
 
-#: G:\work\project\Noval\noval\core.py:1793
+#: G:\work\project\Noval\noval\core.py:1796
 msgid "Untitled"
 msgstr "未命名"
 
-#: G:\work\project\Noval\noval\core.py:1838
+#: G:\work\project\Noval\noval\core.py:1841
 msgid "Save changes to '%s'?"
 msgstr ""
 
-#: G:\work\project\Noval\noval\core.py:2309
+#: G:\work\project\Noval\noval\core.py:2305
 #: G:\work\project\Noval\noval\editor\text.py:273
 msgid "Could not open '%s':  %s"
 msgstr "打开文件 '%s' 失败.原因.  %s"
@@ -207,8 +194,8 @@ msgid "Select Tab"
 msgstr "切换文档标签页"
 
 #: G:\work\project\Noval\noval\editor\notebook.py:231
-#: G:\work\project\Noval\noval\fileview.py:305
-#: G:\work\project\Noval\noval\project\basebrowser.py:635
+#: G:\work\project\Noval\noval\plugins\fileview.py:305
+#: G:\work\project\Noval\noval\project\basebrowser.py:629
 #: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:250
 msgid "Open Path in Explorer"
 msgstr "打开所在文件夹"
@@ -239,177 +226,146 @@ msgstr "最大化选项卡文档窗口"
 msgid "Restore Editor Window"
 msgstr "还原选项卡文档窗口"
 
-#: G:\work\project\Noval\noval\editor\notebook.py:278
-#: G:\work\project\Noval\noval\editor\notebook.py:280
-#: G:\work\project\Noval\noval\fileview.py:322
-#: G:\work\project\Noval\noval\fileview.py:329
-#: G:\work\project\Noval\noval\fileview.py:338
-#: G:\work\project\Noval\noval\fileview.py:394
-#: G:\work\project\Noval\noval\python\debugger\output.py:132
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:177
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:181
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:184
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:300
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:419
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:497
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:476
-#: G:\work\project\Noval\noval\python\interpreter\pythonpath.py:40
-#: G:\work\project\Noval\noval\python\project\debugrun.py:171
-#: G:\work\project\Noval\noval\python\project\debugrun.py:218
-#: G:\work\project\Noval\noval\python\project\debugrun.py:289
-#: G:\work\project\Noval\noval\python\project\debugrun.py:463
-#: G:\work\project\Noval\noval\python\project\viewer.py:56
-#: G:\work\project\Noval\noval\python\unittest.py:73
-msgid "Error"
-msgstr "错误"
-
-#: G:\work\project\Noval\noval\editor\notebook.py:339
+#: G:\work\project\Noval\noval\editor\notebook.py:333
 msgid "Go to Line"
 msgstr "跳转到行"
 
-#: G:\work\project\Noval\noval\editor\notebook.py:340
+#: G:\work\project\Noval\noval\editor\notebook.py:334
 msgid "Enter line number to go to:(1-%d)"
 msgstr "输入跳转到的行号:(1-%d)"
 
-#: G:\work\project\Noval\noval\editor\notebook.py:349
+#: G:\work\project\Noval\noval\editor\notebook.py:343
 msgid "&Find..."
 msgstr "查找..."
 
+#: G:\work\project\Noval\noval\editor\notebook.py:343
+#: G:\work\project\Noval\noval\editor\notebook.py:345
+#: G:\work\project\Noval\noval\editor\notebook.py:346
+#: G:\work\project\Noval\noval\editor\notebook.py:347
+#: G:\work\project\Noval\noval\editor\notebook.py:348
 #: G:\work\project\Noval\noval\editor\notebook.py:349
 #: G:\work\project\Noval\noval\editor\notebook.py:351
-#: G:\work\project\Noval\noval\editor\notebook.py:352
-#: G:\work\project\Noval\noval\editor\notebook.py:353
-#: G:\work\project\Noval\noval\editor\notebook.py:354
-#: G:\work\project\Noval\noval\editor\notebook.py:355
-#: G:\work\project\Noval\noval\editor\notebook.py:357
-#: G:\work\project\Noval\noval\frame.py:189
 #: G:\work\project\Noval\noval\frame.py:190
 #: G:\work\project\Noval\noval\frame.py:191
 #: G:\work\project\Noval\noval\frame.py:192
 #: G:\work\project\Noval\noval\frame.py:193
-#: G:\work\project\Noval\noval\frame.py:195
-#: G:\work\project\Noval\noval\frame.py:197
-#: G:\work\project\Noval\noval\menu.py:658
-#: G:\work\project\Noval\noval\python\pyide.py:84
-#: G:\work\project\Noval\noval\python\pyide.py:90
+#: G:\work\project\Noval\noval\frame.py:194
+#: G:\work\project\Noval\noval\frame.py:196
+#: G:\work\project\Noval\noval\frame.py:198
+#: G:\work\project\Noval\noval\menu.py:662
+#: G:\work\project\Noval\noval\python\pyide.py:62
+#: G:\work\project\Noval\noval\python\pyide.py:67
 msgid "&Edit"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\notebook.py:351
+#: G:\work\project\Noval\noval\editor\notebook.py:345
 msgid "R&eplace..."
 msgstr "替换..."
 
-#: G:\work\project\Noval\noval\editor\notebook.py:352
+#: G:\work\project\Noval\noval\editor\notebook.py:346
 msgid "&Go to Line..."
 msgstr "跳转到行..."
 
-#: G:\work\project\Noval\noval\editor\notebook.py:353
+#: G:\work\project\Noval\noval\editor\notebook.py:347
 msgid "Find in File..."
 msgstr "在文件中查找..."
 
-#: G:\work\project\Noval\noval\editor\notebook.py:354
+#: G:\work\project\Noval\noval\editor\notebook.py:348
 msgid "Find in Project..."
 msgstr "在项目中查找..."
 
-#: G:\work\project\Noval\noval\editor\notebook.py:355
+#: G:\work\project\Noval\noval\editor\notebook.py:349
 msgid "Find in Directory..."
 msgstr "在目录中查找..."
 
-#: G:\work\project\Noval\noval\editor\notebook.py:359
+#: G:\work\project\Noval\noval\editor\notebook.py:353
 msgid "Insert"
 msgstr "插入"
 
-#: G:\work\project\Noval\noval\editor\notebook.py:360
+#: G:\work\project\Noval\noval\editor\notebook.py:354
 msgid "Insert Datetime"
 msgstr "插入日期"
 
-#: G:\work\project\Noval\noval\editor\notebook.py:361
+#: G:\work\project\Noval\noval\editor\notebook.py:355
 msgid "Insert Comment Template"
 msgstr "插入注释模板"
 
-#: G:\work\project\Noval\noval\editor\notebook.py:362
+#: G:\work\project\Noval\noval\editor\notebook.py:356
 msgid "Insert File Content"
 msgstr "插入文件内容"
 
-#: G:\work\project\Noval\noval\editor\notebook.py:365
+#: G:\work\project\Noval\noval\editor\notebook.py:359
 msgid "Comment &Lines"
 msgstr "注释代码行"
 
-#: G:\work\project\Noval\noval\editor\notebook.py:365
-#: G:\work\project\Noval\noval\editor\notebook.py:367
-#: G:\work\project\Noval\noval\editor\notebook.py:370
-#: G:\work\project\Noval\noval\editor\notebook.py:372
-#: G:\work\project\Noval\noval\menu.py:664
+#: G:\work\project\Noval\noval\editor\notebook.py:359
+#: G:\work\project\Noval\noval\editor\notebook.py:361
+#: G:\work\project\Noval\noval\editor\notebook.py:364
+#: G:\work\project\Noval\noval\editor\notebook.py:366
+#: G:\work\project\Noval\noval\menu.py:668
 msgid "&Format"
 msgstr "格式化(&F)"
 
-#: G:\work\project\Noval\noval\editor\notebook.py:367
+#: G:\work\project\Noval\noval\editor\notebook.py:361
 msgid "&Uncomment Lines"
 msgstr "取消注释代码行"
 
-#: G:\work\project\Noval\noval\editor\notebook.py:370
+#: G:\work\project\Noval\noval\editor\notebook.py:364
 msgid "&Indent Lines"
 msgstr "增加行缩进"
 
-#: G:\work\project\Noval\noval\editor\notebook.py:372
+#: G:\work\project\Noval\noval\editor\notebook.py:366
 msgid "&Dedent Lines"
 msgstr "减少行缩进"
 
-#: G:\work\project\Noval\noval\editor\notebook.py:376
-#: G:\work\project\Noval\noval\editor\notebook.py:396
-#: G:\work\project\Noval\noval\editor\notebook.py:398
-#: G:\work\project\Noval\noval\frame.py:180
-#: G:\work\project\Noval\noval\frame.py:182
-#: G:\work\project\Noval\noval\frame.py:270
-#: G:\work\project\Noval\noval\ide.py:440
-#: G:\work\project\Noval\noval\ide.py:863
-#: G:\work\project\Noval\noval\menu.py:661
+#: G:\work\project\Noval\noval\editor\notebook.py:370
+msgid "&Advance"
+msgstr "高级"
+
+#: G:\work\project\Noval\noval\editor\notebook.py:371
+msgid "Conert To UPPERCASE"
+msgstr "转成大写"
+
+#: G:\work\project\Noval\noval\editor\notebook.py:372
+msgid "Conert To lowercase"
+msgstr "转成小写"
+
+#: G:\work\project\Noval\noval\editor\notebook.py:374
+#: G:\work\project\Noval\noval\editor\notebook.py:382
+#: G:\work\project\Noval\noval\editor\notebook.py:384
+#: G:\work\project\Noval\noval\frame.py:181
+#: G:\work\project\Noval\noval\frame.py:183
+#: G:\work\project\Noval\noval\frame.py:271
+#: G:\work\project\Noval\noval\ide.py:489
+#: G:\work\project\Noval\noval\ide.py:924
+#: G:\work\project\Noval\noval\menu.py:665
+#: G:\work\project\Noval\noval\python\plugins\outline.py:193
 msgid "&View"
 msgstr "查看(&V)"
 
-#: G:\work\project\Noval\noval\editor\notebook.py:378
+#: G:\work\project\Noval\noval\editor\notebook.py:376
 msgid "&Zoom"
 msgstr "缩放"
 
-#: G:\work\project\Noval\noval\editor\notebook.py:379
+#: G:\work\project\Noval\noval\editor\notebook.py:377
 msgid "Zoom In"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\notebook.py:380
+#: G:\work\project\Noval\noval\editor\notebook.py:378
 msgid "Zoom Out"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\notebook.py:384
-msgid "Outline Sort"
-msgstr "大纲排序"
-
-#: G:\work\project\Noval\noval\editor\notebook.py:386
-msgid "Unsorted"
-msgstr "自然顺序"
-
-#: G:\work\project\Noval\noval\editor\notebook.py:388
-msgid "Sort By Line"
-msgstr "按行号排序"
-
-#: G:\work\project\Noval\noval\editor\notebook.py:390
-msgid "Sort By Type"
-msgstr "按类型排序"
-
-#: G:\work\project\Noval\noval\editor\notebook.py:392
-msgid "Sort By Name(A-Z)"
-msgstr "按字母顺序(A-Z)排序"
-
-#: G:\work\project\Noval\noval\editor\notebook.py:396
+#: G:\work\project\Noval\noval\editor\notebook.py:382
 msgid "Previous Position"
 msgstr "上个位置"
 
-#: G:\work\project\Noval\noval\editor\notebook.py:398
+#: G:\work\project\Noval\noval\editor\notebook.py:384
 msgid "Next Position"
 msgstr "下个位置"
 
-#: G:\work\project\Noval\noval\editor\notebook.py:502
-#: G:\work\project\Noval\noval\ide.py:129
-#: G:\work\project\Noval\noval\project\baseviewer.py:1941
+#: G:\work\project\Noval\noval\editor\notebook.py:478
+#: G:\work\project\Noval\noval\ide.py:131
+#: G:\work\project\Noval\noval\project\baseviewer.py:1286
 #: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:164
 #: G:\work\project\Noval\noval\util\strutils.py:176
 msgid "All Files"
@@ -433,119 +389,41 @@ msgstr "文件 \"%s\" 已经在外部被移动或删除，要继续保持文档�
 msgid "Keep Document.."
 msgstr "保持文档..."
 
-#: G:\work\project\Noval\noval\editor\text.py:1409
+#: G:\work\project\Noval\noval\editor\text.py:1421
 msgid "Wrap words inside text area"
 msgstr "行内容超出范围时自动换行"
 
-#: G:\work\project\Noval\noval\editor\text.py:1418
+#: G:\work\project\Noval\noval\editor\text.py:1430
 msgid "Show right edge"
 msgstr "显示边界线"
 
-#: G:\work\project\Noval\noval\editor\text.py:1422
+#: G:\work\project\Noval\noval\editor\text.py:1434
 msgid "Show line numbers"
 msgstr "显示行号"
 
-#: G:\work\project\Noval\noval\editor\text.py:1426
+#: G:\work\project\Noval\noval\editor\text.py:1438
 msgid "Highlight Caret Line"
 msgstr "高亮光标所在行"
 
-#: G:\work\project\Noval\noval\editor\text.py:1430
+#: G:\work\project\Noval\noval\editor\text.py:1442
 msgid "Highlight parentheses"
 msgstr "高亮括号"
 
-#: G:\work\project\Noval\noval\editor\text.py:1434
+#: G:\work\project\Noval\noval\editor\text.py:1446
 msgid "Highlight syntax elements"
 msgstr "高亮语法"
 
-#: G:\work\project\Noval\noval\editor\text.py:1438
+#: G:\work\project\Noval\noval\editor\text.py:1450
 msgid "Use spaces instead of tabs"
 msgstr "使用空白字符代替制表符"
 
-#: G:\work\project\Noval\noval\editor\text.py:1442
+#: G:\work\project\Noval\noval\editor\text.py:1454
 msgid "Indent Width:"
 msgstr "缩进宽度:"
 
-#: G:\work\project\Noval\noval\editor\text.py:1450
+#: G:\work\project\Noval\noval\editor\text.py:1462
 msgid "Edge Guide Width:"
 msgstr "边界线宽度:"
-
-#: G:\work\project\Noval\noval\executable.py:52
-msgid "%s path '%s' contains no asc character"
-msgstr "解释器路径'%s'包含非ASC字符"
-
-#: G:\work\project\Noval\noval\feedback.py:40
-msgid "Feedback Bug|Suggestion"
-msgstr "反馈缺陷|建议"
-
-#: G:\work\project\Noval\noval\feedback.py:42
-msgid "Please choose the feedback category:"
-msgstr "请选择反馈类别:"
-
-#: G:\work\project\Noval\noval\feedback.py:43
-msgid "Bug"
-msgstr "缺陷"
-
-#: G:\work\project\Noval\noval\feedback.py:43
-msgid "Suggestion"
-msgstr "建议"
-
-#: G:\work\project\Noval\noval\feedback.py:51
-msgid "Title:"
-msgstr "标题:"
-
-#: G:\work\project\Noval\noval\feedback.py:57
-msgid "Content:"
-msgstr "内容:"
-
-#: G:\work\project\Noval\noval\feedback.py:62
-msgid "&Send"
-msgstr "&发送"
-
-#: G:\work\project\Noval\noval\feedback.py:85
-msgid "Content could not be empty!"
-msgstr "内容不能为空!"
-
-#: G:\work\project\Noval\noval\feedback.py:96
-msgid "Send mail success,Thanks for your feedback!"
-msgstr "发送邮件成功,谢谢您的反馈!"
-
-#: G:\work\project\Noval\noval\feedback.py:110
-msgid "Feedback"
-msgstr "反馈"
-
-#: G:\work\project\Noval\noval\fileview.py:42
-msgid "Home directory"
-msgstr "主目录"
-
-#: G:\work\project\Noval\noval\fileview.py:44
-msgid "Desktop"
-msgstr ""
-
-#: G:\work\project\Noval\noval\fileview.py:303
-msgid "&Refresh"
-msgstr "刷新"
-
-#: G:\work\project\Noval\noval\fileview.py:304
-#: G:\work\project\Noval\noval\project\basebrowser.py:636
-#: G:\work\project\Noval\noval\project\basebrowser.py:663
-msgid "Open Command Prompt here..."
-msgstr "在此处打开命令行终端..."
-
-#: G:\work\project\Noval\noval\fileview.py:306
-msgid "&Create new folder"
-msgstr "创建新文件夹"
-
-#: G:\work\project\Noval\noval\fileview.py:307
-msgid "&Create new file"
-msgstr "创建新文件"
-
-#: G:\work\project\Noval\noval\fileview.py:382
-msgid "New folder"
-msgstr "新建文件夹"
-
-#: G:\work\project\Noval\noval\fileview.py:441
-msgid "File View"
-msgstr "文件视图"
 
 #: G:\work\project\Noval\noval\find\find.py:102
 #: G:\work\project\Noval\noval\find\findindir.py:492
@@ -606,6 +484,10 @@ msgstr "查找下一个"
 msgid "Cancel"
 msgstr "取消"
 
+#: G:\work\project\Noval\noval\find\find.py:287
+msgid "The specified text was not found!"
+msgstr "指定文本未找到!"
+
 #: G:\work\project\Noval\noval\find\find.py:362
 msgid "Replace with:"
 msgstr "替换为:"
@@ -643,18 +525,18 @@ msgid "Find in Directory"
 msgstr "在目录中查找"
 
 #: G:\work\project\Noval\noval\find\findindir.py:417
-#: G:\work\project\Noval\noval\project\baseviewer.py:1921
+#: G:\work\project\Noval\noval\project\baseviewer.py:1266
 msgid "Directory:"
 msgstr "路径:"
 
 #: G:\work\project\Noval\noval\find\findindir.py:425
-#: G:\work\project\Noval\noval\project\baseviewer.py:811
-#: G:\work\project\Noval\noval\project\baseviewer.py:1926
-#: G:\work\project\Noval\noval\project\importfiles.py:55
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:3050
+#: G:\work\project\Noval\noval\project\baseviewer.py:163
+#: G:\work\project\Noval\noval\project\baseviewer.py:1271
+#: G:\work\project\Noval\noval\project\importfiles.py:53
+#: G:\work\project\Noval\noval\python\debugger\commandproperty.py:63
 #: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:148
 #: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:97
-#: G:\work\project\Noval\noval\python\project\debugrun.py:66
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:67
 msgid "Browse..."
 msgstr "浏览..."
 
@@ -698,53 +580,62 @@ msgstr "在文件中查找"
 msgid "Find in Project"
 msgstr "在项目中查找"
 
-#: G:\work\project\Noval\noval\find\findresult.py:75
+#: G:\work\project\Noval\noval\find\findresult.py:77
 msgid "Open File Error"
 msgstr "打开文件错误"
 
-#: G:\work\project\Noval\noval\find\findresult.py:75
-#: G:\work\project\Noval\noval\ide.py:704
+#: G:\work\project\Noval\noval\find\findresult.py:77
+#: G:\work\project\Noval\noval\ide.py:765
+#: G:\work\project\Noval\noval\python\debugger\output.py:38
 msgid "The file '%s' doesn't exist and couldn't be opened!"
 msgstr "文件  '%s' 不存在!"
 
-#: G:\work\project\Noval\noval\find\findresult.py:101
+#: G:\work\project\Noval\noval\find\findresult.py:103
 msgid "Search Results"
 msgstr "搜索结果"
 
-#: G:\work\project\Noval\noval\frame.py:180
+#: G:\work\project\Noval\noval\find\findtext.py:195
+msgid "search from the document begging!"
+msgstr ""
+
+#: G:\work\project\Noval\noval\find\findtext.py:202
+msgid "search from the document endding!"
+msgstr ""
+
+#: G:\work\project\Noval\noval\frame.py:181
 msgid "&Toolbar"
 msgstr "工具栏"
 
-#: G:\work\project\Noval\noval\frame.py:182
+#: G:\work\project\Noval\noval\frame.py:183
 msgid "&Status Bar"
 msgstr "状态栏"
 
-#: G:\work\project\Noval\noval\frame.py:189
+#: G:\work\project\Noval\noval\frame.py:190
 msgid "&Undo"
 msgstr ""
 
-#: G:\work\project\Noval\noval\frame.py:190
+#: G:\work\project\Noval\noval\frame.py:191
 #: G:\work\project\Noval\noval\project\command.py:224
 msgid "&Redo"
 msgstr ""
 
-#: G:\work\project\Noval\noval\frame.py:191
+#: G:\work\project\Noval\noval\frame.py:192
 msgid "&Cut"
 msgstr "剪切"
 
-#: G:\work\project\Noval\noval\frame.py:192
+#: G:\work\project\Noval\noval\frame.py:193
 msgid "&Copy"
 msgstr ""
 
-#: G:\work\project\Noval\noval\frame.py:193
+#: G:\work\project\Noval\noval\frame.py:194
 msgid "&Paste"
 msgstr ""
 
-#: G:\work\project\Noval\noval\frame.py:195
+#: G:\work\project\Noval\noval\frame.py:196
 msgid "&Delete"
 msgstr ""
 
-#: G:\work\project\Noval\noval\frame.py:197
+#: G:\work\project\Noval\noval\frame.py:198
 msgid "Select A&ll"
 msgstr "选择所有"
 
@@ -752,174 +643,168 @@ msgstr "选择所有"
 msgid "Check update at start up"
 msgstr "启动时检查版本更新"
 
-#: G:\work\project\Noval\noval\generalopt.py:115
+#: G:\work\project\Noval\noval\generalopt.py:121
 msgid "Language"
 msgstr "界面语言"
 
-#: G:\work\project\Noval\noval\generalopt.py:119
+#: G:\work\project\Noval\noval\generalopt.py:125
 msgid "Enable MRU Menu"
 msgstr "使用MRU菜单"
 
-#: G:\work\project\Noval\noval\generalopt.py:127
+#: G:\work\project\Noval\noval\generalopt.py:133
 msgid "File History length in MRU Files"
 msgstr "显示历史文件最大个数"
 
-#: G:\work\project\Noval\noval\generalopt.py:159
+#: G:\work\project\Noval\noval\generalopt.py:139
+msgid "Redirect Application exception output to Message dialog"
+msgstr "将程序异常信息重定向到对话框"
+
+#: G:\work\project\Noval\noval\generalopt.py:170
 msgid "MRU Length must not be greater than %d"
 msgstr "历史文件个数不能大于%d"
 
-#: G:\work\project\Noval\noval\generalopt.py:163
+#: G:\work\project\Noval\noval\generalopt.py:174
 msgid "MRU Length must not be less than 1"
 msgstr "历史文件个数不能小于1"
 
-#: G:\work\project\Noval\noval\generalopt.py:169
+#: G:\work\project\Noval\noval\generalopt.py:180
 msgid "Language Options"
 msgstr "语言选项"
 
-#: G:\work\project\Noval\noval\generalopt.py:169
+#: G:\work\project\Noval\noval\generalopt.py:180
 msgid "Language changes will not appear until the application is restarted."
 msgstr "程序重启时界面语言改变才能生效."
 
-#: G:\work\project\Noval\noval\ide.py:134
+#: G:\work\project\Noval\noval\ide.py:136
 #: G:\work\project\Noval\noval\syntax\lexer\_txt.py:42
 msgid "Text Editor"
 msgstr "文本编辑器"
 
-#: G:\work\project\Noval\noval\ide.py:142
+#: G:\work\project\Noval\noval\ide.py:144
 msgid "Image File"
 msgstr "图片文件"
 
-#: G:\work\project\Noval\noval\ide.py:147
+#: G:\work\project\Noval\noval\ide.py:149
 msgid "Image Viewer"
 msgstr "图片查看器"
 
-#: G:\work\project\Noval\noval\ide.py:422
+#: G:\work\project\Noval\noval\ide.py:292
+msgid "Project File"
+msgstr "项目文件"
+
+#: G:\work\project\Noval\noval\ide.py:297
+#, fuzzy
+#| msgid "Project View"
+msgid "Project Viewer"
+msgstr "项目视图"
+
+#: G:\work\project\Noval\noval\ide.py:471
 msgid "&New..."
 msgstr "新建..."
 
-#: G:\work\project\Noval\noval\ide.py:422
-#: G:\work\project\Noval\noval\ide.py:423
-#: G:\work\project\Noval\noval\ide.py:424
-#: G:\work\project\Noval\noval\ide.py:425
-#: G:\work\project\Noval\noval\ide.py:427
-#: G:\work\project\Noval\noval\ide.py:428
-#: G:\work\project\Noval\noval\ide.py:430
-#: G:\work\project\Noval\noval\ide.py:433
-#: G:\work\project\Noval\noval\menu.py:655
+#: G:\work\project\Noval\noval\ide.py:471
+#: G:\work\project\Noval\noval\ide.py:472
+#: G:\work\project\Noval\noval\ide.py:473
+#: G:\work\project\Noval\noval\ide.py:474
+#: G:\work\project\Noval\noval\ide.py:476
+#: G:\work\project\Noval\noval\ide.py:477
+#: G:\work\project\Noval\noval\ide.py:479
+#: G:\work\project\Noval\noval\ide.py:482
+#: G:\work\project\Noval\noval\menu.py:659
+#: G:\work\project\Noval\noval\plugins\printer\__init__.py:90
 #: G:\work\project\Noval\noval\ui_utils.py:83
 msgid "&File"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:423
+#: G:\work\project\Noval\noval\ide.py:472
 msgid "&Open..."
 msgstr "打开..."
 
-#: G:\work\project\Noval\noval\ide.py:424
+#: G:\work\project\Noval\noval\ide.py:473
 #, fuzzy
 #| msgid "CloseAll"
 msgid "&Close"
 msgstr "关闭所有"
 
-#: G:\work\project\Noval\noval\ide.py:425
+#: G:\work\project\Noval\noval\ide.py:474
 msgid "&Close A&ll"
 msgstr "关闭所有"
 
-#: G:\work\project\Noval\noval\ide.py:427
+#: G:\work\project\Noval\noval\ide.py:476
 msgid "&Save..."
 msgstr "保存..."
 
-#: G:\work\project\Noval\noval\ide.py:428
+#: G:\work\project\Noval\noval\ide.py:477
 msgid "Save &As..."
 msgstr "另存为..."
 
-#: G:\work\project\Noval\noval\ide.py:430
+#: G:\work\project\Noval\noval\ide.py:479
 msgid "Save All"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:433
+#: G:\work\project\Noval\noval\ide.py:482
 msgid "E&xit"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:440
+#: G:\work\project\Noval\noval\ide.py:489
 msgid "Show FullScreen"
 msgstr "全屏显示"
 
-#: G:\work\project\Noval\noval\ide.py:442
+#: G:\work\project\Noval\noval\ide.py:491
 msgid "&Start Running"
 msgstr "开始运行"
 
-#: G:\work\project\Noval\noval\ide.py:442
-#: G:\work\project\Noval\noval\ide.py:443
-#: G:\work\project\Noval\noval\menu.py:672
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:545
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2156
-#: G:\work\project\Noval\noval\python\pyide.py:98
-#: G:\work\project\Noval\noval\python\pyide.py:100
-#: G:\work\project\Noval\noval\python\pyide.py:101
-#: G:\work\project\Noval\noval\python\pyide.py:102
-#: G:\work\project\Noval\noval\python\pyide.py:104
-#: G:\work\project\Noval\noval\python\pyide.py:105
-#: G:\work\project\Noval\noval\python\pyide.py:106
-#: G:\work\project\Noval\noval\python\pyide.py:107
+#: G:\work\project\Noval\noval\ide.py:491
+#: G:\work\project\Noval\noval\ide.py:492
+#: G:\work\project\Noval\noval\menu.py:676
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:318
+#: G:\work\project\Noval\noval\python\pyide.py:75
+#: G:\work\project\Noval\noval\python\pyide.py:77
+#: G:\work\project\Noval\noval\python\pyide.py:78
+#: G:\work\project\Noval\noval\python\pyide.py:79
+#: G:\work\project\Noval\noval\python\pyide.py:81
+#: G:\work\project\Noval\noval\python\pyide.py:82
+#: G:\work\project\Noval\noval\python\pyide.py:83
+#: G:\work\project\Noval\noval\python\pyide.py:84
 msgid "&Run"
 msgstr "运行(&R)"
 
-#: G:\work\project\Noval\noval\ide.py:443
+#: G:\work\project\Noval\noval\ide.py:492
 msgid "&Start Debugging"
 msgstr "启动调试"
 
-#: G:\work\project\Noval\noval\ide.py:444
+#: G:\work\project\Noval\noval\ide.py:493
 msgid "&Terminator"
 msgstr "命令行终端"
 
-#: G:\work\project\Noval\noval\ide.py:444
-#: G:\work\project\Noval\noval\menu.py:675
-#: G:\work\project\Noval\noval\python\pyide.py:86
-#: G:\work\project\Noval\noval\python\pyide.py:87
-#: G:\work\project\Noval\noval\python\pyide.py:88
+#: G:\work\project\Noval\noval\ide.py:493
+#: G:\work\project\Noval\noval\menu.py:679
+#: G:\work\project\Noval\noval\python\plugins\unittest.py:158
+#: G:\work\project\Noval\noval\python\pyide.py:64
+#: G:\work\project\Noval\noval\python\pyide.py:65
 msgid "&Tools"
 msgstr "工具(&T)"
 
-#: G:\work\project\Noval\noval\ide.py:446
-msgid "&Check for Updates"
-msgstr "检查新版本"
-
-#: G:\work\project\Noval\noval\ide.py:446
-#: G:\work\project\Noval\noval\ide.py:447
-#: G:\work\project\Noval\noval\ide.py:448
-#: G:\work\project\Noval\noval\menu.py:681
-#: G:\work\project\Noval\noval\python\pyide.py:82
-#: G:\work\project\Noval\noval\python\pyide.py:85
-msgid "&Help"
-msgstr ""
-
-#: G:\work\project\Noval\noval\ide.py:447
+#: G:\work\project\Noval\noval\ide.py:494
 msgid "&Visit NovalIDE Website"
 msgstr "访问软件官网"
 
-#: G:\work\project\Noval\noval\ide.py:448
-msgid "&About"
-msgstr "关于"
+#: G:\work\project\Noval\noval\ide.py:494
+#: G:\work\project\Noval\noval\menu.py:685
+#: G:\work\project\Noval\noval\plugins\about.py:113
+#: G:\work\project\Noval\noval\plugins\update.py:142
+#: G:\work\project\Noval\noval\python\pyide.py:60
+#: G:\work\project\Noval\noval\python\pyide.py:63
+msgid "&Help"
+msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:865
+#: G:\work\project\Noval\noval\ide.py:926
 msgid "&Application Look"
 msgstr "应用程序外观"
 
-#: G:\work\project\Noval\noval\logmanager.py:71
-msgid "Logger Name:"
-msgstr "日志名称:"
-
-#: G:\work\project\Noval\noval\logmanager.py:75
-msgid "Logger Level:"
-msgstr "日志级别:"
-
-#: G:\work\project\Noval\noval\logmanager.py:82
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1231
-#: G:\work\project\Noval\noval\python\debugger\watchs.py:242
-msgid "Clear"
-msgstr ""
-
-#: G:\work\project\Noval\noval\menu.py:667
+#: G:\work\project\Noval\noval\menu.py:671
+#: G:\work\project\Noval\noval\project\basebrowser.py:535
+#: G:\work\project\Noval\noval\project\basebrowser.py:536
 #: G:\work\project\Noval\noval\project\basebrowser.py:537
 #: G:\work\project\Noval\noval\project\basebrowser.py:538
 #: G:\work\project\Noval\noval\project\basebrowser.py:539
@@ -929,43 +814,199 @@ msgstr ""
 #: G:\work\project\Noval\noval\project\basebrowser.py:543
 #: G:\work\project\Noval\noval\project\basebrowser.py:544
 #: G:\work\project\Noval\noval\project\basebrowser.py:545
-#: G:\work\project\Noval\noval\project\basebrowser.py:546
 #: G:\work\project\Noval\noval\project\basebrowser.py:547
-#: G:\work\project\Noval\noval\project\basebrowser.py:549
+#: G:\work\project\Noval\noval\project\basebrowser.py:548
 #: G:\work\project\Noval\noval\project\basebrowser.py:550
-#: G:\work\project\Noval\noval\project\basebrowser.py:552
-#: G:\work\project\Noval\noval\project\basebrowser.py:553
-#: G:\work\project\Noval\noval\project\basebrowser.py:685
-#: G:\work\project\Noval\noval\python\project\browser.py:157
+#: G:\work\project\Noval\noval\project\basebrowser.py:551
+#: G:\work\project\Noval\noval\project\basebrowser.py:679
+#: G:\work\project\Noval\noval\python\project\browser.py:130
 msgid "&Project"
 msgstr "项目(&E)"
 
-#: G:\work\project\Noval\noval\plugin2.py:647
-#: G:\work\project\Noval\noval\plugin3.py:646
+#: G:\work\project\Noval\noval\plugin.py:641
 #, fuzzy
 #| msgid "Update Available"
 msgid "No Description Available"
 msgstr "有更新版本可用"
 
-#: G:\work\project\Noval\noval\plugin2.py:648
-#: G:\work\project\Noval\noval\plugin3.py:647
+#: G:\work\project\Noval\noval\plugin.py:642
 msgid "Unknown"
 msgstr ""
+
+#: G:\work\project\Noval\noval\plugins\about.py:33
+msgid "About "
+msgstr "关于"
+
+#: G:\work\project\Noval\noval\plugins\about.py:102
+#: G:\work\project\Noval\noval\python\debugger\breakpoints.py:52
+#: G:\work\project\Noval\noval\python\debugger\watchs.py:108
+#: G:\work\project\Noval\noval\python\project\rundocument.py:263
+#: G:\work\project\Noval\noval\ui_base.py:937
+msgid "&OK"
+msgstr "确定"
+
+#: G:\work\project\Noval\noval\plugins\about.py:113
+msgid "&About"
+msgstr "关于"
+
+#: G:\work\project\Noval\noval\plugins\feedback.py:43
+msgid "Feedback Bug|Suggestion"
+msgstr "反馈缺陷|建议"
+
+#: G:\work\project\Noval\noval\plugins\feedback.py:45
+msgid "Please choose the feedback category:"
+msgstr "请选择反馈类别:"
+
+#: G:\work\project\Noval\noval\plugins\feedback.py:46
+msgid "Bug"
+msgstr "缺陷"
+
+#: G:\work\project\Noval\noval\plugins\feedback.py:46
+msgid "Suggestion"
+msgstr "建议"
+
+#: G:\work\project\Noval\noval\plugins\feedback.py:54
+msgid "Title:"
+msgstr "标题:"
+
+#: G:\work\project\Noval\noval\plugins\feedback.py:60
+msgid "Content:"
+msgstr "内容:"
+
+#: G:\work\project\Noval\noval\plugins\feedback.py:65
+msgid "&Send"
+msgstr "&发送"
+
+#: G:\work\project\Noval\noval\plugins\feedback.py:88
+msgid "Content could not be empty!"
+msgstr "内容不能为空!"
+
+#: G:\work\project\Noval\noval\plugins\feedback.py:102
+msgid "Send mail success,Thanks for your feedback!"
+msgstr "发送邮件成功,谢谢您的反馈!"
+
+#: G:\work\project\Noval\noval\plugins\feedback.py:136
+msgid "Feedback"
+msgstr "反馈"
+
+#: G:\work\project\Noval\noval\plugins\fileview.py:42
+msgid "Home directory"
+msgstr "主目录"
+
+#: G:\work\project\Noval\noval\plugins\fileview.py:44
+msgid "Desktop"
+msgstr ""
+
+#: G:\work\project\Noval\noval\plugins\fileview.py:303
+msgid "&Refresh"
+msgstr "刷新"
+
+#: G:\work\project\Noval\noval\plugins\fileview.py:304
+#: G:\work\project\Noval\noval\project\basebrowser.py:630
+#: G:\work\project\Noval\noval\project\basebrowser.py:657
+msgid "Open Command Prompt here..."
+msgstr "在此处打开命令行终端..."
+
+#: G:\work\project\Noval\noval\plugins\fileview.py:306
+msgid "&Create new folder"
+msgstr "创建新文件夹"
+
+#: G:\work\project\Noval\noval\plugins\fileview.py:307
+msgid "&Create new file"
+msgstr "创建新文件"
+
+#: G:\work\project\Noval\noval\plugins\fileview.py:322
+#: G:\work\project\Noval\noval\plugins\fileview.py:335
+#: G:\work\project\Noval\noval\plugins\fileview.py:391
+#: G:\work\project\Noval\noval\project\baseviewer.py:252
+#: G:\work\project\Noval\noval\project\output.py:129
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:177
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:181
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:184
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:300
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:417
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:495
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:477
+#: G:\work\project\Noval\noval\python\interpreter\pythonpath.py:40
+#: G:\work\project\Noval\noval\python\plugins\unittest.py:76
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:172
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:217
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:297
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:480
+#: G:\work\project\Noval\noval\python\project\rundocument.py:41
+#: G:\work\project\Noval\noval\util\fileutils.py:621
+msgid "Error"
+msgstr "错误"
+
+#: G:\work\project\Noval\noval\plugins\fileview.py:379
+msgid "New folder"
+msgstr "新建文件夹"
+
+#: G:\work\project\Noval\noval\plugins\fileview.py:438
+msgid "File View"
+msgstr "文件视图"
+
+#: G:\work\project\Noval\noval\plugins\logmanager.py:71
+msgid "Logger Name:"
+msgstr "日志名称:"
+
+#: G:\work\project\Noval\noval\plugins\logmanager.py:75
+msgid "Logger Level:"
+msgstr "日志级别:"
+
+#: G:\work\project\Noval\noval\plugins\logmanager.py:82
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1004
+#: G:\work\project\Noval\noval\python\debugger\watchs.py:242
+msgid "Clear"
+msgstr ""
+
+#: G:\work\project\Noval\noval\plugins\printer\__init__.py:90
+msgid "Print..."
+msgstr "打印..."
+
+#: G:\work\project\Noval\noval\plugins\printer\__init__.py:91
+msgid "Print"
+msgstr ""
+
+#: G:\work\project\Noval\noval\plugins\update.py:24
+msgid "Please wait a minute for Downloading"
+msgstr "请等待一会下载完成"
+
+#: G:\work\project\Noval\noval\plugins\update.py:25
+msgid "Downloading %s"
+msgstr "正在下载 %s"
+
+#: G:\work\project\Noval\noval\plugins\update.py:69
+msgid "Download fail:%s"
+msgstr "下载失败:%s"
+
+#: G:\work\project\Noval\noval\plugins\update.py:86
+#: G:\work\project\Noval\noval\util\mailutils.py:39
+msgid "could not connect to server"
+msgstr "不能连接服务器"
+
+#: G:\work\project\Noval\noval\plugins\update.py:94
+msgid "Update Available"
+msgstr "有更新版本可用"
+
+#: G:\work\project\Noval\noval\plugins\update.py:142
+msgid "&Check for Updates"
+msgstr "检查新版本"
 
 #: G:\work\project\Noval\noval\preference.py:34
 msgid "Options"
 msgstr "选项"
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:322
-#: G:\work\project\Noval\noval\project\baseviewer.py:1498
+#: G:\work\project\Noval\noval\project\basebrowser.py:320
+#: G:\work\project\Noval\noval\project\baseviewer.py:831
 msgid "Projects"
 msgstr ""
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:378
+#: G:\work\project\Noval\noval\project\basebrowser.py:376
 msgid "File Not Found"
 msgstr ""
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:379
+#: G:\work\project\Noval\noval\project\basebrowser.py:377
 msgid ""
 "The file '%s' was not found in '%s'.\n"
 "\n"
@@ -975,338 +1016,321 @@ msgstr ""
 "\n"
 "你想查找该文件吗?"
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:388
+#: G:\work\project\Noval\noval\project\basebrowser.py:386
 msgid "Choose a file"
 msgstr ""
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:537
+#: G:\work\project\Noval\noval\project\basebrowser.py:535
 msgid "New Project"
 msgstr "新建项目"
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:538
+#: G:\work\project\Noval\noval\project\basebrowser.py:536
 msgid "Open Project"
 msgstr "打开项目"
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:539
+#: G:\work\project\Noval\noval\project\basebrowser.py:537
 msgid "Close Project"
 msgstr "关闭项目"
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:540
+#: G:\work\project\Noval\noval\project\basebrowser.py:538
 msgid "Save Project"
 msgstr "保存项目"
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:541
-#: G:\work\project\Noval\noval\project\baseviewer.py:2298
-#: G:\work\project\Noval\noval\project\baseviewer.py:2360
-#: G:\work\project\Noval\noval\project\baseviewer.py:2404
+#: G:\work\project\Noval\noval\project\basebrowser.py:539
+#: G:\work\project\Noval\noval\project\baseviewer.py:1643
+#: G:\work\project\Noval\noval\project\baseviewer.py:1705
+#: G:\work\project\Noval\noval\project\baseviewer.py:1749
 msgid "Delete Project"
 msgstr "删除项目"
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:542
+#: G:\work\project\Noval\noval\project\basebrowser.py:540
 msgid "Clean Project"
 msgstr "清理项目"
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:543
+#: G:\work\project\Noval\noval\project\basebrowser.py:541
 msgid "Archive Project"
 msgstr "归档项目"
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:544
+#: G:\work\project\Noval\noval\project\basebrowser.py:542
 msgid "Import Files..."
 msgstr "导入文件..."
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:545
+#: G:\work\project\Noval\noval\project\basebrowser.py:543
 msgid "Add &Files to Project..."
 msgstr "添加文件到项目..."
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:546
+#: G:\work\project\Noval\noval\project\basebrowser.py:544
 msgid "Add Directory Files to Project..."
 msgstr "添加目录到项目..."
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:547
+#: G:\work\project\Noval\noval\project\basebrowser.py:545
 msgid "&Add Active File to Project..."
 msgstr "添加当前打开文档到项目..."
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:549
+#: G:\work\project\Noval\noval\project\basebrowser.py:547
 msgid "New File"
 msgstr "新建文件"
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:550
+#: G:\work\project\Noval\noval\project\basebrowser.py:548
 msgid "New Folder"
 msgstr "新建文件夹"
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:552
+#: G:\work\project\Noval\noval\project\basebrowser.py:550
 msgid "Project Properties"
 msgstr "项目属性"
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:553
+#: G:\work\project\Noval\noval\project\basebrowser.py:551
 msgid "Open Project Path in Explorer"
 msgstr "在文件浏览器中打开项目目录"
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:623
+#: G:\work\project\Noval\noval\project\basebrowser.py:617
 msgid "&Open"
 msgstr "打开"
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:627
-#: G:\work\project\Noval\noval\project\basebrowser.py:645
-#: G:\work\project\Noval\noval\project\basebrowser.py:662
+#: G:\work\project\Noval\noval\project\basebrowser.py:621
+#: G:\work\project\Noval\noval\project\basebrowser.py:639
+#: G:\work\project\Noval\noval\project\basebrowser.py:656
 msgid "&Rename"
 msgstr "&重命名"
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:628
-#: G:\work\project\Noval\noval\project\basebrowser.py:646
+#: G:\work\project\Noval\noval\project\basebrowser.py:622
+#: G:\work\project\Noval\noval\project\basebrowser.py:640
 msgid "Remove from Project"
 msgstr "从项目中移除"
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:634
+#: G:\work\project\Noval\noval\project\basebrowser.py:628
 msgid "&Properties"
 msgstr "属性"
 
-#: G:\work\project\Noval\noval\project\basebrowser.py:637
-#: G:\work\project\Noval\noval\project\basebrowser.py:664
+#: G:\work\project\Noval\noval\project\basebrowser.py:631
+#: G:\work\project\Noval\noval\project\basebrowser.py:658
 msgid "Copy Full Path"
 msgstr "复制完整路径"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:199
-msgid "Could not find '%s'."
-msgstr ""
-
-#: G:\work\project\Noval\noval\project\baseviewer.py:214
-msgid "Could not open '%s'.  %s"
-msgstr "打开文件 '%s' 失败.原因.  %s"
-
-#: G:\work\project\Noval\noval\project\baseviewer.py:398
-msgid "Rename File Error"
-msgstr "重命名文件错误"
-
-#: G:\work\project\Noval\noval\project\baseviewer.py:399
-msgid "Could not rename file '%s'.  '%s'"
-msgstr "重命名文件 '%s' 失败.  '%s'"
-
-#: G:\work\project\Noval\noval\project\baseviewer.py:430
-#: G:\work\project\Noval\noval\project\baseviewer.py:2143
-#: G:\work\project\Noval\noval\project\baseviewer.py:2147
-msgid "Dest file is already exist,Do you want to overwrite it?"
-msgstr "目的文件存在，确定覆盖它吗？"
-
-#: G:\work\project\Noval\noval\project\baseviewer.py:430
-#: G:\work\project\Noval\noval\project\baseviewer.py:2147
-msgid "Move File"
-msgstr "移动文件"
-
-#: G:\work\project\Noval\noval\project\baseviewer.py:611
-msgid "Could not rename folder '%s'.  '%s'"
-msgstr "重命名文件夹 '%s' 失败.  '%s'"
-
-#: G:\work\project\Noval\noval\project\baseviewer.py:611
-msgid "Rename Folder Error"
-msgstr "重命名文件夹错误"
-
-#: G:\work\project\Noval\noval\project\baseviewer.py:738
+#: G:\work\project\Noval\noval\project\baseviewer.py:88
 msgid "Enter the name and location for the project"
 msgstr "输入项目名称和位置"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:738
+#: G:\work\project\Noval\noval\project\baseviewer.py:88
 msgid "Name and Location"
 msgstr "项目名称和路径"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:748
+#: G:\work\project\Noval\noval\project\baseviewer.py:98
 msgid "Enter the name and location for the project."
 msgstr "请输入项目名称和位置."
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:796
+#: G:\work\project\Noval\noval\project\baseviewer.py:148
 #: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:75
 #: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:152
-#: G:\work\project\Noval\noval\python\project\debugrun.py:339
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:347
 msgid "Name:"
 msgstr "名称:"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:803
+#: G:\work\project\Noval\noval\project\baseviewer.py:155
 #: G:\work\project\Noval\noval\project\resource.py:49
 #: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:79
 msgid "Location:"
 msgstr "位置:"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:824
+#: G:\work\project\Noval\noval\project\baseviewer.py:177
 msgid "Create Project Directory"
 msgstr "创建项目目录"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:852
+#: G:\work\project\Noval\noval\project\baseviewer.py:205
 msgid "Please provide a file name."
 msgstr "项目名称不能为空."
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:856
+#: G:\work\project\Noval\noval\project\baseviewer.py:209
 msgid "Please provide a file name that does not contains spaces."
 msgstr "项目名称不能包含空格."
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:860
+#: G:\work\project\Noval\noval\project\baseviewer.py:213
 msgid "File name cannot start with a number.  Please enter a different name."
 msgstr "项目名称不能以数字开头,请指定规范的项目名称."
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:868
+#: G:\work\project\Noval\noval\project\baseviewer.py:221
 msgid "Name must be alphanumeric ('_' allowed).  Please enter a valid name."
 msgstr ""
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:873
+#: G:\work\project\Noval\noval\project\baseviewer.py:226
 msgid "No directory.  Please provide a directory."
 msgstr "项目存储路径不能为空."
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:876
+#: G:\work\project\Noval\noval\project\baseviewer.py:229
 msgid "Wrong delimiter '/' found in directory path.  Use '%s' as delimiter."
 msgstr ""
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:903
+#: G:\work\project\Noval\noval\project\baseviewer.py:259
 msgid "That %sfile already exists. Would you like to overwrite it."
 msgstr ""
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:907
+#: G:\work\project\Noval\noval\project\baseviewer.py:263
+#: G:\work\project\Noval\noval\project\baseviewer.py:266
 msgid "That file already exists. Please choose a different name."
 msgstr "项目文件已经存在,请指定不同的项目名称."
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:948
+#: G:\work\project\Noval\noval\project\baseviewer.py:266
+#, fuzzy
+#| msgid "Project File Exists"
+msgid "File Exists"
+msgstr "项目文件存在"
+
+#: G:\work\project\Noval\noval\project\baseviewer.py:310
 msgid "New Project Wizard"
 msgstr "新建项目向导"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:948
+#: G:\work\project\Noval\noval\project\baseviewer.py:310
 msgid "Welcom to new project wizard"
 msgstr "欢迎进入新建项目向导"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:1264
-#: G:\work\project\Noval\noval\project\baseviewer.py:1346
+#: G:\work\project\Noval\noval\project\baseviewer.py:597
+#: G:\work\project\Noval\noval\project\baseviewer.py:679
 msgid "Project File Exists"
 msgstr "项目文件存在"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:1265
-#: G:\work\project\Noval\noval\project\baseviewer.py:1347
+#: G:\work\project\Noval\noval\project\baseviewer.py:598
+#: G:\work\project\Noval\noval\project\baseviewer.py:680
 msgid "The file %s is already exist in project ,Do You Want to overwrite it?"
 msgstr "文件 %s 已经在项目中存在，你想覆盖它吗？"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:1525
+#: G:\work\project\Noval\noval\project\baseviewer.py:868
 msgid "Project is saving..."
 msgstr "正在保存项目..."
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:1527
+#: G:\work\project\Noval\noval\project\baseviewer.py:870
 msgid "Project save success."
 msgstr "项目保存成功."
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:1529
+#: G:\work\project\Noval\noval\project\baseviewer.py:872
 msgid "Project save failed."
 msgstr "项目保存失败."
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:1543
+#: G:\work\project\Noval\noval\project\baseviewer.py:886
 msgid "Cleaning \"%s\"."
 msgstr "正在清理\"%s\"."
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:1545
+#: G:\work\project\Noval\noval\project\baseviewer.py:888
 msgid "Clean Completed."
 msgstr "清理完成."
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:1553
+#: G:\work\project\Noval\noval\project\baseviewer.py:896
 msgid "Archiving..."
 msgstr "正在归档..."
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:1557
+#: G:\work\project\Noval\noval\project\baseviewer.py:900
 msgid "Archive Success"
 msgstr "归档成功"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:1557
-#: G:\work\project\Noval\noval\project\baseviewer.py:1558
+#: G:\work\project\Noval\noval\project\baseviewer.py:900
+#: G:\work\project\Noval\noval\project\baseviewer.py:901
 msgid "Success archived to %s"
 msgstr "成功归档至%s"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:1561
-#: G:\work\project\Noval\noval\project\baseviewer.py:1562
+#: G:\work\project\Noval\noval\project\baseviewer.py:904
+#: G:\work\project\Noval\noval\project\baseviewer.py:905
 msgid "Archive Error"
 msgstr "归档错误"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:1818
+#: G:\work\project\Noval\noval\project\baseviewer.py:1160
 msgid "New FileType"
 msgstr "新建文件类型"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:1872
-#: G:\work\project\Noval\noval\project\baseviewer.py:2250
+#: G:\work\project\Noval\noval\project\baseviewer.py:1214
+#: G:\work\project\Noval\noval\project\baseviewer.py:1595
 msgid "Delete Folder"
 msgstr "删除文件夹"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:1919
+#: G:\work\project\Noval\noval\project\baseviewer.py:1264
 msgid "Add Directory Files to Project"
 msgstr "添加目录文件到项目"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:1938
+#: G:\work\project\Noval\noval\project\baseviewer.py:1283
 msgid "|"
 msgstr ""
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:1943
+#: G:\work\project\Noval\noval\project\baseviewer.py:1288
 msgid "Files of type:"
 msgstr "文件类型:"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:1950
+#: G:\work\project\Noval\noval\project\baseviewer.py:1295
 msgid "Select file type filter."
 msgstr "选择文件类型过滤器."
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:1952
+#: G:\work\project\Noval\noval\project\baseviewer.py:1297
 msgid "Add files from subdirectories"
 msgstr "添加子目录文件"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:1957
+#: G:\work\project\Noval\noval\project\baseviewer.py:1302
 msgid "Choose a directory:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:1975
+#: G:\work\project\Noval\noval\project\baseviewer.py:1320
 msgid "directory '%s' does not exist."
 msgstr "目录'%s'不存在."
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2038
-#: G:\work\project\Noval\noval\project\baseviewer.py:2039
+#: G:\work\project\Noval\noval\project\baseviewer.py:1383
+#: G:\work\project\Noval\noval\project\baseviewer.py:1384
 msgid "Enter New Name"
 msgstr ""
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2088
+#: G:\work\project\Noval\noval\project\baseviewer.py:1433
 msgid "Folder '%s' already exists."
 msgstr ""
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2088
+#: G:\work\project\Noval\noval\project\baseviewer.py:1433
 msgid "Rename Folder"
 msgstr "重命名文件"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2143
+#: G:\work\project\Noval\noval\project\baseviewer.py:1488
 msgid "Copy File"
 msgstr "复制文件"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2156
+#: G:\work\project\Noval\noval\project\baseviewer.py:1488
+#: G:\work\project\Noval\noval\project\baseviewer.py:1492
+#: G:\work\project\Noval\noval\project\document.py:409
+msgid "Dest file is already exist,Do you want to overwrite it?"
+msgstr "目的文件存在，确定覆盖它吗？"
+
+#: G:\work\project\Noval\noval\project\baseviewer.py:1492
+#: G:\work\project\Noval\noval\project\document.py:409
+msgid "Move File"
+msgstr "移动文件"
+
+#: G:\work\project\Noval\noval\project\baseviewer.py:1501
 msgid "%s - Copy.%s"
 msgstr "%s - 副本.%s"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2161
+#: G:\work\project\Noval\noval\project\baseviewer.py:1506
 msgid "%s - Copy (%d).%s"
 msgstr "%s - 副本 (%d).%s"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2165
+#: G:\work\project\Noval\noval\project\baseviewer.py:1510
 msgid "%s (copy).%s"
 msgstr "%s (复件).%s"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2171
+#: G:\work\project\Noval\noval\project\baseviewer.py:1516
 msgid "%s (another copy).%s"
 msgstr "%s (另一个复件).%s"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2173
+#: G:\work\project\Noval\noval\project\baseviewer.py:1518
 msgid "%s (%drd copy).%s"
 msgstr "%s (第%d个复件).%s"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2175
+#: G:\work\project\Noval\noval\project\baseviewer.py:1520
 msgid "%s (%dth copy).%s"
 msgstr "%s (第%d个复件).%s"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2197
+#: G:\work\project\Noval\noval\project\baseviewer.py:1542
 msgid ""
 "The item '%s' does not exist in the project directory.It may have been moved,"
 "renamed or deleted."
 msgstr "文件'%s'在项目目录中不存在,它可能被移动，重命名或者删除."
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2247
+#: G:\work\project\Noval\noval\project\baseviewer.py:1592
 msgid "Delete Files"
 msgstr "删除文件"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2247
+#: G:\work\project\Noval\noval\project\baseviewer.py:1592
 msgid ""
 "Delete cannot be reversed.\n"
 "\n"
@@ -1317,7 +1341,7 @@ msgstr ""
 "\n"
 "确定从项目和文件系统中永久删除选中文件吗?"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2250
+#: G:\work\project\Noval\noval\project\baseviewer.py:1595
 msgid ""
 "Delete cannot be reversed.\n"
 "\n"
@@ -1328,11 +1352,11 @@ msgstr ""
 "\n"
 "确定从项目和文件系统中永久删除选中文件夹及其所属文件吗?"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2253
+#: G:\work\project\Noval\noval\project\baseviewer.py:1598
 msgid "Delete Folder And Files"
 msgstr "删除文件夹和文件"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2253
+#: G:\work\project\Noval\noval\project\baseviewer.py:1598
 msgid ""
 "Delete cannot be reversed.\n"
 "\n"
@@ -1343,11 +1367,11 @@ msgstr ""
 "\n"
 "确定从项目和文件系统中永久删除选中文件夹和文件吗?"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2274
+#: G:\work\project\Noval\noval\project\baseviewer.py:1619
 msgid "Delete File"
 msgstr ""
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2299
+#: G:\work\project\Noval\noval\project\baseviewer.py:1644
 msgid ""
 "Delete cannot be reversed.\n"
 "Deleted files are removed from the file system permanently.\n"
@@ -1359,75 +1383,80 @@ msgstr ""
 "\n"
 "项目文件'%s'将被关闭并且删除."
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2302
+#: G:\work\project\Noval\noval\project\baseviewer.py:1647
 msgid "Delete all files in project"
 msgstr "删除项目所有文件"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2304
+#: G:\work\project\Noval\noval\project\baseviewer.py:1649
 msgid "Deletes files from disk, whether open or closed"
 msgstr ""
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2307
+#: G:\work\project\Noval\noval\project\baseviewer.py:1652
 msgid "Close open files belonging to project"
 msgstr "关闭属于项目的所有打开文档"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2309
+#: G:\work\project\Noval\noval\project\baseviewer.py:1654
 msgid "Closes open editors for files belonging to project"
 msgstr ""
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2387
+#: G:\work\project\Noval\noval\project\baseviewer.py:1732
 msgid "Delete Prjoect"
 msgstr "删除项目"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2447
+#: G:\work\project\Noval\noval\project\baseviewer.py:1792
 msgid "Editor Selection"
 msgstr "选择编辑器"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2452
+#: G:\work\project\Noval\noval\project\baseviewer.py:1797
 msgid "The document \"%s\" is already open,Do you want to close it?"
 msgstr "文档 \"%s\" 已经打开,是否关闭它?"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2621
+#: G:\work\project\Noval\noval\project\baseviewer.py:1966
 msgid ""
 "Project File \"%s\" has already been modified outside,Do you want to reload "
 "It?"
 msgstr "项目文件 \"%s\" 已经在外部被改变，要重载项目文件内容吗？"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2621
+#: G:\work\project\Noval\noval\project\baseviewer.py:1966
 msgid "Reload Project.."
 msgstr "重载项目.."
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2628
+#: G:\work\project\Noval\noval\project\baseviewer.py:1973
 msgid ""
 "Project File \"%s\" has already been moved or deleted outside,Do you want to "
 "close this Project?"
 msgstr "项目文件 \"%s\" 已经在外部被移动或删除，你想关闭该项目吗？"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2628
+#: G:\work\project\Noval\noval\project\baseviewer.py:1973
 msgid "Project not exist.."
 msgstr "项目不存在.."
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2653
+#: G:\work\project\Noval\noval\project\baseviewer.py:1998
 msgid "Current document is already in the project"
 msgstr "当前文档已经在项目中"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2670
+#: G:\work\project\Noval\noval\project\baseviewer.py:2015
 msgid "Project file is already opened"
 msgstr ""
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2708
+#: G:\work\project\Noval\noval\project\baseviewer.py:2050
+#: G:\work\project\Noval\noval\project\importfiles.py:118
+msgid "There is no available project yet."
+msgstr ""
+
+#: G:\work\project\Noval\noval\project\baseviewer.py:2066
 msgid "Remember open projects"
 msgstr "记住并保存打开项目记录"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2712
+#: G:\work\project\Noval\noval\project\baseviewer.py:2070
 msgid "Warn when run and save modify project files"
 msgstr "当运行并保存项目修改文件时告警"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2716
+#: G:\work\project\Noval\noval\project\baseviewer.py:2074
 msgid "Load folder state when open project"
 msgstr "打开项目时加载项目文件夹展开状态"
 
-#: G:\work\project\Noval\noval\project\baseviewer.py:2735
+#: G:\work\project\Noval\noval\project\baseviewer.py:2093
 msgid "Document Options"
 msgstr "文档选项"
 
@@ -1479,55 +1508,142 @@ msgstr ""
 msgid "Move Files"
 msgstr ""
 
+#: G:\work\project\Noval\noval\project\debugger.py:35
+msgid "Run Error"
+msgstr "运行错误"
+
+#: G:\work\project\Noval\noval\project\debugger.py:61
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:327
+msgid "Close Window"
+msgstr "关闭"
+
+#: G:\work\project\Noval\noval\project\debugger.py:62
+msgid "Stop the Run."
+msgstr "停止运行."
+
+#: G:\work\project\Noval\noval\project\debugger.py:64
+msgid "Stop All the Run."
+msgstr "停止所有."
+
+#: G:\work\project\Noval\noval\project\debugger.py:65
+msgid "Restart the Run."
+msgstr "重启进程."
+
+#: G:\work\project\Noval\noval\project\debugger.py:293
+msgid "Source:"
+msgstr "来自于:"
+
+#: G:\work\project\Noval\noval\project\document.py:64
+msgid "Run Project"
+msgstr "运行项目"
+
+#: G:\work\project\Noval\noval\project\document.py:65
+msgid ""
+"Files have been modified.\n"
+"Would you like to save all files before running?"
+msgstr ""
+"文件已经被修改.\n"
+"运行之前需要保存所有修改文件吗?"
+
+#: G:\work\project\Noval\noval\project\document.py:163
+msgid "Could not find '%s'."
+msgstr ""
+
+#: G:\work\project\Noval\noval\project\document.py:169
+msgid "Loading project \"%s\"."
+msgstr "正在加载项目文件 \"%s\"."
+
+#: G:\work\project\Noval\noval\project\document.py:179
+msgid "Could not open '%s'.  %s"
+msgstr "打开文件 '%s' 失败.原因.  %s"
+
+#: G:\work\project\Noval\noval\project\document.py:183
+msgid "Load project \"%s\" fail."
+msgstr "加载项目文件 \"%s\" 失败."
+
+#: G:\work\project\Noval\noval\project\document.py:212
+msgid "Load project \"%s\" success."
+msgstr "加载项目文件 \"%s\" 成功."
+
+#: G:\work\project\Noval\noval\project\document.py:377
+msgid "Rename File Error"
+msgstr "重命名文件错误"
+
+#: G:\work\project\Noval\noval\project\document.py:378
+msgid "Could not rename file '%s'.  '%s'"
+msgstr "重命名文件 '%s' 失败.  '%s'"
+
+#: G:\work\project\Noval\noval\project\document.py:597
+msgid "Could not rename folder '%s'.  '%s'"
+msgstr "重命名文件夹 '%s' 失败.  '%s'"
+
+#: G:\work\project\Noval\noval\project\document.py:597
+msgid "Rename Folder Error"
+msgstr "重命名文件夹错误"
+
+#: G:\work\project\Noval\noval\project\document.py:642
+msgid ""
+"Your project needs a Python script marked as startup file to perform this "
+"action"
+msgstr "你需要设置一个启动脚本来完成这个操作"
+
+#: G:\work\project\Noval\noval\project\document.py:736
+msgid "We don't know how to run the program"
+msgstr ""
+
+#: G:\work\project\Noval\noval\project\executor.py:22
+msgid "Startup path \"%s\" is not exist"
+msgstr "启动目录 \"%s\" 不存在"
+
+#: G:\work\project\Noval\noval\project\executor.py:25
+msgid "Startup path not exist"
+msgstr "启动路径不存在"
+
 #: G:\work\project\Noval\noval\project\importfiles.py:32
 msgid "Import codes from File System"
 msgstr "从文件系统导入代码"
 
 #: G:\work\project\Noval\noval\project\importfiles.py:32
-#: G:\work\project\Noval\noval\python\project\debugrun.py:89
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:90
 msgid "Local File System"
 msgstr "本地文件系统"
 
-#: G:\work\project\Noval\noval\project\importfiles.py:48
+#: G:\work\project\Noval\noval\project\importfiles.py:46
 msgid "Source Location:"
 msgstr "源码位置:"
 
-#: G:\work\project\Noval\noval\project\importfiles.py:82
-#: G:\work\project\Noval\noval\project\importfiles.py:389
+#: G:\work\project\Noval\noval\project\importfiles.py:80
+#: G:\work\project\Noval\noval\project\importfiles.py:393
 msgid "File Filters"
 msgstr "文件过滤器"
 
-#: G:\work\project\Noval\noval\project\importfiles.py:89
+#: G:\work\project\Noval\noval\project\importfiles.py:87
 #: G:\work\project\Noval\noval\python\debugger\breakpoints.py:29
-#: G:\work\project\Noval\noval\python\project\projectreferrence.py:27
+#: G:\work\project\Noval\noval\python\project\pages\projectreferrence.py:25
 msgid "Select All"
 msgstr "选择所有"
 
-#: G:\work\project\Noval\noval\project\importfiles.py:94
+#: G:\work\project\Noval\noval\project\importfiles.py:92
 #: G:\work\project\Noval\noval\python\debugger\breakpoints.py:33
-#: G:\work\project\Noval\noval\python\project\projectreferrence.py:28
+#: G:\work\project\Noval\noval\python\project\pages\projectreferrence.py:26
 msgid "UnSelect All"
 msgstr "全部取消"
 
-#: G:\work\project\Noval\noval\project\importfiles.py:101
+#: G:\work\project\Noval\noval\project\importfiles.py:99
 msgid "Dest Directory:"
 msgstr "目的目录:"
 
-#: G:\work\project\Noval\noval\project\importfiles.py:106
+#: G:\work\project\Noval\noval\project\importfiles.py:104
 msgid "Option"
 msgstr "选项"
 
-#: G:\work\project\Noval\noval\project\importfiles.py:108
+#: G:\work\project\Noval\noval\project\importfiles.py:106
 msgid "Overwrite existing files without warning"
 msgstr "覆盖已存在文件忽略告警"
 
-#: G:\work\project\Noval\noval\project\importfiles.py:110
+#: G:\work\project\Noval\noval\project\importfiles.py:108
 msgid "Create top-level folder"
 msgstr "创建顶层目录"
-
-#: G:\work\project\Noval\noval\project\importfiles.py:120
-msgid "There is no available project yet."
-msgstr ""
 
 #: G:\work\project\Noval\noval\project\importfiles.py:270
 msgid "importing file:"
@@ -1546,11 +1662,11 @@ msgstr "导入文件到项目"
 msgid "&Import"
 msgstr "导入"
 
-#: G:\work\project\Noval\noval\project\importfiles.py:390
+#: G:\work\project\Noval\noval\project\importfiles.py:394
 msgid "Please select file types to to allow added to project:"
 msgstr "请选择允许被添加到项目的文件类型:"
 
-#: G:\work\project\Noval\noval\project\importfiles.py:395
+#: G:\work\project\Noval\noval\project\importfiles.py:399
 msgid "Other File Extensions:(seperated by ';')"
 msgstr "其它文件扩展名:(以分号分割)"
 
@@ -1574,6 +1690,14 @@ msgstr "新建文件错误.%s"
 msgid "Load Template File Error.%s"
 msgstr "加载模板文件错误.%s"
 
+#: G:\work\project\Noval\noval\project\output.py:79
+msgid "Word Wrap"
+msgstr "自动换行"
+
+#: G:\work\project\Noval\noval\project\output.py:81
+msgid "Export All"
+msgstr "导出文本"
+
 #: G:\work\project\Noval\noval\project\property.py:62
 msgid "Project Property"
 msgstr "项目属性"
@@ -1587,7 +1711,7 @@ msgid "Folder Property"
 msgstr "文件夹属性"
 
 #: G:\work\project\Noval\noval\project\resource.py:29
-#: G:\work\project\Noval\noval\python\project\debugrun.py:44
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:45
 msgid "Project"
 msgstr "项目"
 
@@ -1610,12 +1734,12 @@ msgid "Type:"
 msgstr "类型:"
 
 #: G:\work\project\Noval\noval\project\resource.py:66
-#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:86
+#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:84
 msgid "Into file explorer"
 msgstr "进入文件浏览器"
 
 #: G:\work\project\Noval\noval\project\resource.py:79
-#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:88
+#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:86
 msgid "Copy path"
 msgstr "复制路径"
 
@@ -1643,8 +1767,8 @@ msgstr "修改时间:"
 msgid "Accessed:"
 msgstr "访问时间:"
 
-#: G:\work\project\Noval\noval\project\resource.py:124
-#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:107
+#: G:\work\project\Noval\noval\project\resource.py:122
+#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:105
 msgid "Copied to clipboard"
 msgstr "已经复制到剪贴板"
 
@@ -1667,7 +1791,7 @@ msgid "Input the variable name:"
 msgstr "输入搜索变量名:"
 
 #: G:\work\project\Noval\noval\project\variables.py:141
-#: G:\work\project\Noval\noval\python\project\debugrun.py:425
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:433
 msgid "New"
 msgstr ""
 
@@ -1734,11 +1858,68 @@ msgstr "跳转到行"
 msgid "&Clear All Breakpoints"
 msgstr "&删除所有断点"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:160
+#: G:\work\project\Noval\noval\python\debugger\commandproperty.py:21
+msgid "Nothing to Run"
+msgstr ""
+
+#: G:\work\project\Noval\noval\python\debugger\commandproperty.py:21
+msgid ""
+"To run or debug you must have an open runnable file or project containing "
+"runnable files. Use File->Open to open the file you wish to run or debug."
+msgstr ""
+
+#: G:\work\project\Noval\noval\python\debugger\commandproperty.py:28
+msgid "PYTHONPATH:"
+msgstr ""
+
+#: G:\work\project\Noval\noval\python\debugger\commandproperty.py:29
+msgid "Project:"
+msgstr "项目名称:"
+
+#: G:\work\project\Noval\noval\python\debugger\commandproperty.py:30
+msgid "File:"
+msgstr "文件:"
+
+#: G:\work\project\Noval\noval\python\debugger\commandproperty.py:31
+msgid "Arguments:"
+msgstr "参数:"
+
+#: G:\work\project\Noval\noval\python\debugger\commandproperty.py:32
+msgid "Start in:"
+msgstr "启动目录:"
+
+#: G:\work\project\Noval\noval\python\debugger\commandproperty.py:34
+msgid "Postpend content root path"
+msgstr "附加项目目录到PYTHONPATH"
+
+#: G:\work\project\Noval\noval\python\debugger\commandproperty.py:53
+msgid "Use"
+msgstr "启用"
+
+#: G:\work\project\Noval\noval\python\debugger\commandproperty.py:74
+msgid "multiple path is seperated by %s"
+msgstr "多个路径用%s分割"
+
+#: G:\work\project\Noval\noval\python\debugger\commandproperty.py:159
+msgid ""
+"You must select a file to proceed. Note that not all projects have files "
+"that can be run or debugged."
+msgstr ""
+"你必须选择一个Python文件来执行此操作,请确保项目包含可运行或调试的Python文件."
+
+#: G:\work\project\Noval\noval\python\debugger\commandproperty.py:163
+msgid "Starting directory does not exist. Please change this value."
+msgstr "启动目录不存在。"
+
+#: G:\work\project\Noval\noval\python\debugger\commandproperty.py:214
+msgid "Choose a starting directory:"
+msgstr "请选择启动目录:"
+
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:96
 msgid "Python Executable Location Unknown"
 msgstr "Python解释器位置未知"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:160
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:96
 msgid ""
 "To proceed we need to know the location of the python.exe you would like to "
 "use.\n"
@@ -1748,412 +1929,196 @@ msgstr ""
 "抱歉您未指定Python解释器的路径，工具不知道如何运行您的Python程序.\n"
 "您可以通过菜单:工具-->首选项 并在'Python解释器'面板来配置解释器.\n"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:206
-#: G:\work\project\Noval\noval\util\exceptions.py:13
-msgid "Startup path \"%s\" is not exist"
-msgstr "启动目录 \"%s\" 不存在"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:308
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:554
-msgid "Close Window"
-msgstr "关闭"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:309
-msgid "Stop the Run."
-msgstr "停止运行."
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:311
-msgid "Stop All the Run."
-msgstr "停止所有."
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:312
-msgid "Restart the Run."
-msgstr "重启进程."
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:342
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2640
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2723
-msgid "Startup path not exist"
-msgstr "启动路径不存在"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:347
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2643
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2725
-msgid "Run Error"
-msgstr "运行错误"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:383
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:449
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:208
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:236
 msgid "Finished Running"
 msgstr "完成运行"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:383
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:449
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:208
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:236
 msgid "Running"
 msgstr "正在运行"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:407
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:212
 msgid "Process Running.."
 msgstr "进程运行中.."
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:407
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:212
 msgid "Process is still running,Do you want to kill the process and remove it?"
 msgstr "进程仍在运行中，确定要终止进程并移除吗?"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:559
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:332
 msgid "Continue Execution"
 msgstr "继续执行"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:564
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:337
 msgid "Break into Debugger"
 msgstr "中断"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:568
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:341
 msgid "Stop Debugging"
 msgstr "停止调试"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:572
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2185
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:345
 msgid "Restart Debugging"
 msgstr "重启调试"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:577
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:350
 msgid "Step to next line"
 msgstr "逐过程"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:581
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:354
 msgid "Step in"
 msgstr "逐语句"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:585
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:358
 msgid "Stop at function return"
 msgstr "跳出"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:592
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1429
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:365
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1202
 msgid "Quick Add a Watch"
 msgstr "快速添加监视"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:596
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1338
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1411
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1413
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2167
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:369
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1111
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1184
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1186
 #: G:\work\project\Noval\noval\python\debugger\watchs.py:113
 #: G:\work\project\Noval\noval\python\debugger\watchs.py:116
 #: G:\work\project\Noval\noval\python\debugger\watchs.py:223
 msgid "Add a Watch"
 msgstr "添加监视"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:601
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:374
 msgid "Clear output pane"
 msgstr "清空输出"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:699
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1037
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:472
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:810
 msgid "Debugging"
 msgstr "正在调试"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:699
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1037
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:472
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:810
 msgid "Finished Debugging"
 msgstr "完成调试"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:715
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1194
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:488
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:967
 msgid "Debugger has been stopped."
 msgstr "调试器已停止."
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:766
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:539
 msgid "Debugger Running.."
 msgstr "调试器运行中.."
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:766
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:539
 msgid ""
 "Debugger is still running,Do you want to kill the debugger and remove it?"
 msgstr "调试器仍在运行中，确定要终止调试器并移除吗?"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:840
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:613
 msgid "Out of Ports"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:840
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:613
 msgid ""
 "Out of ports for debugging!  Please restart the application builder.\n"
 "If that does not work, check for and remove running instances of python."
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1028
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2735
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:801
 msgid ""
 "A debugger is already running. Please shut down the other debugger first."
 msgstr "调试器正在运行，请先关闭调试器."
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1028
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2735
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:801
 msgid "Debugger Running"
 msgstr "调试器运行中"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1102
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:875
 msgid "Stack Frame"
 msgstr "堆栈帧"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1104
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:877
 msgid "Interact"
 msgstr "交互"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1106
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:879
 msgid "Break Points"
 msgstr "断点"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1108
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:881
 msgid "Watchs"
 msgstr "监视"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1130
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:903
 msgid "Stack Frame:"
 msgstr "帧:"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1226
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:999
 msgid "Cmd: "
 msgstr "命令: "
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1230
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1003
 msgid "Execute"
 msgstr "执行"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1344
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1117
 msgid "Add to Watch"
 msgstr "添加到监视"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1352
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1125
 #: G:\work\project\Noval\noval\python\debugger\watchs.py:231
 msgid "View in Dialog"
 msgstr "在对话框中查看"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1357
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1130
 msgid "Send to Interact"
 msgstr "发送到交互窗口并执行"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1851
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1624
 msgid "Could not connect to break server!"
 msgstr "不能连接到断点服务器!"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2132
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1851
 msgid "Close"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2133
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1852
 msgid "Close All"
 msgstr "关闭所有"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2167
-msgid "&Add Watch"
-msgstr "添加监视"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2173
-msgid "&Quick add Watch"
-msgstr "快速添加监视"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2173
-msgid "Quick add a Watch"
-msgstr "快速添加监视"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2179
-msgid "&Step Out\tShift+F11"
-msgstr "跳出\tShift+F11"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2179
-msgid "Step out the function"
-msgstr "跳出函数"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2185
-msgid "&Restart"
-msgstr "重启调试"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2192
-msgid "&Stop Debugging"
-msgstr "停止调试"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2192
-msgid "Stop the debugger"
-msgstr "停止调试器"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2198
-msgid "&Break"
-msgstr "中断"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2198
-msgid "Break into the debugger"
-msgstr "进入断点调试"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2204
-msgid "&Continue"
-msgstr "继续执行"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2204
-msgid "Continue the debugger"
-msgstr "继续执行调试"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2246
-msgid "Please stop the debugger first!"
-msgstr "请先停止调试器!"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2429
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1873
 msgid "Interpreter not exists"
 msgstr "解释器不存在"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2434
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1878
 msgid "Check Syntax Ok!"
 msgstr "语法检查通过!"
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2480
-msgid ""
-"Your project needs a Python script marked as startup file to perform this "
-"action"
-msgstr "你需要设置一个启动脚本来完成这个操作"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2522
-msgid "Debugger can only run in active project"
-msgstr "抱歉,调试器只能在当前项目中运行"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2601
-msgid "Running: "
-msgstr "正在运行: "
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2608
-msgid "Add Python Exception Breakpoint"
-msgstr "添加中断异常"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2675
-msgid "Run File"
-msgstr "运行脚本"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2676
-msgid "Run"
-msgstr "运行"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2678
-msgid "Debug File"
-msgstr "调试脚本"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2679
-#: G:\work\project\Noval\noval\python\project\browser.py:98
-#: G:\work\project\Noval\noval\python\pyeditor.py:321
-msgid "Debug"
-msgstr "调试"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2732
-msgid ""
-"Python for Windows extensions (pywin32) is required to debug on Windows "
-"machines. Please download and install pywin32 via pip tool"
-msgstr ""
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2740
-msgid "No Debugger Host"
-msgstr ""
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2740
-msgid ""
-"No debugger host set. Please go to Tools->Options->Debugger and set one."
-msgstr ""
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2749
-msgid "Debugging: "
-msgstr "正在调试: "
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2774
-msgid "Run Project"
-msgstr "运行项目"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2775
-msgid ""
-"Files have been modified.\n"
-"Would you like to save all files before running?"
-msgstr ""
-"文件已经被修改.\n"
-"运行之前需要保存所有修改文件吗?"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2788
-msgid "Set Parameter And Environment"
-msgstr "参数和环境变量配置"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2945
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1941
 msgid "Local Host Name:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2947
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1943
 msgid "Port Range:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:2948
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1944
 msgid "through to"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:3008
-msgid "Nothing to Run"
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1978
+msgid "Invalid Starting Port Number"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:3008
-msgid ""
-"To run or debug you must have an open runnable file or project containing "
-"runnable files. Use File->Open to open the file you wish to run or debug."
-msgstr ""
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:3015
-msgid "PYTHONPATH:"
-msgstr ""
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:3016
-msgid "Project:"
-msgstr "项目名称:"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:3017
-msgid "File:"
-msgstr "文件:"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:3018
-msgid "Arguments:"
-msgstr "参数:"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:3019
-msgid "Start in:"
-msgstr "启动目录:"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:3021
-msgid "Postpend content root path"
-msgstr "附加项目目录到PYTHONPATH"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:3040
-msgid "Use"
-msgstr "启用"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:3061
-msgid "multiple path is seperated by %s"
-msgstr "多个路径用%s分割"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:3143
-msgid ""
-"You must select a file to proceed. Note that not all projects have files "
-"that can be run or debugged."
-msgstr ""
-"你必须选择一个Python文件来执行此操作,请确保项目包含可运行或调试的Python文件."
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:3147
-msgid "Starting directory does not exist. Please change this value."
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1978
+#, fuzzy
+#| msgid "Starting directory does not exist. Please change this value."
+msgid "The starting port is not valid. Please change the value and try again."
 msgstr "启动目录不存在。"
-
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:3198
-msgid "Choose a starting directory:"
-msgstr "请选择启动目录:"
-
-#: G:\work\project\Noval\noval\python\debugger\output.py:82
-msgid "Word Wrap"
-msgstr "自动换行"
-
-#: G:\work\project\Noval\noval\python\debugger\output.py:84
-msgid "Export All"
-msgstr "导出文本"
 
 #: G:\work\project\Noval\noval\python\debugger\watchs.py:99
 msgid "Watch Name:"
@@ -2222,69 +2187,69 @@ msgid ""
 msgstr "该键值已经在系统环境变量中存在，想要覆盖系统环境变量吗？"
 
 #: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:33
-msgid "Warn when interpreter path contain no asc character on debug and run"
-msgstr "当解释器包含中文路径时弹出警告"
-
-#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:39
 msgid "Show the builtin interpreter window"
 msgstr "显示内建解释器窗口"
 
-#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:43
+#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:37
 msgid "Automatically generate intellisence database when add interpreter"
 msgstr "添加解释器时自动生成智能提示数据库"
 
-#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:46
+#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:41
+msgid "Embed the interpreter when open terminal"
+msgstr ""
+
+#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:44
 msgid "Intellisence database update interval"
 msgstr "智能提示数据库更新间隔"
 
-#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:51
+#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:49
 msgid "Once when startup"
 msgstr "每次启动更新"
 
-#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:53
+#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:51
 msgid "Once a day"
 msgstr "每天更新一次"
 
-#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:55
+#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:53
 msgid "Once a week"
 msgstr "每周更新一次"
 
-#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:57
+#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:55
 msgid "Once a month"
 msgstr "每月更新一次"
 
-#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:59
+#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:57
 msgid "Never"
 msgstr "从不更新"
 
-#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:63
+#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:61
 msgid "Intellisence database location"
 msgstr "智能提示数据库路径"
 
-#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:66
-#: G:\work\project\Noval\noval\python\project\debugrun.py:231
-#: G:\work\project\Noval\noval\python\project\pythoninterpreter.py:21
-#: G:\work\project\Noval\noval\python\project\viewer.py:123
+#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:64
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:235
+#: G:\work\project\Noval\noval\python\project\pages\pythoninterpreter.py:19
+#: G:\work\project\Noval\noval\python\project\viewer.py:78
 msgid "Interpreter:"
 msgstr "解释器:"
 
-#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:77
+#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:75
 msgid "Database Location:"
 msgstr "数据库路径:"
 
-#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:90
+#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:88
 msgid "Database version"
 msgstr "数据库版本"
 
-#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:92
+#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:90
 msgid "Last update time"
 msgstr "上次更新时间"
 
-#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:94
+#: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:92
 msgid "Clear data"
 msgstr "清除数据"
 
-#: G:\work\project\Noval\noval\python\interpreter\interpreter.py:75
+#: G:\work\project\Noval\noval\python\interpreter\interpreter.py:72
 msgid "Environment variable contains invalid character"
 msgstr "环境变量包含非法字符"
 
@@ -2367,7 +2332,7 @@ msgstr ""
 
 #: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:209
 #: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:248
-#: G:\work\project\Noval\noval\python\project\debugrun.py:427
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:435
 msgid "Remove"
 msgstr ""
 
@@ -2407,39 +2372,39 @@ msgstr "修改名称"
 msgid "New VirtualEnv"
 msgstr "新建虚拟环境"
 
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:396
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:394
 msgid "Modify Interpreter Name"
 msgstr "修改解释器名称"
 
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:412
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:410
 msgid "Add Interpreter"
 msgstr "添加解释器"
 
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:451
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:449
 msgid "Default Interpreter cannot be remove"
 msgstr "默认解释器不能移除"
 
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:453
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:451
 msgid ""
 "Interpreter remove action cannot be recover,Do you want to continue remove "
 "this interpreter?"
 msgstr "解释器移除操作将不可恢复，确定要继续移除该解释器吗?"
 
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:550
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:548
 msgid "Environment Variable Error"
 msgstr "环境变量错误"
 
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:585
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:583
 msgid ""
 "Interpreter configuration has already been modified outside,Do you want to "
 "save?"
 msgstr "解释器配置已经被修改,需要保存当前配置吗?"
 
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:593
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:591
 msgid "Interpreter Smart Analyse"
 msgstr "解释器智能分析"
 
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:594
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:592
 msgid "Please wait a minute for end analysing"
 msgstr "请等待解释器数据分析完成"
 
@@ -2515,7 +2480,7 @@ msgid "We will use the pip source:"
 msgstr "正在使用Pip源:"
 
 #: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:69
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:335
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:336
 msgid "Check the best source"
 msgstr "检测最优源"
 
@@ -2591,36 +2556,36 @@ msgstr "包名称不能为空"
 msgid "Could not find pip on the path"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:312
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:318
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:314
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:320
 msgid "The Best Source"
 msgstr "最优源"
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:337
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:338
 msgid "Checking the best source"
 msgstr "正在检查最优源"
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:351
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:352
 msgid "Install with pip"
 msgstr "使用pip安装包"
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:353
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:354
 msgid "Uninstall with pip"
 msgstr "使用pip卸载包"
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:355
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:356
 msgid "Freeze"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:380
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:381
 msgid "Install Package"
 msgstr "安装包"
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:390
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:391
 msgid "Uninstall Package"
 msgstr "卸载包"
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:411
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:412
 msgid "Loading Package List....."
 msgstr "正在加载包列表....."
 
@@ -2632,84 +2597,80 @@ msgstr "路径列表"
 msgid "The Python System Path could not be removed"
 msgstr "Python系统路径不能移除"
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:31
-#: G:\work\project\Noval\noval\python\project\pythonpath.py:38
+#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:32
+#: G:\work\project\Noval\noval\python\project\pages\pythonpath.py:35
 msgid "Add Path.."
 msgstr "添加路径.."
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:34
-#: G:\work\project\Noval\noval\python\project\pythonpath.py:41
+#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:35
+#: G:\work\project\Noval\noval\python\project\pages\pythonpath.py:38
 msgid "Remove Path..."
 msgstr "移除路径..."
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:38
-#: G:\work\project\Noval\noval\python\project\pythonpath.py:44
+#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:39
+#: G:\work\project\Noval\noval\python\project\pages\pythonpath.py:41
 msgid "Add File..."
 msgstr "添加文件..."
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:48
+#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:49
 msgid "Add Zip File"
 msgstr "添加Zip文件"
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:50
+#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:51
 msgid "Add Egg File"
 msgstr "添加Egg文件"
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:52
+#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:53
 msgid "Add Wheel File"
 msgstr "添加Wheel文件"
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:58
+#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:59
 msgid "Zip File"
 msgstr "Zip文件"
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:59
+#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:60
 msgid "Choose a Zip File"
 msgstr "选择一个Zip文件"
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:61
+#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:62
 msgid "Egg File"
 msgstr "Egg文件"
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:62
+#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:63
 msgid "Choose a Egg File"
 msgstr "选择一个Egg文件"
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:64
+#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:65
 msgid "Wheel File"
 msgstr "Wheel文件"
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:65
+#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:66
 msgid "Choose a Wheel File"
 msgstr "选择一个Wheel文件"
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:74
+#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:75
 msgid "Choose a directory to Add"
 msgstr "选择目录"
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:79
-#: G:\work\project\Noval\noval\python\project\pythonpath.py:68
-#: G:\work\project\Noval\noval\python\project\pythonpath.py:89
+#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:82
+#: G:\work\project\Noval\noval\python\project\pages\pythonpath.py:65
+#: G:\work\project\Noval\noval\python\project\pages\pythonpath.py:87
 msgid "Add Path"
 msgstr "添加路径"
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:79
-#: G:\work\project\Noval\noval\python\project\pythonpath.py:68
-#: G:\work\project\Noval\noval\python\project\pythonpath.py:89
+#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:82
+#: G:\work\project\Noval\noval\python\project\pages\pythonpath.py:65
+#: G:\work\project\Noval\noval\python\project\pages\pythonpath.py:87
 msgid "Path already exist"
 msgstr "路径已经存在"
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:88
+#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:91
 msgid "&Goto Path"
 msgstr "&转到路径"
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:89
+#: G:\work\project\Noval\noval\python\interpreter\pythonpathmixin.py:92
 msgid "&Remove Path"
 msgstr "&移除路径"
-
-#: G:\work\project\Noval\noval\python\outline.py:177
-msgid "Outline"
-msgstr "大纲视图"
 
 #: G:\work\project\Noval\noval\python\parser\intellisence.py:277
 msgid "Loading intellisence database"
@@ -2728,8 +2689,54 @@ msgstr "正在更新解释器%s智能提示数据库"
 msgid "Intellisence database has been updated"
 msgstr "智能提示数据库已经更新"
 
-#: G:\work\project\Noval\noval\python\project\browser.py:102
+#: G:\work\project\Noval\noval\python\plugins\outline.py:192
+msgid "Outline"
+msgstr "大纲视图"
+
+#: G:\work\project\Noval\noval\python\plugins\outline.py:196
+msgid "Outline Sort"
+msgstr "大纲排序"
+
+#: G:\work\project\Noval\noval\python\plugins\outline.py:201
+msgid "Unsorted"
+msgstr "自然顺序"
+
+#: G:\work\project\Noval\noval\python\plugins\outline.py:203
+msgid "Sort By Line"
+msgstr "按行号排序"
+
+#: G:\work\project\Noval\noval\python\plugins\outline.py:205
+msgid "Sort By Type"
+msgstr "按类型排序"
+
+#: G:\work\project\Noval\noval\python\plugins\outline.py:207
+msgid "Sort By Name(A-Z)"
+msgstr "按字母顺序(A-Z)排序"
+
+#: G:\work\project\Noval\noval\python\plugins\pyshell.py:1328
+msgid "Python Interpreter"
+msgstr "Python解释器"
+
+#: G:\work\project\Noval\noval\python\plugins\unittest.py:47
+msgid "UnitTest"
+msgstr "单元测试"
+
+#: G:\work\project\Noval\noval\python\plugins\unittest.py:59
+msgid "NovalIDE UnitTest Wizard"
+msgstr "NovalIDE单元测试向导"
+
+#: G:\work\project\Noval\noval\python\plugins\unittest.py:158
+msgid "&UnitTest"
+msgstr "单元测试"
+
+#: G:\work\project\Noval\noval\python\project\browser.py:98
+#: G:\work\project\Noval\noval\python\project\rundocument.py:217
 #: G:\work\project\Noval\noval\python\pyeditor.py:325
+msgid "Debug"
+msgstr "调试"
+
+#: G:\work\project\Noval\noval\python\project\browser.py:102
+#: G:\work\project\Noval\noval\python\pyeditor.py:329
 msgid "&Break into Debugger"
 msgstr "进入断点调试"
 
@@ -2737,155 +2744,159 @@ msgstr "进入断点调试"
 msgid "Set as Startup File..."
 msgstr "设为启动文件..."
 
-#: G:\work\project\Noval\noval\python\project\browser.py:157
+#: G:\work\project\Noval\noval\python\project\browser.py:130
 msgid "New Package Folder"
 msgstr "新建包文件夹"
 
-#: G:\work\project\Noval\noval\python\project\browser.py:182
+#: G:\work\project\Noval\noval\python\project\browser.py:149
 msgid "Project Browser"
 msgstr "项目浏览器"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:46
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:47
 msgid "Project Name:"
 msgstr "项目名称:"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:53
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:54
 msgid "Startup Module:"
 msgstr "启动模块:"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:55
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:56
 msgid "Main Module:"
 msgstr "主模块:"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:69
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:70
 msgid "Startup Directory:"
 msgstr "启动目录:"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:72
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:73
 msgid "Default:"
 msgstr "默认:"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:79
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:80
 msgid "Other:"
 msgstr "其它:"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:87
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:88
 msgid "Project Folder"
 msgstr "项目文件夹"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:91
-#: G:\work\project\Noval\noval\python\project\debugrun.py:194
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:92
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:195
 msgid "Variables"
 msgstr "变量"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:130
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:131
 msgid "Select the startup path"
 msgstr "选择启动目录"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:137
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:138
 msgid "Select Project Folder"
 msgstr "选择项目文件夹"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:148
-#: G:\work\project\Noval\noval\python\project\debugrun.py:208
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:149
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:209
 msgid "Select Variable"
 msgstr "选择变量"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:154
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:155
 msgid "Select Main Module"
 msgstr "选择主模块"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:176
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:177
 msgid "Module file \"%s\" is not in project"
 msgstr "模块文件  \"%s\" 不存在项目中"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:189
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:190
 msgid "Program Arguments:"
 msgstr "程序参数:"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:199
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:200
 msgid "Interpreter Options:"
 msgstr "解释器参数:"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:240
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:243
 msgid "PYTHONPATH that will be used in the run:"
 msgstr "解释器运行时使用的PYTHONPATH列表如下:"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:327
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:335
 msgid "New Debug/Run Configuration"
 msgstr "新建调试/运行配置"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:329
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:337
 msgid "Edit Debug/Run Configuration"
 msgstr "编辑调试/运行配置"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:352
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:360
 msgid "Startup"
 msgstr "启动"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:355
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:363
 msgid "Arguments"
 msgstr "参数"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:358
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:366
 msgid "Interpreter"
 msgstr "解释器"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:361
-#: G:\work\project\Noval\noval\python\project\pythonpath.py:168
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:369
+#: G:\work\project\Noval\noval\python\project\pages\pythonpath.py:166
 msgid "Environment"
 msgstr "环境"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:367
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:375
 msgid "A name is required for the configuration"
 msgstr "请填写配置名称"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:395
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:403
 msgid "Set the default startup file when run project."
 msgstr "设置项目运行时默认启动的文件."
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:405
-#: G:\work\project\Noval\noval\python\project\debugrun.py:535
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:413
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:554
 msgid "Select the startup file"
 msgstr "选择项目启动文件"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:412
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:420
 msgid ""
 "You can manage launch run configurations and set default configuration as "
 "belows.\n"
 msgstr "你可以在下面管理运行配置列表并且设置项目默认启动配置.\n"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:414
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:422
 msgid "Set run configurations for project '%s':"
 msgstr "设置项目'%s'的运行配置列表:"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:426
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:434
 #: G:\work\project\Noval\noval\ui_utils.py:116
 #: G:\work\project\Noval\noval\ui_utils.py:336
 msgid "Edit"
 msgstr "编辑"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:428
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:436
 msgid "Copy"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:468
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:448
+msgid "Windows Application"
+msgstr "Windows应用程序"
+
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:485
 msgid "File \"%s\" is not in project"
 msgstr "文件\"%s\"不存在于项目中"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:558
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:577
 msgid "configuration name is already in used!"
 msgstr "配置名称已经被使用了!"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:578
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:597
 msgid "New Configuration"
 msgstr "新建配置"
 
-#: G:\work\project\Noval\noval\python\project\debugrun.py:592
+#: G:\work\project\Noval\noval\python\project\pages\debugrun.py:611
 msgid "Edit Configuration"
 msgstr "编辑配置"
 
-#: G:\work\project\Noval\noval\python\project\projectreferrence.py:18
+#: G:\work\project\Noval\noval\python\project\pages\projectreferrence.py:16
 msgid ""
 "Project may refer to other projects.The reference project path will append "
 "to the PYTHONPATH of current project.\n"
@@ -2893,27 +2904,27 @@ msgstr ""
 "一个项目可以引用其它项目.被引用的项目路径会附加到当前项目运行时的PYTHONPATH列"
 "表中.\n"
 
-#: G:\work\project\Noval\noval\python\project\projectreferrence.py:20
+#: G:\work\project\Noval\noval\python\project\pages\projectreferrence.py:18
 msgid "The reference projects for '%s':"
 msgstr "项目'%s'的可引用项目列表:"
 
-#: G:\work\project\Noval\noval\python\project\pythoninterpreter.py:29
+#: G:\work\project\Noval\noval\python\project\pages\pythoninterpreter.py:27
 msgid "Click to configure interpreters not listed"
 msgstr "点击配置未列出的解释器"
 
-#: G:\work\project\Noval\noval\python\project\pythonpath.py:52
+#: G:\work\project\Noval\noval\python\project\pages\pythonpath.py:49
 msgid "Append project root path to PYTHONPATH"
 msgstr "添加项目目录到PYTHONPATH"
 
-#: G:\work\project\Noval\noval\python\project\pythonpath.py:63
+#: G:\work\project\Noval\noval\python\project\pages\pythonpath.py:60
 msgid "Select Zip/Egg/Wheel File"
 msgstr "选择Zip/Egg/Wheel文件"
 
-#: G:\work\project\Noval\noval\python\project\pythonpath.py:81
+#: G:\work\project\Noval\noval\python\project\pages\pythonpath.py:79
 msgid "Select Internal Path"
 msgstr "选择项目内部路径"
 
-#: G:\work\project\Noval\noval\python\project\pythonpath.py:158
+#: G:\work\project\Noval\noval\python\project\pages\pythonpath.py:156
 msgid ""
 "The final PYTHONPATH used for a launch is composed of paths defined here,"
 "joined with the paths defined by the selected interpreter.\n"
@@ -2921,32 +2932,60 @@ msgstr ""
 "该页面定义了最终可使用的PYTHONPATH列表,并且会被选中的解释器运行时作为环境变量"
 "使用.\n"
 
-#: G:\work\project\Noval\noval\python\project\pythonpath.py:162
+#: G:\work\project\Noval\noval\python\project\pages\pythonpath.py:160
 msgid "Internal Path"
 msgstr "内部路径"
 
-#: G:\work\project\Noval\noval\python\project\pythonpath.py:165
+#: G:\work\project\Noval\noval\python\project\pages\pythonpath.py:163
 msgid "External Path"
 msgstr "外部路径"
 
-#: G:\work\project\Noval\noval\python\project\viewer.py:97
+#: G:\work\project\Noval\noval\python\project\runconfiguration.py:210
+msgid "Interpreter \"%s\" is not exist"
+msgstr "解释器 \"%s\" 不存在"
+
+#: G:\work\project\Noval\noval\python\project\rundocument.py:109
+msgid "Debugger can only run in active project"
+msgstr "抱歉,调试器只能在当前项目中运行"
+
+#: G:\work\project\Noval\noval\python\project\rundocument.py:180
+msgid "Running: "
+msgstr "正在运行: "
+
+#: G:\work\project\Noval\noval\python\project\rundocument.py:213
+msgid "Run File"
+msgstr "运行脚本"
+
+#: G:\work\project\Noval\noval\python\project\rundocument.py:214
+msgid "Run"
+msgstr "运行"
+
+#: G:\work\project\Noval\noval\python\project\rundocument.py:216
+msgid "Debug File"
+msgstr "调试脚本"
+
+#: G:\work\project\Noval\noval\python\project\rundocument.py:263
+msgid "Set Parameter And Environment"
+msgstr "参数和环境变量配置"
+
+#: G:\work\project\Noval\noval\python\project\viewer.py:52
 msgid "Create %s Folder And Add it to the PYTHONPATH"
 msgstr "创建%s文件夹并且添加其路径到PYTHONPATH"
 
-#: G:\work\project\Noval\noval\python\project\viewer.py:103
+#: G:\work\project\Noval\noval\python\project\viewer.py:58
 msgid "Add Project Directory to the PYTHONPATH"
 msgstr "添加项目路径到PYTHONPATH"
 
-#: G:\work\project\Noval\noval\python\project\viewer.py:109
+#: G:\work\project\Noval\noval\python\project\viewer.py:64
 msgid "Don't Configure PYTHONPATH(later manually configure it)"
 msgstr "创建项目时不配置PYTHONPATH(稍后手动配置)"
 
-#: G:\work\project\Noval\noval\python\project\viewer.py:134
-#: G:\work\project\Noval\noval\python\pyide.py:183
+#: G:\work\project\Noval\noval\python\project\viewer.py:89
+#: G:\work\project\Noval\noval\python\pyide.py:161
 msgid "Configuration"
 msgstr "配置"
 
-#: G:\work\project\Noval\noval\python\pyeditor.py:92
+#: G:\work\project\Noval\noval\python\pyeditor.py:93
 msgid ""
 "Detect your python file contain chinese character,please insert encoding "
 "declare.\n"
@@ -2957,115 +2996,101 @@ msgstr ""
 "\n"
 "点击'是'插入编码，'否'取消?"
 
-#: G:\work\project\Noval\noval\python\pyeditor.py:92
-#: G:\work\project\Noval\noval\python\pyide.py:309
+#: G:\work\project\Noval\noval\python\pyeditor.py:93
+#: G:\work\project\Noval\noval\python\pyide.py:284
 #: G:\work\project\Noval\noval\ui_utils.py:109
 msgid "Declare Encoding"
 msgstr "编码声明"
 
-#: G:\work\project\Noval\noval\python\pyeditor.py:309
+#: G:\work\project\Noval\noval\python\pyeditor.py:310
 msgid "Find in Outline View"
 msgstr "在大纲视图中查找"
 
-#: G:\work\project\Noval\noval\python\pyeditor.py:721
+#: G:\work\project\Noval\noval\python\pyeditor.py:317
+msgid "&Execute Code in interpreter"
+msgstr "在解释器中执行"
+
+#: G:\work\project\Noval\noval\python\pyeditor.py:731
 msgid "Cannot find definition"
 msgstr "未能找到定义文本"
 
-#: G:\work\project\Noval\noval\python\pyeditor.py:721
-#: G:\work\project\Noval\noval\python\pyide.py:84
+#: G:\work\project\Noval\noval\python\pyeditor.py:731
+#: G:\work\project\Noval\noval\python\pyide.py:62
 msgid "Goto Definition"
 msgstr "转到定义"
 
-#: G:\work\project\Noval\noval\python\pyide.py:82
+#: G:\work\project\Noval\noval\python\pyide.py:60
 msgid "&Python Help Document"
 msgstr "Python帮助手册"
 
-#: G:\work\project\Noval\noval\python\pyide.py:85
+#: G:\work\project\Noval\noval\python\pyide.py:63
 msgid "&Python Website"
 msgstr "Python官方网站"
 
-#: G:\work\project\Noval\noval\python\pyide.py:86
-msgid "&UnitTest"
-msgstr "单元测试"
-
-#: G:\work\project\Noval\noval\python\pyide.py:87
+#: G:\work\project\Noval\noval\python\pyide.py:64
 msgid "&Interpreter"
 msgstr "解释器"
 
-#: G:\work\project\Noval\noval\python\pyide.py:88
+#: G:\work\project\Noval\noval\python\pyide.py:65
 #, fuzzy
 #| msgid "Option"
 msgid "&Options..."
 msgstr "选项"
 
-#: G:\work\project\Noval\noval\python\pyide.py:92
+#: G:\work\project\Noval\noval\python\pyide.py:69
 msgid "Insert Encoding Declare"
 msgstr "插入编码声明"
 
-#: G:\work\project\Noval\noval\python\pyide.py:98
+#: G:\work\project\Noval\noval\python\pyide.py:75
 msgid "&Start Without Debugging"
 msgstr "开始执行(不调试)"
 
-#: G:\work\project\Noval\noval\python\pyide.py:100
+#: G:\work\project\Noval\noval\python\pyide.py:77
 msgid "&Exceptions..."
 msgstr "异常..."
 
-#: G:\work\project\Noval\noval\python\pyide.py:101
+#: G:\work\project\Noval\noval\python\pyide.py:78
 #, fuzzy
 #| msgid "&Step Into\tF11"
 msgid "&Step Into"
 msgstr "逐语句\tF11"
 
-#: G:\work\project\Noval\noval\python\pyide.py:102
+#: G:\work\project\Noval\noval\python\pyide.py:79
 #, fuzzy
 #| msgid "&Step Over\tF10"
 msgid "&Step Over"
 msgstr "逐过程\tF10"
 
-#: G:\work\project\Noval\noval\python\pyide.py:104
+#: G:\work\project\Noval\noval\python\pyide.py:81
 msgid "&Check Syntax..."
 msgstr "检查语法..."
 
-#: G:\work\project\Noval\noval\python\pyide.py:105
+#: G:\work\project\Noval\noval\python\pyide.py:82
 msgid "&Set Parameter And Environment"
 msgstr "配置参数和环境变量"
 
-#: G:\work\project\Noval\noval\python\pyide.py:106
+#: G:\work\project\Noval\noval\python\pyide.py:83
 msgid "&Run Using Last Settings"
 msgstr "使用上一次配置运行"
 
-#: G:\work\project\Noval\noval\python\pyide.py:107
+#: G:\work\project\Noval\noval\python\pyide.py:84
 msgid "&Debug Using Last Settings"
 msgstr "使用上一次配置调试"
 
-#: G:\work\project\Noval\noval\python\pyide.py:150
-msgid "Project File"
-msgstr "项目文件"
-
-#: G:\work\project\Noval\noval\python\pyide.py:155
-#, fuzzy
-#| msgid "Project View"
-msgid "Project Viewer"
-msgstr "项目视图"
-
-#: G:\work\project\Noval\noval\python\pyide.py:254
+#: G:\work\project\Noval\noval\python\pyide.py:232
 msgid "%s"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyide.py:254
+#: G:\work\project\Noval\noval\python\pyide.py:232
 msgid "Open Error"
 msgstr "打开错误"
 
-#: G:\work\project\Noval\noval\python\pyide.py:309
+#: G:\work\project\Noval\noval\python\pyide.py:284
 msgid ""
 "The Python Document have already declare coding,Do you want to overwrite it?"
 msgstr "Python脚本文件已经声明了编码，你想要覆盖吗？"
 
-#: G:\work\project\Noval\noval\python\pyshell.py:1321
-msgid "Python Interpreter"
-msgstr "Python解释器"
-
-#: G:\work\project\Noval\noval\python\pyutils.py:146
+#: G:\work\project\Noval\noval\python\pyutils.py:167
 msgid "Please select a file"
 msgstr "请选择一个文件"
 
@@ -3076,14 +3101,6 @@ msgstr "Python脚本"
 #: G:\work\project\Noval\noval\python\syntax\lexer\_python.py:316
 msgid "Python Editor"
 msgstr "Python编辑器"
-
-#: G:\work\project\Noval\noval\python\unittest.py:44
-msgid "UnitTest"
-msgstr "单元测试"
-
-#: G:\work\project\Noval\noval\python\unittest.py:56
-msgid "NovalIDE UnitTest Wizard"
-msgstr "NovalIDE单元测试向导"
 
 #: G:\work\project\Noval\noval\statusbar.py:15
 #: G:\work\project\Noval\noval\statusbar.py:49
@@ -3265,38 +3282,63 @@ msgstr "该键值已经在环境变量中存在，想要覆盖该键值吗？"
 msgid "This function does not implemented yet!"
 msgstr "抱歉该项功能还未实现!"
 
-#: G:\work\project\Noval\noval\update.py:19
-msgid "Please wait a minute for Downloading"
-msgstr "请等待一会下载完成"
-
-#: G:\work\project\Noval\noval\update.py:20
-msgid "Downloading %s"
-msgstr "正在下载 %s"
-
-#: G:\work\project\Noval\noval\update.py:64
-msgid "Download fail:%s"
-msgstr "下载失败:%s"
-
-#: G:\work\project\Noval\noval\update.py:80
-#: G:\work\project\Noval\noval\util\mailutils.py:39
-msgid "could not connect to server"
-msgstr "不能连接服务器"
-
-#: G:\work\project\Noval\noval\update.py:88
-msgid "Update Available"
-msgstr "有更新版本可用"
-
-#: G:\work\project\Noval\noval\util\exceptions.py:6
-msgid "Interpreter \"%s\" is not exist"
-msgstr "解释器 \"%s\" 不存在"
-
-#: G:\work\project\Noval\noval\util\exceptions.py:19
-msgid "Could not find menu '%s' at menubar"
-msgstr "无法在菜单栏找到'%s'菜单"
-
-#: G:\work\project\Noval\noval\util\fileutils.py:314
+#: G:\work\project\Noval\noval\util\fileutils.py:316
 msgid "No files to zip, nothing to do!"
 msgstr "归档文件空空如也!"
+
+#~ msgid "%s path '%s' contains no asc character"
+#~ msgstr "解释器路径'%s'包含非ASC字符"
+
+#~ msgid "&Add Watch"
+#~ msgstr "添加监视"
+
+#~ msgid "&Quick add Watch"
+#~ msgstr "快速添加监视"
+
+#~ msgid "Quick add a Watch"
+#~ msgstr "快速添加监视"
+
+#~ msgid "&Step Out\tShift+F11"
+#~ msgstr "跳出\tShift+F11"
+
+#~ msgid "Step out the function"
+#~ msgstr "跳出函数"
+
+#~ msgid "&Restart"
+#~ msgstr "重启调试"
+
+#~ msgid "&Stop Debugging"
+#~ msgstr "停止调试"
+
+#~ msgid "Stop the debugger"
+#~ msgstr "停止调试器"
+
+#~ msgid "&Break"
+#~ msgstr "中断"
+
+#~ msgid "Break into the debugger"
+#~ msgstr "进入断点调试"
+
+#~ msgid "&Continue"
+#~ msgstr "继续执行"
+
+#~ msgid "Continue the debugger"
+#~ msgstr "继续执行调试"
+
+#~ msgid "Please stop the debugger first!"
+#~ msgstr "请先停止调试器!"
+
+#~ msgid "Add Python Exception Breakpoint"
+#~ msgstr "添加中断异常"
+
+#~ msgid "Debugging: "
+#~ msgstr "正在调试: "
+
+#~ msgid "Warn when interpreter path contain no asc character on debug and run"
+#~ msgstr "当解释器包含中文路径时弹出警告"
+
+#~ msgid "Could not find menu '%s' at menubar"
+#~ msgstr "无法在菜单栏找到'%s'菜单"
 
 #~ msgid "Gernal"
 #~ msgstr "常规"
@@ -3679,9 +3721,6 @@ msgstr "归档文件空空如也!"
 
 #~ msgid "Provide a File Name"
 #~ msgstr "项目名称为空"
-
-#~ msgid "Choose a Interpreter"
-#~ msgstr "选择解释器"
 
 #~ msgid "%s must be digit!"
 #~ msgstr "%s必须为数字!"
@@ -4103,9 +4142,6 @@ msgstr "归档文件空空如也!"
 #~ msgid "Zooms the document to a smaller size"
 #~ msgstr "缩小文档字体大小"
 
-#~ msgid "&Font..."
-#~ msgstr "字体..."
-
 #~ msgid "Sets the font to use"
 #~ msgstr "设置字体"
 
@@ -4124,14 +4160,8 @@ msgstr "归档文件空空如也!"
 #~ msgid "Insert Encoding Declare to Current Document"
 #~ msgstr "插入当前文档的编码声明"
 
-#~ msgid "Conert To UPPERCASE\tCtrl+Shift+U"
-#~ msgstr "转成大写\tCtrl+Shift+U"
-
 #~ msgid "Convert Upper Word to Lower Word"
 #~ msgstr "将文本转化成大写"
-
-#~ msgid "Conert To lowercase\tCtrl+U"
-#~ msgstr "转成小写\tCtrl+U"
 
 #~ msgid "Convert Lower Word to Upper Word"
 #~ msgstr "将文本转化成小写"
@@ -4147,9 +4177,6 @@ msgstr "归档文件空空如也!"
 
 #~ msgid "Spaces To Tabs"
 #~ msgstr "空格转换制表符"
-
-#~ msgid "&Advance"
-#~ msgstr "高级"
 
 #~ msgid "Select File Path"
 #~ msgstr "选择文件路径"

@@ -93,7 +93,7 @@ class ColorFontOptionsPanel(ui_utils.BaseConfigurationPanel):
         style_list = []
         row = ttk.Frame(self)
         ttk.Label(row, text=_("Code Sample(P):")).pack(side=tk.LEFT,fill="x",expand=1)
-        ttk.Label(row, text=_("Themes:")).pack(side=tk.LEFT,fill="x")
+        ttk.Label(row, text=_("Syntax Themes:")).pack(side=tk.LEFT,fill="x")
         
         themes = list(syntax.SyntaxThemeManager()._syntax_themes.keys())
         self.themeVal = tk.StringVar(value=utils.profile_get(consts.SYNTAX_THEME_KEY,consts.DEFAULT_SYNTAX_THEME))

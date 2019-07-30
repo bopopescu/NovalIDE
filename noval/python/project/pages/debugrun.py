@@ -274,8 +274,8 @@ class InterpreterConfigurationPage(BasePage):
             python_path_panel = proprty_dlg.GetOptionPanel('PythonPath')
             values.extend(python_path_panel.GetPythonPathList())
         else:
-            project_configuration = RunConfiguration.ProjectConfiguration(self.ProjectDocument)
-            self.listbox.AppendItems(project_configuration.LoadPythonPath())
+            project_configuration = runconfiguration.ProjectConfiguration(self.ProjectDocument)
+            values.extend(project_configuration.LoadPythonPath())
         self.list_var.set(tuple(set(values)))
         
     def GetConfiguration(self):

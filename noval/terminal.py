@@ -9,9 +9,12 @@ elif utils.is_py3_plus():
 import subprocess
 import noval.ui_utils as ui_utils
 
-def run_in_terminal(cmd, cwd, env_overrides={}, keep_open=True, title=None,pause=False):
+def run_in_terminal(cmd, cwd, env_overrides={}, keep_open=True, title=None,pause=False,overwrite_env=True):
     from noval.ui_utils import get_environment_with_overrides
-    env = get_environment_with_overrides(env_overrides)
+    if overwrite_env:
+        env = get_environment_with_overrides(env_overrides)
+    else:
+        env = env_overrides
             
     if platform.system() == "Windows":
         _run_in_terminal_in_windows(cmd, cwd, env, keep_open, title,pause)

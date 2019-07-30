@@ -19,6 +19,9 @@ import webbrowser
 import datetime
 import platform
 import noval.imageutils as imageutils
+import noval.iface as iface
+import noval.plugin as plugin
+import noval.constants as constants
 
 class AboutDialog(ui_base.CommonModaldialog):
 
@@ -104,7 +107,14 @@ class AboutDialog(ui_base.CommonModaldialog):
         self.FormatTkButtonText(self.ok_button)
 
 
+class AboutLoader(plugin.Plugin):
+    plugin.Implements(iface.CommonPluginI)
+    def Load(self):
+        GetApp().AddCommand(constants.ID_ABOUT,_("&Help"),_("&About"),self.OnAbout,image="about.png")
 
+    def OnAbout(self):
+        aboutdlg = AboutDialog(GetApp().GetTopWindow())
+        aboutdlg.ShowModal()
         
 
 

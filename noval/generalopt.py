@@ -134,6 +134,11 @@ class GeneralOptionPanel(ui_utils.BaseConfigurationPanel):
                                                             (MIN_MRU_FILE_LIMIT,MAX_MRU_FILE_LIMIT)).pack(side=tk.LEFT)
         self.mru_ctrl.pack(side=tk.LEFT)
         row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+
+        self.redirect_output_var = tk.IntVar(value=utils.profile_get_int("RedirectTkException", True if GetApp().GetDebug() else False))
+        redirectOutputCheckBox = ttk.Checkbutton(self, text=_("Redirect Application exception output to Message dialog"),variable=self.redirect_output_var)
+        redirectOutputCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
+
         self.checkEnableMRU()
        
     def validateMRUInput(self,contents):
@@ -176,6 +181,7 @@ class GeneralOptionPanel(ui_utils.BaseConfigurationPanel):
             utils.profile_set(consts.LANGUANGE_ID_KEY,self.GetLangId())
         utils.profile_set(consts.MRU_LENGTH_KEY,self.mru_var.get())
         utils.profile_set(consts.ENABLE_MRU_KEY,self.enablemru_var.get())
+        utils.profile_set("RedirectTkException",self.redirect_output_var.get())
         return True
 
     def GetIcon(self):

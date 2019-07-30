@@ -262,13 +262,7 @@ def GetClassFromDynamicImportModule(full_class_path):
     full_module_path = ".".join(parts[0:-1])
     class_name = parts[-1]
     #必须先导入模块,再获取模块里面的方法,不要直接导入类
-    #如果类名是类似xx.yy这样的,必须设置fromlist为False
-    if full_module_path.find('.') == -1:
-        fromlist = False
-    #如果类名称包含多级层,必须设置fromlist参数为True
-    #类似xx.yy.zz
-    else:
-        fromlist = True
-    module_obj = __import__(full_module_path,fromlist=fromlist)
+    #如果类名是类似xx.yy.zz这样的,必须设置fromlist不为空
+    module_obj = __import__(full_module_path,globals(), globals(), fromlist=['__name__'])
     class_obj = getattr(module_obj,class_name)
     return class_obj

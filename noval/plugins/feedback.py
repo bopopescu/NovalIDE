@@ -2,6 +2,7 @@
 from noval import GetApp,_
 import tkinter as tk
 import os
+import sys
 from tkinter import ttk,messagebox
 import noval.iface as iface
 import noval.plugin as plugin
@@ -14,10 +15,12 @@ import noval.editor.text as texteditor
 import noval.consts as consts
 import noval.ttkwidgets.textframe as textframe
 import noval.python.parser.utils as parserutils
+import noval.util.fileutils as fileutils
 from mss import mss
 import noval.python.pyutils as pyutils
 from PIL import Image
 import noval.util.compat as compat
+import shutil
 
 CONTENT_TEMPLATE = '''
 Operating system:%s
@@ -84,8 +87,8 @@ class FeedbackDialog(ui_base.CommonModaldialog):
         if content == "":
             messagebox.showerror(GetApp().GetAppName(),_("Content could not be empty!"))
             return
-        screenshot_image_path = self.screenshot()
         result = UserDataDb().GetUserInfo()
+        zip_dest = self.GetZipDestfile(result[2])
         os_system = result[5]
         if utils.is_py3_plus():
             os_system = compat.ensure_string(result[5])
@@ -95,9 +98,29 @@ class FeedbackDialog(ui_base.CommonModaldialog):
         content =  CONTENT_TEMPLATE % (os_system,os_bit,result[1],utils.get_app_version(),pyutils.get_python_version_string().strip(),\
                                 pyutils.get_tk_version_str(),0,self.content_ctrl.GetValue().strip())
         subject = u"%s【%s】" % (self._title_var.get().strip(),self._feedback_category_var.get())
-        if mailutils.send_mail(subject,content,attach_files=[screenshot_image_path]):
+        if mailutils.send_mail(subject,content,attach_files=[zip_dest]):
             messagebox.showinfo(GetApp().GetAppName(),_("Send mail success,Thanks for your feedback!"))
             ui_base.CommonModaldialog._ok(self,event)
+
+    def GetZipDestfile(self,user):
+        zip_path = os.path.join(utils.get_user_data_path(),"zips")
+        if not os.path.exists(zip_path):
+            parserutils.MakeDirs(zip_path)
+        zipdest = os.path.join(zip_path,"%s.zip"%user)
+        zip_files = []
+        screenshot_image_path = self.screenshot()
+        zip_files.append(screenshot_image_path)
+        basedir = os.path.dirname(screenshot_image_path)
+        log_path = sys.executable + '.log'
+        if os.path.exists(log_path):
+            try:
+                cache_log_path = "%s/%s" % (basedir,os.path.basename(log_path))
+                shutil.copy(log_path,cache_log_path)
+                zip_files.append(cache_log_path)
+            except:
+                pass
+        fileutils.zip(zipdest, basedir=basedir,files=zip_files)
+        return zipdest
 
 class FeedBack(plugin.Plugin):
     plugin.Implements(iface.MainWindowI)

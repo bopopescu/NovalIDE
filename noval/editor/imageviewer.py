@@ -84,3 +84,6 @@ class ImageView(core.View):
         '''
         pass
 
+    def ZoomView(self,delta = 0):
+        ''''''
+        ##TODO 待实现图片的放大缩小

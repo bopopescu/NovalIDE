@@ -71,13 +71,10 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
     @InputStartPos.setter
     def InputStartPos(self,input_start_pos):
         self._input_start_pos = input_start_pos
-        
-    def OnRightUp(self, event):
-        self.ActiveDebugView()
-        self.PopupMenu(self.CreatePopupMenu(), event.GetPosition())
-        
+                
     def CreatePopupMenu(self):
         texteditor.TextCtrl.CreatePopupMenu(self)
+        self.ActivateView()
         self._popup_menu.add_separator()
         self._popup_menu.Append(self.TEXT_WRAP_ID,_("Word Wrap"),kind=consts.CHECK_MENU_ITEM_KIND,handler=self.SetWrap,variable=self._is_wrap)
         self._popup_menu.AppendMenuItem(GetApp().Menubar.GetEditMenu().FindMenuItem(constants.ID_FIND),handler=self.DoFind,tester=None)
@@ -92,7 +89,7 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         else:
             self.configure(**{'wrap':'none'})
         
-    def ActivateView(self,event):
+    def ActivateView(self,event=None):
         self.focus_set()
         GetApp().GetDocumentManager().ActivateView(GetApp().GetDebugger().GetView())
         

@@ -41,8 +41,6 @@ import shutil
 import noval.python.interpreter.interpreter as pythoninterpreter
 import noval.syntax.lang as lang
 import noval.python.debugger.output as debugoutput
-import noval.python.parser.intellisence as intellisence
-import noval.python.interpreter.interpretermanager as interpretermanager
 import noval.util.strutils as strutils
 import noval.python.parser.utils as parserutils
 import copy
@@ -70,6 +68,7 @@ import noval.python.project.runconfiguration as runconfiguration
 import noval.project.executor as executor
 from noval.project.debugger import *
 from noval.python.debugger.output import *
+import tempfile
 
 #VERBOSE mode will invoke threading.Thread _VERBOSE,which will print a lot of thread debug text on screen
 _VERBOSE = False
@@ -109,7 +108,7 @@ class PythonExecutor(executor.Executor,CommonExecutorMixin):
         self._stdErrReader = None
         self._process = None
 
-class PythonrunExecutor(executor.TerminalExecutor):
+class PythonrunExecutor(executor.TerminalExecutor,CommonExecutorMixin):
     def __init__(self, run_parameter):
         executor.TerminalExecutor.__init__(self,run_parameter)
         CommonExecutorMixin.__init__(self)
@@ -120,7 +119,9 @@ class PythonrunExecutor(executor.TerminalExecutor):
         #点击Run按钮或菜单时,如果是windows应用程序则直接使用pythonw.exe解释器来运行程序
         if self.is_windows_application:
             utils.get_logger().debug("start run executable: %s",command)
-            subprocess.Popen(command,shell = False,cwd=self._run_parameter.StartupPath,env=self._run_parameter.Environment)
+            #TODO 不知道为什么在调用python2.7解释器时必须重定向输出到文件才能工作正常
+            temp_file = tempfile.TemporaryFile()
+            subprocess.Popen(command,shell = False,cwd=self.GetStartupPath(),env=self._run_parameter.Environment,stdout=temp_file.fileno(), stderr=temp_file.fileno())
         #否则在控制台终端中运行程序,并且在程序运行结束时暂停,方便用户查看运行输出结果
         else:
             executor.TerminalExecutor.Execute(self)
@@ -1975,7 +1976,7 @@ class DebuggerOptionsPanel(ttk.Frame):
             config.WriteInt("DebuggerStartingPort", self._PortNumberTextCtrl.GetValue())
             PythonDebuggerUI.NewPortRange()
         else:
-            wx.MessageBox(_("The starting port is not valid. Please change the value and try again.", "Invalid Starting Port Number"))
+            wx.MessageBox(_("The starting port is not valid. Please change the value and try again."), _("Invalid Starting Port Number"))
 
     def MinPortChange(self, event):
         self._EndPortNumberTextCtrl.Enable( True )

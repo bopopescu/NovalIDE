@@ -9,6 +9,7 @@
 # Copyright:   (c) wukan 2019
 # Licence:     GPL-3.0
 #-------------------------------------------------------------------------------
+from noval import _
 import logging
 import copy
 import os

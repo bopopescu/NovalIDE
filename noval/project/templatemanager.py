@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import noval.util.singleton as singleton
 
 @singleton.Singleton

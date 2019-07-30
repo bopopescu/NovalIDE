@@ -32,7 +32,6 @@ from noval.syntax import synglob,syntax
 from noval.util import record
 import noval.menu as tkmenu
 import noval.editor.code as codeeditor
-import noval.update as updateutils
 import noval.syntax.lang as lang
 import noval.preference as preference
 from tkinter import messagebox
@@ -43,9 +42,9 @@ import noval.project.document as projectdocument
 import noval.docposition as docposition
 import noval.ui_utils as ui_utils
 import noval.ui_lang as ui_lang
-import noval.about as about
 import noval.project.debugger as basedebugger
-import noval.syntax.syndata as syndata
+import traceback
+import noval.ttkwidgets.messagedialog as messagedialog
 
 #----------------------------------------------------------------------------
 # Classes
@@ -71,6 +70,9 @@ class IDEApplication(core.App):
             self.SetDebug(False)
             self.SetSingleInstance(True)
             
+        #python脚本用pyinstaller转换成可执行程序后需要重定向输入到日志文件
+        #必须在日志初始化之前启动
+        import noval.boot_common
         logger.initLogging(self.GetDebug())
         if not core.App.OnInit(self):
             return False
@@ -81,6 +83,8 @@ class IDEApplication(core.App):
         import noval.colorfont as colorfont
         import noval.docoption as docoption
         import noval.generalopt as generalopt
+        #将tk程序的异常输出重定向
+        tk.Tk.report_callback_exception = self._on_tk_exception
         self._open_project_path = None
         self.frame = None           
         self._pluginmgr = None
@@ -183,8 +187,7 @@ class IDEApplication(core.App):
         #加载上次程序退出时的活跃项目
         self.SetCurrentProject()
         ###self.ShowTipfOfDay()
-        if utils.profile_get_int(consts.CHECK_UPDATE_ATSTARTUP_KEY, True):
-            self.after(1000,self.CheckUpdate)
+
         
         #初始化拖拽对象以支持拖拽打开文件功能,由于在linux下面加载dll耗时较长
         #故使加载函数延迟执行
@@ -203,8 +206,34 @@ class IDEApplication(core.App):
         self.InitThemeMenu()
         self.load_themes()
 
+    def _on_tk_exception(self, exc, val, tb):
+        # copied from tkinter.Tk.report_callback_exception with modifications
+        # see http://bugs.python.org/issue22384
+        sys.last_type = exc
+        sys.last_value = val
+        sys.last_traceback = tb
+        self.report_exception()
+
+    def report_exception(self, title= "Internal error"):
+        utils.get_logger().exception(title)
+        if utils.is_py2():
+            tk._default_root = self
+        #是否重定向异常信息到消息对话框
+        if tk._default_root and utils.profile_get_int("RedirectTkException", True if self.GetDebug() else False):
+            (typ, value, _) = sys.exc_info()
+            assert typ is not None
+           # if issubclass(typ, UserError):
+            #    msg = str(value)
+            #else:
+            msg = traceback.format_exc()
+            #异常输出重定向到消息对话框中
+            dlg = messagedialog.ScrolledMessageDialog(self,title, msg)
+            dlg.ShowModal()
+
     def LoadDefaultPlugins(self):
-        pass
+        '''
+            默认插件在consts.DEFAULT_PLUGINS中指定
+        '''
         
     def AppendDefaultCommand(self,command_id):
         self._default_command_ids.append(command_id)
@@ -273,10 +302,7 @@ class IDEApplication(core.App):
         
     def GetDefaultLangId(self):
         return lang.ID_LANG_TXT
-
-    def CheckUpdate(self,ignore_error=True):
-        updateutils.CheckAppUpdate(ignore_error)
-    
+    
     @property
     def MainFrame(self):
         return self.frame
@@ -465,14 +491,7 @@ class IDEApplication(core.App):
         self.AddCommand(constants.ID_RUN,_("&Run"),_("&Start Running"),self.Run,image="toolbar/run.png",include_in_toolbar=True,default_tester=True,default_command=True)
         self.AddCommand(constants.ID_DEBUG,_("&Run"),_("&Start Debugging"),self.Debug,image="toolbar/debug.png",include_in_toolbar=True,default_tester=True,default_command=True)
         self.AddCommand(constants.ID_OPEN_TERMINAL,_("&Tools"),_("&Terminator"),self.OpenTerminator,image="cmd.png")
-        
-        self.AddCommand(constants.ID_CHECK_UPDATE,_("&Help"),_("&Check for Updates"),handler=lambda:self.CheckUpdate(ignore_error=False))
         self.AddCommand(constants.ID_GOTO_OFFICIAL_WEB,_("&Help"),_("&Visit NovalIDE Website"),self.GotoWebsite)
-        self.AddCommand(constants.ID_ABOUT,_("&Help"),_("&About"),self.OnAbout,image="about.png")
-
-    def OnAbout(self):
-        aboutdlg = about.AboutDialog(self)
-        aboutdlg.ShowModal()
         
     def Run(self):
         '''

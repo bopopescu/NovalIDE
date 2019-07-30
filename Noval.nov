@@ -509,7 +509,6 @@
   <noval:file filePath="./noval/syntax/synglob.py" logicalFolder="noval/syntax"/>
   <noval:file filePath="./noval/syntax/syntax.py" logicalFolder="noval/syntax"/>
   <noval:file filePath="./noval/syntax/lexer/_txt.py" logicalFolder="noval/syntax/lexer"/>
-  <noval:file filePath="./noval/python/pyshell.py" logicalFolder="noval/python"/>
   <noval:file filePath="./noval/python/pyeditor.py" logicalFolder="noval/python"/>
   <noval:file filePath="./noval/editor/notebook.py" logicalFolder="noval/editor"/>
   <noval:file filePath="./noval/editor/text.py" logicalFolder="noval/editor"/>
@@ -519,14 +518,8 @@
   <noval:file filePath="./noval/editor/imageviewer.py" logicalFolder="noval/editor"/>
   <noval:file filePath="./noval/ui_lang.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/syntax/lang.py" logicalFolder="noval/syntax"/>
-  <noval:file filePath="./noval/feedback.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/syntax_themes.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/plugin_joint.py" logicalFolder="noval"/>
-  <noval:file filePath="./noval/plugin3.py" logicalFolder="noval"/>
-  <noval:file filePath="./noval/plugin2.py" logicalFolder="noval"/>
-  <noval:file filePath="./noval/plugin.py" logicalFolder="noval"/>
-  <noval:file filePath="./noval/python/outline.py" logicalFolder="noval/python"/>
-  <noval:file filePath="./noval/fileview.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/project/basebrowser.py" logicalFolder="noval/project"/>
   <noval:file filePath="./noval/project/basemodel.py" logicalFolder="noval/project"/>
   <noval:file filePath="./noval/python/project/browser.py" logicalFolder="noval/python/project"/>
@@ -538,13 +531,10 @@
   <noval:file filePath="./noval/util/hiscache.py" logicalFolder="noval/util"/>
   <noval:file filePath="./noval/util/record.py" logicalFolder="noval/util"/>
   <noval:file filePath="./noval/binds.py" logicalFolder="noval"/>
-  <noval:file filePath="./noval/base_ui_themes.py" logicalFolder="noval"/>
-  <noval:file filePath="./noval/clean_ui_themes.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/find/__init__.py" logicalFolder="noval/find"/>
   <noval:file filePath="./noval/find/find.py" logicalFolder="noval/find"/>
   <noval:file filePath="./noval/find/findindir.py" logicalFolder="noval/find"/>
   <noval:file filePath="./noval/find/findresult.py" logicalFolder="noval/find"/>
-  <noval:file filePath="./noval/paren_matcher.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/project/importfiles.py" logicalFolder="noval/project"/>
   <noval:file filePath="./noval/ttkwidgets/__init__.py" logicalFolder="noval/ttkwidgets"/>
   <noval:file filePath="./noval/ttkwidgets/linklabel.py" logicalFolder="noval/ttkwidgets"/>
@@ -555,11 +545,7 @@
   <noval:file filePath="./noval/python/project/runconfig.py" logicalFolder="noval/python/project"/>
   <noval:file filePath="./noval/project/command.py" logicalFolder="noval/project"/>
   <noval:file filePath="./noval/docposition.py" logicalFolder="noval"/>
-  <noval:file filePath="./noval/logmanager.py" logicalFolder="noval"/>
-  <noval:file filePath="./noval/python/unittest.py" logicalFolder="noval/python"/>
-  <noval:file filePath="./noval/about.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/preference.py" logicalFolder="noval"/>
-  <noval:file filePath="./noval/update.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/mttkinter/__init__.py" logicalFolder="noval/mttkinter"/>
   <noval:file filePath="./noval/mttkinter/mtTkinter.py" logicalFolder="noval/mttkinter"/>
   <noval:file filePath="./noval/formatter.py" logicalFolder="noval"/>
@@ -584,10 +570,6 @@
   <noval:file filePath="./noval/python/debugger/debugger.py" logicalFolder="noval/python/debugger"/>
   <noval:file filePath="./noval/project/property.py" logicalFolder="noval/project"/>
   <noval:file filePath="./noval/project/resource.py" logicalFolder="noval/project"/>
-  <noval:file filePath="./noval/python/project/debugrun.py" logicalFolder="noval/python/project"/>
-  <noval:file filePath="./noval/python/project/pythonpath.py" logicalFolder="noval/python/project"/>
-  <noval:file filePath="./noval/python/project/pythoninterpreter.py" logicalFolder="noval/python/project"/>
-  <noval:file filePath="./noval/python/project/projectreferrence.py" logicalFolder="noval/python/project"/>
   <noval:file filePath="./noval/project/baseconfig.py" logicalFolder="noval/project"/>
   <noval:file filePath="./noval/python/interpreter/environment.py" logicalFolder="noval/python/interpreter"/>
   <noval:file filePath="./noval/python/interpreter/pythonpath.py" logicalFolder="noval/python/interpreter"/>
@@ -618,16 +600,39 @@
   <noval:file filePath="./noval/python/debugger/commandproperty.py" logicalFolder="noval/python/debugger"/>
   <noval:file filePath="./noval/python/project/rundocument.py" logicalFolder="noval/python/project"/>
   <noval:file filePath="./noval/project/document.py" logicalFolder="noval/project"/>
+  <noval:file filePath="./noval/plugins/__init__.py" logicalFolder="noval/plugins"/>
+  <noval:file filePath="./noval/plugins/feedback.py" logicalFolder="noval/plugins"/>
+  <noval:file filePath="./noval/plugins/fileview.py" logicalFolder="noval/plugins"/>
+  <noval:file filePath="./noval/plugins/paren_matcher.py" logicalFolder="noval/plugins"/>
+  <noval:file filePath="./noval/plugins/base_ui_themes.py" logicalFolder="noval/plugins"/>
+  <noval:file filePath="./noval/plugins/clean_ui_themes.py" logicalFolder="noval/plugins"/>
+  <noval:file filePath="./noval/python/plugins/__init__.py" logicalFolder="noval/python/plugins"/>
+  <noval:file filePath="./noval/python/plugins/pyshell.py" logicalFolder="noval/python/plugins"/>
+  <noval:file filePath="./noval/python/plugins/outline.py" logicalFolder="noval/python/plugins"/>
+  <noval:file filePath="./noval/plugins/logmanager.py" logicalFolder="noval/plugins"/>
+  <noval:file filePath="./noval/plugins/printer/__init__.py" logicalFolder="noval/plugins/printer"/>
+  <noval:file filePath="./noval/plugins/printer/template.html" logicalFolder="noval/plugins/printer"/>
+  <noval:file filePath="./noval/python/project/pages/__init__.py" logicalFolder="noval/python/project/pages"/>
+  <noval:file filePath="./noval/python/project/pages/projectreferrence.py" logicalFolder="noval/python/project/pages"/>
+  <noval:file filePath="./noval/python/project/pages/pythonpath.py" logicalFolder="noval/python/project/pages"/>
+  <noval:file filePath="./noval/python/project/pages/pythoninterpreter.py" logicalFolder="noval/python/project/pages"/>
+  <noval:file filePath="./noval/python/project/pages/debugrun.py" logicalFolder="noval/python/project/pages"/>
+  <noval:file filePath="./noval/ttkwidgets/messagedialog.py" logicalFolder="noval/ttkwidgets"/>
+  <noval:file filePath="./noval/boot_common.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/plugins/about.py" logicalFolder="noval/plugins"/>
+  <noval:file filePath="./noval/python/plugins/unittest.py" logicalFolder="noval/python/plugins"/>
+  <noval:file filePath="./noval/plugins/update.py" logicalFolder="noval/plugins"/>
+  <noval:file filePath="./noval/plugin.py" logicalFolder="noval"/>
   <noval:_properties>
     <noval:page name="Resource" item="root" objclass="noval.project.resource.ResourcePanel"/>
-    <noval:page name="Debug/Run" item="root" objclass="noval.python.project.debugrun.DebugRunPanel"/>
-    <noval:page name="PythonPath" item="root" objclass="noval.python.project.pythonpath.PythonPathPanel"/>
-    <noval:page name="Interpreter" item="root" objclass="noval.python.project.pythoninterpreter.PythonInterpreterPanel"/>
-    <noval:page name="Project References" item="root" objclass="noval.python.project.projectreferrence.ProjectReferrencePanel"/>
+    <noval:page name="Debug/Run" item="root" objclass="noval.python.project.pages.debugrun.DebugRunPanel"/>
+    <noval:page name="PythonPath" item="root" objclass="noval.python.project.pages.pythonpath.PythonPathPanel"/>
+    <noval:page name="Interpreter" item="root" objclass="noval.python.project.pages.pythoninterpreter.PythonInterpreterPanel"/>
+    <noval:page name="Project References" item="root" objclass="noval.python.project.pages.projectreferrence.ProjectReferrencePanel"/>
     <noval:page name="Resource" item="file" objclass="noval.project.resource.ResourcePanel"/>
-    <noval:page name="Debug/Run" item="file" objclass="noval.python.project.debugrun.DebugRunPanel"/>
+    <noval:page name="Debug/Run" item="file" objclass="noval.python.project.pages.debugrun.DebugRunPanel"/>
     <noval:page name="Resource" item="folder" objclass="noval.project.resource.ResourcePanel"/>
-    <noval:page name="Debug/Run" item="folder" objclass="noval.python.project.debugrun.DebugRunPanel"/>
+    <noval:page name="Debug/Run" item="folder" objclass="noval.python.project.pages.debugrun.DebugRunPanel"/>
   </noval:_properties>
   <noval:_runinfo>
     <noval:DocumentTemplate>noval.python.project.viewer.PythonProjectTemplate</noval:DocumentTemplate>

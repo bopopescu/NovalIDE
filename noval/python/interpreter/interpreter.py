@@ -15,10 +15,7 @@ import subprocess
 import locale
 import noval.util.apputils as apputils
 import noval.util.strutils as strutils
-try:
-    import __builtin__
-except ImportError:
-    import builtins as __builtin__
+import six.moves.builtins as builtins
 import threading
 from noval.util import utils
 import glob
@@ -100,7 +97,7 @@ class PythonEnvironment(object):
         '''
             python2迭代方法
         '''
-        return __builtin__.next(self.iter)
+        return builtins.next(self.iter)
         
     def GetCount(self):
         return len(self.environ)
@@ -137,7 +134,7 @@ class BuiltinPythonInterpreter(Executable):
         self._packages = {}
         self._help_path = ""
         #builtin module name which python2 is __builtin__ and python3 is builtins
-        self._builtin_module_name = "__builtin__"
+        self._builtin_module_name = builtins.__name__
         
     @property
     def IsBuiltIn(self):
@@ -206,8 +203,6 @@ class BuiltinPythonInterpreter(Executable):
         self._version = kwargs.get('version')
         if self._version == UNKNOWN_VERSION_NAME:
             return
-        if self.IsV3():
-            self._builtin_module_name = self.PYTHON3_BUILTIN_MODULE_NAME
         self._builtins = kwargs.get('builtins')
         self._sys_path_list = kwargs.get('sys_path_list')
         python_path_list = kwargs.get('python_path_list')
@@ -274,7 +269,6 @@ class PythonInterpreter(BuiltinPythonInterpreter):
     
     CONSOLE_EXECUTABLE_NAME = "python.exe"
     WINDOW_EXECUTABLE_NAME = "pythonw.exe"
-    PYTHON3_BUILTIN_MODULE_NAME = 'builtins'
     def __init__(self,name,executable_path,id=None,is_valid_interpreter = False):
         if apputils.is_windows():
             if os.path.basename(executable_path) == PythonInterpreter.WINDOW_EXECUTABLE_NAME:
@@ -309,8 +303,6 @@ class PythonInterpreter(BuiltinPythonInterpreter):
                 return
         self._version = output.replace(version_flag,"").strip()
         self._is_valid_interpreter = True
-        if self.IsV3():
-            self._builtin_module_name = self.PYTHON3_BUILTIN_MODULE_NAME
 
     def IsV27(self):
         versions = self.Version.split('.')
@@ -514,11 +506,6 @@ class PythonInterpreter(BuiltinPythonInterpreter):
     @property
     def IsLoadingPackage(self):
         return self._is_loading_package
-        
-    def SetInterpreter(self,**kwargs):
-        BuiltinPythonInterpreter.SetInterpreter(self,**kwargs)
-        #if self.IsV3():
-         #   self._builtin_module_name = self.PYTHON3_BUILTIN_MODULE_NAME
          
     def StopLoadingPackage(self):
         self._is_loading_package = False

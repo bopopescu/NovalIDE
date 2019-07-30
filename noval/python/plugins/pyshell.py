@@ -19,6 +19,10 @@ from noval.util import hiscache
 import re
 import noval.editor.text as texteditor
 import tkinter.font as tk_font
+import six.moves.builtins as builtins
+
+#执行解释器退出方法时,提示的信息
+EXIT_PROMPT_ERROR_MSG = 'Click on the close button to leave the application.'
 
 def execfile(filePath):
     with open(filePath,encoding="utf-8") as f:
@@ -822,12 +826,7 @@ class PythonInteractiveInterpreter(InteractiveInterpreter):
         self.stdout = stdout
         self.stderr = stderr
         if rawin:
-            try:
-                import __builtin__
-            except ImportError:
-                import builtins as __builtin__
-            __builtin__.raw_input = rawin
-            del __builtin__
+            builtins.raw_input = rawin
         if showInterpIntro:
             copyright = 'Type "help", "copyright", "credits" or "license"'
             copyright += ' for more information.'
@@ -874,12 +873,12 @@ class PythonInteractiveInterpreter(InteractiveInterpreter):
             more = self.more = self.runsource(source)
         return more
         
-    def runsource(self, source):
+    def runsource(self, source,filename="<input>", symbol="single"):
         """Compile and run source code in the interpreter."""
         stdin, stdout, stderr = sys.stdin, sys.stdout, sys.stderr
         sys.stdin, sys.stdout, sys.stderr = \
                    self.stdin, self.stdout, self.stderr
-        more = InteractiveInterpreter.runsource(self, source,"<editor selection>","exec")
+        more = InteractiveInterpreter.runsource(self, source,filename,symbol)
         # this was a cute idea, but didn't work...
         #more = self.runcode(compile(source,'',
         #               ('exec' if self.useExecMode else 'single')))
@@ -1081,6 +1080,8 @@ class PyShell(ttk.Frame):
 
         # 显示Python解释器信息.
         self.showIntro(introText)
+        #重写内建的解释器关闭,退出事件,不运行用户在解释器中执行退出,关闭方法
+        self.setBuiltinKeywords()
         self.text._insert_prompt()
         #python3没有execfile函数,自己实现一个
         if utils.is_py3():
@@ -1106,8 +1107,9 @@ class PyShell(ttk.Frame):
         return "break"
         
     def setBuiltinKeywords(self):
-        super(PyShell,self).setBuiltinKeywords()
-        os._exit = sys.exit = 'Click on the close button to leave the application.'
+        #重定向系统模块的退出方法到一个字符串
+        builtins.close = builtins.exit = builtins.quit = EXIT_PROMPT_ERROR_MSG
+        os._exit = sys.exit = EXIT_PROMPT_ERROR_MSG
         
     def push(self, command, silent = False):
         try:
@@ -1131,7 +1133,7 @@ class PyShell(ttk.Frame):
             self.write(str(x))
             self.run("")
             #sys.exit
-        except Exception as e:
+        except Exception as x:
             self.write(str(x))
             
     def run(self, command, prompt=True, verbose=True):
@@ -1149,9 +1151,9 @@ class PyShell(ttk.Frame):
         if verbose: self.write(command)
         self.push(command)
 
-    def runsource(self,source):
+    def runsource(self,source,filename="<editor selection>", symbol="exec"):
         self.write('\n')
-        self.interp.runsource(source.strip())
+        self.interp.runsource(source.strip(),filename,symbol)
         self.prompt()
             
     def prompt(self):

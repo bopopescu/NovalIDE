@@ -39,7 +39,7 @@ class DebugOutputctrl(CommonOutputctrl):
             return
         GetApp().GotoView(filename,lineNum,load_outline=False)
         #last activiate debug view
-        self.ActiveDebugView()
+        self.ActivateView()
 
 class DebugOutputView(CommononOutputview):
     def __init__(self, master,is_debug=False):

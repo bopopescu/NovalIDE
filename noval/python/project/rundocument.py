@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from noval import _
 from noval.project.document import ProjectDocument
 from noval.python.debugger.debugger import *
@@ -83,12 +84,15 @@ class PythonProjectDocument(ProjectDocument):
         python_interpreter_view.run(command)
         sys.argv = old_argv
         
-    def GetRunConfiguration(self):
+    def GetRunConfiguration(self,run_file=None):
         '''
             获取项目的当前运行配置,也就是默认启动文件的运行配置
         '''
-        pj_key = self.GetKey()
-        run_configuration_name = utils.profile_get(pj_key + "/RunConfigurationName","")
+        if run_file is None:
+            run_configuration_key = self.GetKey()
+        else:
+            run_configuration_key = self.GetFileKey(run_file)
+        run_configuration_name = utils.profile_get(run_configuration_key + "/RunConfigurationName","")
         return run_configuration_name
         
     def GetFileRunParameter(self,filetoRun=None,is_break_debug=False):

@@ -10,6 +10,7 @@
 # Licence:     GPL-3.0
 #-------------------------------------------------------------------------------
 from noval import GetApp,_
+import tkinter as tk
 import noval.ui_base as ui_base
 import noval.iface as iface
 import noval.plugin as plugin
@@ -18,6 +19,9 @@ import noval.imageutils as imageutils
 import noval.python.parser.config as parserconfig
 import noval.syntax.lang as lang
 import noval.util.utils as utils
+import noval.menu as tkmenu
+import noval.constants as constants
+import noval.python.pyeditor as pyeditor
 
 class PythonOutlineView(ui_base.OutlineView):
     
@@ -170,11 +174,35 @@ class PythonOutlineView(ui_base.OutlineView):
                     current = self.tree.insert(
                         parent, "end", text=display_name, values=(child.Line,child.Col,child.Type), image=self.mainfunction_image
                     )
+
+
+def OutlineSort(outline_sort_id):
+    sort_order = ui_base.OutlineView.SORT_BY_NONE
+    if outline_sort_id == constants.ID_SORT_BY_LINE:
+        sort_order = ui_base.OutlineView.SORT_BY_LINE
+    elif outline_sort_id == constants.ID_SORT_BY_TYPE:
+        sort_order = ui_base.OutlineView.SORT_BY_TYPE
+    elif outline_sort_id == constants.ID_SORT_BY_NAME:
+        sort_order = ui_base.OutlineView.SORT_BY_NAME
+    GetApp().MainFrame.GetOutlineView().Sort(sort_order)
     
 class PythonOutlineViewLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)
     def Load(self):
         GetApp().MainFrame.AddView(consts.OUTLINE_VIEW_NAME,PythonOutlineView, _("Outline"), "ne",image_file="python/outline/outline.ico")
+        view_menu = GetApp().Menubar.GetMenu(_("&View"))
+        outline_menu = tkmenu.PopupMenu()
+        self.outline_sort_var = tk.IntVar(value=utils.profile_get_int("OutlineSort", ui_base.OutlineView.SORT_BY_NONE))
+        view_menu.InsertMenuAfter(constants.ID_ZOOM,constants.ID_OUTLINE_SORT,_("Outline Sort"),outline_menu)
+
+        #设置Python文本视图在大纲中显示语法树
+        GetApp().MainFrame.GetOutlineView().AddViewTypeForBackgroundHandler(pyeditor.PythonView)
         
-
-
+        GetApp().AddMenuCommand(constants.ID_SORT_BY_NONE,outline_menu,_("Unsorted"),lambda:OutlineSort(constants.ID_SORT_BY_NONE),\
+                                default_command=True,default_tester=True,kind=consts.RADIO_MENU_ITEM_KIND,variable=self.outline_sort_var,value=ui_base.OutlineView.SORT_BY_NONE)
+        GetApp().AddMenuCommand(constants.ID_SORT_BY_LINE,outline_menu,_("Sort By Line"),lambda:OutlineSort(constants.ID_SORT_BY_LINE),\
+                                default_command=True,default_tester=True,kind=consts.RADIO_MENU_ITEM_KIND,variable=self.outline_sort_var,value=ui_base.OutlineView.SORT_BY_LINE)
+        GetApp().AddMenuCommand(constants.ID_SORT_BY_TYPE,outline_menu,_("Sort By Type"),lambda:OutlineSort(constants.ID_SORT_BY_TYPE),\
+                                default_command=True,default_tester=True,kind=consts.RADIO_MENU_ITEM_KIND,variable=self.outline_sort_var,value=ui_base.OutlineView.SORT_BY_TYPE)
+        GetApp().AddMenuCommand(constants.ID_SORT_BY_NAME,outline_menu,_("Sort By Name(A-Z)"),lambda:OutlineSort(constants.ID_SORT_BY_NAME),\
+                                default_command=True,default_tester=True,kind=consts.RADIO_MENU_ITEM_KIND,variable=self.outline_sort_var,value=ui_base.OutlineView.SORT_BY_NAME)

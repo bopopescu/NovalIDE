@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog,messagebox
@@ -97,7 +98,7 @@ class PythonpathMixin:
         '''
         if id == ID_GOTO_PATH:
             item = self.treeview.tree.selection()[0]
-            fileutils.open_file_directory(self.treeview.tree.item(item,"text"))
+            fileutils.safe_open_file_directory(self.treeview.tree.item(item,"text"))
             return True
         elif id == ID_REMOVE_PATH:
             self.RemovePath()
