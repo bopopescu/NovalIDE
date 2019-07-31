@@ -17,6 +17,8 @@ import noval.constants as constants
 from tkinter import font as tkfont
 import noval.consts as consts
 from noval.python.parser.utils import py_cmp,py_sorted
+from PIL import Image
+from PIL import ImageTk
 
 class ClosableNotebook(ttk.Notebook):
     def __init__(self, master, style="ButtonNotebook.TNotebook", **kw):
@@ -78,7 +80,7 @@ class ClosableNotebook(ttk.Notebook):
 
     def close_tab(self, index):
         '''
-            点击标签页关闭窗口事件,如何子类窗口实现了close方法,则调用子窗口关闭标签事件
+            点击标签页关闭窗口事件,如果子类窗口实现了close方法,则调用子窗口关闭标签事件
         '''
         child = self.get_child_by_index(index)
         if hasattr(child, "close"):
@@ -1042,7 +1044,7 @@ class SplashScreen(CommonDialog):
         self.wm_attributes('-topmost',1)
         self.img = ImageTk.PhotoImage(Image.open(image_path))
         self.geometry("{}x{}".format(self.img.width(), self.img.height()))
-        label = tk.Label(self, image=self.img,compound='center',bg="white")
+        label = tk.Label(self.main_frame, image=self.img,compound='center',bg="white")
         #label = tk.Label(self, image=self.img,compound='center')
         label.pack(fill="both")
 

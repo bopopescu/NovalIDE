@@ -77,7 +77,7 @@ class IDEApplication(core.App):
         if not core.App.OnInit(self):
             return False
 
-    #    self.ShowSplash(self.GetIDESplashBitmap())
+      #  self.ShowSplash(self.GetIDESplashBitmap())
         #尽量在这里导入模块
         from noval.editor import text as texteditor
         import noval.colorfont as colorfont
@@ -188,7 +188,7 @@ class IDEApplication(core.App):
         self.SetCurrentProject()
         ###self.ShowTipfOfDay()
 
-        
+        self.initializing = False
         #初始化拖拽对象以支持拖拽打开文件功能,由于在linux下面加载dll耗时较长
         #故使加载函数延迟执行
         self.after(500,self.InitTkDnd)

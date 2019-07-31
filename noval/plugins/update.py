@@ -49,6 +49,7 @@ class FileDownloader(object):
             self.DownloadFile(download_file_path,download_progress_dlg,callback=DownloadCallBack,err_callback=download_progress_dlg.destroy)
         except:
             return
+        download_progress_dlg.ShowModal()
 
     def DownloadFile(self,download_file_path,progress_ui,callback,err_callback=None):
         t = threading.Thread(target=self.DownloadFileContent,args=(download_file_path,self._req,progress_ui,callback,err_callback))

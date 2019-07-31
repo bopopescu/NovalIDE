@@ -131,6 +131,15 @@ cd NovalIDE-x.x.x
 ![CodeTip2](noval/bmp_source/images/banner_03.png)
 ![CodeTip3](noval/bmp_source/images/banner_04.png)
 
+- 切换UI主题
+![CleanDark](noval/bmp_source/images/CleanDark.png)
+![ClenDarkBlue](noval/bmp_source/images/ClenDarkBlue.png)
+![ClenDarkGreen](noval/bmp_source/images/ClenDarkGreen.png)
+
+- 切换语法主题
+![DefaultDark](noval/bmp_source/images/DefaultDark.png)
+![DessertSunset](noval/bmp_source/images/DessertSunset.png)
+
 - 解释器配置
 ![InterpreterManage](noval/bmp_source/images/banner_06.png)
 
@@ -144,7 +153,9 @@ cd NovalIDE-x.x.x
 ![UnitTest](noval/bmp_source/images/banner_08.png)
 
 - 新建工程
+![NewProjectWizard](noval/bmp_source/images/wizard.png)
 ![NewProject](noval/bmp_source/images/project.png)
+
 
 - 导入项目文件
 ![ImportFile](noval/bmp_source/images/importfile.png)

@@ -42,8 +42,6 @@ class PyIDEApplication(ide.IDEApplication):
     def OnInit(self):
         if not ide.IDEApplication.OnInit(self):
             return False
-        #关闭软件启动图片
-        self.CloseSplash()
         import noval.python.interpreter.gerneralconfiguration as interpretergerneralconfiguration
         import noval.python.interpreter.interpreterconfigruation as interpreterconfigruation
         
@@ -83,6 +81,8 @@ class PyIDEApplication(ide.IDEApplication):
         self.AddCommand(constants.ID_SET_PARAMETER_ENVIRONMENT,_("&Run"),_("&Set Parameter And Environment"),self.SetParameterEnvironment,default_tester=True,default_command=True,image=self.GetImage('python/debugger/runconfig.png'))
         self.AddCommand(constants.ID_RUN_LAST,_("&Run"),_("&Run Using Last Settings"),self.RunLast,default_tester=True,default_command=True)
         self.AddCommand(constants.ID_DEBUG_LAST,_("&Run"),_("&Debug Using Last Settings"),self.DebugLast,default_tester=True,default_command=True)     
+        #关闭软件启动图片
+        self.CloseSplash()
         return True
 
 
@@ -155,7 +155,7 @@ class PyIDEApplication(ide.IDEApplication):
         return self._open_project_path
         
     def GetIDESplashBitmap(self):
-        return os.path.join(utils.get_app_image_location(),"tt.png")
+        return os.path.join(utils.get_app_image_location(),"python/welcome.png")
         
     def AddInterpreters(self):
         names = interpretermanager.InterpreterManager().GetInterpreterNames()

@@ -1,7 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 block_cipher = None
-
+#注意运行C:\Users\Administrator\AppData\Local\Programs\Python\Python36-32\Scripts\pyinstaller.exe pyinstaller.novalide.python.debug.spec的时候不能在编辑器里面打开的终端中操作
+#必须在操作文件系统里面打开终端
 
 #程序数据文件列表,第一列表示源文件路径,第二列表示目的相对路径
 datas = [

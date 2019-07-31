@@ -90,6 +90,7 @@ class App(tk.Tk):
         self._clip_board = None
         #是否全屏显示
         self._is_full_screen = False
+        self.initializing = False
         #初始化历史文件菜单id列表,文件id的值必须是连续增长的
         InitMRUIds()
         self._BootstrapApp()
@@ -204,6 +205,7 @@ class App(tk.Tk):
         # if _singleInstance is TRUE only allow one single instance of app to run.
         # When user tries to run a second instance of the app, abort startup,
         # But if user also specifies files to open in command line, send message to running app to open those files
+        self.initializing = True
         if self._singleInstance:
             # create shared memory temporary file
             if apputils.is_windows():
@@ -350,10 +352,10 @@ class App(tk.Tk):
         """
         Shows a splash window with the given image.  Input parameter 'image' can either be a wx.Bitmap or a filename.
         """
-        self._splash = misc.SplashScreen(self,image_path)
-        self._splash.Show()
+        self._splash = ui_base.SplashScreen(self,image_path)
         #隐藏主窗口
         self.withdraw()
+        self._splash.Show()
 
     def CloseSplash(self):
         """
