@@ -1,9 +1,7 @@
 import sys
 import os
-#we should add script dir to sys path to find the relative module
-if not os.path.dirname(__file__) in sys.path:
-    sys.path.append(os.path.dirname(__file__))
-import nodeast,fileparser,config
+import nodeast
+import config
 
 class BuiltinModule(nodeast.BuiltinNode):
     

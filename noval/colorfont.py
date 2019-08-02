@@ -159,8 +159,8 @@ class ColorFontOptionsPanel(ui_utils.BaseConfigurationPanel):
         utils.profile_set(consts.SYNTAX_THEME_KEY,theme)
         utils.profile_set(consts.EDITOR_FONT_SIZE_KEY,self.sizeVar.get())
         utils.profile_set(consts.EDITOR_FONT_FAMILY_KEY,self.fontVal.get())
-        if self._saved_settings['syntax_theme'] != theme:
-            self.UpdateSyntaxTheme()
+        #更新文本视图的字体和主题颜色
+        self.UpdateCodetextView(theme)
         return True
         
     def GetLexerStyles(self,lexer):
@@ -185,7 +185,11 @@ class ColorFontOptionsPanel(ui_utils.BaseConfigurationPanel):
         self.code_sample_ctrl.UpdateSyntaxTheme()
         return True
 
-    def UpdateSyntaxTheme(self):
+    def UpdateCodetextView(self,theme):
         for editor in GetApp().MainFrame.GetNotebook().winfo_children():
             if isinstance(editor.GetView(),texteditor.TextView):
-                editor.GetView().GetCtrl().UpdateSyntaxTheme()
+                #更新语法主题
+                if self._saved_settings['syntax_theme'] != theme:
+                    editor.GetView().GetCtrl().UpdateSyntaxTheme()
+                #更新字体
+                editor.GetView().UpdateFont(self.sizeVar.get(),self.fontVal.get())

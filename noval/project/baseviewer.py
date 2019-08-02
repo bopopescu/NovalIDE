@@ -1233,11 +1233,11 @@ class ProjectView(misc.AlarmEventView):
 
     def OnAddFileToProject(self):
         project_template = self.GetDocumentManager().FindTemplateForTestPath(consts.PROJECT_EXTENSION)
+        #注意这里最好不要设置initialdir,会自动选择上一次打开的目录
         descrs = strutils.gen_file_filters(project_template.GetDocumentType())
         paths = filedialog.askopenfilename(
                 master=self._prject_browser,
                 filetypes=descrs,
-                initialdir=os.getcwd(),
                 multiple=True
         )
         if not paths:

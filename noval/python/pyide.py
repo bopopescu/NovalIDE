@@ -14,12 +14,12 @@ from tkinter import messagebox
 import noval.ide as ide
 import noval.util.apputils as apputils
 import noval.python.interpreter.interpretermanager as interpretermanager
-import noval.python.parser.intellisence as intellisence
 from noval.util import strutils
 from noval.util import utils
 import noval.constants as constants
 import noval.model as model
 import os
+import sys
 import noval.python.project.viewer as projectviewer
 import noval.python.project.rundocument as runprojectdocument
 from noval.syntax import synglob
@@ -44,6 +44,7 @@ class PyIDEApplication(ide.IDEApplication):
             return False
         import noval.python.interpreter.gerneralconfiguration as interpretergerneralconfiguration
         import noval.python.interpreter.interpreterconfigruation as interpreterconfigruation
+        import noval.python.parser.intellisence as intellisence
         
         #pyc和pyo二进制文件类型禁止添加到项目中
         ProjectDocument.BIN_FILE_EXTS = ProjectDocument.BIN_FILE_EXTS + ['pyc','pyo']
@@ -138,6 +139,9 @@ class PyIDEApplication(ide.IDEApplication):
         return projectviewer.PythonProjectTemplate,runprojectdocument.PythonProjectDocument,projectviewer.PythonProjectView
         
     def CreateLexerTemplates(self):
+        #添加parser路径,导入模块时用相对路径即可.
+        parser_path = os.path.join(utils.get_app_path(),"noval","python","parser")
+        sys.path.append(parser_path)
         ide.IDEApplication.CreateLexerTemplates(self)
         synglob.LexerFactory().CreateLexerTemplates(self.GetDocumentManager(),model.LANGUAGE_PYTHON)
         

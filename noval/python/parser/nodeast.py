@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import config
 import sys
 import os
@@ -240,6 +241,7 @@ class PropertyDef(AssignDef):
             super(PropertyDef,self).__init__(name,line,col,value,value_type,parent,doc,\
                                 config.NODE_OBJECT_PROPERTY,is_built_in)
         ###self property is the child of method and method's class
+        #如果是类方法属性,则除了属于当前方法的子节点以外,还是属于包含方法的类的子节点
         if self.Parent.Type == config.NODE_FUNCDEF_TYPE and self.Parent.IsMethod:
             self.Parent.Parent.AppendChild(self)
 

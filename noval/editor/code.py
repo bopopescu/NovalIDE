@@ -22,6 +22,7 @@ import noval.util.appdirs as appdirs
 import noval.util.utils as utils
 import noval.syntax.syntax as syntax
 import noval.constants as constants
+from noval.syntax.syndata import BaseSyntaxcolorer
 
 class CodeDocument(texteditor.TextDocument):
     def OnOpenDocument(self, filename):
@@ -109,12 +110,14 @@ class CodeView(texteditor.TextView):
 
     def GetAutoCompleteDefaultKeywords(self):
         """ Replace this method with Editor specific keywords """
-        return ['Put', 'Editor Specific', 'Keywords', 'Here']
-
+        lexer = self.GetCtrl().GetLangLexer()
+        return lexer.GetKeywords()
 
     def GetAutoCompleteKeywordList(self, context, hint,line):            
         """ Replace this method with Editor specific keywords """
         kw = self.GetAutoCompleteDefaultKeywords()
+        if not kw:
+            return
         
         if hint and len(hint):
             lowerHint = hint.lower()
@@ -392,6 +395,8 @@ class CodeCtrl(texteditor.SyntaxTextCtrl):
             else:
                 self.tag_configure(tag_name, **syntax_options[tag_name])
 
+        self.tag_configure(list(BaseSyntaxcolorer.BASE_TAGDEFS)[0], {'background':None,'foreground':None})
+        self.tag_configure(list(BaseSyntaxcolorer.BASE_TAGDEFS)[1],{'background':None,'foreground':None})
         self.SetOtherOptions(syntax_options)
         
     def GetColorClass(self):

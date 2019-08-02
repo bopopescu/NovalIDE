@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from noval import GetApp,_
+import tkinter as tk
 from tkinter import messagebox
 import sys
 import os
@@ -172,3 +173,26 @@ class SelectModuleFileDialog(ui_base.CommonModaldialog):
     def IsFileFiltered(self,file_path):
         file_ext = strutils.get_file_extension(file_path)
         return file_ext in self.filters
+
+
+class DefinitionsDialog(ui_base.CommonModaldialog):
+
+    def __init__(self,parent,current_view,definitions):
+        ui_base.CommonModaldialog.__init__(self,parent,width=400)
+        self.title(_('Multiple Definitions'))
+
+        v = tk.StringVar()
+        strings = self.GetStrings(definitions)
+        self.listbox = tk.Listbox(self.main_frame,listvariable=v,height=max(len(strings),5))
+        self.listbox.bind('<Double-Button-1>',self._ok)
+        v.set(tuple(strings))
+        self.listbox.selection_set(0)
+        self.listbox.pack(expand=1, fill="both",padx=consts.DEFAUT_CONTRL_PAD_X)
+        self.AddokcancelButton()
+
+    def GetStrings(self,definitions):
+        lines = []
+        for definition in definitions:
+            line = "%s:Position %d,%d %s" % (definition.Root.Module.Path,definition.Node.Line,definition.Node.Col,"")
+            lines.append(line)
+        return lines

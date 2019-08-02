@@ -1,27 +1,31 @@
+from noval import GetApp,_
 import tkinter as tk
 from tkinter import messagebox
-
-from thonny import get_runner, get_workbench
-from thonny.codeview import CodeViewText
-from thonny.common import InlineCommand
-from thonny.shell import ShellText
-
+import noval.iface as iface
+import noval.plugin as plugin
+import noval.editor.code as codeeditor
+import noval.constants as constants
+import noval.ttkwidgets.listboxframe as listboxframe
+import noval.ui_utils as ut_utils
 
 # TODO: adjust the window position in cases where it's too close to bottom or right edge - but make sure the current line is shown
 """Completions get computed on the backend, therefore getting the completions is
 asynchronous.
 """
+#self.listview = listboxframe.ListboxFrame(self,listbox_class=ut_utils.ThemedListbox)
 
-
-class Completer(tk.Listbox):
+class Completer(listboxframe.ListboxFrame):
     def __init__(self, text):
-        tk.Listbox.__init__(
+        listboxframe.ListboxFrame.__init__(
             self,
             master=text,
+            listbox_class=ut_utils.ThemedListbox,
             font="SmallEditorFont",
             activestyle="dotbox",
             exportselection=False,
         )
+        self.listbox.focus_set()
+        self.listbox.configure(cursor="arrow")
 
         self.text = text
         self.completions = []
@@ -46,7 +50,7 @@ class Completer(tk.Listbox):
         self.bind("<Escape>", self._close)
         self.bind("<Return>", self._insert_current_selection)
         self.bind("<Double-Button-1>", self._insert_current_selection)
-        self._bind_result_event()
+      #  self._bind_result_event()
 
     def _bind_result_event(self):
         # TODO: remove binding when editor gets closed
@@ -82,17 +86,6 @@ class Completer(tk.Listbox):
 
     def _present_completions(self, completions):
         self.completions = completions
-
-        # broadcast logging info
-        row, column = self._get_position()
-        get_workbench().event_generate(
-            "AutocompleteProposal",
-            text_widget=self.text,
-            row=row,
-            column=column,
-            proposal_count=len(completions),
-        )
-
         # present
         if len(completions) == 0:
             self._close()
@@ -103,20 +96,17 @@ class Completer(tk.Listbox):
             self._show_box(completions)
 
     def _show_box(self, completions):
-        self.delete(0, self.size())
-        self.insert(0, *[c["name"] + ("=" if c["complete"].endswith("=") else "") 
-                         for c in completions])
-        self.activate(0)
-        self.selection_set(0)
+        self.listbox.delete(0, self.listbox.size())
+        self.listbox.insert(0, *completions)
+        self.listbox.activate(0)
+        self.listbox.selection_set(0)
 
         # place box
         if not self._is_visible():
 
             # _, _, _, list_box_height = self.bbox(0)
             height = 100  # min(150, list_box_height * len(completions) * 1.15)
-            typed_name_length = len(completions[0]["name"]) - len(
-                completions[0]["complete"]
-            )
+            typed_name_length = 0
             text_box_x, text_box_y, _, text_box_height = self.text.bbox(
                 "insert-%dc" % typed_name_length
             )
@@ -138,6 +128,7 @@ class Completer(tk.Listbox):
             self._update_doc()
 
     def _update_doc(self):
+        return
         c = self._get_selected_completion()
 
         if c is None:
@@ -194,19 +185,19 @@ class Completer(tk.Listbox):
             return None
 
     def _move_selection(self, delta):
-        selected = self.curselection()
+        selected = self.listbox.curselection()
         if len(selected) == 0:
             index = 0
         else:
             index = selected[0]
 
         index += delta
-        index = max(0, min(self.size() - 1, index))
+        index = max(0, min(self.listbox.size() - 1, index))
 
-        self.selection_clear(0, self.size() - 1)
-        self.selection_set(index)
-        self.activate(index)
-        self.see(index)
+        self.listbox.selection_clear(0, self.listbox.size() - 1)
+        self.listbox.selection_set(index)
+        self.listbox.activate(index)
+        self.listbox.see(index)
         self._update_doc()
 
     def _get_request_id(self):
@@ -284,7 +275,7 @@ class ShellCompleter(Completer):
 
 def handle_autocomplete_request(event=None):
     if event is None:
-        text = get_workbench().focus_get()
+        text = GetApp().focus_get()
     else:
         text = event.widget
 
@@ -293,16 +284,18 @@ def handle_autocomplete_request(event=None):
 
 def _handle_autocomplete_request_for_text(text):
     if not hasattr(text, "autocompleter"):
-        if isinstance(text, (CodeViewText, ShellText)):
-            if isinstance(text, CodeViewText):
-                text.autocompleter = Completer(text)
-            elif isinstance(text, ShellText):
-                text.autocompleter = ShellCompleter(text)
+        if isinstance(text, codeeditor.CodeCtrl):
+            text.autocompleter = Completer(text)
+            #单击文本框时,关闭智能提示
             text.bind("<1>", text.autocompleter.on_text_click)
         else:
             return
 
-    text.autocompleter.handle_autocomplete_request()
+    current_view = GetApp().GetDocumentManager().GetCurrentView()
+    completions = current_view.GetAutoCompleteDefaultKeywords()
+    print (completions)
+    text.autocompleter._present_completions(completions)
+    #text.autocompleter.handle_autocomplete_request()
 
 
 def patched_perform_midline_tab(text, event):
@@ -337,3 +330,12 @@ def load_plugin() -> None:
 
     CodeViewText.perform_midline_tab = patched_perform_midline_tab  # type: ignore
     ShellText.perform_midline_tab = patched_perform_midline_tab  # type: ignore
+
+
+class Autocomplete(plugin.Plugin):
+    plugin.Implements(iface.MainWindowI)
+    def PlugIt(self, parent):
+        # Add Menu
+        menuBar = GetApp().Menubar
+        edit_menu = menuBar.GetEditMenu()
+        edit_menu.Append(constants.ID_WORD_LIST,_("Completion Word List"), ("List All Completion Word of suggestions"),handler=handle_autocomplete_request)

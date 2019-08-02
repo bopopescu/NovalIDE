@@ -37,22 +37,24 @@ NovalIDE是一款开源，跨平台，而且免费的国产多功能，轻便的
 ### 源码依赖包
 
 - Python2.7.11 [Windows下载地址](https://www.python.org/ftp/python/2.7.11/python-2.7.11.msi)
-- wxPython(3.0.2) [Windows下载地址](https://jaist.dl.sourceforge.net/project/wxpython/wxPython/3.0.2.0/wxPython3.0-win32-3.0.2.0-py27.exe)
+- Python3.6.4 [Windows下载地址](https://www.python.org/ftp/python/3.6.4/python-3.6.4.exe)
+- tkinter(8.5.5以上)
 - pywin32(only windows) [Windows下载地址](https://github.com/mhammond/pywin32/releases/download/b223/pywin32-223.win32-py2.7.exe)
-- py2exe(only windows) [Windows下载地址](https://jaist.dl.sourceforge.net/project/py2exe/py2exe/0.6.9/py2exe-0.6.9.win64-py2.7.amd64.exe)
+- pyinstaller
 - wmi(only windows)
 - psutil
 - watchdog
 - chardet
 - pyperclip
 - requests
+- pillow
 
 ### Windows编译
 
 - **源码运行**
 
 ```
-下载Python2.7，以及wxPython3.0.2，pywin32，py2exe安装包，下载地址见上。
+下载Python2.7或者python3.6，以及pywin32，pyinstaller安装包，下载地址见上。
 git clone https://gitee.com/wekay/NovalIDE.git
 cd NovalIDE
 
@@ -108,11 +110,12 @@ cd Noval
 
 - **Ubuntu**
 
-sudo apt-get install python-wxtools
+sudo apt-get install python-tk(python2)
+sudo apt-get install python3-tk(python3)
 
 - **Centos**
 
-sudo yum install wxPython-devel
+sudo yum install tkinter
 
 - **安装步骤**
 

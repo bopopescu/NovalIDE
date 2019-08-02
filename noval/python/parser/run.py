@@ -1,4 +1,4 @@
-###from __future__ import print_function
+from __future__ import print_function
 import sys
 import os
 import pickle
@@ -134,44 +134,10 @@ def get_python_version():
         else:
             print (sys.version_info.releaselevel)
     return version
-           
-def generate_intelligent_data(root_path,new_database_version):
-    version = get_python_version()
-    dest_path = os.path.join(root_path,version)
-    utils.MakeDirs(dest_path)
-    need_renew_database = NeedRenewDatabase(dest_path,new_database_version)
-    sys_path_list = sys.path
-    for i,path in enumerate(sys_path_list):
-        sys_path_list[i] = os.path.abspath(path)
-    for path in sys_path_list:
-        print ('start parse path data',path)
-        scan_sys_path(path,dest_path,need_renew_database)
-    process_sys_modules(dest_path)
-    if need_renew_database:
-        SaveDatabaseVersion(dest_path,new_database_version)
-
-def quick_generate_intelligent_data(root_path):
-    version = str(sys.version_info.major) + "." +  str(sys.version_info.minor) + "."  + str(sys.version_info.micro)
-    dest_path = os.path.join(root_path,version)
-    utils.MakeDirs(dest_path)
-    sys_path_list = sys.path
-    for i,path in enumerate(sys_path_list):
-        sys_path_list[i] = os.path.abspath(path)
-    with futures.ThreadPoolExecutor(max_workers=len(sys_path_list)) as controller:
-        future_list = []
-        for path in sys_path_list:
-            print ('start parse path data',path)
-            scan_path_handler = functools.partial(scan_sys_path,path,dest_path)
-            scan_path_future = controller.submit(scan_path_handler)
-            future_list.append(scan_path_future)
-  #      results = futures.wait(future_list,return_when=futures.FIRST_EXCEPTION)
-   #     finished, unfinished = results
-    #    for future in finished:
-     #       future.result()
      
-def generate_intelligent_data_by_pool(root_path,new_database_version):
+def generate_intelligent_data_by_pool(out_path,new_database_version):
     version = get_python_version()
-    dest_path = os.path.join(root_path,version)
+    dest_path = os.path.join(out_path,version)
     utils.MakeDirs(dest_path)
     need_renew_database = NeedRenewDatabase(dest_path,new_database_version)
     sys_path_list = sys.path
@@ -214,17 +180,8 @@ def scan_sys_path(src_path,dest_path,need_renew_database):
             ext = os.path.splitext(fullpath)[1].lower()
             if not ext in ['.py','.pyw']:
                 continue
-            top_module_name,is_package = utils.get_relative_name(fullpath)
-            if top_module_name == "":
-                continue
-            module_members_file = os.path.join(dest_path,top_module_name+ ".$members")
-            if os.path.exists(module_members_file) and not need_renew_database:
-             ###   print fullpath,'has been already analyzed'
-                continue
-            #print get_data_name(fullpath)
-           # with open("filelist.txt","a") as f:
-            #    print (fullpath,file=f)
-            fileparser.dump(fullpath,top_module_name,dest_path,is_package)
+            file_parser = fileparser.FiledumpParser(fullpath,dest_path,force_update=need_renew_database)
+            file_parser.Dump()
            
 def is_test_dir(dir_path):
     dir_name = os.path.basename(dir_path)
@@ -245,16 +202,15 @@ def process_sys_modules(dest_path):
         fullpath = sys.modules[name].__file__.rstrip("c")
         if not fullpath.endswith(".py"):
             continue
-        fileparser.dump(fullpath,name,dest_path,False)
+
+        file_parser = fileparser.FiledumpParser(fullpath,dest_path)
+        file_parser.Dump()
     
 if __name__ == "__main__":
     start_time = time.time()
-    root_path = sys.argv[1]
+    out_path = sys.argv[1]
     new_database_version = sys.argv[2]
-    ##generate_builtin_data('./')
-    ##generate_intelligent_data(root_path,new_database_version)
-    ###quick_generate_intelligent_data("interlicense")
-    generate_intelligent_data_by_pool(root_path,new_database_version)
+    generate_intelligent_data_by_pool(out_path,new_database_version)
     end_time = time.time()
     elapse = end_time - start_time
     print ('elapse time:',elapse,'s')

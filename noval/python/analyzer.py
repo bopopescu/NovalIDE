@@ -30,12 +30,14 @@ class PythonModuleAnalyzer(object):
         #when close window,the flag is set to true
         self._is_analyzing_stoped = False
         self._module_scope = None
+        self._code_parser = codeparser.CodeParser()
 
     def LoadModule(self,filename):
         self._status = self.STATUS_PARSING_SYNTAX
-        self._code_parser = codeparser.CodeParser(filename,GetApp().GetDebug())
-        module = self._code_parser.ParseContent(self._mod_view.GetValue(),self._mod_view.GetDocument().file_encoding)
-        if module is None:
+        try:
+            module = self._code_parser.ParsefileContent(self._mod_view.GetDocument().GetFilename(),self._mod_view.GetValue(),self._mod_view.GetDocument().file_encoding)
+        except Exception as e:
+            self._syntax_error_msg = str(e)
             self.FinishAnalyzing()
             return
         module_scope = scope.ModuleScope(module,self._mod_view.GetCtrl().GetLineCount())
@@ -84,7 +86,7 @@ class PythonModuleAnalyzer(object):
         
     @property
     def SyntaxError(self):
-        return self._code_parser.SyntaxError
+        return self._syntax_error_msg
         
     @ModuleScope.setter
     def ModuleScope(self,module_scope):

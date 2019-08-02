@@ -266,3 +266,17 @@ def GetClassFromDynamicImportModule(full_class_path):
     module_obj = __import__(full_module_path,globals(), globals(), fromlist=['__name__'])
     class_obj = getattr(module_obj,class_name)
     return class_obj
+
+
+def compute_run_time(func):
+    '''
+        统计函数执行时间的装饰函数
+    '''
+    def wrapped_func(*args,**kwargs):
+        start = time.clock()
+        func(*args,**kwargs)
+        end = time.clock()
+        elapse = end - start
+        get_logger().debug("%s elapse %.3f seconds" % (func.__name__,end-start))
+
+    return wrapped_func

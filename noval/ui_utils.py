@@ -15,10 +15,15 @@ import noval.constants as constants
 
 class FileHistory(hiscache.CycleCache):
     '''
-        历史文件列表是一个循环列表,新文件会覆盖最后一个文件
+        历史文件列表是一个循环列表,如果超过限制文件个数,会删除最后一个文件
+,新添加文件放在头部
     '''
     
     def __init__(self, maxFiles, idBase):
+        '''
+            maxFiles表示最大允许的历史文件列表个数,从注册表或配置文件中读取
+        '''
+        #hiscache.CycleCache.TRIM_LAST表示超过限制文件个数后,删除最后一个文件
         hiscache.CycleCache.__init__(self,size=maxFiles,trim=hiscache.CycleCache.TRIM_LAST,add=hiscache.CycleCache.ADD_FIRST)
         self._menu = None
         self._id_base = idBase
@@ -57,8 +62,8 @@ class FileHistory(hiscache.CycleCache):
             
     def PutPath(self,path):
         if self.GetCurrentSize() >= self._size:
-            utils.get_logger().debug('history file list size %d is greater then max list size %d',self.GetCurrentSize(),self._size)
-            return
+            utils.get_logger().debug('history file list size %d is greater then max list size %d,will trim the last file item',self.GetCurrentSize(),self._size)
+        #这里超过文件限制,会删除最后一个文件
         self.PutItem(path)
 
     def Save(self,config):
@@ -72,12 +77,20 @@ class FileHistory(hiscache.CycleCache):
         self._menu = menu
         
     def AddFilesToMenu(self):
+        if 0 == len(self._list):
+            return
         assert(self._menu is not None)
         assert(len(self._list) <= self._size)
-        if len(self._list) > 0:
-            self._menu.add_separator()
+        self._menu.add_separator()
+        #以第一个文件(一般为新添加的文件)作为参考目录
+        ref_dir = os.path.dirname(self._list[0])
         for i,item in enumerate(self._list):
-            label = "%d %s" % (i+1,item)
+            #如果历史文件目录为参考目录,则显示短文件名
+            if os.path.dirname(item) == ref_dir:
+                label = "%d %s" % (i+1,os.path.basename(item))
+            #否则显示长文件名
+            else:
+                label = "%d %s" % (i+1,item)
             def load(n=i):
                 self.OpenFile(n)
             GetApp().AddCommand(self._id_base+i,_("&File"),label,handler=load)

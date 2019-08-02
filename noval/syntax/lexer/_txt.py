@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:        _txt.py
 # Purpose:
@@ -17,6 +18,16 @@ from noval.editor import text as texteditor
 import noval.imageutils as imageutils
 
 #------------------------------------------------------------------------------#
+
+class SyntaxColorer(syndata.BaseSyntaxcolorer):
+    def __init__(self, text):
+        syndata.BaseSyntaxcolorer.__init__(self,text)
+
+    def schedule_update(self, event, use_coloring=True):
+        '''
+            文本文件不需要语法着色,故这里方法体为空
+        '''
+        self.allow_colorizing = use_coloring
 
 class SyntaxLexer(syndata.BaseLexer):
     """SyntaxData object for many C like languages""" 
@@ -58,5 +69,5 @@ class SyntaxLexer(syndata.BaseLexer):
         return self.GetSampleCodeFromFile(sample_file_path)
         
     def GetColorClass(self):
-        return syndata.BaseSyntaxcolorer
+        return SyntaxColorer
 

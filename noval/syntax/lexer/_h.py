@@ -12,7 +12,7 @@
 
 #-----------------------------------------------------------------------------#
 from noval import _
-from noval.syntax import syndata,lang,matches_any
+from noval.syntax import syndata,lang
 import noval.util.appdirs as appdirs
 import os
 import noval.editor.code as codeeditor

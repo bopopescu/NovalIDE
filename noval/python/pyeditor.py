@@ -36,6 +36,7 @@ import noval.python.project.viewer as projectviewer
 import noval.python.project.runconfig as runconfig
 import noval.ui_utils as ui_utils
 from noval.python.project.rundocument import *
+import noval.python.pyutils as pyutils
 
 class PythonDocument(codeeditor.CodeDocument): 
 
@@ -411,7 +412,7 @@ class PythonCtrl(codeeditor.CodeCtrl):
     
     def RunScript(self):
         view = GetApp().GetDocumentManager().GetCurrentView()
-        GetApp().GetDebugger().Run(view.GetDocument().GetFilename())
+        GetApp().GetDebugger().Runfile(view.GetDocument().GetFilename())
 
     def GetFontAndColorFromConfig(self):
         return CodeEditor.CodeCtrl.GetFontAndColorFromConfig(self, configPrefix = "Python")
@@ -734,27 +735,31 @@ class PythonCtrl(codeeditor.CodeCtrl):
         text = self.GetTypeWord(line,col)
         open_new_doc = False
         module_scope = GetApp().GetDocumentManager().GetCurrentView().ModuleScope
-        if module_scope is None:
-            scope_found = None
-        else:
+        definitions = []
+        if module_scope is not None:
             scope = module_scope.FindScope(line)
-            scope_found = scope.FindDefinitionMember(text)
-        if scope_found is None:
+            definitions = scope.GetDefinitions(text)
+        if not definitions:
             NotFoundDefinition(text)
         else:
-            if scope_found.Parent is None:
-                GetApp().GotoView(scope_found.Module.Path,0)
-            else:
-                open_new_doc = (scope_found.Root != scope.Root)
-                if not open_new_doc:
-                    doc_view = GetApp().GetDocumentManager().GetCurrentView()
-                    doc_view.GotoPos(scope_found.Node.Line , scope_found.Node.Col)
+            if len(definitions) == 1:
+                definition = definitions[0]
+                if definition.Parent is None:
+                    GetApp().GotoView(definition.Module.Path,0)
                 else:
-                    #找到python内建函数,无法定位到行
-                    if -1 == scope_found.Node.Line:
-                        NotFoundDefinition(text)
-                        return
-                    GetApp().GotoView(scope_found.Root.Module.Path,scope_found.Node.Line,scope_found.Node.Col)
+                    open_new_doc = (definition.Root != scope.Root)
+                    if not open_new_doc:
+                        doc_view = GetApp().GetDocumentManager().GetCurrentView()
+                        doc_view.GotoPos(definition.Node.Line , definition.Node.Col)
+                    else:
+                        #找到python内建函数,无法定位到行
+                        if -1 == definition.Node.Line:
+                            NotFoundDefinition(text)
+                            return
+                        GetApp().GotoView(definition.Root.Module.Path,definition.Node.Line,definition.Node.Col)
+            else:
+                dlg = pyutils.DefinitionsDialog(GetApp().GetTopWindow(),GetApp().GetDocumentManager().GetCurrentView(),definitions)
+                dlg.ShowModal()
 
     def GetTypeWord(self,line,col):
         line,word_col = self.get_line_col(self.index("insert wordstart"))

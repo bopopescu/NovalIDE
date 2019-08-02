@@ -192,8 +192,10 @@ class IDEApplication(core.App):
         #初始化拖拽对象以支持拖拽打开文件功能,由于在linux下面加载dll耗时较长
         #故使加载函数延迟执行
         self.after(500,self.InitTkDnd)
+        #插入,删除文本时触发事件
         self.bind("TextInsert", self.EventTextChange, True)
         self.bind("TextDelete", self.EventTextChange, True)
+        #文本字体与颜色,以及高亮语法设置更改时触发该事件
         self.bind("<<UpdateAppearance>>", self.EventTextChange, True)
         self.bind("<FocusIn>", self._on_focus_in, True)
         return True
@@ -748,6 +750,7 @@ class IDEApplication(core.App):
         docposition.DocMgr.WriteBook()
         core.App.Quit(self)
 
+    @misc.update_toolbar
     def OpenMRUFile(self, n):
         """
         Opens the appropriate file when it is selected from the file history

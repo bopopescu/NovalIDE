@@ -57,41 +57,67 @@ def fix_refs(module_dir,refs):
         ref_module_name = fix_ref_module_name(module_dir,ref['module'])
         ref['module'] = ref_module_name
 
-def dump(module_path,output_name,dest_path,is_package):
-    doc = None
-    if utils.IsPython3():
-        f = open(module_path,encoding="utf-8")
+def make_module_dict(name,path,is_builtin,childs,doc,refs=[]):
+    if is_builtin:
+        module_data = dict(name=name,is_builtin=True,doc=doc,childs=childs,type=config.NODE_MODULE_TYPE)
     else:
-        f = open(module_path)
-    with f:
-        content = f.read()
-        try:
-            node = ast.parse(content,module_path)
-            doc = codeparser.get_node_doc(node)
-            childs,refs = walk(node)
-        except Exception as e:
-            print(e)
+        module_data = dict(name=name,path=path,childs=childs,doc=doc,refs=refs,type=config.NODE_MODULE_TYPE)
+    return module_data
+
+class FiledumpParser(codeparser.CodebaseParser):
+
+    def __init__(self,module_path,output_path,force_update=False):
+        codeparser.CodebaseParser.__init__(self,deep=False)
+        self.top_module_name,self.is_package = utils.get_relative_name(module_path)
+        self.output = output_path
+        self.force_update = force_update
+        self.module_path = module_path
+
+    def ParsefileContent(self,filepath,content,encoding=None):
+        node = codeparser.CodebaseParser.ParsefileContent(self,filepath,content,encoding)
+        doc = self.get_node_doc(node)
+        module_d = make_module_dict(os.path.basename(filepath).split('.')[0],filepath,False,[],doc)
+        self.WalkBody(node.body,module_d)
+        return module_d
+
+    def AddNodeData(self,name,lineno,col,node_type,parent,**kwargs):
+        if node_type in [config.NODE_CLASS_PROPERTY,config.NODE_FUNCDEF_TYPE,config.NODE_ARG_TYPE,config.NODE_CLASSDEF_TYPE,config.NODE_FROMIMPORT_TYPE,config.NODE_ASSIGN_TYPE]:
+            data = dict(name=name,line=lineno,col=col,type=node_type,**kwargs)
+            #fromimport不能作为儿子
+            if parent is None or node_type == config.NODE_FROMIMPORT_TYPE:
+                return data
+            if 'childs' in parent:
+                parent['childs'].append(data)
+            else:
+                parent['childs'] = [data]
+            return data
+
+    def GetParentType(self,parent):
+        return parent['type']
+
+    def Dump(self):
+        if self.top_module_name == "":
             return
-        module_name = os.path.basename(module_path).split(".")[0]
-        if is_package:
-            module_childs = get_package_childs(module_path)
-            childs.extend(module_childs)
-        else:
-            for module_key in sys.modules.keys():
-                starts_with_module_name = output_name + "."
-                if module_key.startswith(starts_with_module_name):
-                    module_instance = sys.modules[module_key]
-                    d = dict(name=module_key.replace(starts_with_module_name,""),full_name=module_instance.__name__,\
-                            path=module_instance.__file__.rstrip("c"),type=config.NODE_MODULE_TYPE)
-                    childs.append(d)
-                    break
-                    
-        module_dict = make_module_dict(module_name,module_path,False,childs,doc,refs)
-        fix_refs(os.path.dirname(module_path),refs)
-        dest_file_name = os.path.join(dest_path,output_name )
-        with open(dest_file_name + ".$members", 'wb') as o1:
+        dest_file_name = os.path.join(self.output,self.top_module_name)
+        self.member_file_path = dest_file_name + ".$members"
+        if os.path.exists(self.member_file_path) and not self.force_update:
+            #print (self.module_path,'has been already analyzed')
+            return
+
+        doc = None
+        try:
+            module_d = self.Parsefile(self.module_path)
+        except:
+            print ('parse file %s error' %self.module_path)
+            return
+        #如果是包,则将文件夹下的所有python模块作为其儿子
+        if self.is_package:
+            module_childs = get_package_childs(self.module_path)
+            module_d['childs'].extend(module_childs)
+        with open(self.member_file_path, 'wb') as o1:
             # Pickle dictionary using protocol 0.
-            pickle.dump(module_dict, o1,protocol=0)
+            pickle.dump(module_d, o1,protocol=0)
+        childs = module_d['childs']
         with open(dest_file_name + ".$memberlist", 'w') as o2:
             name_sets = set()
             for data in childs:
@@ -101,154 +127,8 @@ def dump(module_path,output_name,dest_path,is_package):
                 o2.write(name)
                 o2.write('\n')
                 name_sets.add(name)
-            for ref in refs:
-                for name in ref['names']:
-                    o2.write( ref['module'] + "/" + name['name'])
-                    o2.write('\n')
-
-def make_module_dict(name,path,is_builtin,childs,doc,refs=[]):
-    if is_builtin:
-        module_data = dict(name=name,is_builtin=True,doc=doc,childs=childs)
-    else:
-          module_data = dict(name=name,path=path,childs=childs,doc=doc,refs=refs)
-    return module_data
-
-def walk_method_element(node):
-    childs = []
-    for element in node.body:
-        if isinstance(element,ast.Assign):
-            targets = element.targets
-            line_no = element.lineno
-            col = element.col_offset
-            for target in targets:
-                if type(target) == ast.Attribute:
-                    if type(target.value) == ast.Name and target.value.id == "self":
-                        name = target.attr
-                        data = dict(name=name,line=line_no,col=col,type=config.NODE_OBJECT_PROPERTY)
-                        childs.append(data)
-    return childs
-
-def make_element_data(element,parent,childs,refs):
-    if isinstance(element,ast.FunctionDef):
-        def_name = element.name
-        line_no = element.lineno
-        col = element.col_offset
-        args = []
-        is_class_method = False
-        for deco in element.decorator_list:
-            line_no += 1
-            if type(deco) == ast.Name:
-                if deco.id == codeparser.CLASS_METHOD_NAME or deco.id == codeparser.STATIC_METHOD_NAME:
-                    is_class_method = True
-                    break
-        is_method = False
-        default_arg_num = len(element.args.defaults)
-        arg_num = len(element.args.args)
-        for i,arg in enumerate(element.args.args):
-            is_default = False
-            #the last serveral argments are default arg if default argment number is not 0
-            if i >= arg_num - default_arg_num:
-                is_default = True
-            if utils.IsPython2():
-                if type(arg) == ast.Name:
-                    if arg.id == 'self':
-                        is_method = True
-                    arg = dict(name=arg.id,is_default=is_default,line=arg.lineno,col=arg.col_offset)
-                    args.append(arg)
-            elif utils.IsPython3():
-                if type(arg) == ast.arg:
-                    if arg.arg == 'self':
-                        is_method = True
-                    arg = dict(name=arg.arg,is_default=is_default,line=arg.lineno,col=arg.col_offset)
-                    args.append(arg)
-        #var arg
-        if element.args.vararg is not None:
-            if utils.IsPython3():
-                args.append(dict(name=element.args.vararg.arg,is_var=True,line=line_no,col=col))
-            elif utils.IsPython2():
-                args.append(dict(name=element.args.vararg,is_var=True,line=line_no,col=col))
-        #keyword arg
-        if element.args.kwarg is not None:
-            if utils.IsPython3():
-                args.append(dict(name=element.args.kwarg.arg,is_kw=True,line=line_no,col=col))
-            elif utils.IsPython2():
-                args.append(dict(name=element.args.kwarg,is_kw=True,line=line_no,col=col))
-        doc = codeparser.get_node_doc(element)
-        data = dict(name=def_name,line=line_no,col=col,type=config.NODE_FUNCDEF_TYPE,\
-                    is_method=is_method,is_class_method=is_class_method,args=args,doc=doc)
-        childs.append(data)
-        ##parse self method,parent is class definition
-        if is_method and isinstance(parent,ast.ClassDef):
-            childs.extend(walk_method_element(element))
-    elif isinstance(element,ast.ClassDef):
-        class_name = element.name
-        line_no = element.lineno
-        col = element.col_offset
-        base_names = codeparser.GetBases(element)
-        doc = codeparser.get_node_doc(element)
-        cls_childs,_ = walk(element)
-        data = dict(name=class_name,line=line_no,col=col,type=config.NODE_CLASSDEF_TYPE,\
-                        bases=base_names,childs=cls_childs,doc=doc)
-        childs.append(data)
-    elif isinstance(element,ast.Assign):
-        targets = element.targets
-        line_no = element.lineno
-        col = element.col_offset
-        for target in targets:
-            if type(target) == ast.Tuple:
-                elts = target.elts
-                for elt in elts:
-                    name = elt.id
-                    data = dict(name=name,line=line_no,col=col,type=config.NODE_OBJECT_PROPERTY)
-                    childs.append(data)
-            elif type(target) == ast.Name:
-                name = target.id
-                data = dict(name=name,line=line_no,col=col,type=config.NODE_OBJECT_PROPERTY)
-                childs.append(data)
-    elif isinstance(element,ast.ImportFrom):
-        module_name = element.module
-        if utils.IsNoneOrEmpty(module_name):
-            if element.level == 1:
-                module_name = "."
-            elif element.level == 2:
-                module_name = ".."
-        else:
-            if element.level == 1:
-                module_name = "." + module_name
-            elif element.level == 2:
-                module_name = ".." + module_name
-        names = []
-        for name in element.names:
-            d = {'name':name.name}
-            if name.asname is not None:
-                d.update({'asname':name.asname})
-            names.append(d)
-        data = dict(module=module_name,names=names)
-        refs.append(data)
-    elif isinstance(element,ast.If):
-        for body in element.body:
-            make_element_data(body,parent,childs,refs)
-        for orelse in element.orelse:
-            make_element_data(orelse,parent,childs,refs)
-    
-def walk(node):
-    childs = []
-    refs = []
-    for element in node.body:
-        make_element_data(element,node,childs,refs)
-    return childs,refs
-        
-if __name__ == "__main__":
-    
-  ###  print get_package_childs(r"C:\Python27\Lib\site-packages\aliyunsdkcore\auth\__init__.py")
-    module = parse(r"D:\env\Noval\noval\parser\fileparser.py")
-   ## module = parse(r"D:\env\Noval\noval\test\run_test_input.py")
-    ##print module
-    dump(r"C:\Users\wk\AppData\Local\Programs\Python\Python36-32\Lib\collections\abc.py","collections","./",False)
-    import pickle
-    with open(r"D:\env\Noval\noval\parser\collections.$members",'rb') as f:
-        datas = pickle.load(f)
-   ### print datas['name'],datas['path'],datas['is_builtin']
-    import json
-    print (json.dumps(datas,indent=4))
+           # for ref in refs:
+            #    for name in ref['names']:
+             #       o2.write( ref['module'] + "/" + name['name'])
+              #      o2.write('\n')
     

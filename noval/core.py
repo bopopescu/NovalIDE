@@ -527,10 +527,10 @@ class DocManager(object):
         This function is used in wxDocManager.CreateDocument.
         """
         descrs = strutils.gen_file_filters()
+        #注意这里最好不要设置initialdir,会自动选择上一次打开的目录
         paths = filedialog.askopenfilename(
                 master=GetApp(),
                 filetypes=descrs,
-                initialdir=os.getcwd(),
                 multiple=True
         )
         path_templates = []

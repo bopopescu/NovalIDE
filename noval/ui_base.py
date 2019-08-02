@@ -536,7 +536,7 @@ class TweakableText(tk.Text):
                 str(e).lower()
                 == '''text doesn't contain any characters tagged with "sel"'''
                 and operation in ["delete", "index", "get"]
-                and args in [("sel.first", "sel.last"), ("sel.first",)]
+                and args in [("sel.first", "sel.last"), ("sel.first",),("sel.last",)]
             ):
 
                 pass

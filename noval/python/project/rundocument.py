@@ -33,7 +33,7 @@ class PythonProjectDocument(ProjectDocument):
         #优先查找运行文件的运行配置,如果存在,则使用运行配置里面的运行文件参数
         run_configuration_name = self.GetFileRunConfiguration(run_file)
         if run_configuration_name:
-            file_configuration = RunConfiguration.FileConfiguration(self,run_file)
+            file_configuration = runconfiguration.FileConfiguration(self,run_file)
             run_configuration = file_configuration.LoadConfiguration(run_configuration_name)
             try:
                 return run_configuration.GetRunParameter()

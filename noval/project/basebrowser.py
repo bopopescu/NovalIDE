@@ -562,11 +562,11 @@ class BaseProjectbrowser(ttk.Frame):
             打开项目
         '''
         template = GetApp().GetDocumentManager().FindTemplateForTestPath(consts.PROJECT_EXTENSION)
+        #注意这里最好不要设置initialdir,会自动选择上一次打开的目录
         descrs = [strutils.get_template_filter(template),]
         project_path = filedialog.askopenfilename(
             master=GetApp(),
-            filetypes=descrs,
-            initialdir=template.GetDirectory()
+            filetypes=descrs
         )
         if not project_path:
             return
