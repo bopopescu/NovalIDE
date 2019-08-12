@@ -66,7 +66,7 @@ import noval.menu as tkmenu
 import noval.consts as consts
 import noval.python.project.runconfiguration as runconfiguration
 import noval.project.executor as executor
-from noval.project.debugger import *
+from noval.project.debugger import *
 from noval.python.debugger.output import *
 import tempfile
 
@@ -217,6 +217,12 @@ class RunCommandUI(CommonRunCommandUI):
         self.StopExecution(unbind_evt=True)
         #关闭调试窗口,关闭notebook的子窗口
         self.master.master.close_child(self.master)
+        #务必从视图列表中移除
+        for view_name in GetApp().MainFrame._views:
+            instance = GetApp().MainFrame._views[view_name]["instance"]
+            if instance == self:
+                del GetApp().MainFrame._views[view_name]
+                break
         return True
 
     def RestartRunProcess(self):
@@ -1791,7 +1797,6 @@ class PythonDebugger(Debugger):
         self.phpDbgParam = None
        # self.dbgLanguage = projectmodel.LANGUAGE_DEFAULT
         self._debugger_ui = None
-        self.bottomTab.bind("<ButtonPress-3>", self._right_btn_press, True)
         self._tabs_menu = None
         self._popup_index = -1
         self._watch_separater = None

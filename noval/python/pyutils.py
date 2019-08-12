@@ -196,3 +196,6 @@ class DefinitionsDialog(ui_base.CommonModaldialog):
             line = "%s:Position %d,%d %s" % (definition.Root.Module.Path,definition.Node.Line,definition.Node.Col,"")
             lines.append(line)
         return lines
+
+    def _ok(self,event=None):
+        ui_base.CommonModaldialog._ok(self,event)

@@ -543,7 +543,7 @@ class TextView(misc.AlarmEventView):
             return self.GetDocument().IsModified()
         elif command_id in [constants.ID_INSERT_COMMENT_TEMPLATE,constants.ID_INSERT_DECLARE_ENCODING,constants.ID_UNITTEST,constants.ID_COMMENT_LINES,constants.ID_UNCOMMENT_LINES,\
                         constants.ID_RUN,constants.ID_DEBUG,constants.ID_GOTO_DEFINITION,constants.ID_SET_EXCEPTION_BREAKPOINT,constants.ID_STEP_INTO,constants.ID_STEP_NEXT,constants.ID_RUN_LAST,\
-                    constants.ID_CHECK_SYNTAX,constants.ID_SET_PARAMETER_ENVIRONMENT,constants.ID_DEBUG_LAST,constants.ID_START_WITHOUT_DEBUG]:
+                    constants.ID_CHECK_SYNTAX,constants.ID_SET_PARAMETER_ENVIRONMENT,constants.ID_DEBUG_LAST,constants.ID_START_WITHOUT_DEBUG,constants.ID_AUTO_COMPLETE]:
             return False
         elif command_id == constants.ID_UNDO:
             return self.GetCtrl().CanUndo()
@@ -1313,16 +1313,22 @@ class TextCtrl(ui_base.TweakableText):
         return self.GetCurrentLineColumn()[1]
         
     def GetCurrentPos(self):
-        print (self.index(tk.CURRENT),"=================")
-        return self.index(tk.CURRENT)
+        return self.get_line_col(self.index(tk.INSERT))
         
     def GetLineText(self,line):
         return self.get("%d.0" % line,"%d.end"%line)
 
     def GetValue(self):
-        return self.get(
+        value = self.get(
             "1.0", "end-1c"
         )  # -1c because Text always adds a newline itself
+
+        #tkintext text控件只支持\n换行符,保存文件时,需要全部处理\r换行符
+        chars = value.replace("\r", "")
+        #如果是windows系统,则适应windows换行符
+        if utils.is_windows():
+            chars = chars.replace("\n", "\r\n")
+        return chars
         
     def GotoLine(self,lineno):
         assert(type(lineno) == int)
@@ -1380,7 +1386,9 @@ class TextCtrl(ui_base.TweakableText):
         self.delete(first, last)
         if text:
             self.insert(first, text)
-        
+
+    def AddText(self,txt):
+        self.insert("insert", txt)
 
 class SyntaxTextCtrl(TextCtrl,findtext.FindTextEngine):
     '''

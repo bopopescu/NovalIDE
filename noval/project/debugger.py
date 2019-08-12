@@ -160,6 +160,8 @@ class CommonRunCommandUI(ttk.Frame):
         '''
             这里必须返回True,否则会导致程序不允许关闭
         '''
+        #类似于右上角按钮关闭事件,会更新菜单是否选中
+        self.master.close()
         return True
 
     def SaveProjectFiles(self):
@@ -235,11 +237,12 @@ class Debugger(object):
     #----------------------------------------------------------------------------
 
     def __init__(self):
-
-        if Debugger.DebugView is None:
-            Debugger.DebugView = self._CreateView()
         self.current_project = None
         self.bottomTab = GetApp().MainFrame._view_notebooks['s']
+        if Debugger.DebugView is None:
+            Debugger.DebugView = self._CreateView()
+            #只能绑定一次事件
+            self.bottomTab.bind("<ButtonPress-3>", self._right_btn_press, True)
         
     def _CreateView(self):
         return DebugView(self)
@@ -276,7 +279,10 @@ class Debugger(object):
         return self.current_project
         
     def GetActiveView(self):
-        return GetApp().GetDocumentManager().GetCurrentView()
+        current_editor = GetApp().MainFrame.GetNotebook().get_current_editor()
+        if current_editor is None:
+            return None
+        return current_editor.GetView()
         
     @common_run_exception
     def Debug(self):
@@ -285,6 +291,9 @@ class Debugger(object):
     @common_run_exception
     def Run(self):
         self.GetCurrentProject().Run()
+
+    def _right_btn_press(self,event):
+        pass
 
 
 class OutputRunCommandUI(CommonRunCommandUI):

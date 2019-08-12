@@ -236,6 +236,7 @@ class App(tk.Tk):
                 while 1:
                     self._sharedMemory.seek(0)
                     marker = self._sharedMemory.read_byte()
+                    #ord是将asc字符转换成数字,chr是将数字转换成asc字符
                     if marker == '\0' or marker == ord('\0') or marker == '*' or marker == ord('*'):        # available buffer
                         self._sharedMemory.seek(0)
                         if type(marker) == int:

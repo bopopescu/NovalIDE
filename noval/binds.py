@@ -30,5 +30,8 @@ DEFAULT_KEY_BINDS = {
     ID_CHECK_SYNTAX     :   'Ctrl+F3',
     ID_RUN_LAST         :   'Ctrl+R',
    # ID_DEBUG_LAST       :   'Ctrl+R+D',
-    ID_PRINT            :   'Ctrl+P'
+    ID_PRINT            :   'Ctrl+P',
+    ID_UPPERCASE        :   'Ctrl+Shift+U',
+    ID_LOWERCASE        :   'Ctrl+U',
+    ID_CUT_LINE         :   'Ctrl+L'
 }

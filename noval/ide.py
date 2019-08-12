@@ -42,9 +42,10 @@ import noval.project.document as projectdocument
 import noval.docposition as docposition
 import noval.ui_utils as ui_utils
 import noval.ui_lang as ui_lang
-import noval.project.debugger as basedebugger
+import noval.project.debugger as basedebugger
 import traceback
 import noval.ttkwidgets.messagedialog as messagedialog
+import noval.util.fileutils as fileutils
 
 #----------------------------------------------------------------------------
 # Classes
@@ -304,7 +305,7 @@ class IDEApplication(core.App):
         
     def GetDefaultLangId(self):
         return lang.ID_LANG_TXT
-    
+    
     @property
     def MainFrame(self):
         return self.frame
@@ -461,11 +462,11 @@ class IDEApplication(core.App):
             if self.MainFrame.GetProjectView(False).GetCurrentProject() is not None:
                 return True
              
-        active_view = self.GetDocumentManager().GetCurrentView()
+        current_editor = self.MainFrame.GetNotebook().get_current_editor()
         if command_id in self._default_command_ids:
-            if self.MainFrame.GetNotebook().get_current_editor() is None or active_view is None:
+            if current_editor is None:
                 return False
-        
+        active_view = current_editor.GetView()
         assert(active_view is not None)
         return active_view.UpdateUI(command_id)
             
@@ -494,6 +495,7 @@ class IDEApplication(core.App):
         self.AddCommand(constants.ID_DEBUG,_("&Run"),_("&Start Debugging"),self.Debug,image="toolbar/debug.png",include_in_toolbar=True,default_tester=True,default_command=True)
         self.AddCommand(constants.ID_OPEN_TERMINAL,_("&Tools"),_("&Terminator"),self.OpenTerminator,image="cmd.png")
         self.AddCommand(constants.ID_GOTO_OFFICIAL_WEB,_("&Help"),_("&Visit NovalIDE Website"),self.GotoWebsite)
+        self.AddCommand(constants.ID_FEEDBACK,_("&Help"), _("Feedback"),self.Feedback)
         
     def Run(self):
         '''
@@ -933,8 +935,11 @@ class IDEApplication(core.App):
                 self.AddMenuCommand(name,theme_menu,command_label=name,handler=apply_theme,\
                             kind = consts.RADIO_MENU_ITEM_KIND,variable=self.theme_value,value=name)
                             
+    def Feedback(self):
+        fileutils.startfile("https://gitee.com/wekay/NovalIDE/issues")
+
     def GotoWebsite(self,):
-        os.startfile(UserDataDb.HOST_SERVER_ADDR)
+        fileutils.startfile(UserDataDb.HOST_SERVER_ADDR)
         
     def OnOptions(self):
         preference_dlg = preference.PreferenceDialog(self,selection=utils.profile_get("PrefereceOptionName",''))

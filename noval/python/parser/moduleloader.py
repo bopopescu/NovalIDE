@@ -1,6 +1,8 @@
 import nodeast
 import scope
-
+import pickle
+import config
+from noval.python.parser.utils import CmpMember,py_sorted
 class ModuleLoader(object):
     CHILD_KEY = "childs"
     NAME_KEY = "name"
@@ -61,8 +63,8 @@ class ModuleLoader(object):
 
     def GetMemberList(self):
         member_list = self.LoadMembeList()
-        member_list.sort(CmpMember)
-        return member_list
+        return py_sorted(member_list,CmpMember)
+
 
     def GetMembersWithName(self,name):
         strip_name = name.strip()
@@ -83,7 +85,7 @@ class ModuleLoader(object):
                 child_module = self._manager.GetModule(member[self.FULL_NAME_KEY])
                 member_list = child_module.GetMemberList()
             else:
-                if member.has_key(self.CHILD_KEY):
+                if self.CHILD_KEY in member:
                     for child in member[self.CHILD_KEY]:
                         member_list.append(child[self.NAME_KEY])
                 ##get members in parent inherited classes
@@ -103,7 +105,7 @@ class ModuleLoader(object):
             for child in self._data[self.CHILD_KEY]:
                 if child[self.NAME_KEY] == base:
                     return self.FindChildDefinition(child[self.CHILD_KEY],names)
-        return None
+        return []
         
     def GetMember(self,childs,names):
         for child in childs:
@@ -130,9 +132,9 @@ class ModuleLoader(object):
     def FindDefinition(self,names):
         data = self.LoadMembers()
         if self._is_builtin:
-            return None
+            return []
         if len(names) == 0:
-            return self.MakeModuleScope()
+            return [self.MakeModuleScope(),]
         child_definition =  self.FindChildDefinition(data[self.CHILD_KEY],names)
         if child_definition is None:
             return self.FindInRefModule(data.get('refs',[]),names)
@@ -161,11 +163,11 @@ class ModuleLoader(object):
             child_module = self._manager.GetModule(child[self.FULL_NAME_KEY])
             child_module._path = child[self.PATH_KEY]
             child_module.GetDoc()
-            return child_module.MakeModuleScope()
+            return [child_module.MakeModuleScope()]
         module_scope = self.MakeModuleScope()
         self.MakeChildScope(child,module_scope.Module)
         module_scope.MakeModuleScopes()
-        return module_scope.ChildScopes[0]
+        return [module_scope.ChildScopes[0],]
         
     def MakeChildScope(self,child,parent):
         name = child[self.NAME_KEY]
@@ -193,7 +195,9 @@ class ModuleLoader(object):
         elif child[self.TYPE_KEY] == config.NODE_OBJECT_PROPERTY or \
                 child[self.TYPE_KEY] == config.NODE_CLASS_PROPERTY:
             node = nodeast.PropertyDef(name,line_no,col,config.ASSIGN_TYPE_UNKNOWN,"",parent)
-        elif child[self.TYPE_KEY] == config.NODE_UNKNOWN_TYPE:
+        elif child[self.TYPE_KEY] == config.NODE_ASSIGN_TYPE:
+            node = nodeast.AssignDef(name,line_no,line_no,child['value'],child['value_type'],parent)
+        else:
             node = nodeast.UnknownNode(line_no,col,parent)
                 
     def FindChildDefinition(self,childs,names):
@@ -213,4 +217,4 @@ class ModuleLoader(object):
                         child_module = self._manager.GetModule(child[self.FULL_NAME_KEY])
                         data = child_module.LoadMembers()
                         return child_module.FindChildDefinition(data[self.CHILD_KEY],names[1:])
-        return None
+        return []

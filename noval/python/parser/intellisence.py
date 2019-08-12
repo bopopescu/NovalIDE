@@ -12,7 +12,6 @@ from noval.python.parser import config
 from noval.python.parser import builtinmodule
 from noval.python.parser.utils import CmpMember,py_sorted
 import glob
-import pickle
 import signal
 from dummy.userdb import UserDataDb
 import noval.util.utils as utils
@@ -21,6 +20,7 @@ import datetime
 import copy
 import noval.consts as consts
 
+from moduleloader import *
 
         
 class IntellisenceDataLoader(object):
@@ -50,6 +50,7 @@ class IntellisenceDataLoader(object):
             filename = os.path.basename(filepath)
             module_name = '.'.join(filename.split(".")[0:-1])
             name_sets.add(module_name)
+
         for name in name_sets:
             d = dict(members=os.path.join(data_path,name +".$members"),\
                      member_list=os.path.join(data_path,name +".$memberlist"))
@@ -271,7 +272,7 @@ class IntellisenceManager(object):
         return None
 
     def HasModule(self,name):
-        return self._loader.module_dicts.has_key(name)
+        return name in self._loader.module_dicts
 
     def GetModuleMembers(self,module_name,child_name):
         module = self.GetModule(module_name)
@@ -282,12 +283,12 @@ class IntellisenceManager(object):
     def GetModuleMember(self,module_name,child_name):
         module = self.GetModule(module_name)
         if module is None:
-            return None
+            return []
         return module.FindDefinitionWithName(child_name)
 
     def GetBuiltinModuleMembers(self):
         if self.GetBuiltinModule() is None:
-            return
+            return []
         utils.GetLogger().debug('get builtin module name is:%s',self.GetBuiltinModule().Name)
         return self.GetModuleMembers(self.GetBuiltinModule().Name,"")
 
@@ -301,7 +302,7 @@ class IntellisenceManager(object):
         module = self.GetModule(module_name)
         if module is None:
             return None
-        scope = module.FindDefinitionWithName(child_name)
-        if scope is None:
+        scopes = module.FindDefinitionWithName(child_name)
+        if not scopes:
             return ''
-        return scope.GetArgTip()
+        return scopes[0].GetArgTip()

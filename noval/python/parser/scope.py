@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import fileparser, config,nodeast
 from utils import CmpMember
 import intellisence
@@ -32,7 +33,10 @@ class Scope(object):
         return 0 == len(self._child_scopes)
         
     def AppendChildScope(self,scope):
-        self._child_scopes.append(scope)
+        if isinstance(scope,list):
+            self._child_scopes.extend(scope)
+        else:
+            self._child_scopes.append(scope)
     
     def IslocateInScope(self,line):
         if self.LineStart <= line and self.LineEnd >= line:
@@ -118,9 +122,11 @@ class Scope(object):
         is_self = False
         is_cls = False
         names = name.split('.')
-        if names[0] == 'self' and len(names) > 1:
+        #如果类的成员方法,则搜索名称不包含self
+        if names[0] == 'self' and len(names) > 1 and self.IsMethodScope():
             names = names[1:]
             is_self = True
+        #如果类的静态方法,则搜索名称不包含cls
         elif names[0] == 'cls' and len(names) > 1 and self.IsClassMethodScope():
             names = names[1:]
             is_cls = True
@@ -140,16 +146,16 @@ class Scope(object):
                 definitions.extend(members)
         return definitions
         
-    def FindDefinitionScope(self,name):
+    def FindNameScopes(self,name):
         names = name.split('.')
         #when like self. or cls., route to parent class scope
         if (names[0] == 'self' and self.IsMethodScope())  or (names[0] == 'cls' and self.IsClassMethodScope()):
             if len(names) == 1:
-                return self.Parent
+                return [self.Parent]
             else:
                 return self.FindDefinition('.'.join(names[1:]))[0]
         else:
-            return self.FindDefinition(name)[0]
+            return self.FindScopes(names)
 
     def IsMethodScope(self):
         return False
@@ -267,7 +273,7 @@ class ModuleScope(Scope):
             return self
         return find_scope
 
-    def GetMemberList(self,sort=True):
+    def GetMemberList(self):
         return intellisence.IntellisenceManager().GetModuleMembers(self.Module.Name,"")
 
     @property
@@ -278,7 +284,7 @@ class ModuleScope(Scope):
         return self.Module.Name == name
 
     def GetMembers(self):
-        return self.Module.GetMemberList(False)
+        return self.Module.GetMemberList()
 
     def GetDoc(self):
         return self.MakeBeautyDoc(self.Module.Doc)
@@ -295,15 +301,15 @@ class NodeScope(Scope):
     def EqualName(self,name):
         return self.Node.Name == name
         
-    def GetMemberList(self,sort=True):
-        return self.Node.GetMemberList(sort)
+    def GetMemberList(self):
+        return self.Node.GetMemberList()
 
     @property
     def Root(self):
         return self._root
 
     def GetMember(self,name):
-        return [self]
+        return [self]
 
     def MakeFixName(self,name):
         #muse only replace once
@@ -353,7 +359,7 @@ class FuncDefScope(NodeScope):
     def GetMember(self,name):
         fix_name = self.MakeFixName(name)
         if fix_name == "":
-            return [self]
+            return [self]
         return []
 
     def IsMethodScope(self):
@@ -362,7 +368,7 @@ class FuncDefScope(NodeScope):
     def IsClassMethodScope(self):
         return self.Node.IsClassMethod
 
-    def GetMemberList(self,sort=True):
+    def GetMemberList(self):
         return []
         
     def GetArgTip(self):
@@ -389,37 +395,41 @@ class ClassDefScope(NodeScope):
         return self.Node.Name
         
     def FindScopeInChildScopes(self,name):
-        found_child_scope = Scope.FindScopeInChildScopes(self,name)
-        if None == found_child_scope:
+        #先在在类的儿子中去查找
+        found_scopes = Scope.FindScopeInChildScopes(self,name)
+        #再在类的基类的儿子中去查找
+        if not found_scopes:
             for base in self.Node.Bases:
-                base_scope = self.Parent.FindDefinitionScope(base)
-                if base_scope is not None:
-                    if base_scope.Node.Type == config.NODE_IMPORT_TYPE:
-                        base_child_scope = base_scope.GetMember(base + "."+ name)
-                        if base_child_scope != None:
-                            return base_child_scope
-                    else:
-                        base_child_scope = base_scope.FindScopeInChildScopes(name)
-                        if base_child_scope != None:
-                            return base_child_scope
-        return found_child_scope
+                base_scopes = self.Parent.FindNameScopes(base)
+                if base_scopes:
+                    return self.FindBasescopes(base_scopes,base,name)
+        return found_scopes
+
+    def FindBasescopes(self,base_scopes,base,name):
+        find_scopes = []
+        for base_scope in base_scopes:
+            if base_scope.Node.Type == config.NODE_IMPORT_TYPE:
+                child_scopes = base_scope.GetMember(base + "."+ name)
+                find_scopes.extend(child_scopes)
+            else:
+                child_scopes = base_scope.FindScopeInChildScopes(name)
+                find_scopes.extend(child_scopes)
+        return find_scopes
         
     def UniqueInitMember(self,member_list):
         while member_list.count(self.INIT_METHOD_NAME) > 1:
             member_list.remove(self.INIT_METHOD_NAME)
         
-    def GetMemberList(self,sort=True):
-        member_list = NodeScope.GetMemberList(self,False)
+    def GetMemberList(self):
+        member_list = NodeScope.GetMemberList(self)
         for base in self.Node.Bases:
-            base_scope = self.Parent.FindDefinitionScope(base)
-            if base_scope is not None:
+            base_scopes = self.Parent.FindNameScopes(base)
+            for base_scope in base_scopes:
                 if base_scope.Node.Type == config.NODE_IMPORT_TYPE:
                     member_list.extend(base_scope.GetImportMemberList(base))
                 else:
                     member_list.extend(base_scope.GetMemberList())
         self.UniqueInitMember(member_list)
-        if sort:
-            member_list.sort(CmpMember)
         return member_list
 
     def GetClassMembers(self,sort=True):
@@ -443,7 +453,7 @@ class ClassDefScope(NodeScope):
     def GetMember(self,name):
         fix_name = self.MakeFixName(name)
         if fix_name == "":
-            return [self]
+            return [self]
         return self.FindScopeInChildScopes(fix_name)
     #class arg tip is the arg tip of class __init__ method
     def GetArgTip(self):
@@ -460,7 +470,7 @@ class NameScope(NodeScope):
         #print 'type is name scope, name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
         return self.Node.Name
 
-    def GetMemberList(self,sort=True):
+    def GetMemberList(self):
         member_list = []
         if self.Node.ValueType == config.ASSIGN_TYPE_OBJECT:
             found_scope = self.FindDefinitionScope(self.Node.Value)
@@ -470,16 +480,13 @@ class NameScope(NodeScope):
                 else:
                     member_list = found_scope.GetMemberList()
         else:
-            member_list = intellisence.IntellisenceManager().\
-                         GetTypeObjectMembers(self.Node.ValueType)
-        if sort:
-            member_list.sort(CmpMember)
+            member_list = intellisence.IntellisenceManager().GetTypeObjectMembers(self.Node.ValueType)
         return member_list
 
     def GetMember(self,name):
         fix_name = self.MakeFixName(name)
         if fix_name == "":
-            return [self]
+            return [self]
         if self.Node.Value is None:
             return []
         found_scope = self.FindDefinitionScope(self.Node.Value)
@@ -488,7 +495,7 @@ class NameScope(NodeScope):
                 return found_scope.GetMember(self.Node.Value + "." + fix_name)
             else:
                 return found_scope.GetMember(fix_name)
-        return None
+        return []
             
 class UnknownScope(NodeScope):
     def __init__(self,unknown_type_node,parent,root):
@@ -525,13 +532,12 @@ class ImportScope(NodeScope):
     def GetImportMemberList(self,name):
         fix_name = self.MakeFixName(name)
         member_list = intellisence.IntellisenceManager().GetModuleMembers(self.Node.Name,fix_name)
-        member_list.sort(CmpMember)
         return member_list
 
     def GetMember(self,name):
         fix_name = self.MakeFixName(name)
         if fix_name == "":
-            return [self]
+            return [self]
         return intellisence.IntellisenceManager().GetModuleMember(self.Node.Name,fix_name)
 
     def GetDoc(self):
@@ -561,11 +567,4 @@ class FromImportScope(NodeScope):
 class MainFunctionScope(NodeScope):
     def __init__(self,main_function_node,parent,root):
         super(MainFunctionScope,self).__init__(main_function_node,parent,root)
-    
-if __name__ == "__main__":
-    module = fileparser.parse(r"D:\env\Noval\noval\parser\nodeast.py")
-    module_scope = ModuleScope(module,100)
-    module_scope.MakeModuleScopes()
-    module_scope.RouteChildScopes()
-    func_scope = module_scope.FindDefinitionScope("FuncDef.__init__")
-    print (func_scope)
+

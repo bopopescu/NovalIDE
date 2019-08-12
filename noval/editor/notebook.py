@@ -355,22 +355,29 @@ class EditorNotebook(ui_base.ClosableNotebook):
         GetApp().AddMenuCommand(constants.ID_INSERT_COMMENT_TEMPLATE,insert_menu,_("Insert Comment Template"),self.InsertCommentTemplate,default_tester=True,default_command=True)
         GetApp().AddMenuCommand(constants.ID_INSERT_FILE_CONTENT,insert_menu,_("Insert File Content"),self.InsertFileContent,default_tester=True,default_command=True)
         
+        
         #解除默认绑定事件,从新绑定快捷键ctrl+k的事件
-        GetApp().AddCommand(constants.ID_COMMENT_LINES,_("&Format"),_("Comment &Lines"),lambda:formatter.formatter.CommentRegion(self.get_current_editor()),image=GetApp().GetImage("comment.png"),\
+        GetApp().AddCommand(constants.ID_COMMENT_LINES,_("&Format"),_("Comment &Lines"),lambda:self.ProcessFormatterEvent(constants.ID_COMMENT_LINES),image=GetApp().GetImage("comment.png"),\
                                             default_tester=True,default_command=True,extra_sequences=["<<CtrlKInText>>"])
-        GetApp().AddCommand(constants.ID_UNCOMMENT_LINES,_("&Format"),_("&Uncomment Lines"),lambda:formatter.formatter.UncommentRegion(self.get_current_editor()),image=GetApp().GetImage("uncomment.png"),\
+        GetApp().AddCommand(constants.ID_UNCOMMENT_LINES,_("&Format"),_("&Uncomment Lines"),lambda:self.ProcessFormatterEvent(constants.ID_UNCOMMENT_LINES),image=GetApp().GetImage("uncomment.png"),\
                                             default_tester=True,default_command=True)
            
-        GetApp().AddCommand(constants.ID_INDENT_LINES,_("&Format"),_("&Indent Lines"),lambda:formatter.formatter.IndentRegion(self.get_current_editor()),image=GetApp().GetImage("indent.png"),\
+        GetApp().AddCommand(constants.ID_INDENT_LINES,_("&Format"),_("&Indent Lines"),lambda:self.ProcessFormatterEvent(constants.ID_INDENT_LINES),image=GetApp().GetImage("indent.png"),\
                                             default_tester=True,default_command=True)
-        GetApp().AddCommand(constants.ID_DEDENT_LINES,_("&Format"),_("&Dedent Lines"),lambda:formatter.formatter.DedentRegion(self.get_current_editor()),image=GetApp().GetImage("dedent.png"),\
+        GetApp().AddCommand(constants.ID_DEDENT_LINES,_("&Format"),_("&Dedent Lines"),lambda:self.ProcessFormatterEvent(constants.ID_DEDENT_LINES),image=GetApp().GetImage("dedent.png"),\
                                             default_tester=True,default_command=True)
 
         advanceMenu = tkmenu.PopupMenu()
         edit_menu.AppendMenu(constants.ID_ADVANCE, _("&Advance"),advanceMenu)
-        GetApp().AddMenuCommand(constants.ID_UPPERCASE,advanceMenu,_("Conert To UPPERCASE"),lambda:formatter.formatter.UpperCase(self.get_current_editor()),default_tester=True,default_command=True,image="uppercase.png")
-        GetApp().AddMenuCommand(constants.ID_LOWERCASE,advanceMenu, _("Conert To lowercase"),lambda:formatter.formatter.LowerCase(self.get_current_editor()),default_tester=True,default_command=True,image="lowercase.png")     
-     
+        GetApp().AddMenuCommand(constants.ID_UPPERCASE,advanceMenu,_("Conert To UPPERCASE"),lambda:self.ProcessFormatterEvent(constants.ID_UPPERCASE),default_tester=True,default_command=True,image="uppercase.png")
+        GetApp().AddMenuCommand(constants.ID_LOWERCASE,advanceMenu, _("Conert To lowercase"),lambda:self.ProcessFormatterEvent(constants.ID_LOWERCASE),default_tester=True,default_command=True,image="lowercase.png")     
+        GetApp().AddMenuCommand(constants.ID_FIRST_UPPERCASE,advanceMenu, _("Proper Case"),lambda:self.ProcessFormatterEvent(constants.ID_FIRST_UPPERCASE),default_tester=True,default_command=True)     
+        GetApp().AddMenuCommand(constants.ID_COPY_LINE,advanceMenu, _("Copy Line"),lambda:self.ProcessFormatterEvent(constants.ID_COPY_LINE),default_tester=True,default_command=True)     
+        GetApp().AddMenuCommand(constants.ID_CUT_LINE,advanceMenu, _("Cut Line"),lambda:self.ProcessFormatterEvent(constants.ID_CUT_LINE),default_tester=True,default_command=True)     
+        GetApp().AddMenuCommand(constants.ID_CLONE_LINE,advanceMenu, _("Duplicate Line"),lambda:self.ProcessFormatterEvent(constants.ID_CLONE_LINE),default_tester=True,default_command=True)     
+        GetApp().AddMenuCommand(constants.ID_DELETE_LINE,advanceMenu, _("Delete Line"),lambda:self.ProcessFormatterEvent(constants.ID_DELETE_LINE),default_tester=True,default_command=True)     
+
+        
         view_menu = GetApp().Menubar.GetMenu(_("&View"))
         zoom_menu = tkmenu.PopupMenu()
         view_menu.AppendMenu(constants.ID_ZOOM,_("&Zoom"),zoom_menu)
@@ -378,13 +385,33 @@ class EditorNotebook(ui_base.ClosableNotebook):
         GetApp().AddMenuCommand(constants.ID_ZOOM_OUT,zoom_menu,_("Zoom Out"),lambda:self.ZoomView(-1),image=GetApp().GetImage("toolbar/zoom_out.png"),tester=lambda: self.get_current_editor() is not None,include_in_toolbar=True)
                
         
-        
+        GetApp().AddCommand(constants.ID_AUTO_COMPLETE,_("&Edit"),_("&Auto Complete"), handler=self.AutocompShow,default_tester=True,default_command=True)
         GetApp().AddCommand(constants.ID_PRE_POS,_("&View"),_("Previous Position"),self.GotoPrePos,image=GetApp().GetImage("toolbar/go_prev.png"),\
                             tester=lambda:docposition.DocMgr.CanNavigatePrev(),include_in_toolbar=True)
         GetApp().AddCommand(constants.ID_NEXT_POS,_("&View"),_("Next Position"),self.GotoNextPos,image=GetApp().GetImage("toolbar/go_next.png"),\
                             tester=lambda:docposition.DocMgr.CanNavigateNext(),include_in_toolbar=True)
                             
 
+    def ProcessFormatterEvent(self,event_id):
+
+        opj = formatter.Formatter(self.get_current_editor())
+        if event_id == constants.ID_COMMENT_LINES:
+            opj.CommentRegion()
+        elif event_id == constants.ID_UNCOMMENT_LINES:
+            opj.UncommentRegion()
+        elif event_id == constants.ID_INDENT_LINES:
+            opj.IndentRegion()
+        elif event_id == constants.ID_DEDENT_LINES:
+            opj.DedentRegion()
+        elif event_id == constants.ID_UPPERCASE:
+            opj.UpperCase()
+        elif event_id == constants.ID_LOWERCASE:
+            opj.LowerCase()
+        elif event_id == constants.ID_FIRST_UPPERCASE:
+            opj.FirstUppercase()
+        elif event_id in [constants.ID_COPY_LINE,constants.ID_CUT_LINE,constants.ID_DELETE_LINE,constants.ID_CLONE_LINE]:
+            opj.EditLineEvent(event_id)
+        
     @misc.update_toolbar
     def GotoNextPos(self):
         fname, line,col = (None, None,None)
@@ -486,4 +513,9 @@ class EditorNotebook(ui_base.ClosableNotebook):
     def ToogleMaximizeView(self,event):
         GetApp().MainFrame.ToogleMaximizeView()
         
+    def AutocompShow(self):
+        current_view = self.get_current_editor().GetView()
+        context,hint = current_view.GetAutoCompleteHint()
+        completions,replaceLen = current_view.GetAutoCompleteKeywordList(context,hint,current_view.GetCtrl().GetCurrentLine())
+        self.get_current_editor().GetView().GetCtrl().AutoCompShow(replaceLen,completions)
         

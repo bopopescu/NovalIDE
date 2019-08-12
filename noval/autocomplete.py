@@ -1,9 +1,7 @@
+# -*- coding: utf-8 -*-
 from noval import GetApp,_
 import tkinter as tk
 from tkinter import messagebox
-import noval.iface as iface
-import noval.plugin as plugin
-import noval.editor.code as codeeditor
 import noval.constants as constants
 import noval.ttkwidgets.listboxframe as listboxframe
 import noval.ui_utils as ut_utils
@@ -12,7 +10,6 @@ import noval.ui_utils as ut_utils
 """Completions get computed on the backend, therefore getting the completions is
 asynchronous.
 """
-#self.listview = listboxframe.ListboxFrame(self,listbox_class=ut_utils.ThemedListbox)
 
 class Completer(listboxframe.ListboxFrame):
     def __init__(self, text):
@@ -24,11 +21,16 @@ class Completer(listboxframe.ListboxFrame):
             activestyle="dotbox",
             exportselection=False,
         )
-        self.listbox.focus_set()
+        #设置鼠标样式
+   #     self.listbox.focus_set()
         self.listbox.configure(cursor="arrow")
+        self.vert_scrollbar.configure(cursor="arrow")
 
         self.text = text
+        #单词列表
         self.completions = []
+        #补全单词时,已经输入的单词长度,插入单词时不需要插入全部单词,而是只插入未补全的单词
+        self._typedlen = 0
 
         self.doc_label = tk.Label(
             master=text, text="Aaappiiiii", bg="#ffffe0", justify="left", anchor="nw"
@@ -42,14 +44,18 @@ class Completer(listboxframe.ListboxFrame):
             self.text_priority_bindtag, "<Key>", self._on_text_keypress, True
         )
 
-        self.text.bind(
-            "<<TextChange>>", self._on_text_change, True
-        )  # Assuming TweakableText
-
+    #    self.text.bind(
+     #       "<<TextChange>>", self._on_text_change, True
+      #  )  # Assuming TweakableText
+        #单击文本框时,关闭智能提示
+        self.text.bind("<1>", self.on_text_click)
         # for cases when Listbox gets focus
-        self.bind("<Escape>", self._close)
-        self.bind("<Return>", self._insert_current_selection)
-        self.bind("<Double-Button-1>", self._insert_current_selection)
+        #按Esc建关闭智能提示
+        self.listbox.bind("<Escape>", self._close)
+        #按回车键插入选中内容
+        self.listbox.bind("<Return>", self._insert_current_selection)
+        #双击listbox插入选中内容
+        self.listbox.bind("<Double-Button-1>", self._insert_current_selection)
       #  self._bind_result_event()
 
     def _bind_result_event(self):
@@ -84,8 +90,9 @@ class Completer(listboxframe.ListboxFrame):
         else:
             self._present_completions(msg.completions)
 
-    def _present_completions(self, completions):
+    def _present_completions(self, completions,replaceLen):
         self.completions = completions
+        self._typedlen = replaceLen
         # present
         if len(completions) == 0:
             self._close()
@@ -152,37 +159,16 @@ class Completer(listboxframe.ListboxFrame):
         return self.winfo_ismapped()
 
     def _insert_completion(self, completion):
-        typed_len = len(completion["name"]) - len(completion["complete"].strip("="))
-        typed_prefix = self.text.get("insert-{}c".format(typed_len), "insert")
-        get_workbench().event_generate(
-            "AutocompleteInsertion",
-            text_widget=self.text,
-            typed_prefix=typed_prefix,
-            completed_name=completion["name"],
-        )
-
+        typed_prefix = self.text.get("insert-{}c".format(self._typedlen), "insert")
         if self._is_visible():
             self._close()
 
-        if not completion["name"].startswith(typed_prefix):
+        if not completion.startswith(typed_prefix):
             # eg. case of the prefix was not correct
-            self.text.delete("insert-{}c".format(typed_len), "insert")
-            self.text.insert("insert", completion["name"])
+            self.text.delete("insert-{}c".format(self._typedlen), "insert")
+            self.text.insert("insert", completion)
         else:
-            self.text.insert("insert", completion["complete"])
-
-    def _get_filename(self):
-        # TODO: allow completing in shell
-        if not isinstance(self.text, CodeViewText):
-            return None
-
-        codeview = self.text.master
-
-        editor = get_workbench().get_editor_notebook().get_current_editor()
-        if editor.get_code_view() is codeview:
-            return editor.get_filename()
-        else:
-            return None
+            self.text.insert("insert", completion[self._typedlen:])
 
     def _move_selection(self, delta):
         selected = self.listbox.curselection()
@@ -209,7 +195,6 @@ class Completer(listboxframe.ListboxFrame):
     def _on_text_keypress(self, event=None):
         if not self._is_visible():
             return None
-
         if event.keysym == "Escape":
             self._close()
             return "break"
@@ -220,17 +205,67 @@ class Completer(listboxframe.ListboxFrame):
             self._move_selection(1)
             return "break"
         elif event.keysym in ["Return", "KP_Enter", "Tab"]:
-            assert self.size() > 0
+            assert self.listbox.size() > 0
             self._insert_current_selection()
             return "break"
-
+        else:
+            #根据输入内容匹配列表框关键字
+            if event.char in self.text.DEFAULT_WORD_CHARS or event.keysym == "BackSpace":
+                word = self.GetInputword()
+                if event.char in self.text.DEFAULT_WORD_CHARS:
+                    word += event.char
+                else:
+                    word = word[0:-1]
+                sel = self.GetInputSelection(word)
+                if sel >=0 :
+                    self._typedlen = len(word)
+                    if len(self.listbox.curselection()) > 0:
+                        self.listbox.selection_clear(0, self.listbox.size() - 1)
+                    self.listbox.activate(sel)
+                    self.listbox.selection_set(sel)
+                    self.listbox.see(sel)
+                else:
+                    #未匹配到关键字则关闭提示
+                    self._typedlen = 0
+                    self._close()
         return None
+
+    def GetInputword(self):
+        line,col = self.text.GetCurrentPos()
+        if line == 0 and col == 0:
+            return ''
+        if self.text.GetCharAt(line,col) == '.':
+            col = col - 1
+            hint = None
+        else:
+            hint = ''
+            
+        validLetters = self.text.DEFAULT_WORD_CHARS
+        word = ''
+        while (True):
+            col = col - 1
+            if col < 0:
+                break
+            char = self.text.GetCharAt(line,col)
+            if char not in validLetters:
+                break
+            word = char + word
+        return word
+
+    def GetInputSelection(self,word):
+        if word == "":
+            return 0
+        for i,completion in enumerate(self.completions):
+            lower_text = completion.lower()
+            if lower_text.startswith(word.lower()):
+                return i
+        return -1
 
     def _insert_current_selection(self, event=None):
         self._insert_completion(self._get_selected_completion())
 
     def _get_selected_completion(self):
-        sel = self.curselection()
+        sel = self.listbox.curselection()
         if len(sel) != 1:
             return None
 
@@ -281,23 +316,6 @@ def handle_autocomplete_request(event=None):
 
     _handle_autocomplete_request_for_text(text)
 
-
-def _handle_autocomplete_request_for_text(text):
-    if not hasattr(text, "autocompleter"):
-        if isinstance(text, codeeditor.CodeCtrl):
-            text.autocompleter = Completer(text)
-            #单击文本框时,关闭智能提示
-            text.bind("<1>", text.autocompleter.on_text_click)
-        else:
-            return
-
-    current_view = GetApp().GetDocumentManager().GetCurrentView()
-    completions = current_view.GetAutoCompleteDefaultKeywords()
-    print (completions)
-    text.autocompleter._present_completions(completions)
-    #text.autocompleter.handle_autocomplete_request()
-
-
 def patched_perform_midline_tab(text, event):
     if isinstance(text, ShellText):
         option_name = "edit.tab_complete_in_shell"
@@ -314,7 +332,7 @@ def patched_perform_midline_tab(text, event):
     return text.perform_smart_tab(event)
 
 
-def load_plugin() -> None:
+def load_plugin():
 
     get_workbench().add_command(
         "autocomplete",
@@ -330,12 +348,3 @@ def load_plugin() -> None:
 
     CodeViewText.perform_midline_tab = patched_perform_midline_tab  # type: ignore
     ShellText.perform_midline_tab = patched_perform_midline_tab  # type: ignore
-
-
-class Autocomplete(plugin.Plugin):
-    plugin.Implements(iface.MainWindowI)
-    def PlugIt(self, parent):
-        # Add Menu
-        menuBar = GetApp().Menubar
-        edit_menu = menuBar.GetEditMenu()
-        edit_menu.Append(constants.ID_WORD_LIST,_("Completion Word List"), ("List All Completion Word of suggestions"),handler=handle_autocomplete_request)

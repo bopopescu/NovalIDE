@@ -17,17 +17,21 @@ class TestGlobalFunction(unittest.TestCase):
         pass
 
     def testdump(self):
-        file_parser = fileparser.FiledumpParser("G:\\work\\project\\Noval\\noval\\python\\debugger\\debuggerharness.py","./",force_update=True)
+        file_parser = fileparser.FiledumpParser(r"C:\Python27\Lib\os.py","./",force_update=True)
         file_parser.Dump()
         with open(file_parser.member_file_path,'rb') as f:
             datas = pickle.load(f)
         print (json.dumps(datas,indent=4))
 
-    def testrun(self):
+    def ___testrun(self):
         os.system(r"python G:\work\project\Noval\noval\python\parser\run.py ./tests 1.1.1")
         os.system(r"C:\Users\Administrator\AppData\Local\Programs\Python\Python36-32\python.exe G:\work\project\Noval\noval\python\parser\run.py ./tests 1.1.1")
 
-
+    def ___testloader(self):
+        file_path = r'C:\Users\Administrator\AppData\Roaming\NovalIDE\intellisence\builtins\3\builtins.$members'
+        file_path = r"G:\work\project\Noval\builtins\builtins.$members"
+        with open(file_path,'rb') as f:
+            print (pickle.load(f))
 
 if __name__ == "__main__":
     unittest.main()

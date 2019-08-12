@@ -1,10 +1,41 @@
 from distutils.core import setup
 from setuptools import find_packages
+import os
+
+def list_files(directory):
+    files = []
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory,filename)
+        files.append(file_path)
+    return files
 
 with open("version.txt") as f:
     version = f.read()
 
-install_requires = ["watchdog","chardet","pyperclip","psutil","requests","pycryptodome",'mss','pillow']
+with open('requirements.txt') as f:
+    install_requires = [line for line in f.read().split() if not line.startswith('#')]
+
+data_list = [
+    'data/intellisence/builtins/2/*',
+    'data/intellisence/builtins/3/*',
+    'data/template/*.tar.bz2',
+    'data/sample/*.sample',
+    'data/styles/*.ess',
+    'data/*.txt',
+    'syntax/lexer/*.py',
+    'python/syntax/lexer/*.py',
+    'bmp_source/project/python/*', 
+    'bmp_source/project/*', 
+    'bmp_source/python/debugger/*',
+    'bmp_source/python/outline/*',
+    'bmp_source/python/*',
+    'bmp_source/template/*',
+    'bmp_source/file/*', 
+    'bmp_source/files/*', 
+    'bmp_source/checkbox/*', 
+    'bmp_source/toolbar/*', 
+    'bmp_source/*.*'
+]
 setup(name='NovalIDE',
         version = version,
         description='''NovalIDE is a cross platform Python IDE''',
@@ -17,25 +48,10 @@ setup(name='NovalIDE',
         zip_safe=False,
         test_suite='noval.tests',
         package_data={
-            'noval': [
-                    'tool/data/intellisence/builtins/2/*',
-                    'tool/data/intellisence/builtins/3/*',
-                    'tool/data/template/*.tar.bz2',
-                    'tool/data/sample/*.sample',
-                    'tool/data/styles/*.ess',
-                    'tool/data/*.txt',
-                    'tool/bmp_source/template/*', 
-                    'tool/syntax/lexer/*.py',
-                    'tool/bmp_source/toolbar/*', 
-                    'tool/bmp_source/project/*', 
-                    'tool/bmp_source/debugger/*', 
-                    'tool/bmp_source/web/*', 
-                    'tool/bmp_source/*.*', 
-                    'locale/en_US/LC_MESSAGES/*.mo',
-                    'locale/zh_CN/LC_MESSAGES/*.mo'
-                    ],
+            'noval':data_list
         },
-        data_files = [('',['version.txt','template.xml']),],
+        data_files = [('',['version.txt','template.xml','noval.ico']),('locale/en_US/LC_MESSAGES',list_files('locale/en_US/LC_MESSAGES')),\
+                ('locale/zh_CN/LC_MESSAGES',list_files('locale/zh_CN/LC_MESSAGES'))],
         classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
@@ -47,8 +63,8 @@ setup(name='NovalIDE',
         'Programming Language :: Python :: Implementation :: PyPy'
         ],
         entry_points="""
-        [console_scripts]
-        NovalIDE = noval.noval:main
+        [gui_scripts]
+        NovalIDE = noval.python.run:main
         """
 )
 

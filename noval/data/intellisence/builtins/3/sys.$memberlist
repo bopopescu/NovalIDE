@@ -12,11 +12,11 @@ __stdout__
 _clear_type_cache
 _current_frames
 _debugmallocstats
+_enablelegacywindowsfsencoding
 _getframe
+_git
 _home
-_mercurial
 _xoptions
-abiflags
 api_version
 argv
 base_exec_prefix
@@ -27,6 +27,7 @@ call_tracing
 callstats
 copyright
 displayhook
+dllhandle
 dont_write_bytecode
 exc_info
 excepthook
@@ -36,11 +37,12 @@ exit
 flags
 float_info
 float_repr_style
+get_asyncgen_hooks
 get_coroutine_wrapper
 getallocatedblocks
 getcheckinterval
 getdefaultencoding
-getdlopenflags
+getfilesystemencodeerrors
 getfilesystemencoding
 getprofile
 getrecursionlimit
@@ -48,6 +50,7 @@ getrefcount
 getsizeof
 getswitchinterval
 gettrace
+getwindowsversion
 hash_info
 hexversion
 implementation
@@ -63,9 +66,9 @@ path_hooks
 path_importer_cache
 platform
 prefix
+set_asyncgen_hooks
 set_coroutine_wrapper
 setcheckinterval
-setdlopenflags
 setprofile
 setrecursionlimit
 setswitchinterval
@@ -77,3 +80,4 @@ thread_info
 version
 version_info
 warnoptions
+winver

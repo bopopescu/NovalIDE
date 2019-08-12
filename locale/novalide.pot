@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2019-07-29 17:06+中国标准时间\n"
+"POT-Creation-Date: 2019-08-12 09:05+中国标准时间\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -60,58 +60,58 @@ msgstr ""
 msgid "Save configuration"
 msgstr ""
 
-#: G:\work\project\Noval\noval\core.py:728
-#: G:\work\project\Noval\noval\core.py:1824
-#: G:\work\project\Noval\noval\core.py:1839
+#: G:\work\project\Noval\noval\core.py:734
+#: G:\work\project\Noval\noval\core.py:1830
+#: G:\work\project\Noval\noval\core.py:1845
 #: G:\work\project\Noval\noval\project\variables.py:195
 #: G:\work\project\Noval\noval\python\interpreter\environment.py:89
 #: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:449
 #: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:451
-#: G:\work\project\Noval\noval\ui_utils.py:405
+#: G:\work\project\Noval\noval\ui_utils.py:418
 msgid "Warning"
 msgstr ""
 
-#: G:\work\project\Noval\noval\core.py:730
+#: G:\work\project\Noval\noval\core.py:736
 #: G:\work\project\Noval\noval\editor\text.py:492
 msgid "File \"%s\" has already been modified outside,Do You Want to reload it?"
 msgstr ""
 
-#: G:\work\project\Noval\noval\core.py:730
+#: G:\work\project\Noval\noval\core.py:736
 #: G:\work\project\Noval\noval\editor\text.py:492
 msgid "Reload.."
 msgstr ""
 
-#: G:\work\project\Noval\noval\core.py:733
+#: G:\work\project\Noval\noval\core.py:739
 msgid "Couldn't reload '%s'.  Unable to close current '%s'."
 msgstr ""
 
-#: G:\work\project\Noval\noval\core.py:959
+#: G:\work\project\Noval\noval\core.py:965
 msgid "Select a document view:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\core.py:960
+#: G:\work\project\Noval\noval\core.py:966
 msgid "Views"
 msgstr ""
 
-#: G:\work\project\Noval\noval\core.py:1048
+#: G:\work\project\Noval\noval\core.py:1054
 msgid "Untitled %d"
 msgstr ""
 
-#: G:\work\project\Noval\noval\core.py:1592
+#: G:\work\project\Noval\noval\core.py:1598
 msgid "Application"
 msgstr ""
 
-#: G:\work\project\Noval\noval\core.py:1594
-#: G:\work\project\Noval\noval\core.py:1826
+#: G:\work\project\Noval\noval\core.py:1600
+#: G:\work\project\Noval\noval\core.py:1832
 msgid "'%s' has been modified outside of %s.  Overwrite '%s' with current changes?"
 msgstr ""
 
-#: G:\work\project\Noval\noval\core.py:1657
-#: G:\work\project\Noval\noval\core.py:1722
-#: G:\work\project\Noval\noval\core.py:2304
+#: G:\work\project\Noval\noval\core.py:1663
+#: G:\work\project\Noval\noval\core.py:1728
+#: G:\work\project\Noval\noval\core.py:2310
 #: G:\work\project\Noval\noval\editor\text.py:158
 #: G:\work\project\Noval\noval\editor\text.py:255
-#: G:\work\project\Noval\noval\ide.py:763
+#: G:\work\project\Noval\noval\ide.py:768
 #: G:\work\project\Noval\noval\project\basebrowser.py:412
 #: G:\work\project\Noval\noval\project\document.py:162
 #: G:\work\project\Noval\noval\project\document.py:178
@@ -119,15 +119,15 @@ msgstr ""
 msgid "File Error"
 msgstr ""
 
-#: G:\work\project\Noval\noval\core.py:1796
+#: G:\work\project\Noval\noval\core.py:1802
 msgid "Untitled"
 msgstr ""
 
-#: G:\work\project\Noval\noval\core.py:1841
+#: G:\work\project\Noval\noval\core.py:1847
 msgid "Save changes to '%s'?"
 msgstr ""
 
-#: G:\work\project\Noval\noval\core.py:2305
+#: G:\work\project\Noval\noval\core.py:2311
 #: G:\work\project\Noval\noval\editor\text.py:273
 msgid "Could not open '%s':  %s"
 msgstr ""
@@ -152,11 +152,11 @@ msgstr ""
 msgid "Default New Document Type"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\code.py:158
+#: G:\work\project\Noval\noval\editor\code.py:168
 msgid "Enter new indent width (2-10):"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\code.py:158
+#: G:\work\project\Noval\noval\editor\code.py:168
 msgid "Set Indent Width"
 msgstr ""
 
@@ -232,6 +232,7 @@ msgstr ""
 #: G:\work\project\Noval\noval\editor\notebook.py:348
 #: G:\work\project\Noval\noval\editor\notebook.py:349
 #: G:\work\project\Noval\noval\editor\notebook.py:351
+#: G:\work\project\Noval\noval\editor\notebook.py:388
 #: G:\work\project\Noval\noval\frame.py:190
 #: G:\work\project\Noval\noval\frame.py:191
 #: G:\work\project\Noval\noval\frame.py:192
@@ -240,8 +241,8 @@ msgstr ""
 #: G:\work\project\Noval\noval\frame.py:196
 #: G:\work\project\Noval\noval\frame.py:198
 #: G:\work\project\Noval\noval\menu.py:662
-#: G:\work\project\Noval\noval\python\pyide.py:62
-#: G:\work\project\Noval\noval\python\pyide.py:67
+#: G:\work\project\Noval\noval\python\pyide.py:63
+#: G:\work\project\Noval\noval\python\pyide.py:68
 msgid "&Edit"
 msgstr ""
 
@@ -281,77 +282,101 @@ msgstr ""
 msgid "Insert File Content"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\notebook.py:359
+#: G:\work\project\Noval\noval\editor\notebook.py:360
 msgid "Comment &Lines"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\notebook.py:359
-#: G:\work\project\Noval\noval\editor\notebook.py:361
-#: G:\work\project\Noval\noval\editor\notebook.py:364
-#: G:\work\project\Noval\noval\editor\notebook.py:366
+#: G:\work\project\Noval\noval\editor\notebook.py:360
+#: G:\work\project\Noval\noval\editor\notebook.py:362
+#: G:\work\project\Noval\noval\editor\notebook.py:365
+#: G:\work\project\Noval\noval\editor\notebook.py:367
 #: G:\work\project\Noval\noval\menu.py:668
 msgid "&Format"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\notebook.py:361
+#: G:\work\project\Noval\noval\editor\notebook.py:362
 msgid "&Uncomment Lines"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\notebook.py:364
+#: G:\work\project\Noval\noval\editor\notebook.py:365
 msgid "&Indent Lines"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\notebook.py:366
+#: G:\work\project\Noval\noval\editor\notebook.py:367
 msgid "&Dedent Lines"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\notebook.py:370
+#: G:\work\project\Noval\noval\editor\notebook.py:371
 msgid "&Advance"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\notebook.py:371
+#: G:\work\project\Noval\noval\editor\notebook.py:372
 msgid "Conert To UPPERCASE"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\notebook.py:372
+#: G:\work\project\Noval\noval\editor\notebook.py:373
 msgid "Conert To lowercase"
 msgstr ""
 
 #: G:\work\project\Noval\noval\editor\notebook.py:374
-#: G:\work\project\Noval\noval\editor\notebook.py:382
-#: G:\work\project\Noval\noval\editor\notebook.py:384
+msgid "Proper Case"
+msgstr ""
+
+#: G:\work\project\Noval\noval\editor\notebook.py:375
+msgid "Copy Line"
+msgstr ""
+
+#: G:\work\project\Noval\noval\editor\notebook.py:376
+msgid "Cut Line"
+msgstr ""
+
+#: G:\work\project\Noval\noval\editor\notebook.py:377
+msgid "Duplicate Line"
+msgstr ""
+
+#: G:\work\project\Noval\noval\editor\notebook.py:378
+msgid "Delete Line"
+msgstr ""
+
+#: G:\work\project\Noval\noval\editor\notebook.py:381
+#: G:\work\project\Noval\noval\editor\notebook.py:389
+#: G:\work\project\Noval\noval\editor\notebook.py:391
 #: G:\work\project\Noval\noval\frame.py:181
 #: G:\work\project\Noval\noval\frame.py:183
 #: G:\work\project\Noval\noval\frame.py:271
-#: G:\work\project\Noval\noval\ide.py:489
-#: G:\work\project\Noval\noval\ide.py:924
+#: G:\work\project\Noval\noval\ide.py:492
+#: G:\work\project\Noval\noval\ide.py:929
 #: G:\work\project\Noval\noval\menu.py:665
 #: G:\work\project\Noval\noval\python\plugins\outline.py:193
 msgid "&View"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\notebook.py:376
+#: G:\work\project\Noval\noval\editor\notebook.py:383
 msgid "&Zoom"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\notebook.py:377
+#: G:\work\project\Noval\noval\editor\notebook.py:384
 msgid "Zoom In"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\notebook.py:378
+#: G:\work\project\Noval\noval\editor\notebook.py:385
 msgid "Zoom Out"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\notebook.py:382
+#: G:\work\project\Noval\noval\editor\notebook.py:388
+msgid "&Auto Complete"
+msgstr ""
+
+#: G:\work\project\Noval\noval\editor\notebook.py:389
 msgid "Previous Position"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\notebook.py:384
+#: G:\work\project\Noval\noval\editor\notebook.py:391
 msgid "Next Position"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\notebook.py:478
-#: G:\work\project\Noval\noval\ide.py:131
+#: G:\work\project\Noval\noval\editor\notebook.py:505
+#: G:\work\project\Noval\noval\ide.py:132
 #: G:\work\project\Noval\noval\project\baseviewer.py:1286
 #: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:164
 #: G:\work\project\Noval\noval\util\strutils.py:176
@@ -374,39 +399,39 @@ msgstr ""
 msgid "Keep Document.."
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\text.py:1421
+#: G:\work\project\Noval\noval\editor\text.py:1429
 msgid "Wrap words inside text area"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\text.py:1430
+#: G:\work\project\Noval\noval\editor\text.py:1438
 msgid "Show right edge"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\text.py:1434
+#: G:\work\project\Noval\noval\editor\text.py:1442
 msgid "Show line numbers"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\text.py:1438
+#: G:\work\project\Noval\noval\editor\text.py:1446
 msgid "Highlight Caret Line"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\text.py:1442
+#: G:\work\project\Noval\noval\editor\text.py:1450
 msgid "Highlight parentheses"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\text.py:1446
+#: G:\work\project\Noval\noval\editor\text.py:1454
 msgid "Highlight syntax elements"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\text.py:1450
+#: G:\work\project\Noval\noval\editor\text.py:1458
 msgid "Use spaces instead of tabs"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\text.py:1454
+#: G:\work\project\Noval\noval\editor\text.py:1462
 msgid "Indent Width:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\editor\text.py:1462
+#: G:\work\project\Noval\noval\editor\text.py:1470
 msgid "Edge Guide Width:"
 msgstr ""
 
@@ -464,8 +489,8 @@ msgstr ""
 #: G:\work\project\Noval\noval\find\findindir.py:497
 #: G:\work\project\Noval\noval\find\findindir.py:646
 #: G:\work\project\Noval\noval\project\wizard.py:41
-#: G:\work\project\Noval\noval\ui_base.py:939
-#: G:\work\project\Noval\noval\ui_base.py:1009
+#: G:\work\project\Noval\noval\ui_base.py:941
+#: G:\work\project\Noval\noval\ui_base.py:1011
 msgid "Cancel"
 msgstr ""
 
@@ -568,7 +593,7 @@ msgid "Open File Error"
 msgstr ""
 
 #: G:\work\project\Noval\noval\find\findresult.py:77
-#: G:\work\project\Noval\noval\ide.py:765
+#: G:\work\project\Noval\noval\ide.py:770
 #: G:\work\project\Noval\noval\python\debugger\output.py:38
 msgid "The file '%s' doesn't exist and couldn't be opened!"
 msgstr ""
@@ -658,126 +683,131 @@ msgstr ""
 msgid "Language changes will not appear until the application is restarted."
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:136
-#: G:\work\project\Noval\noval\syntax\lexer\_txt.py:42
+#: G:\work\project\Noval\noval\ide.py:137
+#: G:\work\project\Noval\noval\syntax\lexer\_txt.py:53
 msgid "Text Editor"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:144
+#: G:\work\project\Noval\noval\ide.py:145
 msgid "Image File"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:149
+#: G:\work\project\Noval\noval\ide.py:150
 msgid "Image Viewer"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:292
+#: G:\work\project\Noval\noval\ide.py:295
 msgid "Project File"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:297
+#: G:\work\project\Noval\noval\ide.py:300
 msgid "Project Viewer"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:471
+#: G:\work\project\Noval\noval\ide.py:474
 msgid "&New..."
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:471
-#: G:\work\project\Noval\noval\ide.py:472
-#: G:\work\project\Noval\noval\ide.py:473
 #: G:\work\project\Noval\noval\ide.py:474
+#: G:\work\project\Noval\noval\ide.py:475
 #: G:\work\project\Noval\noval\ide.py:476
 #: G:\work\project\Noval\noval\ide.py:477
 #: G:\work\project\Noval\noval\ide.py:479
+#: G:\work\project\Noval\noval\ide.py:480
 #: G:\work\project\Noval\noval\ide.py:482
+#: G:\work\project\Noval\noval\ide.py:485
 #: G:\work\project\Noval\noval\menu.py:659
 #: G:\work\project\Noval\noval\plugins\printer\__init__.py:90
-#: G:\work\project\Noval\noval\ui_utils.py:83
+#: G:\work\project\Noval\noval\ui_utils.py:96
 msgid "&File"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:472
+#: G:\work\project\Noval\noval\ide.py:475
 msgid "&Open..."
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:473
+#: G:\work\project\Noval\noval\ide.py:476
 msgid "&Close"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:474
+#: G:\work\project\Noval\noval\ide.py:477
 msgid "&Close A&ll"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:476
+#: G:\work\project\Noval\noval\ide.py:479
 msgid "&Save..."
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:477
+#: G:\work\project\Noval\noval\ide.py:480
 msgid "Save &As..."
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:479
+#: G:\work\project\Noval\noval\ide.py:482
 msgid "Save All"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:482
+#: G:\work\project\Noval\noval\ide.py:485
 msgid "E&xit"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:489
+#: G:\work\project\Noval\noval\ide.py:492
 msgid "Show FullScreen"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:491
+#: G:\work\project\Noval\noval\ide.py:494
 msgid "&Start Running"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:491
-#: G:\work\project\Noval\noval\ide.py:492
+#: G:\work\project\Noval\noval\ide.py:494
+#: G:\work\project\Noval\noval\ide.py:495
 #: G:\work\project\Noval\noval\menu.py:676
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:318
-#: G:\work\project\Noval\noval\python\pyide.py:75
-#: G:\work\project\Noval\noval\python\pyide.py:77
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:325
+#: G:\work\project\Noval\noval\python\pyide.py:76
 #: G:\work\project\Noval\noval\python\pyide.py:78
 #: G:\work\project\Noval\noval\python\pyide.py:79
-#: G:\work\project\Noval\noval\python\pyide.py:81
+#: G:\work\project\Noval\noval\python\pyide.py:80
 #: G:\work\project\Noval\noval\python\pyide.py:82
 #: G:\work\project\Noval\noval\python\pyide.py:83
 #: G:\work\project\Noval\noval\python\pyide.py:84
+#: G:\work\project\Noval\noval\python\pyide.py:85
 msgid "&Run"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:492
+#: G:\work\project\Noval\noval\ide.py:495
 msgid "&Start Debugging"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:493
+#: G:\work\project\Noval\noval\ide.py:496
 msgid "&Terminator"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:493
+#: G:\work\project\Noval\noval\ide.py:496
 #: G:\work\project\Noval\noval\menu.py:679
 #: G:\work\project\Noval\noval\python\plugins\unittest.py:158
-#: G:\work\project\Noval\noval\python\pyide.py:64
 #: G:\work\project\Noval\noval\python\pyide.py:65
+#: G:\work\project\Noval\noval\python\pyide.py:66
 msgid "&Tools"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:494
+#: G:\work\project\Noval\noval\ide.py:497
 msgid "&Visit NovalIDE Website"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:494
+#: G:\work\project\Noval\noval\ide.py:497
+#: G:\work\project\Noval\noval\ide.py:498
 #: G:\work\project\Noval\noval\menu.py:685
 #: G:\work\project\Noval\noval\plugins\about.py:113
-#: G:\work\project\Noval\noval\plugins\update.py:142
-#: G:\work\project\Noval\noval\python\pyide.py:60
-#: G:\work\project\Noval\noval\python\pyide.py:63
+#: G:\work\project\Noval\noval\plugins\update.py:143
+#: G:\work\project\Noval\noval\python\pyide.py:61
+#: G:\work\project\Noval\noval\python\pyide.py:64
 msgid "&Help"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ide.py:926
+#: G:\work\project\Noval\noval\ide.py:498
+msgid "Feedback"
+msgstr ""
+
+#: G:\work\project\Noval\noval\ide.py:931
 msgid "&Application Look"
 msgstr ""
 
@@ -818,52 +848,12 @@ msgstr ""
 #: G:\work\project\Noval\noval\python\debugger\breakpoints.py:52
 #: G:\work\project\Noval\noval\python\debugger\watchs.py:108
 #: G:\work\project\Noval\noval\python\project\rundocument.py:263
-#: G:\work\project\Noval\noval\ui_base.py:937
+#: G:\work\project\Noval\noval\ui_base.py:939
 msgid "&OK"
 msgstr ""
 
 #: G:\work\project\Noval\noval\plugins\about.py:113
 msgid "&About"
-msgstr ""
-
-#: G:\work\project\Noval\noval\plugins\feedback.py:43
-msgid "Feedback Bug|Suggestion"
-msgstr ""
-
-#: G:\work\project\Noval\noval\plugins\feedback.py:45
-msgid "Please choose the feedback category:"
-msgstr ""
-
-#: G:\work\project\Noval\noval\plugins\feedback.py:46
-msgid "Bug"
-msgstr ""
-
-#: G:\work\project\Noval\noval\plugins\feedback.py:46
-msgid "Suggestion"
-msgstr ""
-
-#: G:\work\project\Noval\noval\plugins\feedback.py:54
-msgid "Title:"
-msgstr ""
-
-#: G:\work\project\Noval\noval\plugins\feedback.py:60
-msgid "Content:"
-msgstr ""
-
-#: G:\work\project\Noval\noval\plugins\feedback.py:65
-msgid "&Send"
-msgstr ""
-
-#: G:\work\project\Noval\noval\plugins\feedback.py:88
-msgid "Content could not be empty!"
-msgstr ""
-
-#: G:\work\project\Noval\noval\plugins\feedback.py:102
-msgid "Send mail success,Thanks for your feedback!"
-msgstr ""
-
-#: G:\work\project\Noval\noval\plugins\feedback.py:136
-msgid "Feedback"
 msgstr ""
 
 #: G:\work\project\Noval\noval\plugins\fileview.py:42
@@ -911,7 +901,7 @@ msgstr ""
 #: G:\work\project\Noval\noval\python\project\pages\debugrun.py:297
 #: G:\work\project\Noval\noval\python\project\pages\debugrun.py:480
 #: G:\work\project\Noval\noval\python\project\rundocument.py:41
-#: G:\work\project\Noval\noval\util\fileutils.py:621
+#: G:\work\project\Noval\noval\util\fileutils.py:625
 msgid "Error"
 msgstr ""
 
@@ -932,7 +922,7 @@ msgid "Logger Level:"
 msgstr ""
 
 #: G:\work\project\Noval\noval\plugins\logmanager.py:82
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1004
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1011
 #: G:\work\project\Noval\noval\python\debugger\watchs.py:242
 msgid "Clear"
 msgstr ""
@@ -953,20 +943,19 @@ msgstr ""
 msgid "Downloading %s"
 msgstr ""
 
-#: G:\work\project\Noval\noval\plugins\update.py:69
+#: G:\work\project\Noval\noval\plugins\update.py:70
 msgid "Download fail:%s"
 msgstr ""
 
-#: G:\work\project\Noval\noval\plugins\update.py:86
-#: G:\work\project\Noval\noval\util\mailutils.py:39
+#: G:\work\project\Noval\noval\plugins\update.py:87
 msgid "could not connect to server"
 msgstr ""
 
-#: G:\work\project\Noval\noval\plugins\update.py:94
+#: G:\work\project\Noval\noval\plugins\update.py:95
 msgid "Update Available"
 msgstr ""
 
-#: G:\work\project\Noval\noval\plugins\update.py:142
+#: G:\work\project\Noval\noval\plugins\update.py:143
 msgid "&Check for Updates"
 msgstr ""
 
@@ -1466,7 +1455,7 @@ msgid "Run Error"
 msgstr ""
 
 #: G:\work\project\Noval\noval\project\debugger.py:61
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:327
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:334
 msgid "Close Window"
 msgstr ""
 
@@ -1482,7 +1471,7 @@ msgstr ""
 msgid "Restart the Run."
 msgstr ""
 
-#: G:\work\project\Noval\noval\project\debugger.py:293
+#: G:\work\project\Noval\noval\project\debugger.py:302
 msgid "Source:"
 msgstr ""
 
@@ -1731,7 +1720,7 @@ msgid "Name"
 msgstr ""
 
 #: G:\work\project\Noval\noval\project\variables.py:112
-#: G:\work\project\Noval\noval\ui_utils.py:308
+#: G:\work\project\Noval\noval\ui_utils.py:321
 msgid "Value:"
 msgstr ""
 
@@ -1857,200 +1846,200 @@ msgstr ""
 msgid "Choose a starting directory:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:96
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:95
 msgid "Python Executable Location Unknown"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:96
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:95
 msgid ""
 "To proceed we need to know the location of the python.exe you would like to use.\n"
 "To set this, go to Tools-->Options and use the 'Python Inpterpreter' panel to configuration a interpreter.\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:208
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:236
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:209
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:243
 msgid "Finished Running"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:208
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:236
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:209
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:243
 msgid "Running"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:212
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:213
 msgid "Process Running.."
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:212
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:213
 msgid "Process is still running,Do you want to kill the process and remove it?"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:332
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:339
 msgid "Continue Execution"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:337
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:344
 msgid "Break into Debugger"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:341
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:348
 msgid "Stop Debugging"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:345
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:352
 msgid "Restart Debugging"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:350
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:357
 msgid "Step to next line"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:354
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:361
 msgid "Step in"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:358
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:365
 msgid "Stop at function return"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:365
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1202
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:372
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1209
 msgid "Quick Add a Watch"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:369
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1111
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1184
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1186
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:376
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1118
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1191
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1193
 #: G:\work\project\Noval\noval\python\debugger\watchs.py:113
 #: G:\work\project\Noval\noval\python\debugger\watchs.py:116
 #: G:\work\project\Noval\noval\python\debugger\watchs.py:223
 msgid "Add a Watch"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:374
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:381
 msgid "Clear output pane"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:472
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:810
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:479
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:817
 msgid "Debugging"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:472
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:810
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:479
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:817
 msgid "Finished Debugging"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:488
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:967
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:495
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:974
 msgid "Debugger has been stopped."
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:539
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:546
 msgid "Debugger Running.."
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:539
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:546
 msgid "Debugger is still running,Do you want to kill the debugger and remove it?"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:613
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:620
 msgid "Out of Ports"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:613
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:620
 msgid ""
 "Out of ports for debugging!  Please restart the application builder.\n"
 "If that does not work, check for and remove running instances of python."
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:801
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:808
 msgid "A debugger is already running. Please shut down the other debugger first."
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:801
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:808
 msgid "Debugger Running"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:875
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:882
 msgid "Stack Frame"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:877
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:884
 msgid "Interact"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:879
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:886
 msgid "Break Points"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:881
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:888
 msgid "Watchs"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:903
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:910
 msgid "Stack Frame:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:999
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1006
 msgid "Cmd: "
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1003
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1010
 msgid "Execute"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1117
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1124
 msgid "Add to Watch"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1125
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1132
 #: G:\work\project\Noval\noval\python\debugger\watchs.py:231
 msgid "View in Dialog"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1130
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1137
 msgid "Send to Interact"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1624
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1631
 msgid "Could not connect to break server!"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1851
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1857
 msgid "Close"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1852
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1858
 msgid "Close All"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1873
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1879
 msgid "Interpreter not exists"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1878
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1884
 msgid "Check Syntax Ok!"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1941
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1947
 msgid "Local Host Name:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1943
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1949
 msgid "Port Range:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1944
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1950
 msgid "through to"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1978
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1984
 msgid "Invalid Starting Port Number"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\debugger\debugger.py:1978
+#: G:\work\project\Noval\noval\python\debugger\debugger.py:1984
 msgid "The starting port is not valid. Please change the value and try again."
 msgstr ""
 
@@ -2478,7 +2467,7 @@ msgid "Hide Details"
 msgstr ""
 
 #: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:148
-#: G:\work\project\Noval\noval\syntax\lexer\_txt.py:54
+#: G:\work\project\Noval\noval\syntax\lexer\_txt.py:65
 msgid "Text File"
 msgstr ""
 
@@ -2628,20 +2617,20 @@ msgstr ""
 msgid "&Remove Path"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\parser\intellisence.py:277
+#: G:\work\project\Noval\noval\python\parser\intellisence.py:64
 msgid "Loading intellisence database"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\parser\intellisence.py:285
-#: G:\work\project\Noval\noval\python\parser\intellisence.py:291
+#: G:\work\project\Noval\noval\python\parser\intellisence.py:72
+#: G:\work\project\Noval\noval\python\parser\intellisence.py:78
 msgid "Finish load Intellisence database"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\parser\intellisence.py:369
+#: G:\work\project\Noval\noval\python\parser\intellisence.py:156
 msgid "Updating interpreter %s intellisence database"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\parser\intellisence.py:393
+#: G:\work\project\Noval\noval\python\parser\intellisence.py:180
 msgid "Intellisence database has been updated"
 msgstr ""
 
@@ -2687,12 +2676,12 @@ msgstr ""
 
 #: G:\work\project\Noval\noval\python\project\browser.py:98
 #: G:\work\project\Noval\noval\python\project\rundocument.py:217
-#: G:\work\project\Noval\noval\python\pyeditor.py:325
+#: G:\work\project\Noval\noval\python\pyeditor.py:312
 msgid "Debug"
 msgstr ""
 
 #: G:\work\project\Noval\noval\python\project\browser.py:102
-#: G:\work\project\Noval\noval\python\pyeditor.py:329
+#: G:\work\project\Noval\noval\python\pyeditor.py:316
 msgid "&Break into Debugger"
 msgstr ""
 
@@ -2822,8 +2811,8 @@ msgid "Set run configurations for project '%s':"
 msgstr ""
 
 #: G:\work\project\Noval\noval\python\project\pages\debugrun.py:434
-#: G:\work\project\Noval\noval\ui_utils.py:116
-#: G:\work\project\Noval\noval\ui_utils.py:336
+#: G:\work\project\Noval\noval\ui_utils.py:129
+#: G:\work\project\Noval\noval\ui_utils.py:349
 msgid "Edit"
 msgstr ""
 
@@ -2930,113 +2919,117 @@ msgid "Don't Configure PYTHONPATH(later manually configure it)"
 msgstr ""
 
 #: G:\work\project\Noval\noval\python\project\viewer.py:89
-#: G:\work\project\Noval\noval\python\pyide.py:161
+#: G:\work\project\Noval\noval\python\pyide.py:167
 msgid "Configuration"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyeditor.py:93
+#: G:\work\project\Noval\noval\python\pyeditor.py:94
 msgid ""
 "Detect your python file contain chinese character,please insert encoding declare.\n"
 "\n"
 "Click 'Yes' to insert,or 'No' to cancel?"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyeditor.py:93
-#: G:\work\project\Noval\noval\python\pyide.py:284
-#: G:\work\project\Noval\noval\ui_utils.py:109
+#: G:\work\project\Noval\noval\python\pyeditor.py:94
+#: G:\work\project\Noval\noval\python\pyide.py:290
+#: G:\work\project\Noval\noval\ui_utils.py:122
 msgid "Declare Encoding"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyeditor.py:310
+#: G:\work\project\Noval\noval\python\pyeditor.py:297
 msgid "Find in Outline View"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyeditor.py:317
+#: G:\work\project\Noval\noval\python\pyeditor.py:304
 msgid "&Execute Code in interpreter"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyeditor.py:731
+#: G:\work\project\Noval\noval\python\pyeditor.py:708
 msgid "Cannot find definition"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyeditor.py:731
-#: G:\work\project\Noval\noval\python\pyide.py:62
+#: G:\work\project\Noval\noval\python\pyeditor.py:708
+#: G:\work\project\Noval\noval\python\pyide.py:63
 msgid "Goto Definition"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyide.py:60
+#: G:\work\project\Noval\noval\python\pyide.py:61
 msgid "&Python Help Document"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyide.py:63
+#: G:\work\project\Noval\noval\python\pyide.py:64
 msgid "&Python Website"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyide.py:64
+#: G:\work\project\Noval\noval\python\pyide.py:65
 msgid "&Interpreter"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyide.py:65
+#: G:\work\project\Noval\noval\python\pyide.py:66
 msgid "&Options..."
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyide.py:69
+#: G:\work\project\Noval\noval\python\pyide.py:70
 msgid "Insert Encoding Declare"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyide.py:75
+#: G:\work\project\Noval\noval\python\pyide.py:76
 msgid "&Start Without Debugging"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyide.py:77
+#: G:\work\project\Noval\noval\python\pyide.py:78
 msgid "&Exceptions..."
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyide.py:78
+#: G:\work\project\Noval\noval\python\pyide.py:79
 msgid "&Step Into"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyide.py:79
+#: G:\work\project\Noval\noval\python\pyide.py:80
 msgid "&Step Over"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyide.py:81
+#: G:\work\project\Noval\noval\python\pyide.py:82
 msgid "&Check Syntax..."
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyide.py:82
+#: G:\work\project\Noval\noval\python\pyide.py:83
 msgid "&Set Parameter And Environment"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyide.py:83
+#: G:\work\project\Noval\noval\python\pyide.py:84
 msgid "&Run Using Last Settings"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyide.py:84
+#: G:\work\project\Noval\noval\python\pyide.py:85
 msgid "&Debug Using Last Settings"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyide.py:232
+#: G:\work\project\Noval\noval\python\pyide.py:238
 msgid "%s"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyide.py:232
+#: G:\work\project\Noval\noval\python\pyide.py:238
 msgid "Open Error"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyide.py:284
+#: G:\work\project\Noval\noval\python\pyide.py:290
 msgid "The Python Document have already declare coding,Do you want to overwrite it?"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\pyutils.py:167
+#: G:\work\project\Noval\noval\python\pyutils.py:168
 msgid "Please select a file"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\syntax\lexer\_python.py:297
+#: G:\work\project\Noval\noval\python\pyutils.py:182
+msgid "Multiple Definitions"
+msgstr ""
+
+#: G:\work\project\Noval\noval\python\syntax\lexer\_python.py:114
 msgid "Python Script"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\syntax\lexer\_python.py:316
+#: G:\work\project\Noval\noval\python\syntax\lexer\_python.py:133
 msgid "Python Editor"
 msgstr ""
 
@@ -3053,19 +3046,19 @@ msgstr ""
 msgid "Col %i"
 msgstr ""
 
-#: G:\work\project\Noval\noval\syntax\lexer\_c.py:257
+#: G:\work\project\Noval\noval\syntax\lexer\_c.py:89
 msgid "C Source File"
 msgstr ""
 
-#: G:\work\project\Noval\noval\syntax\lexer\_c.py:276
+#: G:\work\project\Noval\noval\syntax\lexer\_c.py:108
 msgid "C Editor"
 msgstr ""
 
-#: G:\work\project\Noval\noval\syntax\lexer\_cpp.py:244
+#: G:\work\project\Noval\noval\syntax\lexer\_cpp.py:81
 msgid "C++ Source File"
 msgstr ""
 
-#: G:\work\project\Noval\noval\syntax\lexer\_cpp.py:263
+#: G:\work\project\Noval\noval\syntax\lexer\_cpp.py:100
 msgid "C++ Editor"
 msgstr ""
 
@@ -3077,11 +3070,11 @@ msgstr ""
 msgid "C/C++ Header Editor"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ui_base.py:991
+#: G:\work\project\Noval\noval\ui_base.py:993
 msgid "New Document"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ui_base.py:991
+#: G:\work\project\Noval\noval\ui_base.py:993
 msgid "Select a document type:"
 msgstr ""
 
@@ -3173,47 +3166,47 @@ msgstr ""
 msgid "New Project From Existing Code"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ui_utils.py:187
+#: G:\work\project\Noval\noval\ui_utils.py:200
 msgid "FullScreen Display"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ui_utils.py:222
+#: G:\work\project\Noval\noval\ui_utils.py:235
 msgid "Close Show FullScreen"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ui_utils.py:293
+#: G:\work\project\Noval\noval\ui_utils.py:306
 msgid "chardet version is less then 3.0.4,please use python pip to upgrade it first!"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ui_utils.py:301
+#: G:\work\project\Noval\noval\ui_utils.py:314
 msgid "Key: "
 msgstr ""
 
-#: G:\work\project\Noval\noval\ui_utils.py:324
+#: G:\work\project\Noval\noval\ui_utils.py:337
 msgid "Set user defined environment variable:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ui_utils.py:334
+#: G:\work\project\Noval\noval\ui_utils.py:347
 msgid "New.."
 msgstr ""
 
-#: G:\work\project\Noval\noval\ui_utils.py:338
+#: G:\work\project\Noval\noval\ui_utils.py:351
 msgid "Remove..."
 msgstr ""
 
-#: G:\work\project\Noval\noval\ui_utils.py:377
+#: G:\work\project\Noval\noval\ui_utils.py:390
 msgid "New Environment Variable"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ui_utils.py:390
+#: G:\work\project\Noval\noval\ui_utils.py:403
 msgid "Edit Environment Variable"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ui_utils.py:405
+#: G:\work\project\Noval\noval\ui_utils.py:418
 msgid "Key name has already exist in environment variable,Do you wann't to overwrite it?"
 msgstr ""
 
-#: G:\work\project\Noval\noval\ui_utils.py:469
+#: G:\work\project\Noval\noval\ui_utils.py:482
 msgid "This function does not implemented yet!"
 msgstr ""
 

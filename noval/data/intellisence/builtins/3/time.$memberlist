@@ -1,8 +1,3 @@
-CLOCK_MONOTONIC
-CLOCK_MONOTONIC_RAW
-CLOCK_PROCESS_CPUTIME_ID
-CLOCK_REALTIME
-CLOCK_THREAD_CPUTIME_ID
 _STRUCT_TM_ITEMS
 __doc__
 __loader__
@@ -12,9 +7,6 @@ __spec__
 altzone
 asctime
 clock
-clock_getres
-clock_gettime
-clock_settime
 ctime
 daylight
 get_clock_info
@@ -31,4 +23,3 @@ struct_time
 time
 timezone
 tzname
-tzset

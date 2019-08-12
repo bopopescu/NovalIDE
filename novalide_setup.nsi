@@ -111,9 +111,6 @@ Section "MainSection" SEC01
   SetOutPath "$INSTDIR\noval"
   File /r "dist\${PRODUCT_NAME}\noval\*.*"
 
-  SetOutPath "$INSTDIR\Crypto"
-  File /r "dist\${PRODUCT_NAME}\Crypto\*.*"
-
   SetOutPath "$INSTDIR\tcl"
   File /r "dist\${PRODUCT_NAME}\tcl\*.*"
 
@@ -142,8 +139,8 @@ Section "MainSection" SEC01
   File /r "dist\${PRODUCT_NAME}\win32com\shell\*.*"
 
 
-  #SetOutPath "$APPDATA\NovalIDE\intellisence\builtins"
-  #File /r "dist\${PRODUCT_NAME}\builtins\*.*"
+  SetOutPath "$APPDATA\NovalIDE\intellisence\builtins"
+  File /r "dist\${PRODUCT_NAME}\builtins\*.*"
 SectionEnd
 
 Section -AdditionalIcons
@@ -242,7 +239,6 @@ Section Uninstall
 
   RMDir /r "$INSTDIR\tcl"
   RMDir /r "$INSTDIR\noval"
-  RMDir /r "$INSTDIR\Crypto"
 
   RMDir /r "$INSTDIR\tk"
   RMDir /r "$INSTDIR\psutil"

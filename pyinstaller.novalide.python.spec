@@ -32,6 +32,8 @@ datas = [
 	('noval/python/project/browser.py','noval/python/project'),
 	('noval/python/project/pages/*.py','noval/python/project/pages'),
 	("noval/find/findresult.py","noval/find"),
+        ("noval/data/intellisence/builtins/2/*.*","./builtins/2"),
+        ("noval/data/intellisence/builtins/3/*.*","./builtins/3"),
         ("./tkdnd/*.*","./tkdnd"),
 	("noval.ico","./"),
 	("version.txt","./"),

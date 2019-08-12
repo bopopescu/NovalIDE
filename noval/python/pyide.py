@@ -44,7 +44,8 @@ class PyIDEApplication(ide.IDEApplication):
             return False
         import noval.python.interpreter.gerneralconfiguration as interpretergerneralconfiguration
         import noval.python.interpreter.interpreterconfigruation as interpreterconfigruation
-        import noval.python.parser.intellisence as intellisence
+        #这里必须用相对导入,因为搜索路径已经添加了,如果使用长路径导入会导致IntellisenceManager的实例信息和其它地方的不一样
+        import intellisence
         
         #pyc和pyo二进制文件类型禁止添加到项目中
         ProjectDocument.BIN_FILE_EXTS = ProjectDocument.BIN_FILE_EXTS + ['pyc','pyo']
@@ -205,10 +206,10 @@ class PyIDEApplication(ide.IDEApplication):
             return
         if interpreter.HelpPath == "":
             return
-        os.startfile(interpreter.HelpPath)
+        fileutils.startfile(interpreter.HelpPath)
         
     def GotoPythonWebsite(self):
-        os.startfile("http://www.python.org")
+        fileutils.startfile("http://www.python.org")
 
     def SelectInterpreter(self,interpreter):
         if interpreter != interpretermanager.InterpreterManager().GetCurrentInterpreter():

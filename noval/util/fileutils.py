@@ -425,9 +425,13 @@ def open_file_directory(file_path):
             err_msg = win32api.FormatMessage(ret)
             if apputils.is_py2():
                 err_msg = err_msg.decode(apputils.get_default_encoding())
-        ctypes.windll.shell32.SHOpenFolderAndSelectItems(pidl, 0, None, 0)
-        ctypes.windll.shell32.ILFree(pidl)
-        ctypes.windll.ole32.CoUninitialize()
+        try:
+            ctypes.windll.shell32.SHOpenFolderAndSelectItems(pidl, 0, None, 0)
+            ctypes.windll.shell32.ILFree(pidl)
+            ctypes.windll.ole32.CoUninitialize()
+        except:
+            #选中指定对象.如果使用"/select",则父目录被打开,并选中指定对象,请注意命令中"/select"参数后面的逗号
+            subprocess.Popen(["explorer", "/select," + file_path])
     else:
         try:
             subprocess.Popen(["nautilus", file_path])
@@ -463,7 +467,7 @@ def open_path_in_terminator(file_path):
     if ret != 0:
         raise RuntimeError(err_msg)
         
-def start_file(file_path):
+def startfile(file_path):
     if apputils.is_windows():
         os.startfile(file_path)
     else:

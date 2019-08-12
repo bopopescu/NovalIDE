@@ -19,8 +19,8 @@ import sys
 import codecs
 import noval.python.parser.scope as scope
 import noval.python.interpreter.interpreter as pythoninterpreter
-import noval.python.parser.intellisence as intellisence
-import noval.python.parser.nodeast as nodeast
+import intellisence
+import nodeast
 import noval.util.strutils as strutils
 from noval.python.parser.utils import CmpMember
 import noval.python.interpreter.interpretermanager as interpretermanager
@@ -164,47 +164,32 @@ class PythonView(codeeditor.CodeView):
        # wx.CallAfter(self.ClearOutline)  # need CallAfter because when closing the document, it is Activated and then Close, so need to match OnActivateView's CallAfter
         return status
        
-
-    def GetAutoCompleteKeywordList(self, context, hint,line):
-        obj = None
-        try:
-            if context and len(context):
-                obj = eval(context, globals(), locals())
-        except:
-            if not hint or len(hint) == 0:  # context isn't valid, maybe it was the hint
-                hint = context
-            
-        if obj is None:
-            kw = keyword.kwlist[:]
-            module_scope = self.ModuleScope
-            members = []
-            if module_scope is not None:
-                scope = module_scope.FindScope(line)
-                parent = scope
-                while parent is not None:
-                    if parent.Parent is None:
-                        members.extend(parent.GetMembers())
+    def GetAutoCompleteKeywords(self,line):
+        #先获取默认的公用关键字列表
+        default_keywords = codeeditor.CodeView.GetAutoCompleteDefaultKeywords(self)
+        members = []
+        kw = default_keywords
+        #再获取语法分析当前范围的单词列表
+        if self.ModuleScope is not None:
+            #查找当前行所在的范围
+            scope = self.ModuleScope.FindScope(line)
+            is_cls_scope = scope.IsClassMethodScope()
+            is_self_scope = scope.IsMethodScope()
+            parent = scope
+            while parent is not None:
+                if parent.Parent is None:
+                    members.extend(parent.GetMembers())
+                else:
+                    if is_cls_scope and parent == scope.Parent:
+                        member_list = ['cls']
+                    elif is_self_scope and parent == scope.Parent:
+                        member_list = ['self']
                     else:
-                        members.extend(parent.GetMemberList(False))
-                    parent = parent.Parent
-                kw.extend(members)
-                builtin_members = intellisence.IntellisenceManager().GetBuiltinModuleMembers()
-                kw.extend(builtin_members)
-        else:
-            symTbl = dir(obj)
-            kw = filter(lambda item: item[0] != '_', symTbl)  # remove local variables and methods
-        
-        if hint and len(hint):
-            lowerHint = hint.lower()
-            filterkw = filter(lambda item: item.lower().startswith(lowerHint), kw)  # remove variables and methods that don't match hint
-            kw = filterkw
-
-        kw.sort(CmpMember)
-        if hint:
-            replaceLen = len(hint)
-        else:
-            replaceLen = 0
-        return " ".join(kw), replaceLen
+                        member_list = parent.GetMemberList()
+                    members.extend(member_list)
+                parent = parent.Parent
+            kw.extend(members)
+        return kw
 
     def OnJumpToFoundLine(self, event):
         messageService = wx.GetApp().GetService(MessageService.MessageService)
@@ -303,6 +288,7 @@ class PythonCtrl(codeeditor.CodeCtrl):
 
     def __init__(self, master=None, cnf={}, **kw):
         codeeditor.CodeCtrl.__init__(self, master, cnf=cnf, **kw)
+        self.bind("<KeyPress>", self.OnChar, True)
 
     def CreatePopupMenu(self):
         codeeditor.CodeCtrl.CreatePopupMenu(self)
@@ -529,120 +515,108 @@ class PythonCtrl(codeeditor.CodeCtrl):
             self.AddText(eol_char + spaces)
         self.EnsureCaretVisible()
                 
-    def IsImportType(self,start_pos):
-        line_start_pos = self.PositionFromLine(self.LineFromPosition(start_pos))
-        at = self.GetCharAt(start_pos)
-        while chr(at) == self.TYPE_BLANK_WORD:
-            start_pos -= 1
-            at = self.GetCharAt(start_pos)
-        if start_pos <= line_start_pos:
-            return False
-        word = self.GetTypeWord(start_pos)
-        return True if word == self.TYPE_IMPORT_WORD else False
-        
-    def IsFromType(self,start_pos):
-        line_start_pos = self.PositionFromLine(self.LineFromPosition(start_pos))
-        at = self.GetCharAt(start_pos)
-        while chr(at) == self.TYPE_BLANK_WORD:
-            start_pos -= 1
-            at = self.GetCharAt(start_pos)
-        if start_pos <= line_start_pos:
-            return False
-        word = self.GetTypeWord(start_pos)
-        return True if word == self.TYPE_FROM_WORD else False
-        
-    def IsFromModuleType(self,start_pos):
-        line_start_pos = self.PositionFromLine(self.LineFromPosition(start_pos))
-        at = self.GetCharAt(start_pos)
-        while chr(at) == self.TYPE_BLANK_WORD:
-            start_pos -= 1
-            at = self.GetCharAt(start_pos)
-        if start_pos <= line_start_pos:
-            return False
-        word = self.GetTypeWord(start_pos)
-        start_pos -= len(word)
-        start_pos -= 1
-        at = self.GetCharAt(start_pos)
-        while chr(at) == self.TYPE_BLANK_WORD:
-            start_pos -= 1
-            at = self.GetCharAt(start_pos)
-        if start_pos <= line_start_pos:
-            return False
-        word = self.GetTypeWord(start_pos)
-        return True if word == self.TYPE_FROM_WORD else False
+    def IsImportType(self,pos):
+        '''
+            用户是否输入from关键字
+        '''
+        return self.IsKeywordBeforePos(pos,self.TYPE_IMPORT_WORD)[0]
 
-    def IsFromImportType(self,start_pos):
-        line_start_pos = self.PositionFromLine(self.LineFromPosition(start_pos))
-        at = self.GetCharAt(start_pos)
-        while chr(at) == self.TYPE_BLANK_WORD:
-            start_pos -= 1
-            at = self.GetCharAt(start_pos)
-        if start_pos <= line_start_pos:
-            return False,''
-        word = self.GetTypeWord(start_pos)
-        if word == self.TYPE_IMPORT_WORD:
-            start_pos -= len(self.TYPE_IMPORT_WORD)
-            start_pos -= 1
-            at = self.GetCharAt(start_pos)
-            while chr(at) == self.TYPE_BLANK_WORD:
-                start_pos -= 1
-                at = self.GetCharAt(start_pos)
-            if start_pos <= line_start_pos:
+    def IsKeywordBeforePos(self,pos,keyword):
+        '''
+            判断某个位置之前是否存在from或者import等关键字
+        '''
+        line,col = pos
+        at = self.GetCharAt(line,col)
+        #忽略所有空格 
+        while at == self.TYPE_BLANK_WORD:
+            col -= 1
+            at = self.GetCharAt(line,col)
+        if col <= 0:
+            return False,None
+        word = self.GetTypeWord(line,col)
+        return word == keyword,(line,col)
+        
+    def IsFromType(self,pos):
+        '''
+            用户是否输入import关键字
+        '''
+        return self.IsKeywordBeforePos(pos,self.TYPE_FROM_WORD)[0]
+        
+    def IsFromplusType(self,pos):
+        '''
+            用户是否输入from xxx表达式
+        '''
+        line,col = pos
+        
+        at = self.GetCharAt(line,col)
+        #忽略所有空格 
+        while at == self.TYPE_BLANK_WORD:
+            col -= 1
+            at = self.GetCharAt(line,col)
+        if col <= 0:
+            return False
+        
+        word = self.GetTypeWord(line,col)
+        col -= len(word)
+        col -= 1
+        pos = line,col
+        return self.IsKeywordBeforePos(pos,self.TYPE_FROM_WORD)[0]
+
+    def IsFromImportType(self,pos):
+        '''
+            from xxx import ....
+        '''
+        ret,pos = self.IsKeywordBeforePos(pos,self.TYPE_IMPORT_WORD)
+        if ret:
+            line,col = pos
+            col -= len(self.TYPE_IMPORT_WORD)
+            col -= 1
+            at = self.GetCharAt(line,col)
+            while at == self.TYPE_BLANK_WORD:
+                col -= 1
+                at = self.GetCharAt(line,col)
+            if col <= 0:
                 return False,''
-            from_word = self.GetTypeWord(start_pos)
-            start_pos -= len(from_word)
-            start_pos -= 1
-            at = self.GetCharAt(start_pos)
-            while chr(at) == self.TYPE_BLANK_WORD:
-                start_pos -= 1
-                at = self.GetCharAt(start_pos)
-            if start_pos <= line_start_pos:
-                return False,''
-            word = self.GetTypeWord(start_pos)
-            return True if word == self.TYPE_FROM_WORD else False,from_word
+            from_word = self.GetTypeWord(line,col)
+            col -= len(from_word)
+            col -= 1
+            pos = line,col
+            ret,pos = self.IsKeywordBeforePos(pos,self.TYPE_FROM_WORD)
+            return ret,from_word
         return False,''
                 
     def OnChar(self,event):
-        if self.CallTipActive():
-            self.CallTipCancel()
-        key = event.GetKeyCode()
+        keycode = event.keycode
         pos = self.GetCurrentPos()
-        # Tips
-        if key == ord("("):
-            #delete selected text
-            if self.GetSelectedText():
-                self.ReplaceSelection("")
-            self.AddText("(")
+        pos = pos[0],pos[1]-1
+        if event.char == "(":
             self.GetArgTip(pos)
-        elif key == ord(self.TYPE_POINT_WORD):
-            #delete selected text
-            if self.GetSelectedText():
-                self.ReplaceSelection("")
-            self.AddText(self.TYPE_POINT_WORD)
+        elif event.char == self.TYPE_POINT_WORD:
             self.ListMembers(pos)
-        elif key == ord(self.TYPE_BLANK_WORD):
-            if self.GetSelectedText():
-                self.ReplaceSelection("")
-            self.AddText(self.TYPE_BLANK_WORD)
-            is_from_import_type,name = self.IsFromImportType(pos)
-            if is_from_import_type:
-                member_list = intellisence.IntellisenceManager().GetMemberList(name)
-                if member_list == []:
-                    return
-                member_list.insert(0,"*")
-                self.AutoCompShow(0, string.join(member_list))
-            elif self.IsImportType(pos) or self.IsFromType(pos):
-                import_list = intellisence.IntellisenceManager().GetImportList()
-                import_list.extend(self.GetCurdirImports())
-                import_list.sort(parserutils.CmpMember)
-                if import_list == []:
-                    return
-                self.AutoCompShow(0, string.join(import_list))
-            elif self.IsFromModuleType(pos):
-                self.AutoCompShow(0, string.join([self.TYPE_IMPORT_WORD]))
         else:
-            event.Skip()
-            
+            if len(event.char) == 1 and keycode == ord(event.char):
+                # Tips
+                if keycode == ord(self.TYPE_BLANK_WORD):
+                    #输入的是否from xx import 这样的句式
+                    ret,name = self.IsFromImportType(pos)
+                    if ret:
+                        member_list = intellisence.IntellisenceManager().GetMemberList(name)
+                        if member_list == []:
+                            return
+                        member_list.insert(0,"*")
+                        self.AutoCompShow(0, member_list)
+                    #输入的是from或者import这样的句式
+                    elif self.IsImportType(pos) or self.IsFromType(pos):
+                        import_list = intellisence.IntellisenceManager().GetImportList()
+                        #import_list.extend(self.GetCurdirImports())
+                        import_list = parserutils.py_sorted(import_list,parserutils.CmpMember)
+                        if import_list == []:
+                            return
+                        self.AutoCompShow(0, import_list)
+                    #输入from xxx后自动完成输入import关键字
+                    elif self.IsFromplusType(pos):
+                        self.AddText(self.TYPE_BLANK_WORD)
+                        self.AutoCompShow(0, [self.TYPE_IMPORT_WORD])            
 
     def GetCurdirImports(self):
         cur_project = wx.GetApp().GetService(project.ProjectEditor.ProjectService).GetView().GetDocument()
@@ -666,22 +640,23 @@ class PythonCtrl(codeeditor.CodeCtrl):
         return imports
             
     def GetArgTip(self,pos):
-        text = self.GetTypeWord(pos)
-        line = self.LineFromPosition(pos)
-        module_scope = wx.GetApp().GetDocumentManager().GetCurrentView().ModuleScope
+        text = self.GetTypeWord(pos[0],pos[1])
+        module_scope = GetApp().GetDocumentManager().GetCurrentView().ModuleScope
         if module_scope is None:
             return
+        line = pos[0]
         scope = module_scope.FindScope(line+1)
-        scope_found = scope.FindDefinitionMember(text)
+        found_scopes = scope.FindNameScopes(text)
         tip = ''
-        if None != scope_found:
+        if found_scopes:
+            scope_found = found_scopes[0]
             if scope_found.Parent is not None and isinstance(scope_found.Node,nodeast.ImportNode):
                 tip = scope_found.GetImportMemberArgTip(text)
             else:
                 tip = scope_found.GetArgTip()
-        if tip == '':
+        if not tip:
             return
-        self.CallTipShow(pos,tip)    
+        self.CallTipShow(pos,tip)   
 
     def IsListMemberFlag(self,pos):
         at = self.GetCharAt(pos)
@@ -690,15 +665,16 @@ class PythonCtrl(codeeditor.CodeCtrl):
         return True
 
     def ListMembers(self,pos):
-        text = self.GetTypeWord(pos)
-        line = self.LineFromPosition(pos)
-        module_scope = wx.GetApp().GetDocumentManager().GetCurrentView().ModuleScope
+        text = self.GetTypeWord(pos[0],pos[1])
+        line = pos[0]
+        module_scope = GetApp().GetDocumentManager().GetCurrentView().ModuleScope
         if module_scope is None:
             return
         scope = module_scope.FindScope(line+1)
-        scope_found = scope.FindDefinitionScope(text)
+        found_scopes = scope.FindNameScopes(text)
         member_list = []
-        if None != scope_found:
+        if found_scopes:
+            scope_found = found_scopes[0]
             if scope_found.Parent is not None and isinstance(scope_found.Node,nodeast.ImportNode):
                 member_list = scope_found.GetImportMemberList(text)
             else:
@@ -706,10 +682,10 @@ class PythonCtrl(codeeditor.CodeCtrl):
                     member_list = scope_found.GetClassMemberList()
                 else:
                     member_list = scope_found.GetMemberList()
+        member_list = parserutils.py_sorted(member_list,parserutils.CmpMember)
         if member_list == []:
             return
-        self.AutoCompSetIgnoreCase(True)
-        self.AutoCompShow(0, string.join(member_list))
+        self.AutoCompShow(0, member_list)
 
     def IsCaretLocateInWord(self,pos=None):
         if pos == None:
@@ -721,7 +697,7 @@ class PythonCtrl(codeeditor.CodeCtrl):
             return False
         if line_text[0] == '#':
             return False
-        at = self.GetCharAt(line,col)
+        at = self.GetCharAt(line,col-1)
         if at == "":
             return False
         return True if at in self.DEFAULT_WORD_CHARS else False
@@ -732,7 +708,7 @@ class PythonCtrl(codeeditor.CodeCtrl):
             messagebox.showwarning(_("Goto Definition"),_("Cannot find definition") + "\"" + txt + "\"",parent = self.master)
             
         line,col= self.GetCurrentLineColumn()
-        text = self.GetTypeWord(line,col)
+        text = self.GetTypeWord(line,col-1)
         open_new_doc = False
         module_scope = GetApp().GetDocumentManager().GetCurrentView().ModuleScope
         definitions = []
@@ -761,9 +737,9 @@ class PythonCtrl(codeeditor.CodeCtrl):
                 dlg = pyutils.DefinitionsDialog(GetApp().GetTopWindow(),GetApp().GetDocumentManager().GetCurrentView(),definitions)
                 dlg.ShowModal()
 
-    def GetTypeWord(self,line,col):
-        line,word_col = self.get_line_col(self.index("insert wordstart"))
-        word_end = self.index("insert wordend")
+    def GetTypeWord(self,cur_line,cur_col):
+        line,word_col = self.get_line_col(self.index("%d.%d wordstart"% (cur_line,cur_col)))
+        word_end = self.index("%d.%d wordend"% (cur_line,cur_col))
         at = self.GetCharAt(line,word_col)
         rem_chars = self.DEFAULT_WORD_CHARS + self.TYPE_POINT_WORD
         while at in rem_chars:

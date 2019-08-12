@@ -207,6 +207,7 @@ def process_sys_modules(dest_path):
         file_parser.Dump()
     
 if __name__ == "__main__":
+    generate_builtin_data("./")
     start_time = time.time()
     out_path = sys.argv[1]
     new_database_version = sys.argv[2]

@@ -1,6 +1,7 @@
 AST
 Add
 And
+AnnAssign
 Assert
 Assign
 AsyncFor
@@ -21,6 +22,7 @@ Bytes
 Call
 ClassDef
 Compare
+Constant
 Continue
 Del
 Delete
@@ -35,6 +37,7 @@ Expression
 ExtSlice
 FloorDiv
 For
+FormattedValue
 FunctionDef
 GeneratorExp
 Global
@@ -50,6 +53,7 @@ Interactive
 Invert
 Is
 IsNot
+JoinedStr
 LShift
 Lambda
 List

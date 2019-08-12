@@ -303,6 +303,7 @@ class PythonInterpreter(BuiltinPythonInterpreter):
                 return
         self._version = output.replace(version_flag,"").strip()
         self._is_valid_interpreter = True
+        self.SetBuiltinName()
 
     def IsV27(self):
         versions = self.Version.split('.')
@@ -561,4 +562,13 @@ class PythonInterpreter(BuiltinPythonInterpreter):
             result.append(os.path.dirname(self.Path))
         return result
         
-                
+    def SetInterpreter(self,**kwargs):
+        BuiltinPythonInterpreter.SetInterpreter(self,**kwargs)
+        self.SetBuiltinName()
+
+    def SetBuiltinName(self):
+        #builtin module name which python2 is __builtin__ and python3 is builtins
+        if self.IsV3():
+            self._builtin_module_name = "builtins"
+        elif self.IsV2():
+            self._builtin_module_name = "__builtin__"             

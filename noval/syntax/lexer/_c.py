@@ -38,7 +38,9 @@ def make_pat(kw_list):
     # self.file = file("file") :
     # 1st 'file' colorized normal, 2nd as builtin, 3rd as string
     builtin = get_builtin_pat(_builtinlist)
-    comment = matches_any("comment", [r"/\*((?!\*/).)*\*/"])
+    #匹配块注释
+    cregx = stringprefix + r"/\*((?!(\*/)).)*(\*/)?"
+    comment = matches_any("comment", [cregx])
     #匹配预处理
     pretreatment = matches_any("preprocess",[r"#((?!\n).)*"])
     number = get_number_pat()

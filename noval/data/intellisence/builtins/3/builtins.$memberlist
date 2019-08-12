@@ -33,6 +33,7 @@ KeyError
 KeyboardInterrupt
 LookupError
 MemoryError
+ModuleNotFoundError
 NameError
 None
 NotADirectoryError
@@ -67,6 +68,7 @@ UnicodeWarning
 UserWarning
 ValueError
 Warning
+WindowsError
 ZeroDivisionError
 __build_class__
 __debug__

@@ -23,6 +23,9 @@ import noval.util.utils as utils
 import noval.syntax.syntax as syntax
 import noval.constants as constants
 from noval.syntax.syndata import BaseSyntaxcolorer
+from noval.python.parser.utils import py_sorted
+import noval.autocomplete as autocomplete
+import noval.calltip as calltip
 
 class CodeDocument(texteditor.TextDocument):
     def OnOpenDocument(self, filename):
@@ -78,44 +81,48 @@ class CodeView(texteditor.TextView):
 
     def GetAutoCompleteHint(self):
         """ Replace this method with Editor specific method """
-        pos = self.GetCtrl().GetCurrentPos()
-        if pos == 0:
+        line,col = self.GetCtrl().GetCurrentPos()
+        if line == 0 and col == 0:
             return None, None
-        if chr(self.GetCtrl().GetCharAt(pos - 1)) == '.':
-            pos = pos - 1
+        if self.GetCtrl().GetCharAt(line,col) == '.':
+            col = col - 1
             hint = None
         else:
             hint = ''
             
-        validLetters = string.letters + string.digits + '_.'
+        validLetters = self.GetCtrl().DEFAULT_WORD_CHARS + '.'
         word = ''
         while (True):
-            pos = pos - 1
-            if pos < 0:
+            col = col - 1
+            if col < 0:
                 break
-            char = chr(self.GetCtrl().GetCharAt(pos))
+            char = self.GetCtrl().GetCharAt(line,col)
             if char not in validLetters:
                 break
             word = char + word
             
         context = word
+        
         if hint is not None:            
             lastDot = word.rfind('.')
             if lastDot != -1:
                 context = word[0:lastDot]
                 hint = word[lastDot+1:]
-                    
+            else:
+                hint = word
         return context, hint
-        
 
     def GetAutoCompleteDefaultKeywords(self):
         """ Replace this method with Editor specific keywords """
         lexer = self.GetCtrl().GetLangLexer()
         return lexer.GetKeywords()
 
+    def GetAutoCompleteKeywords(self,line):
+        return self.GetAutoCompleteDefaultKeywords()
+
     def GetAutoCompleteKeywordList(self, context, hint,line):            
         """ Replace this method with Editor specific keywords """
-        kw = self.GetAutoCompleteDefaultKeywords()
+        kw = self.GetAutoCompleteKeywords(line)
         if not kw:
             return
         
@@ -123,15 +130,15 @@ class CodeView(texteditor.TextView):
             lowerHint = hint.lower()
             filterkw = filter(lambda item: item.lower().startswith(lowerHint), kw)  # remove variables and methods that don't match hint
             kw = filterkw
-
+        #提示补全的单词
         if hint:
+            #补全单词已经输入的长度
             replaceLen = len(hint)
         else:
             replaceLen = 0
             
-        kw.sort(CaseInsensitiveCompare)
-        return " ".join(kw), replaceLen
-        
+        kw = py_sorted(kw,cmp_func=strutils.caseInsensitiveCompare)
+        return kw, replaceLen
 
     def OnCleanWhiteSpace(self):
         newText = ""
@@ -339,7 +346,7 @@ class CodeView(texteditor.TextView):
             return enabled
         elif command_id == constants.ID_INSERT_DECLARE_ENCODING:
             return False
-        elif command_id in [constants.ID_COMMENT_LINES,constants.ID_UNCOMMENT_LINES]:
+        elif command_id in [constants.ID_COMMENT_LINES,constants.ID_UNCOMMENT_LINES,constants.ID_AUTO_COMPLETE]:
             return True
         return texteditor.TextView.UpdateUI(self,command_id)
 
@@ -362,6 +369,8 @@ class CodeCtrl(texteditor.SyntaxTextCtrl):
         self.bindtags(self.bindtags() + ("CodeCtrl",))
         #设置单词列表
         self.fixwordbreaks(GetApp())
+        self.autocompleter = None
+        self.calltip = None
 
     def CreatePopupMenu(self):
         texteditor.TextCtrl.CreatePopupMenu(self)
@@ -449,3 +458,16 @@ class CodeCtrl(texteditor.SyntaxTextCtrl):
         # root.tk.call('set', 'tcl_nonwordchars', r'\W')
         root.tk.call("set", "tcl_wordchars", u"[a-zA-Z0-9_À-ÖØ-öø-ÿĀ-ſƀ-ɏА-я]")
         root.tk.call("set", "tcl_nonwordchars", u"[^a-zA-Z0-9_À-ÖØ-öø-ÿĀ-ſƀ-ɏА-я]")
+
+    def AutoCompShow(self,replaceLen,chars):
+        if self.autocompleter is None:
+            self.autocompleter = autocomplete.Completer(self)
+        self.autocompleter._present_completions(chars,replaceLen)
+
+    def OnChar(self,event):
+        return None
+
+    def CallTipShow(self,pos,tip):
+        if self.calltip is None:
+            self.calltip = calltip.CalltipBox(self)
+        self.calltip._show_box(tip)

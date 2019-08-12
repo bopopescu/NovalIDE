@@ -60,13 +60,12 @@ class BuiltinNode(AbstractAst):
             return False
         return True
         
-    def GetMemberList(self,sort=True):
-        ###member_list = [child.Name for child in self.Childs if child.Type != config.NODE_UNKNOWN_TYPE]
+    def GetMemberList(self):
         member_list = []
         for child in self.Childs:
             if self.IsValidMember(child):
                 if child.Type == config.NODE_FROMIMPORT_TYPE:
-                    member_list.extend(child.GetMemberList(sort))
+                    member_list.extend(child.GetMemberList())
                 elif child.Type == config.NODE_IMPORT_TYPE:
                     if child.AsName is not None:
                         member_list.append(child.AsName)
@@ -76,8 +75,6 @@ class BuiltinNode(AbstractAst):
                 else:
                     if child.Name.find('.') == -1:
                         member_list.append(child.Name)
-        if sort:
-            member_list.sort(CmpMember)
         return member_list
     @property
     def Doc(self):
@@ -271,15 +268,13 @@ class FromImportNode(Node):
      def __init__(self,name,line,col,parent):
         super(FromImportNode,self).__init__(name,line,col,config.NODE_FROMIMPORT_TYPE,parent)
 
-     def GetMemberList(self,sort=True):
+     def GetMemberList(self):
         member_list = []
         for child in self.Childs:
             if child.AsName is None:
                 member_list.append(child.Name)
             else:
                 member_list.append(child.AsName)
-        if sort:
-            member_list.sort(CmpMember)
         return member_list
         
 class UnknownNode(Node):

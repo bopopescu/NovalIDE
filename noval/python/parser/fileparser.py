@@ -114,6 +114,16 @@ class FiledumpParser(codeparser.CodebaseParser):
         if self.is_package:
             module_childs = get_package_childs(self.module_path)
             module_d['childs'].extend(module_childs)
+        else:
+            #处理sys modules中的模块,如果类似os.path这样的模块,这样需要添加到os模块的儿子中
+            for module_key in sys.modules.keys():
+                sys_module_name = self.top_module_name + "."
+                if module_key.startswith(sys_module_name):
+                    module_instance = sys.modules[module_key]
+                    d = dict(name=module_key.replace(sys_module_name,""),full_name=module_instance.__name__,\
+                            path=module_instance.__file__.rstrip("c"),type=config.NODE_MODULE_TYPE)
+                    module_d['childs'].append(d)
+                    break
         with open(self.member_file_path, 'wb') as o1:
             # Pickle dictionary using protocol 0.
             pickle.dump(module_d, o1,protocol=0)

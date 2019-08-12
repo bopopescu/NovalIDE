@@ -118,12 +118,12 @@ class CodebaseParser(object):
             self.WalkImportElement(element,parent)
         elif isinstance(element,ast.ImportFrom):
             self.WalkFromImportElement(element,parent)
+        if isinstance(element,ast.If):
+            self.WalkIfElement(element,parent)
         else:
             #进行更深入的分析,分析一些表达式
             if self._deep:
-                if isinstance(element,ast.If):
-                    self.WalkIfElement(element,parent)
-                elif (utils.IsPython3() and isinstance(element,ast.Try)) or (utils.IsPython2() and isinstance(element,ast.TryExcept)):
+                if (utils.IsPython3() and isinstance(element,ast.Try)) or (utils.IsPython2() and isinstance(element,ast.TryExcept)):
                     self.WalkTryExceptElement(element,parent)
                 elif isinstance(element,ast.For):
                     self.WalkForElement(element,parent)
@@ -339,4 +339,4 @@ class CodeParser(CodebaseParser):
             return nodeast.UnknownNode(lineno,col,parent)
 
     def GetParentType(self,parent):
-        return parent.Type
+        return parent.Type

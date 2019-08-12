@@ -480,7 +480,6 @@
   <noval:file filePath="./noval/launcher.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/ide.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/util/singleton.py" logicalFolder="noval/util"/>
-  <noval:file filePath="./noval/util/mailutils.py" logicalFolder="noval/util"/>
   <noval:file filePath="./noval/util/urlutils.py" logicalFolder="noval/util"/>
   <noval:file filePath="./noval/python/pyide.py" logicalFolder="noval/python"/>
   <noval:file filePath="./noval/menu.py" logicalFolder="noval"/>
@@ -554,7 +553,6 @@
   <noval:file filePath="./noval/newTkDnD.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/colorfont.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/terminal.py" logicalFolder="noval"/>
-  <noval:file filePath="./noval/autocomplete.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/ui_utils.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/python/interpreter/gerneralconfiguration.py" logicalFolder="noval/python/interpreter"/>
   <noval:file filePath="./noval/ttkwidgets/listboxframe.py" logicalFolder="noval/ttkwidgets"/>
@@ -601,7 +599,6 @@
   <noval:file filePath="./noval/python/project/rundocument.py" logicalFolder="noval/python/project"/>
   <noval:file filePath="./noval/project/document.py" logicalFolder="noval/project"/>
   <noval:file filePath="./noval/plugins/__init__.py" logicalFolder="noval/plugins"/>
-  <noval:file filePath="./noval/plugins/feedback.py" logicalFolder="noval/plugins"/>
   <noval:file filePath="./noval/plugins/fileview.py" logicalFolder="noval/plugins"/>
   <noval:file filePath="./noval/plugins/paren_matcher.py" logicalFolder="noval/plugins"/>
   <noval:file filePath="./noval/plugins/base_ui_themes.py" logicalFolder="noval/plugins"/>
@@ -627,6 +624,10 @@
   <noval:file filePath="./tests/test_code_parser.py" logicalFolder="tests"/>
   <noval:file filePath="./noval/python/parser/moduleloader.py" logicalFolder="noval/python/parser"/>
   <noval:file filePath="./tests/test_file_parser.py" logicalFolder="tests"/>
+  <noval:file filePath="./noval/autocomplete.py" logicalFolder="noval"/>
+  <noval:file filePath="./requirements.txt"/>
+  <noval:file filePath="./noval/python/run.py" logicalFolder="noval/python"/>
+  <noval:file filePath="./MANIFEST.in"/>
   <noval:_properties>
     <noval:page name="Resource" item="root" objclass="noval.project.resource.ResourcePanel"/>
     <noval:page name="Debug/Run" item="root" objclass="noval.python.project.pages.debugrun.DebugRunPanel"/>

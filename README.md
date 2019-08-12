@@ -7,7 +7,7 @@ NovalIDE是一款开源，跨平台，而且免费的国产多功能，轻便的
 
 - 强大的代码渲染引擎，出色的语法高亮功能,目前支持python,c/c++渲染,并可选多种代码语法主题
 - 自动检测，并加载Python解释器，允许用户自由添加删除解释器，并选择相应的解释器运行脚本
-- 出色的函数智能提示和代码自动完成功能
+- 出色的函数智能提示和代码自动完成功能
 - 支持新建NovalIDE工程和从现有代码创建工程，新建工程类型将包括应用程序，Django,Flask,wxPython,Py2exe,Win32,GTK，控制台程序等
 - 自动智能分析解释器系统路径下模块文件，并生成智能提示使用的数据文件
 - 支持切换UI皮肤，多达6种UI皮肤可以切换
@@ -79,12 +79,12 @@ pip install requests
 
 - **Ubuntu**
 
-sudo apt-get install python-tk(python2.7)
-sudo apt-get install python3-tk(python3)
+- sudo apt-get install python-tk(python2.7)
+- sudo apt-get install python3-tk(python3)
 
 - **Centos**
 
-sudo yum install tkinter
+- sudo yum install tkinter
 
 - **编译步骤**
 
@@ -111,12 +111,12 @@ cd Noval
 
 - **Ubuntu**
 
-sudo apt-get install python-tk(python2)
-sudo apt-get install python3-tk(python3)
+- sudo apt-get install python-tk(python2)
+- sudo apt-get install python3-tk(python3)
 
 - **Centos**
 
-sudo yum install tkinter
+- sudo yum install tkinter
 
 - **安装步骤**
 
