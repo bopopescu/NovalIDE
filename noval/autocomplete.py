@@ -5,6 +5,7 @@ from tkinter import messagebox
 import noval.constants as constants
 import noval.ttkwidgets.listboxframe as listboxframe
 import noval.ui_utils as ut_utils
+import noval.util.utils as utils
 
 # TODO: adjust the window position in cases where it's too close to bottom or right edge - but make sure the current line is shown
 """Completions get computed on the backend, therefore getting the completions is
@@ -22,7 +23,6 @@ class Completer(listboxframe.ListboxFrame):
             exportselection=False,
         )
         #设置鼠标样式
-   #     self.listbox.focus_set()
         self.listbox.configure(cursor="arrow")
         self.vert_scrollbar.configure(cursor="arrow")
 
@@ -43,10 +43,6 @@ class Completer(listboxframe.ListboxFrame):
         self.text.bind_class(
             self.text_priority_bindtag, "<Key>", self._on_text_keypress, True
         )
-
-    #    self.text.bind(
-     #       "<<TextChange>>", self._on_text_change, True
-      #  )  # Assuming TweakableText
         #单击文本框时,关闭智能提示
         self.text.bind("<1>", self.on_text_click)
         # for cases when Listbox gets focus
@@ -56,39 +52,6 @@ class Completer(listboxframe.ListboxFrame):
         self.listbox.bind("<Return>", self._insert_current_selection)
         #双击listbox插入选中内容
         self.listbox.bind("<Double-Button-1>", self._insert_current_selection)
-      #  self._bind_result_event()
-
-    def _bind_result_event(self):
-        # TODO: remove binding when editor gets closed
-        get_workbench().bind(
-            "editor_autocomplete_response", self._handle_backend_response, True
-        )
-
-    def handle_autocomplete_request(self):
-        row, column = self._get_position()
-        source = self.text.get("1.0", "end-1c")
-        get_runner().send_command(
-            InlineCommand(
-                "editor_autocomplete",
-                source=source,
-                row=row,
-                column=column,
-                filename=self._get_filename(),
-            )
-        )
-
-    def _handle_backend_response(self, msg):
-        row, column = self._get_position()
-        source = self.text.get("1.0", "end-1c")
-
-        if msg.source != source or msg.row != row or msg.column != column:
-            # situation has changed, information is obsolete
-            self._close()
-        elif msg.error:
-            self._close()
-            messagebox.showerror("Autocomplete error", msg.error, parent=get_workbench())
-        else:
-            self._present_completions(msg.completions)
 
     def _present_completions(self, completions,replaceLen):
         self.completions = completions
@@ -186,9 +149,6 @@ class Completer(listboxframe.ListboxFrame):
         self.listbox.see(index)
         self._update_doc()
 
-    def _get_request_id(self):
-        return "autocomplete_" + str(self.text.winfo_id())
-
     def _get_position(self):
         return map(int, self.text.index("insert").split("."))
 
@@ -268,12 +228,7 @@ class Completer(listboxframe.ListboxFrame):
         sel = self.listbox.curselection()
         if len(sel) != 1:
             return None
-
         return self.completions[sel[0]]
-
-    def _on_text_change(self, event=None):
-        if self._is_visible():
-            self.handle_autocomplete_request()
 
     def _close(self, event=None):
         self.place_forget()
@@ -307,44 +262,15 @@ class ShellCompleter(Completer):
     def _get_prefix(self):
         return self.text.get("input_start", "insert")  # TODO: allow multiple line input
 
-
-def handle_autocomplete_request(event=None):
-    if event is None:
-        text = GetApp().focus_get()
-    else:
-        text = event.widget
-
-    _handle_autocomplete_request_for_text(text)
-
 def patched_perform_midline_tab(text, event):
-    if isinstance(text, ShellText):
-        option_name = "edit.tab_complete_in_shell"
-    else:
-        option_name = "edit.tab_complete_in_editor"
-
-    if get_workbench().get_option(option_name):
+    '''
+        实现tab键自动完成单词的功能
+    '''
+    if utils.profile_get_int("TAB_COMPLETE_WORD",True):
         if not text.has_selection():
-            _handle_autocomplete_request_for_text(text)
+            GetApp().MainFrame.GetNotebook().AutocompShow()
             return "break"
         else:
             return None
 
     return text.perform_smart_tab(event)
-
-
-def load_plugin():
-
-    get_workbench().add_command(
-        "autocomplete",
-        "edit",
-        "Auto-complete",
-        handle_autocomplete_request,
-        default_sequence="<Control-space>"
-        # TODO: tester
-    )
-
-    get_workbench().set_default("edit.tab_complete_in_editor", True)
-    get_workbench().set_default("edit.tab_complete_in_shell", True)
-
-    CodeViewText.perform_midline_tab = patched_perform_midline_tab  # type: ignore
-    ShellText.perform_midline_tab = patched_perform_midline_tab  # type: ignore

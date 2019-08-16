@@ -491,7 +491,9 @@ I2
 sg8
 S'trunc'
 p137
-sasg8
+sasg7
+I1
+sg8
 S'math'
 p138
 s.

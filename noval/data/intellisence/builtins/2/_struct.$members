@@ -522,7 +522,9 @@ sg10
 I2
 sg11
 g60
-sasg11
+sasg10
+I1
+sg11
 S'_struct'
 p127
 s.

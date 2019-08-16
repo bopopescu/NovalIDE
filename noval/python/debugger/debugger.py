@@ -162,7 +162,7 @@ class RunCommandUI(CommonRunCommandUI):
             try:
                 runner.StopExecution()
                 runner.UpdateAllRunnerTerminateAllUI()
-            except wx._core.PyDeadObjectError:
+            except tk.TclError:
                 pass
         RunCommandUI.runners = []
     ShutdownAllRunners = staticmethod(ShutdownAllRunners)

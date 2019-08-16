@@ -120,7 +120,9 @@ I2
 sg8
 S'nsmallest'
 p36
-sasg8
+sasg7
+I1
+sg8
 S'_heapq'
 p37
 s.

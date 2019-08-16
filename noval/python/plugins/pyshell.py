@@ -1049,7 +1049,8 @@ class PyShell(ttk.Frame):
         self.text.bind("<Down>", self._arrow_down, True)
        # self.text.bind("<KeyPress>", self._text_key_press, True)
         #self.text.bind("<KeyRelease>", self._text_key_release, True)
-        #按回车键事件
+        #必须先解绑text控件绑定的回车键事件,重写该事件方法
+        self.text.unbind("<Return>")
         self.text.bind("<Return>", self.perform_return, True)
         
         if locals is None:

@@ -531,10 +531,6 @@ class IDEApplication(core.App):
         self.columnconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)
         
-    @property
-    def MainFrame(self):
-        return self.frame
-        
     @misc.update_toolbar
     def OnOpen(self):
         self.GetDocumentManager().CreateDocument('',core.DEFAULT_DOCMAN_FLAGS)

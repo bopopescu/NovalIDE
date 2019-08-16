@@ -50,6 +50,7 @@ UnicodeWarning
 UserWarning
 ValueError
 Warning
+WindowsError
 ZeroDivisionError
 __debug__
 __doc__

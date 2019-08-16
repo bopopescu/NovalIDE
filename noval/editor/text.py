@@ -640,7 +640,7 @@ class TextCtrl(ui_base.TweakableText):
             self.bind("<Control-f>", self._redirect_ctrlf, True)
         
         self.bind("<BackSpace>", if_not_readonly(self.perform_smart_backspace), True)
-     #   self.bind("<Return>", if_not_readonly(self.perform_return), True)
+        self.bind("<Return>", if_not_readonly(self.perform_return), True)
       #  self.bind("<KP_Enter>", if_not_readonly(self.perform_return), True)
         self.bind("<Tab>", if_not_readonly(self.perform_tab), True)
         try:
@@ -778,8 +778,8 @@ class TextCtrl(ui_base.TweakableText):
         return "break"
 
     def perform_midline_tab(self, event=None):
-        "autocompleter can put its magic here"
-        # by default
+        "如果要实现tab键自动完成单词功能,请重写该方法"
+        #默认实现还是tab键缩进功能
         return self.perform_smart_tab(event)
 
     def perform_smart_tab(self, event=None):
@@ -824,6 +824,9 @@ class TextCtrl(ui_base.TweakableText):
     def perform_return(self, event):
         self.insert("insert", "\n")
         return "break"
+
+    def GetIndent(self):
+        return self.indent_width
 
     def perform_page_down(self, event):
         # if last line is visible then go to last line
@@ -927,6 +930,7 @@ class TextCtrl(ui_base.TweakableText):
             if left_text.strip() == "" or self.has_selection():
                 return self.perform_smart_tab(event)
             else:
+                #如果tab键左边有非空白字符,调用自动完成功能
                 return self.perform_midline_tab(event)
 
     def indent_region(self, event=None):

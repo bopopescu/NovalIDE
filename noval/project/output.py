@@ -33,6 +33,8 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         #鼠标和键盘松开时激活视图
         self.bind("<<ActivateView>>", self.ActivateView)
         self.event_add("<<ActivateView>>","<KeyRelease>","<ButtonRelease>")
+        self.bind("<KeyPress>", self.OnChar, True)
+        self.bind("<Return>", self.perform_return, True)
         self.tag_configure(
             "io",
             font="IOFont",
@@ -55,6 +57,23 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         self._is_wrap = tk.IntVar(value=False)
         self.SetWrap()
         self.logs = {}
+        self.inputText = ""
+        
+    def perform_return(self, event):
+        self._executor.WriteInput(self.inputText+"\n")
+        self.insert("insert", "\n")
+        #等待下一次输入,将上一次输入清空
+        self.inputText = ""
+        return "break"
+      
+    def OnChar(self, event):
+        tags = ("io",'stdin')
+        c = event.char
+        texteditor.TextCtrl.intercept_insert(self, "insert", c, tags)
+        #纪录输入的字符
+        self.inputText += c
+        return "break"
+
             
     @property
     def IsFirstInput(self):
@@ -71,7 +90,7 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
     @InputStartPos.setter
     def InputStartPos(self,input_start_pos):
         self._input_start_pos = input_start_pos
-                
+                
     def CreatePopupMenu(self):
         texteditor.TextCtrl.CreatePopupMenu(self)
         self.ActivateView()
@@ -123,7 +142,7 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         if filename == "":
             return
         try:
-            with open(filename,"wb") as f:
+            with open(filename,"w") as f:
                 f.write(self.GetValue())
         except Exception as e:
             messagebox.showerror(_("Error"),str(e))
@@ -222,7 +241,7 @@ class CommononOutputview(ttk.Frame):
         self.vert_scrollbar = ui_base.SafeScrollbar(self, orient=tk.VERTICAL)
         self.vert_scrollbar.grid(row=0, column=1, sticky=tk.NSEW)
 
-        self.horizontal_scrollbar = ui_base.SafeScrollbar(self, orient=tk.HORIZONTAL)
+        self.horizontal_scrollbar = ui_base.SafeScrollbar(self, orient=tk.HORIZONTAL)
         self.horizontal_scrollbar.grid(row=1, column=0, sticky=tk.NSEW)
 
         #设置查找结果文本字体为小一号的字体并且控件为只读状态,inactiveselectbackground表示查找并选择文本时的选中颜色

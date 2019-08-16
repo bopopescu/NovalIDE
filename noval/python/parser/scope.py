@@ -142,8 +142,10 @@ class Scope(object):
                 members = find_scope.GetMember(name[4:])
             else:
                 members = find_scope.GetMember(name)
-            if members:
-                definitions.extend(members)
+            for member in members:
+                #可能有重复的定义,只取一个
+                if member not in definitions:
+                    definitions.append(member)
         return definitions
         
     def FindNameScopes(self,name):
@@ -303,7 +305,12 @@ class NodeScope(Scope):
         
     def GetMemberList(self):
         return self.Node.GetMemberList()
-
+        
+    def __eq__(self, other):
+        if other is None:
+            return False
+        return self.Node.Name == other.Node.Name and self.Node.Line == other.Node.Line and self.Node.Col == other.Node.Col
+  
     @property
     def Root(self):
         return self._root
@@ -489,12 +496,14 @@ class NameScope(NodeScope):
             return [self]
         if self.Node.Value is None:
             return []
-        found_scope = self.FindDefinitionScope(self.Node.Value)
-        if found_scope is not None:
-            if found_scope.Node.Type == config.NODE_IMPORT_TYPE:
-                return found_scope.GetMember(self.Node.Value + "." + fix_name)
-            else:
-                return found_scope.GetMember(fix_name)
+        found_scopes = self.FindNameScopes(self.Node.Value)
+        members = []
+        if found_scopes:
+            for found_scope in found_scopes:
+                if found_scope.Node.Type == config.NODE_IMPORT_TYPE:
+                    members.extend(found_scope.GetMember(self.Node.Value + "." + fix_name))
+                else:
+                    members.extend(found_scope.GetMember(fix_name))
         return []
             
 class UnknownScope(NodeScope):

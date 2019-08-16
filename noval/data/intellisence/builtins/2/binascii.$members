@@ -613,7 +613,9 @@ I2
 sg10
 S'unhexlify'
 p145
-sasg10
+sasg9
+I1
+sg10
 S'binascii'
 p146
 s.

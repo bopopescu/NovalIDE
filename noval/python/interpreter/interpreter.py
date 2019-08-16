@@ -302,6 +302,9 @@ class PythonInterpreter(BuiltinPythonInterpreter):
                 utils.get_logger().error("get version stdout output is *****%s****",output)
                 return
         self._version = output.replace(version_flag,"").strip()
+        #anaconda安装的python版本号是Python 3.6.5 :: Anaconda, Inc.需要从中获取正确的版本号
+        if self._version.find(':') != -1:
+            self._version = self._version[0:self._version.find(':')].strip()
         self._is_valid_interpreter = True
         self.SetBuiltinName()
 

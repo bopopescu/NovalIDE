@@ -17,4 +17,3 @@ struct_time
 time
 timezone
 tzname
-tzset

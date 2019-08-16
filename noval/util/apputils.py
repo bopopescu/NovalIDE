@@ -113,15 +113,6 @@ def is_ext_supportable(ext):
         return True
     return ext.lower() in GetSupportableExtList()
     
-def time_func(func):
-    def wrapped_func(*args,**kwargs):
-        start = time.time()
-        func(*args,**kwargs)
-        end = time.time()
-        elapse = end - start
-        print (func.__name__,'elapse time',elapse,'S')
-    return wrapped_func
-    
 def get_app_version():
     # find version number from version.txt
     versionFilepath = os.path.join(mainModuleDir, "version.txt")

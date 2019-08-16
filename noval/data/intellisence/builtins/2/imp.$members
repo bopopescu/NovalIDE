@@ -446,7 +446,9 @@ I2
 sg8
 S'reload'
 p116
-sasg8
+sasg7
+I1
+sg8
 S'imp'
 p117
 s.

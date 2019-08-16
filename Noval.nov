@@ -628,6 +628,7 @@
   <noval:file filePath="./requirements.txt"/>
   <noval:file filePath="./noval/python/run.py" logicalFolder="noval/python"/>
   <noval:file filePath="./MANIFEST.in"/>
+  <noval:file filePath="./noval/calltip.py" logicalFolder="noval"/>
   <noval:_properties>
     <noval:page name="Resource" item="root" objclass="noval.project.resource.ResourcePanel"/>
     <noval:page name="Debug/Run" item="root" objclass="noval.python.project.pages.debugrun.DebugRunPanel"/>

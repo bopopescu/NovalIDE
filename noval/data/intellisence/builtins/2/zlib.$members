@@ -1,7 +1,7 @@
 (dp0
 S'doc'
 p1
-S"The functions in this module allow compression and decompression using the\nzlib library, which is based on GNU zip.\n\nadler32(string[, start]) -- Compute an Adler-32 checksum.\ncompress(string[, level]) -- Compress string, with compression level in 0-9.\ncompressobj([level]) -- Return a compressor object.\ncrc32(string[, start]) -- Compute a CRC-32 checksum.\ndecompress(string,[wbits],[bufsize]) -- Decompresses a compressed string.\ndecompressobj([wbits]) -- Return a decompressor object.\n\n'wbits' is window buffer size and container format.\nCompressor objects support compress() and flush() methods; decompressor\nobjects support decompress() and flush()."
+S"The functions in this module allow compression and decompression using the\nzlib library, which is based on GNU zip.\n\nadler32(string[, start]) -- Compute an Adler-32 checksum.\ncompress(string[, level]) -- Compress string, with compression level in 0-9.\ncompressobj([level]) -- Return a compressor object.\ncrc32(string[, start]) -- Compute a CRC-32 checksum.\ndecompress(string,[wbits],[bufsize]) -- Decompresses a compressed string.\ndecompressobj([wbits]) -- Return a decompressor object.\n\n'wbits' is window buffer size.\nCompressor objects support compress() and flush() methods; decompressor\nobjects support decompress() and flush()."
 p2
 sS'is_builtin'
 p3
@@ -179,7 +179,7 @@ S'compress'
 p49
 sa(dp50
 g1
-S'compressobj([level]) -- Return a compressor object.\n\nOptional arg level is the compression level, in 0-9 or -1.'
+S'compressobj([level]) -- Return a compressor object.\n\nOptional arg level is the compression level, in 0-9.'
 p51
 sg3
 I01
@@ -201,7 +201,7 @@ S'crc32'
 p55
 sa(dp56
 g1
-S'decompress(string[, wbits[, bufsize]]) -- Return decompressed string.\n\nOptional arg wbits indicates the window buffer size and container format.\nOptional arg bufsize is the initial output buffer size.'
+S'decompress(string[, wbits[, bufsize]]) -- Return decompressed string.\n\nOptional arg wbits is the window buffer size.  Optional arg bufsize is\nthe initial output buffer size.'
 p57
 sg3
 I01
@@ -212,7 +212,7 @@ S'decompress'
 p58
 sa(dp59
 g1
-S'decompressobj([wbits]) -- Return a decompressor object.\n\nOptional arg wbits indicates the window buffer size and container format.'
+S'decompressobj([wbits]) -- Return a decompressor object.\n\nOptional arg wbits is the window buffer size.'
 p60
 sg3
 I01
@@ -433,7 +433,9 @@ I3
 sg8
 S'error'
 p114
-sasg8
+sasg7
+I1
+sg8
 S'zlib'
 p115
 s.

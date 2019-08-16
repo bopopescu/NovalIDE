@@ -49,7 +49,7 @@ I01
 sg7
 I5
 sg8
-S'EADV'
+S'EAFNOSUPPORT'
 p17
 sa(dp18
 g3
@@ -57,7 +57,7 @@ I01
 sg7
 I5
 sg8
-S'EAFNOSUPPORT'
+S'EAGAIN'
 p19
 sa(dp20
 g3
@@ -65,7 +65,7 @@ I01
 sg7
 I5
 sg8
-S'EAGAIN'
+S'EALREADY'
 p21
 sa(dp22
 g3
@@ -73,7 +73,7 @@ I01
 sg7
 I5
 sg8
-S'EALREADY'
+S'EBADF'
 p23
 sa(dp24
 g3
@@ -81,7 +81,7 @@ I01
 sg7
 I5
 sg8
-S'EBADE'
+S'EBUSY'
 p25
 sa(dp26
 g3
@@ -89,7 +89,7 @@ I01
 sg7
 I5
 sg8
-S'EBADF'
+S'ECHILD'
 p27
 sa(dp28
 g3
@@ -97,7 +97,7 @@ I01
 sg7
 I5
 sg8
-S'EBADFD'
+S'ECONNABORTED'
 p29
 sa(dp30
 g3
@@ -105,7 +105,7 @@ I01
 sg7
 I5
 sg8
-S'EBADMSG'
+S'ECONNREFUSED'
 p31
 sa(dp32
 g3
@@ -113,7 +113,7 @@ I01
 sg7
 I5
 sg8
-S'EBADR'
+S'ECONNRESET'
 p33
 sa(dp34
 g3
@@ -121,7 +121,7 @@ I01
 sg7
 I5
 sg8
-S'EBADRQC'
+S'EDEADLK'
 p35
 sa(dp36
 g3
@@ -129,7 +129,7 @@ I01
 sg7
 I5
 sg8
-S'EBADSLT'
+S'EDEADLOCK'
 p37
 sa(dp38
 g3
@@ -137,7 +137,7 @@ I01
 sg7
 I5
 sg8
-S'EBFONT'
+S'EDESTADDRREQ'
 p39
 sa(dp40
 g3
@@ -145,7 +145,7 @@ I01
 sg7
 I5
 sg8
-S'EBUSY'
+S'EDOM'
 p41
 sa(dp42
 g3
@@ -153,7 +153,7 @@ I01
 sg7
 I5
 sg8
-S'ECHILD'
+S'EDQUOT'
 p43
 sa(dp44
 g3
@@ -161,7 +161,7 @@ I01
 sg7
 I5
 sg8
-S'ECHRNG'
+S'EEXIST'
 p45
 sa(dp46
 g3
@@ -169,7 +169,7 @@ I01
 sg7
 I5
 sg8
-S'ECOMM'
+S'EFAULT'
 p47
 sa(dp48
 g3
@@ -177,7 +177,7 @@ I01
 sg7
 I5
 sg8
-S'ECONNABORTED'
+S'EFBIG'
 p49
 sa(dp50
 g3
@@ -185,7 +185,7 @@ I01
 sg7
 I5
 sg8
-S'ECONNREFUSED'
+S'EHOSTDOWN'
 p51
 sa(dp52
 g3
@@ -193,7 +193,7 @@ I01
 sg7
 I5
 sg8
-S'ECONNRESET'
+S'EHOSTUNREACH'
 p53
 sa(dp54
 g3
@@ -201,7 +201,7 @@ I01
 sg7
 I5
 sg8
-S'EDEADLK'
+S'EILSEQ'
 p55
 sa(dp56
 g3
@@ -209,7 +209,7 @@ I01
 sg7
 I5
 sg8
-S'EDEADLOCK'
+S'EINPROGRESS'
 p57
 sa(dp58
 g3
@@ -217,7 +217,7 @@ I01
 sg7
 I5
 sg8
-S'EDESTADDRREQ'
+S'EINTR'
 p59
 sa(dp60
 g3
@@ -225,7 +225,7 @@ I01
 sg7
 I5
 sg8
-S'EDOM'
+S'EINVAL'
 p61
 sa(dp62
 g3
@@ -233,7 +233,7 @@ I01
 sg7
 I5
 sg8
-S'EDOTDOT'
+S'EIO'
 p63
 sa(dp64
 g3
@@ -241,7 +241,7 @@ I01
 sg7
 I5
 sg8
-S'EDQUOT'
+S'EISCONN'
 p65
 sa(dp66
 g3
@@ -249,7 +249,7 @@ I01
 sg7
 I5
 sg8
-S'EEXIST'
+S'EISDIR'
 p67
 sa(dp68
 g3
@@ -257,7 +257,7 @@ I01
 sg7
 I5
 sg8
-S'EFAULT'
+S'ELOOP'
 p69
 sa(dp70
 g3
@@ -265,7 +265,7 @@ I01
 sg7
 I5
 sg8
-S'EFBIG'
+S'EMFILE'
 p71
 sa(dp72
 g3
@@ -273,7 +273,7 @@ I01
 sg7
 I5
 sg8
-S'EHOSTDOWN'
+S'EMLINK'
 p73
 sa(dp74
 g3
@@ -281,7 +281,7 @@ I01
 sg7
 I5
 sg8
-S'EHOSTUNREACH'
+S'EMSGSIZE'
 p75
 sa(dp76
 g3
@@ -289,7 +289,7 @@ I01
 sg7
 I5
 sg8
-S'EIDRM'
+S'ENAMETOOLONG'
 p77
 sa(dp78
 g3
@@ -297,7 +297,7 @@ I01
 sg7
 I5
 sg8
-S'EILSEQ'
+S'ENETDOWN'
 p79
 sa(dp80
 g3
@@ -305,7 +305,7 @@ I01
 sg7
 I5
 sg8
-S'EINPROGRESS'
+S'ENETRESET'
 p81
 sa(dp82
 g3
@@ -313,7 +313,7 @@ I01
 sg7
 I5
 sg8
-S'EINTR'
+S'ENETUNREACH'
 p83
 sa(dp84
 g3
@@ -321,7 +321,7 @@ I01
 sg7
 I5
 sg8
-S'EINVAL'
+S'ENFILE'
 p85
 sa(dp86
 g3
@@ -329,7 +329,7 @@ I01
 sg7
 I5
 sg8
-S'EIO'
+S'ENOBUFS'
 p87
 sa(dp88
 g3
@@ -337,7 +337,7 @@ I01
 sg7
 I5
 sg8
-S'EISCONN'
+S'ENODEV'
 p89
 sa(dp90
 g3
@@ -345,7 +345,7 @@ I01
 sg7
 I5
 sg8
-S'EISDIR'
+S'ENOENT'
 p91
 sa(dp92
 g3
@@ -353,7 +353,7 @@ I01
 sg7
 I5
 sg8
-S'EISNAM'
+S'ENOEXEC'
 p93
 sa(dp94
 g3
@@ -361,7 +361,7 @@ I01
 sg7
 I5
 sg8
-S'EL2HLT'
+S'ENOLCK'
 p95
 sa(dp96
 g3
@@ -369,7 +369,7 @@ I01
 sg7
 I5
 sg8
-S'EL2NSYNC'
+S'ENOMEM'
 p97
 sa(dp98
 g3
@@ -377,7 +377,7 @@ I01
 sg7
 I5
 sg8
-S'EL3HLT'
+S'ENOPROTOOPT'
 p99
 sa(dp100
 g3
@@ -385,7 +385,7 @@ I01
 sg7
 I5
 sg8
-S'EL3RST'
+S'ENOSPC'
 p101
 sa(dp102
 g3
@@ -393,7 +393,7 @@ I01
 sg7
 I5
 sg8
-S'ELIBACC'
+S'ENOSYS'
 p103
 sa(dp104
 g3
@@ -401,7 +401,7 @@ I01
 sg7
 I5
 sg8
-S'ELIBBAD'
+S'ENOTCONN'
 p105
 sa(dp106
 g3
@@ -409,7 +409,7 @@ I01
 sg7
 I5
 sg8
-S'ELIBEXEC'
+S'ENOTDIR'
 p107
 sa(dp108
 g3
@@ -417,7 +417,7 @@ I01
 sg7
 I5
 sg8
-S'ELIBMAX'
+S'ENOTEMPTY'
 p109
 sa(dp110
 g3
@@ -425,7 +425,7 @@ I01
 sg7
 I5
 sg8
-S'ELIBSCN'
+S'ENOTSOCK'
 p111
 sa(dp112
 g3
@@ -433,7 +433,7 @@ I01
 sg7
 I5
 sg8
-S'ELNRNG'
+S'ENOTTY'
 p113
 sa(dp114
 g3
@@ -441,7 +441,7 @@ I01
 sg7
 I5
 sg8
-S'ELOOP'
+S'ENXIO'
 p115
 sa(dp116
 g3
@@ -449,7 +449,7 @@ I01
 sg7
 I5
 sg8
-S'EMFILE'
+S'EOPNOTSUPP'
 p117
 sa(dp118
 g3
@@ -457,7 +457,7 @@ I01
 sg7
 I5
 sg8
-S'EMLINK'
+S'EPERM'
 p119
 sa(dp120
 g3
@@ -465,7 +465,7 @@ I01
 sg7
 I5
 sg8
-S'EMSGSIZE'
+S'EPFNOSUPPORT'
 p121
 sa(dp122
 g3
@@ -473,7 +473,7 @@ I01
 sg7
 I5
 sg8
-S'EMULTIHOP'
+S'EPIPE'
 p123
 sa(dp124
 g3
@@ -481,7 +481,7 @@ I01
 sg7
 I5
 sg8
-S'ENAMETOOLONG'
+S'EPROTONOSUPPORT'
 p125
 sa(dp126
 g3
@@ -489,7 +489,7 @@ I01
 sg7
 I5
 sg8
-S'ENAVAIL'
+S'EPROTOTYPE'
 p127
 sa(dp128
 g3
@@ -497,7 +497,7 @@ I01
 sg7
 I5
 sg8
-S'ENETDOWN'
+S'ERANGE'
 p129
 sa(dp130
 g3
@@ -505,7 +505,7 @@ I01
 sg7
 I5
 sg8
-S'ENETRESET'
+S'EREMOTE'
 p131
 sa(dp132
 g3
@@ -513,7 +513,7 @@ I01
 sg7
 I5
 sg8
-S'ENETUNREACH'
+S'EROFS'
 p133
 sa(dp134
 g3
@@ -521,7 +521,7 @@ I01
 sg7
 I5
 sg8
-S'ENFILE'
+S'ESHUTDOWN'
 p135
 sa(dp136
 g3
@@ -529,7 +529,7 @@ I01
 sg7
 I5
 sg8
-S'ENOANO'
+S'ESOCKTNOSUPPORT'
 p137
 sa(dp138
 g3
@@ -537,7 +537,7 @@ I01
 sg7
 I5
 sg8
-S'ENOBUFS'
+S'ESPIPE'
 p139
 sa(dp140
 g3
@@ -545,7 +545,7 @@ I01
 sg7
 I5
 sg8
-S'ENOCSI'
+S'ESRCH'
 p141
 sa(dp142
 g3
@@ -553,7 +553,7 @@ I01
 sg7
 I5
 sg8
-S'ENODATA'
+S'ESTALE'
 p143
 sa(dp144
 g3
@@ -561,7 +561,7 @@ I01
 sg7
 I5
 sg8
-S'ENODEV'
+S'ETIMEDOUT'
 p145
 sa(dp146
 g3
@@ -569,7 +569,7 @@ I01
 sg7
 I5
 sg8
-S'ENOENT'
+S'ETOOMANYREFS'
 p147
 sa(dp148
 g3
@@ -577,7 +577,7 @@ I01
 sg7
 I5
 sg8
-S'ENOEXEC'
+S'EUSERS'
 p149
 sa(dp150
 g3
@@ -585,7 +585,7 @@ I01
 sg7
 I5
 sg8
-S'ENOLCK'
+S'EWOULDBLOCK'
 p151
 sa(dp152
 g3
@@ -593,7 +593,7 @@ I01
 sg7
 I5
 sg8
-S'ENOLINK'
+S'EXDEV'
 p153
 sa(dp154
 g3
@@ -601,7 +601,7 @@ I01
 sg7
 I5
 sg8
-S'ENOMEM'
+S'WSABASEERR'
 p155
 sa(dp156
 g3
@@ -609,7 +609,7 @@ I01
 sg7
 I5
 sg8
-S'ENOMSG'
+S'WSAEACCES'
 p157
 sa(dp158
 g3
@@ -617,7 +617,7 @@ I01
 sg7
 I5
 sg8
-S'ENONET'
+S'WSAEADDRINUSE'
 p159
 sa(dp160
 g3
@@ -625,7 +625,7 @@ I01
 sg7
 I5
 sg8
-S'ENOPKG'
+S'WSAEADDRNOTAVAIL'
 p161
 sa(dp162
 g3
@@ -633,7 +633,7 @@ I01
 sg7
 I5
 sg8
-S'ENOPROTOOPT'
+S'WSAEAFNOSUPPORT'
 p163
 sa(dp164
 g3
@@ -641,7 +641,7 @@ I01
 sg7
 I5
 sg8
-S'ENOSPC'
+S'WSAEALREADY'
 p165
 sa(dp166
 g3
@@ -649,7 +649,7 @@ I01
 sg7
 I5
 sg8
-S'ENOSR'
+S'WSAEBADF'
 p167
 sa(dp168
 g3
@@ -657,7 +657,7 @@ I01
 sg7
 I5
 sg8
-S'ENOSTR'
+S'WSAECONNABORTED'
 p169
 sa(dp170
 g3
@@ -665,7 +665,7 @@ I01
 sg7
 I5
 sg8
-S'ENOSYS'
+S'WSAECONNREFUSED'
 p171
 sa(dp172
 g3
@@ -673,7 +673,7 @@ I01
 sg7
 I5
 sg8
-S'ENOTBLK'
+S'WSAECONNRESET'
 p173
 sa(dp174
 g3
@@ -681,7 +681,7 @@ I01
 sg7
 I5
 sg8
-S'ENOTCONN'
+S'WSAEDESTADDRREQ'
 p175
 sa(dp176
 g3
@@ -689,7 +689,7 @@ I01
 sg7
 I5
 sg8
-S'ENOTDIR'
+S'WSAEDISCON'
 p177
 sa(dp178
 g3
@@ -697,7 +697,7 @@ I01
 sg7
 I5
 sg8
-S'ENOTEMPTY'
+S'WSAEDQUOT'
 p179
 sa(dp180
 g3
@@ -705,7 +705,7 @@ I01
 sg7
 I5
 sg8
-S'ENOTNAM'
+S'WSAEFAULT'
 p181
 sa(dp182
 g3
@@ -713,7 +713,7 @@ I01
 sg7
 I5
 sg8
-S'ENOTSOCK'
+S'WSAEHOSTDOWN'
 p183
 sa(dp184
 g3
@@ -721,7 +721,7 @@ I01
 sg7
 I5
 sg8
-S'ENOTSUP'
+S'WSAEHOSTUNREACH'
 p185
 sa(dp186
 g3
@@ -729,7 +729,7 @@ I01
 sg7
 I5
 sg8
-S'ENOTTY'
+S'WSAEINPROGRESS'
 p187
 sa(dp188
 g3
@@ -737,7 +737,7 @@ I01
 sg7
 I5
 sg8
-S'ENOTUNIQ'
+S'WSAEINTR'
 p189
 sa(dp190
 g3
@@ -745,7 +745,7 @@ I01
 sg7
 I5
 sg8
-S'ENXIO'
+S'WSAEINVAL'
 p191
 sa(dp192
 g3
@@ -753,7 +753,7 @@ I01
 sg7
 I5
 sg8
-S'EOPNOTSUPP'
+S'WSAEISCONN'
 p193
 sa(dp194
 g3
@@ -761,7 +761,7 @@ I01
 sg7
 I5
 sg8
-S'EOVERFLOW'
+S'WSAELOOP'
 p195
 sa(dp196
 g3
@@ -769,7 +769,7 @@ I01
 sg7
 I5
 sg8
-S'EPERM'
+S'WSAEMFILE'
 p197
 sa(dp198
 g3
@@ -777,7 +777,7 @@ I01
 sg7
 I5
 sg8
-S'EPFNOSUPPORT'
+S'WSAEMSGSIZE'
 p199
 sa(dp200
 g3
@@ -785,7 +785,7 @@ I01
 sg7
 I5
 sg8
-S'EPIPE'
+S'WSAENAMETOOLONG'
 p201
 sa(dp202
 g3
@@ -793,7 +793,7 @@ I01
 sg7
 I5
 sg8
-S'EPROTO'
+S'WSAENETDOWN'
 p203
 sa(dp204
 g3
@@ -801,7 +801,7 @@ I01
 sg7
 I5
 sg8
-S'EPROTONOSUPPORT'
+S'WSAENETRESET'
 p205
 sa(dp206
 g3
@@ -809,7 +809,7 @@ I01
 sg7
 I5
 sg8
-S'EPROTOTYPE'
+S'WSAENETUNREACH'
 p207
 sa(dp208
 g3
@@ -817,7 +817,7 @@ I01
 sg7
 I5
 sg8
-S'ERANGE'
+S'WSAENOBUFS'
 p209
 sa(dp210
 g3
@@ -825,7 +825,7 @@ I01
 sg7
 I5
 sg8
-S'EREMCHG'
+S'WSAENOPROTOOPT'
 p211
 sa(dp212
 g3
@@ -833,7 +833,7 @@ I01
 sg7
 I5
 sg8
-S'EREMOTE'
+S'WSAENOTCONN'
 p213
 sa(dp214
 g3
@@ -841,7 +841,7 @@ I01
 sg7
 I5
 sg8
-S'EREMOTEIO'
+S'WSAENOTEMPTY'
 p215
 sa(dp216
 g3
@@ -849,7 +849,7 @@ I01
 sg7
 I5
 sg8
-S'ERESTART'
+S'WSAENOTSOCK'
 p217
 sa(dp218
 g3
@@ -857,7 +857,7 @@ I01
 sg7
 I5
 sg8
-S'EROFS'
+S'WSAEOPNOTSUPP'
 p219
 sa(dp220
 g3
@@ -865,7 +865,7 @@ I01
 sg7
 I5
 sg8
-S'ESHUTDOWN'
+S'WSAEPFNOSUPPORT'
 p221
 sa(dp222
 g3
@@ -873,7 +873,7 @@ I01
 sg7
 I5
 sg8
-S'ESOCKTNOSUPPORT'
+S'WSAEPROCLIM'
 p223
 sa(dp224
 g3
@@ -881,7 +881,7 @@ I01
 sg7
 I5
 sg8
-S'ESPIPE'
+S'WSAEPROTONOSUPPORT'
 p225
 sa(dp226
 g3
@@ -889,7 +889,7 @@ I01
 sg7
 I5
 sg8
-S'ESRCH'
+S'WSAEPROTOTYPE'
 p227
 sa(dp228
 g3
@@ -897,7 +897,7 @@ I01
 sg7
 I5
 sg8
-S'ESRMNT'
+S'WSAEREMOTE'
 p229
 sa(dp230
 g3
@@ -905,7 +905,7 @@ I01
 sg7
 I5
 sg8
-S'ESTALE'
+S'WSAESHUTDOWN'
 p231
 sa(dp232
 g3
@@ -913,7 +913,7 @@ I01
 sg7
 I5
 sg8
-S'ESTRPIPE'
+S'WSAESOCKTNOSUPPORT'
 p233
 sa(dp234
 g3
@@ -921,7 +921,7 @@ I01
 sg7
 I5
 sg8
-S'ETIME'
+S'WSAESTALE'
 p235
 sa(dp236
 g3
@@ -929,7 +929,7 @@ I01
 sg7
 I5
 sg8
-S'ETIMEDOUT'
+S'WSAETIMEDOUT'
 p237
 sa(dp238
 g3
@@ -937,7 +937,7 @@ I01
 sg7
 I5
 sg8
-S'ETOOMANYREFS'
+S'WSAETOOMANYREFS'
 p239
 sa(dp240
 g3
@@ -945,7 +945,7 @@ I01
 sg7
 I5
 sg8
-S'ETXTBSY'
+S'WSAEUSERS'
 p241
 sa(dp242
 g3
@@ -953,7 +953,7 @@ I01
 sg7
 I5
 sg8
-S'EUCLEAN'
+S'WSAEWOULDBLOCK'
 p243
 sa(dp244
 g3
@@ -961,7 +961,7 @@ I01
 sg7
 I5
 sg8
-S'EUNATCH'
+S'WSANOTINITIALISED'
 p245
 sa(dp246
 g3
@@ -969,7 +969,7 @@ I01
 sg7
 I5
 sg8
-S'EUSERS'
+S'WSASYSNOTREADY'
 p247
 sa(dp248
 g3
@@ -977,7 +977,7 @@ I01
 sg7
 I5
 sg8
-S'EWOULDBLOCK'
+S'WSAVERNOTSUPPORTED'
 p249
 sa(dp250
 g3
@@ -985,7 +985,7 @@ I01
 sg7
 I5
 sg8
-S'EXDEV'
+S'__doc__'
 p251
 sa(dp252
 g3
@@ -993,7 +993,7 @@ I01
 sg7
 I5
 sg8
-S'EXFULL'
+S'__name__'
 p253
 sa(dp254
 g3
@@ -1001,7 +1001,7 @@ I01
 sg7
 I5
 sg8
-S'__doc__'
+S'__package__'
 p255
 sa(dp256
 g3
@@ -1009,25 +1009,11 @@ I01
 sg7
 I5
 sg8
-S'__name__'
-p257
-sa(dp258
-g3
-I01
-sg7
-I5
-sg8
-S'__package__'
-p259
-sa(dp260
-g3
-I01
-sg7
-I5
-sg8
 S'errorcode'
-p261
-sasg8
+p257
+sasg7
+I1
+sg8
 S'errno'
-p262
+p258
 s.

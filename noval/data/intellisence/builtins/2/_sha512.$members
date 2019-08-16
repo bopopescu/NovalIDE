@@ -55,7 +55,9 @@ I2
 sg7
 S'sha512'
 p18
-sasg7
+sasg6
+I1
+sg7
 S'_sha512'
 p19
 s.

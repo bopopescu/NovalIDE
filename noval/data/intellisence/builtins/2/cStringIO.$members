@@ -631,7 +631,9 @@ I5
 sg11
 S'cStringIO_CAPI'
 p151
-sasg11
+sasg10
+I1
+sg11
 S'cStringIO'
 p152
 s.

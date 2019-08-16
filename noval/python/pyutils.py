@@ -182,6 +182,7 @@ class DefinitionsDialog(ui_base.CommonModaldialog):
         self.title(_('Multiple Definitions'))
 
         v = tk.StringVar()
+        self.definitions = definitions
         strings = self.GetStrings(definitions)
         self.listbox = tk.Listbox(self.main_frame,listvariable=v,height=max(len(strings),5))
         self.listbox.bind('<Double-Button-1>',self._ok)
@@ -198,4 +199,9 @@ class DefinitionsDialog(ui_base.CommonModaldialog):
         return lines
 
     def _ok(self,event=None):
+        i = self.listbox.curselection()[0]
+        if i < 0:
+            return
+        definition = self.definitions[i]
+        GetApp().GotoView(definition.Root.Module.Path,definition.Node.Line)
         ui_base.CommonModaldialog._ok(self,event)

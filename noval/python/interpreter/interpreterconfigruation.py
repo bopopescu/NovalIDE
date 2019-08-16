@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox,filedialog
 import noval.python.interpreter.interpreter as pythoninterpreter
-import noval.python.parser.intellisence as intellisence
+import intellisence
 import noval.util.apputils as sysutils
 import os
 import noval.python.interpreter.pythonbuiltins as pythonbuiltins
@@ -487,6 +487,8 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
         if interpreter.IsBuiltIn:
             return
         try:
+            #版本号获取可能有问题,需要每次更新一下
+            interpreter.GetVersion()
             interpreter.GetDocPath()
             interpreter.GetSysPathList()
             interpreter.GetBuiltins()

@@ -1361,7 +1361,7 @@ sg11
 g149
 sa(dp264
 g1
-S'Write the given buffer to the IO stream.\n\nReturns the number of bytes written, which is always len(b).\n\nRaises BlockingIOError if the buffer is full and the\nunderlying raw stream cannot accept more data at the moment.\n'
+S'Write the given buffer to the IO stream.\n\nReturns the number of bytes written, which is never less than\nlen(b).\n\nRaises BlockingIOError if the buffer is full and the\nunderlying raw stream cannot accept more data at the moment.\n'
 p265
 sg3
 I01
@@ -2052,7 +2052,7 @@ sg11
 g127
 sa(dp378
 g1
-S'readinto(b) -> int.  Read up to len(b) bytes into b.\n\nReturns number of bytes read (0 for EOF), or None if the object\nis set not to block and has no data to read.'
+S'readinto(bytearray) -> int.  Read up to len(b) bytes into b.\n\nReturns number of bytes read (0 for EOF), or None if the object\nis set not to block as has no data to read.'
 p379
 sg3
 I01
@@ -2524,7 +2524,7 @@ sg11
 g149
 sa(dp467
 g1
-S'write(b) -> int.  Write array of bytes b, return number written.\n\nOnly makes one system call, so not all of the data may be written.\nThe number of bytes actually written is returned.  In non-blocking mode,\nreturns None if the write would block.'
+S'write(b: bytes) -> int.  Write bytes b to file, return number written.\n\nOnly makes one system call, so not all of the data may be written.\nThe number of bytes actually written is returned.  In non-blocking mode,\nreturns None if the write would block.'
 p468
 sg3
 I01
@@ -4076,7 +4076,7 @@ sg11
 g149
 sa(dp738
 g1
-S'Write the given buffer to the IO stream.\n\nReturns the number of bytes written, which is always len(b).\n\nRaises BlockingIOError if the buffer is full and the\nunderlying raw stream cannot accept more data at the moment.\n'
+S'Write the given buffer to the IO stream.\n\nReturns the number of bytes written, which is never less than\nlen(b).\n\nRaises BlockingIOError if the buffer is full and the\nunderlying raw stream cannot accept more data at the moment.\n'
 p739
 sg3
 I01
@@ -4099,7 +4099,7 @@ S'_BufferedIOBase'
 p741
 sa(dp742
 g1
-S"The abstract base class for all I/O classes, acting on streams of\nbytes. There is no public constructor.\n\nThis class provides dummy implementations for many methods that\nderived classes can override selectively; the default implementations\nrepresent a file that cannot be read, written or seeked.\n\nEven though IOBase does not declare read, readinto, or write because\ntheir signatures will vary, implementations and clients should\nconsider those methods part of the interface. Also, implementations\nmay raise a IOError when operations they do not support are called.\n\nThe basic type used for binary data read from or written to a file is\nthe bytes type. Method arguments may also be bytearray or memoryview\nof arrays of bytes. In some cases, such as readinto, a writable\nobject such as bytearray is required. Text I/O classes work with\nunicode data.\n\nNote that calling any method (except additional calls to close(),\nwhich are ignored) on a closed stream should raise a ValueError.\n\nIOBase (and its subclasses) support the iterator protocol, meaning\nthat an IOBase object can be iterated over yielding the lines in a\nstream.\n\nIOBase also supports the :keyword:`with` statement. In this example,\nfp is closed after the suite of the with statement is complete:\n\nwith open('spam.txt', 'r') as fp:\n    fp.write('Spam and eggs!')\n"
+S"The abstract base class for all I/O classes, acting on streams of\nbytes. There is no public constructor.\n\nThis class provides dummy implementations for many methods that\nderived classes can override selectively; the default implementations\nrepresent a file that cannot be read, written or seeked.\n\nEven though IOBase does not declare read, readinto, or write because\ntheir signatures will vary, implementations and clients should\nconsider those methods part of the interface. Also, implementations\nmay raise a IOError when operations they do not support are called.\n\nThe basic type used for binary data read from or written to a file is\nbytes. bytearrays are accepted too, and in some cases (such as\nreadinto) needed. Text I/O classes work with str data.\n\nNote that calling any method (except additional calls to close(),\nwhich are ignored) on a closed stream should raise a ValueError.\n\nIOBase (and its subclasses) support the iterator protocol, meaning\nthat an IOBase object can be iterated over yielding the lines in a\nstream.\n\nIOBase also supports the :keyword:`with` statement. In this example,\nfp is closed after the suite of the with statement is complete:\n\nwith open('spam.txt', 'r') as fp:\n    fp.write('Spam and eggs!')\n"
 p743
 sg3
 I01
@@ -5178,7 +5178,9 @@ I2
 sg11
 S'open'
 p935
-sasg11
+sasg10
+I1
+sg11
 S'_io'
 p936
 s.

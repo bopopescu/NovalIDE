@@ -37,6 +37,7 @@ import noval.python.project.runconfig as runconfig
 import noval.ui_utils as ui_utils
 from noval.python.project.rundocument import *
 import noval.python.pyutils as pyutils
+import io as StringIO  # For indent
 
 class PythonDocument(codeeditor.CodeDocument): 
 
@@ -438,8 +439,8 @@ class PythonCtrl(codeeditor.CodeCtrl):
 
 
     def DoIndent(self):
-        (text, caretPos) = self.GetCurLine()
-
+        text = self.GetLineText(self.GetCurrentLine())
+        caretPos = self.GetCurrentColumn()
         self._tokenizerChars = {}  # This is really too much, need to find something more like a C array
         for i in range(len(text)):
             self._tokenizerChars[i] = 0
@@ -448,12 +449,8 @@ class PythonCtrl(codeeditor.CodeCtrl):
             tokenize.tokenize(ctext.readline, self)
         except:
             pass
-
-        # Left in for debugging purposes:
-        #for i in range(len(text)):
-        #    print i, text[i], self._tokenizerChars[i]
-        eol_char = self.GetEOLChar()
-        if caretPos == 0 or len(string.strip(text)) == 0:  # At beginning of line or within an empty line
+        eol_char = "\n"
+        if caretPos == 0 or len(text.strip()) == 0:  # At beginning of line or within an empty line
             self.AddText(eol_char)
         else:
             doExtraIndent = False
@@ -501,7 +498,7 @@ class PythonCtrl(codeeditor.CodeCtrl):
                             brackets = True
                             break
             if not brackets:
-                spaces = text[0:len(text) - len(string.lstrip(text))]
+                spaces = text[0:len(text) - len(text.lstrip())]
                 if caretPos < len(spaces):  # If within the opening spaces of a line
                     spaces = spaces[:caretPos]
 
@@ -513,7 +510,7 @@ class PythonCtrl(codeeditor.CodeCtrl):
                 if doExtraIndent or len(textNoTrailingSpaces) and textNoTrailingSpaces[-1] == ':':
                     spaces = spaces + ' ' * self.GetIndent()
             self.AddText(eol_char + spaces)
-        self.EnsureCaretVisible()
+        self.see("insert")
                 
     def IsImportType(self,pos):
         '''
@@ -758,3 +755,10 @@ class PythonCtrl(codeeditor.CodeCtrl):
         text = self.get(word_start,word_end)
         return text
 
+    def perform_return(self, event):
+        if not self.AutoCompActive():
+            self.DoIndent()
+            #屏蔽默认回车键事件
+            return "break"
+        else:
+            return codeeditor.CodeCtrl.perform_return(self,event)

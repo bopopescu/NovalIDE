@@ -282,7 +282,9 @@ I2
 sg8
 S'tanh'
 p80
-sasg8
+sasg7
+I1
+sg8
 S'cmath'
 p81
 s.

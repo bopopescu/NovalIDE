@@ -45,6 +45,7 @@ UnicodeWarning
 UserWarning
 ValueError
 Warning
+WindowsError
 ZeroDivisionError
 __doc__
 __name__

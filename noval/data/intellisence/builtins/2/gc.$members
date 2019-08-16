@@ -242,7 +242,9 @@ I2
 sg8
 S'set_threshold'
 p68
-sasg8
+sasg7
+I1
+sg8
 S'gc'
 p69
 s.

@@ -757,6 +757,8 @@ class _FileWrapper:
 
     def write(self, text):
         if self._descriptor is not None:
+            if utils.is_py3_plus():
+                text = compat.ensure_bytes(text)
             os.write(self._descriptor, text)
         elif self._handle is not None:
             try:

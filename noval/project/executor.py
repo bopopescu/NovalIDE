@@ -31,6 +31,8 @@ class OutputReaderThread(threading.Thread):
         self._callback_function = callback_function
         self._keepGoing = True
         self._lineCount = 0
+        #每行允许输出的最大字符数
+        self._max_line_length = 1000
         self._accumulate = accumulate
         self._callbackOnExit = callbackOnExit
         self.setDaemon(True)
@@ -43,6 +45,7 @@ class OutputReaderThread(threading.Thread):
         file = self._file
         start = time.time()
         output = ""
+        self.singlelineTextCount = 0
         while self._keepGoing:
             try:
                 # This could block--how to handle that?
@@ -50,27 +53,28 @@ class OutputReaderThread(threading.Thread):
                 if text == '' or text == None:
                     self._keepGoing = False
                 elif not self._accumulate and self._keepGoing:
-                    self._callback_function(text)
+                    self.wrap_callback(text)
                 else:
                     # Should use a buffer? StringIO?
                     output += text
+                    self.singlelineTextCount += len(text)
                 # Seems as though the read blocks if we got an error, so, to be
                 # sure that at least some of the exception gets printed, always
                 # send the first hundred lines back as they come in.
                 if self._lineCount < 100 and self._keepGoing:
-                    self._callback_function(output)
+                    self.wrap_callback(output)
                     self._lineCount += 1
                     output = ""
                 elif time.time() - start > 0.25 and self._keepGoing:
                     try:
-                        self._callback_function(output)
+                        self.wrap_callback(output)
                     except wx._core.PyDeadObjectError:
                         # GUI was killed while we were blocked.
                         self._keepGoing = False
                     start = time.time()
                     output = ""
                 elif not self._keepGoing:
-                    self._callback_function(output)
+                    self.wrap_callback(output)
                     output = ""
             #except TypeError:
             #    pass
@@ -86,6 +90,36 @@ class OutputReaderThread(threading.Thread):
                 utils.get_logger().exception("")
                 pass
         utils.get_logger().debug("Exiting OutputReaderThread")
+
+    def wrap_callback(self,content):
+        if self.singlelineTextCount >= self._max_line_length:
+            #每行输出的字符数超过了允许的最大数,必须分行输出
+            output_len = len(content)
+            want_len = self._max_line_length-(self.singlelineTextCount-output_len)
+            have_len = output_len - want_len
+            self._callback_function(content[0:want_len] + "\n")
+            #按照每行允许的最大字符数分割
+            num = int(have_len/self._max_line_length)
+            i = 0
+            while i <= num:
+                start = want_len+i*self._max_line_length
+                #最后的字符数可能小于最大字符串,不能分行
+                if i == num:
+                    end = start + (have_len-num*self._max_line_length)
+                else:
+                    end = start + self._max_line_length
+                if end-start >= self._max_line_length:
+                    self._callback_function(content[start:end] + "\n")
+                else:
+                    #小于最大字符数,不能分行,记住已经输出的字符串
+                    self._callback_function(content[start:end])
+                    self.singlelineTextCount = end-start
+                    break
+                i += 1
+                self.singlelineTextCount = 0
+        else:
+            self._callback_function(content)
+            self.singlelineTextCount = 0
 
     def AskToStop(self):
         self._keepGoing = False

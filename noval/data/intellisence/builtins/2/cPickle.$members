@@ -1113,7 +1113,9 @@ I2
 sg10
 S'loads'
 p218
-sasg10
+sasg9
+I1
+sg10
 S'cPickle'
 p219
 s.

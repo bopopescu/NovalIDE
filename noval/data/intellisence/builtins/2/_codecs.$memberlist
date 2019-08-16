@@ -15,6 +15,8 @@ latin_1_decode
 latin_1_encode
 lookup
 lookup_error
+mbcs_decode
+mbcs_encode
 raw_unicode_escape_decode
 raw_unicode_escape_encode
 readbuffer_encode

@@ -463,6 +463,11 @@ class CodeCtrl(texteditor.SyntaxTextCtrl):
         if self.autocompleter is None:
             self.autocompleter = autocomplete.Completer(self)
         self.autocompleter._present_completions(chars,replaceLen)
+        
+    def AutoCompActive(self):
+        if self.autocompleter is None:
+            return False
+        return self.autocompleter._is_visible()
 
     def OnChar(self,event):
         return None
@@ -471,3 +476,6 @@ class CodeCtrl(texteditor.SyntaxTextCtrl):
         if self.calltip is None:
             self.calltip = calltip.CalltipBox(self)
         self.calltip._show_box(tip)
+        
+#重写perform_midline_tab方法,这里实现tab键自动完成单词功能
+CodeCtrl.perform_midline_tab = autocomplete.patched_perform_midline_tab

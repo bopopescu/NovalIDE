@@ -703,7 +703,9 @@ I2
 sg11
 S'start_new_thread'
 p168
-sasg11
+sasg10
+I1
+sg11
 S'thread'
 p169
 s.
