@@ -3,79 +3,20 @@ from __future__ import unicode_literals
 import os
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
-from member.models import Member,MemberData,DownloadData
-from django.http import HttpResponse
+from member.models import Member,MemberData,DownloadData,PyPackage
 from django.conf import settings
 import logging
-from bson import ObjectId
-from mongoengine.queryset import QuerySet
 from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
-import json
-import utils
 from django.http import StreamingHttpResponse
 import ConfigParser
+from util.utils import *
+import sys
 
-logger = logging.getLogger('novalide.member')
-OK = 0
+logger = logging.getLogger('logsite')
 
-def json_response(code=OK, message='status ok',host=None, **kwargs):
-    """生成JSON格式的HTTP响应结果。
-    
-    :param code: int，结果码，0为成功，其余为失败。0-9999用于公共错误，业务错误使用10000或以上。
-    :param message: str，结果消息，成功时为空，失败时为出错原因。亦可自定义数据结构。
-    :param **kwargs: 任意数量的业务数据项
-    
-    :returns: str, JSON字符串
-    """
-
-    d = {
-        "code": code,
-        "message": message
-    }
-
-    d.update(kwargs)
-
-    d = bson_type_to_builtin(d)
-    if settings.UNITTEST:
-        s = json.dumps(d, ensure_ascii=False, indent=4)
-    else:
-        s = json.dumps(d, ensure_ascii=False)
-
-    if settings.DEBUG:
-        logger.info("[Server Response]:\n%s\n\n\n\n\n"%s)
-    #else:
-     #   logger.info("[Server Response Length]:%d" % len(s) )
-
-    h = HttpResponse(s, content_type='application/json; charset=utf-8')
-    return h
-    
-
-def bson_type_to_builtin(data):
-    """将变量内的BSON和MongoEngine的类型转换成Python内置内型。
-    :param data: mixed
-    :returns: mixed
-    """
-    if isinstance(data, (list, tuple)):
-        return [bson_type_to_builtin(v) for v in data]
-    elif isinstance(data, dict):
-        d = {}
-        for k, v in data.items():
-            if v is not None:
-                if isinstance(k, ObjectId):
-                    k = str(k)
-                if k == '_id':
-                    k = 'id'
-                d[k] = bson_type_to_builtin(v)
-        return d
-    elif isinstance(data, datetime):
-        return get_milliseconds_from_datetime(data)
-    elif isinstance(data, ObjectId):
-        return str(data)
-    elif isinstance(data, QuerySet):
-        return [bson_type_to_builtin(v) for v in data]
-    else:
-        return data
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 # Create your views here.
 
@@ -90,7 +31,8 @@ def register_member(request):
         'sn':sn,
         'os_bit':os_bit,
         'os_name':os_name,
-        'user_name':user_name
+        'user_name':user_name,
+        'app_version':request.REQUEST.get('app_version')
     }
     member = Member(**kwargs).save()
     return json_response(member_id = member.id)
@@ -130,21 +72,21 @@ def get_update_info(request):
     is_zh = True if language.strip().lower().find("cn") != -1 else False
     if not os.path.exists(version_txt_file):
         if is_zh:
-            msg = "无法获取版本号"
+            msg = u"无法获取版本号"
         else:
             msg = "could not get application version"
         return json_response(code=2,message=msg)
     with open(version_txt_file) as f:
         version = f.read().strip()
-        if not utils.CompareAppVersion(version,app_version):
+        if not CompareAppVersion(version,app_version):
             if is_zh:
-                msg = "当前已是最新版本"
+                msg = u"当前已是最新版本"
             else:
                 msg = "this is the lastest version"
             return json_response(code=0,message=msg)
         else:
             if is_zh:
-                msg = "有最新版本'%s'可用,你需要下载更新吗?" % version
+                msg = u"有最新版本'%s'可用,你需要下载更新吗?" % version
             else:
                 msg = "this lastest version '%s' is available,do you want to download and update it?" % version
             return json_response(code=1,message=msg,new_version=version)
@@ -224,3 +166,20 @@ def get_mail(request):
         return json_response(sender = sender,user=user,password=password,smtpserver=smtpserver,port=port,private_key=private_key)
     else:
         return json_response(sender = sender,user=user,password=password,smtpserver=smtpserver,port=port)
+
+@require_http_methods(['GET'])
+def get_packages(request):
+    names = []
+    name = request.REQUEST.get('name',None)
+    for pkg in PyPackage.objects():
+        if name is None or pkg.name.lower().find(name.lower()) != -1:
+            names.append(pkg.name)
+    return json_response(names=names)
+   
+@require_http_methods(['GET'])
+def get_package_info(request):
+    names = []
+    name = request.REQUEST.get('name')
+    pkg = PyPackage.objects(name=name).first()
+    ret_data = dict(pkg.to_mongo())
+    return json_response(**ret_data)

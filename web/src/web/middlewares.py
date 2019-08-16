@@ -10,6 +10,7 @@ import datetime
 from bson import ObjectId, DBRef
 from mongoengine import register_connection, Document, EmbeddedDocument
 from django.conf import settings
+from logging.config import dictConfig
 
 
 class Init(object):
@@ -28,6 +29,9 @@ class Init(object):
         self._sealed = True
 
         self.application = application
+        
+        # config logging
+        dictConfig(settings.LOGGING)
 
         # register mongodb connections.
         for k, v in settings.MONGODBS.items():

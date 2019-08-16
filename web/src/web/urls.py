@@ -27,6 +27,8 @@ urlpatterns = [
     url(r'^member/download_app', member.views.new_app_download),
     url(r'^member/login', member.views.login),
     url(r'^member/get_mail', member.views.get_mail),
+    url(r'^member/get_packages', member.views.get_packages),
+    url(r'^member/get_package_data', member.views.get_package_info),
     #set static media file path url pattern,should start with /media
     url(r"^media/(?P<path>.*)$", "django.views.static.serve", {"document_root": settings.MEDIA_ROOT,}),
     url(r'^', include('home.urls')),

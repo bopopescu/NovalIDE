@@ -14,6 +14,8 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 import os
 import sys
 
+
+from web.settings_logging import *
 UNITTEST = ('test' in sys.argv) or (os.environ.get('DJANGO_UNITTEST') is not None)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -134,6 +136,12 @@ TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates'),)
 MONGODBS = {
     'members': {
         'name': 'members',
+        'host': '127.0.0.1',
+        'port': 27017,
+    },
+    
+    'pypi': {
+        'name': 'pypi',
         'host': '127.0.0.1',
         'port': 27017,
     },

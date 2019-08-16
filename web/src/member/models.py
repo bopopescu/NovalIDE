@@ -5,7 +5,7 @@ from django.db import models
 import datetime
 
 # Create your models here.
-from mongoengine import Document,StringField,EmailField,ObjectIdField,DateTimeField,BooleanField
+from mongoengine import Document,StringField,EmailField,ObjectIdField,DateTimeField,BooleanField,ListField
 
 class Member(Document):
     user_name = StringField(max_length=100)
@@ -16,6 +16,7 @@ class Member(Document):
     sn = StringField(max_length=100)
     os_bit  = StringField(max_length=50)
     os_name = StringField(max_length=200)
+    app_version = StringField(max_length=30)
     created_at = DateTimeField(requred=True,default=datetime.datetime.utcnow)
     
     meta = {
@@ -47,3 +48,21 @@ class DownloadData(Document):
     }
     
     download_at = DateTimeField(requred=True,default=datetime.datetime.utcnow)
+    
+
+# 定义分类文档
+class PyPackage(Document):
+    name = StringField(max_length=100, required=True)
+    author = StringField(max_length=500, required=True,default='')
+    author_mail = StringField(max_length=200, required=True,default='')
+    homepage = StringField(max_length=400)
+    version = StringField(max_length=100, required=True)
+    releases = ListField()
+    pypi_url = StringField(max_length=400, required=True)
+    summary = StringField(required=True,default='')
+    
+    meta = {
+        'db_alias':'pypi',
+        'indexes': ['name',]
+    }
+    updated_at = DateTimeField(requred=True,default=datetime.datetime.utcnow)
