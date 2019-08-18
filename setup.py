@@ -51,7 +51,7 @@ setup(name='NovalIDE',
             'noval':data_list
         },
         data_files = [('',['version.txt','template.xml','noval.ico']),('locale/en_US/LC_MESSAGES',list_files('locale/en_US/LC_MESSAGES')),\
-                ('locale/zh_CN/LC_MESSAGES',list_files('locale/zh_CN/LC_MESSAGES'))],
+                ('locale/zh_CN/LC_MESSAGES',list_files('locale/zh_CN/LC_MESSAGES')),('tkdnd',list_files('tkdnd'))],
         classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',

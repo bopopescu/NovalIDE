@@ -27,6 +27,13 @@ def GetAssignValueType(node):
             value = node.value.id
     return value_type,value
     
+
+def GetTupleOrListValueType(node,i):
+    if type(node.value) == ast.Tuple:
+       elts = node.value.elts
+       return GetAstType(elts[i]),""
+    return config.ASSIGN_TYPE_OBJECT,""
+       
 def GetBases(node):
     base_names = []
     for base in node.bases:
@@ -220,15 +227,14 @@ class CodebaseParser(object):
         line_no = element.lineno
         col = element.col_offset
         for target in targets:
+            #连等表达式
             if type(target) == ast.Tuple:
-                pass
-           #     elts = target.elts
-            #    for elt in elts:
-             #       name = elt.value
-              #      print name
-                #    data = dict(name=name,line=line_no,col=col,type=config.NODE_OBJECT_PROPERTY)
-                 #   childs.append(data)
-               #     nodeast.PropertyDef(name,line_no,col,config.PROPERTY_TYPE_NONE,parent)
+                elts = target.elts
+                for i,elt in enumerate(elts):
+                    if type(elt) == ast.Name:
+                        name = elt.id
+                        value_type,value = GetTupleOrListValueType(element,i)
+                        self.AddNodeData(name,line_no,col,config.NODE_ASSIGN_TYPE,parent=parent,**{'value':value,'value_type':value_type})
             elif type(target) == ast.Name:
                 name = target.id
                 value_type,value = GetAssignValueType(element)

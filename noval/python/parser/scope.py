@@ -155,7 +155,7 @@ class Scope(object):
             if len(names) == 1:
                 return [self.Parent]
             else:
-                return self.FindDefinition('.'.join(names[1:]))[0]
+                return self.FindScopes(names[1:])
         else:
             return self.FindScopes(names)
 

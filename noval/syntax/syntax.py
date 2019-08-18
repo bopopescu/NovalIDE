@@ -47,6 +47,7 @@ class SyntaxThemeManager(object):
         self.AddSyntaxTheme("Desert Sunset", "Default Dark", desert_sunset)
         self.AddSyntaxTheme("Zenburn", "Default Dark", zenburn)
         self.AddSyntaxTheme("IDLE Classic", consts.DEFAULT_SYNTAX_THEME, idle_classic)
+        self.AddSyntaxTheme("IDLE Dark", consts.DEFAULT_SYNTAX_THEME, idle_dark)
 
     def Register(self,lang_lexer):
         for lexer in self.lexers:

@@ -4,5 +4,6 @@ include README.md
 include noval.ico
 include NovalIDE.py
 include version.txt
+include requirements.txt
 include locale/en_US/LC_MESSAGES/*.mo
 include locale/zh_CN/LC_MESSAGES/*.mo

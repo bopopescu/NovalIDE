@@ -30,17 +30,13 @@ class CalltipBox(ttk.Frame):
         else:
             self._show_box(completions)
 
-    def _show_box(self, docstring):
+    def _show_box(self,pos, docstring):
         if not docstring:
             return
         # place box
         if not self._is_visible():
-            # _, _, _, list_box_height = self.bbox(0)
             height = 100  # min(150, list_box_height * len(completions) * 1.15)
-            typed_name_length = 0
-            text_box_x, text_box_y, _, text_box_height = self.text.bbox(
-                "insert-%dc" % typed_name_length
-            )
+            text_box_x, text_box_y, _, text_box_height = self.text.bbox( "%d.%d"%(pos[0],pos[1]))
 
             # should the box appear below or above cursor?
             space_below = self.master.winfo_height() - text_box_y - text_box_height
@@ -53,12 +49,14 @@ class CalltipBox(ttk.Frame):
                 height = min(height, space_above)
                 y = text_box_y - height
 
-            width = 400
-            self.place(x=text_box_x, y=y, width=200, height=100)
+            self.place(x=text_box_x, y=y)
             self._update_doc(docstring)
 
     def _update_doc(self,docstring):
         if docstring:
+         #   lines = docstring.split('\n')
+       #     max_line_count = max([len(line.strip()) for line in lines])
+#            self.doc_label.config(width=max_line_count)
             self.doc_label["text"] = docstring
         else:
             self.doc_label["text"] = ""

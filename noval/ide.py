@@ -278,6 +278,9 @@ class IDEApplication(core.App):
                 text.syntax_colorer = class_(text)
         if isinstance(text, codeeditor.CodeCtrl):
             text.syntax_colorer.schedule_update(event, use_coloring=utils.profile_get_int("TextHighlightSyntax", True))
+            #整个文本创建motion标签,用来实现鼠标在文本上悬停,显示文本的提示文档信息
+            text.tag_remove("motion", "1.0", "end")
+            text.tag_add("motion", "1.0", "end")
             
         #只有文本编辑区域才在内容更改时更新大纲显示内容
         if isinstance(text.master.master,core.DocTabbedChildFrame):

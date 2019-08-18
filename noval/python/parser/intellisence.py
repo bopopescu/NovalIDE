@@ -111,7 +111,7 @@ class IntellisenceManager(object):
         if apputils.is_windows():
             self._builtin_data_path = os.path.join(self.data_root_path,"builtins")
         else:
-            self._builtin_data_path = os.path.join(appdirs.get_app_path(), "noval", "tool", "data","intellisence","builtins")
+            self._builtin_data_path = os.path.join(appdirs.get_app_path(), "noval", "data","intellisence","builtins")
         self.module_dicts = {}
         self._loader = IntellisenceDataLoader(self.data_root_path,self._builtin_data_path,self)
         self._is_running = False

@@ -1462,6 +1462,10 @@ class TextOptionsPanel(ui_utils.BaseConfigurationPanel):
         hasTabsCheckBox = ttk.Checkbutton(self,text=_("Use spaces instead of tabs"),variable=self._hasTabsVar)
         hasTabsCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
         
+        self._tabCompletionVar = tk.IntVar(value=utils.profile_get_int("TextTabCompletion", True))
+        tabCompletionCheckBox = ttk.Checkbutton(self,text=_("Allow code completion with tab-key"),variable=self._tabCompletionVar)
+        tabCompletionCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
+
         row = ttk.Frame(self)
         indentWidthLabel = ttk.Label(row,text=_("Indent Width:"))
         indentWidthLabel.pack(side=tk.LEFT)
@@ -1542,6 +1546,7 @@ class TextOptionsPanel(ui_utils.BaseConfigurationPanel):
                 doViewStuffUpdate = True
                 config.WriteInt(self._configPrefix + "EditorIndentWidth", newIndentWidth)
         GetApp().MainFrame.GetNotebook().update_appearance()
+        utils.profile_set("TextTabCompletion",self._tabCompletionVar.get())
         return True
                
          

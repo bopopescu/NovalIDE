@@ -266,7 +266,7 @@ def patched_perform_midline_tab(text, event):
     '''
         实现tab键自动完成单词的功能
     '''
-    if utils.profile_get_int("TAB_COMPLETE_WORD",True):
+    if utils.profile_get_int("TextTabCompletion",True):
         if not text.has_selection():
             GetApp().MainFrame.GetNotebook().AutocompShow()
             return "break"

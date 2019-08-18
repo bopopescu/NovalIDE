@@ -68,17 +68,6 @@ class CodeView(texteditor.TextView):
     # Format methods
     #----------------------------------------------------------------------------
 
-    def OnAutoComplete(self):
-        self.GetCtrl().AutoCompCancel()
-        self.GetCtrl().AutoCompSetAutoHide(0)
-        self.GetCtrl().AutoCompSetChooseSingle(True)
-        self.GetCtrl().AutoCompSetIgnoreCase(True)
-        context, hint = self.GetAutoCompleteHint()
-        replaceList, replaceLen = self.GetAutoCompleteKeywordList(context, hint,self.GetCtrl().GetCurrentLine())
-        if replaceList and len(replaceList) != 0: 
-            self.GetCtrl().AutoCompShow(replaceLen, replaceList)
-
-
     def GetAutoCompleteHint(self):
         """ Replace this method with Editor specific method """
         line,col = self.GetCtrl().GetCurrentPos()
@@ -473,9 +462,20 @@ class CodeCtrl(texteditor.SyntaxTextCtrl):
         return None
 
     def CallTipShow(self,pos,tip):
+        '''
+            显示提示信息框
+        '''
         if self.calltip is None:
             self.calltip = calltip.CalltipBox(self)
-        self.calltip._show_box(tip)
+        self.calltip._show_box(pos,tip)
+        
+    def CallTipHide(self):
+        '''
+            隐藏提示信息框
+        '''
+        if self.calltip is None:
+            return
+        self.calltip._close()
         
 #重写perform_midline_tab方法,这里实现tab键自动完成单词功能
 CodeCtrl.perform_midline_tab = autocomplete.patched_perform_midline_tab

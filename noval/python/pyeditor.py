@@ -290,6 +290,32 @@ class PythonCtrl(codeeditor.CodeCtrl):
     def __init__(self, master=None, cnf={}, **kw):
         codeeditor.CodeCtrl.__init__(self, master, cnf=cnf, **kw)
         self.bind("<KeyPress>", self.OnChar, True)
+        #鼠标放在文本上方移动,显示文本的提示文档信息
+        self.tag_bind("motion", "<Motion>", self.OnDwellStart)
+        
+    def OnDwellStart(self,event):
+        mouse_index = self.index("@%d,%d" % (event.x, event.y))
+        pos = self.get_line_col(mouse_index)
+        line,col = pos
+        #先隐藏提示信息
+        self.CallTipHide()
+        if col >= 0 and self.IsCaretLocateInWord(pos):
+            dwellword = self.GetTypeWord(line,col)
+            if not dwellword:
+                return
+            doc_view = GetApp().GetDocumentManager().GetCurrentView()
+            if not isinstance(doc_view,PythonView):
+                return
+            module_scope = doc_view.ModuleScope
+            scope_founds = []
+            if module_scope is not None:
+                scope = module_scope.FindScope(line)
+                scope_founds = scope.GetDefinitions(dwellword)
+            if scope_founds:
+                scope_found = scope_founds[0]
+                doc = scope_found.GetDoc()
+                if doc is not None:
+                    self.CallTipShow(pos, doc)
 
     def CreatePopupMenu(self):
         codeeditor.CodeCtrl.CreatePopupMenu(self)
@@ -586,34 +612,34 @@ class PythonCtrl(codeeditor.CodeCtrl):
         keycode = event.keycode
         pos = self.GetCurrentPos()
         pos = pos[0],pos[1]-1
+        #输入(符号,弹出文档提示信息
         if event.char == "(":
             self.GetArgTip(pos)
+        #输入dot(.)符号,列出成员
         elif event.char == self.TYPE_POINT_WORD:
             self.ListMembers(pos)
-        else:
-            if len(event.char) == 1 and keycode == ord(event.char):
-                # Tips
-                if keycode == ord(self.TYPE_BLANK_WORD):
-                    #输入的是否from xx import 这样的句式
-                    ret,name = self.IsFromImportType(pos)
-                    if ret:
-                        member_list = intellisence.IntellisenceManager().GetMemberList(name)
-                        if member_list == []:
-                            return
-                        member_list.insert(0,"*")
-                        self.AutoCompShow(0, member_list)
-                    #输入的是from或者import这样的句式
-                    elif self.IsImportType(pos) or self.IsFromType(pos):
-                        import_list = intellisence.IntellisenceManager().GetImportList()
-                        #import_list.extend(self.GetCurdirImports())
-                        import_list = parserutils.py_sorted(import_list,parserutils.CmpMember)
-                        if import_list == []:
-                            return
-                        self.AutoCompShow(0, import_list)
-                    #输入from xxx后自动完成输入import关键字
-                    elif self.IsFromplusType(pos):
-                        self.AddText(self.TYPE_BLANK_WORD)
-                        self.AutoCompShow(0, [self.TYPE_IMPORT_WORD])            
+        #输入空格提示导入信息
+        elif event.char == self.TYPE_BLANK_WORD:
+            #输入的是否from xx import 这样的句式
+            ret,name = self.IsFromImportType(pos)
+            if ret:
+                member_list = intellisence.IntellisenceManager().GetMemberList(name)
+                if member_list == []:
+                    return
+                member_list.insert(0,"*")
+                self.AutoCompShow(0, member_list)
+            #输入的是from或者import这样的句式
+            elif self.IsImportType(pos) or self.IsFromType(pos):
+                import_list = intellisence.IntellisenceManager().GetImportList()
+                #import_list.extend(self.GetCurdirImports())
+                import_list = parserutils.py_sorted(import_list,parserutils.CmpMember)
+                if import_list == []:
+                    return
+                self.AutoCompShow(0, import_list)
+            #输入from xxx后自动完成输入import关键字
+            elif self.IsFromplusType(pos):
+                self.AddText(self.TYPE_BLANK_WORD)
+                self.AutoCompShow(0, [self.TYPE_IMPORT_WORD])            
 
     def GetCurdirImports(self):
         cur_project = wx.GetApp().GetService(project.ProjectEditor.ProjectService).GetView().GetDocument()
