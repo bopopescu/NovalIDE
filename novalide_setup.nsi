@@ -139,6 +139,8 @@ Section "MainSection" SEC01
   File /r "dist\${PRODUCT_NAME}\win32com\shell\*.*"
 
 
+  Delete "$APPDATA\NovalIDE\intellisence\builtins\2\*.*"
+  Delete "$APPDATA\NovalIDE\intellisence\builtins\3\*.*"
   SetOutPath "$APPDATA\NovalIDE\intellisence\builtins"
   File /r "dist\${PRODUCT_NAME}\builtins\*.*"
 SectionEnd

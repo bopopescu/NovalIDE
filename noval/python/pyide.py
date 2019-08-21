@@ -9,7 +9,7 @@
 # Copyright:   (c) wukan 2019
 # Licence:     GPL-3.0
 #-------------------------------------------------------------------------------
-from noval import _,consts
+from noval import _,consts,NewId
 from tkinter import messagebox
 import noval.ide as ide
 import noval.util.apputils as apputils
@@ -33,6 +33,8 @@ import noval.python.debugger.debugger as pythondebugger
 import noval.ui_common as ui_common
 from noval.project.document import ProjectDocument
 import noval.misc as misc
+
+ID_TURTLE_DEMO = NewId()
 
 class PyIDEApplication(ide.IDEApplication):
 
@@ -60,6 +62,9 @@ class PyIDEApplication(ide.IDEApplication):
         if utils.is_windows():
             self.InsertCommand(consts.ID_FEEDBACK,constants.ID_OPEN_PYTHON_HELP,_("&Help"),_("&Python Help Document"),handler=self.OpenPythonHelpDocument,image=self.GetImage("pydoc.png"),pos="before")
             
+        if utils.is_py3_plus():
+            self.InsertCommand(consts.ID_ABOUT,ID_TURTLE_DEMO,_("&Help"),_("Turtle Demo"),handler=self.open_turtle_demo,pos="before")
+            
         self.AddCommand(constants.ID_GOTO_DEFINITION,_("&Edit"),_("Goto Definition"),self.GotoDefinition,default_tester=True,default_command=True)
         self.InsertCommand(consts.ID_FEEDBACK,constants.ID_GOTO_PYTHON_WEB,_("&Help"),_("&Python Website"),handler=self.GotoPythonWebsite,pos="before")
         self.AddCommand(constants.ID_OPEN_INTERPRETER,_("&Tools"),_("&Interpreter"),self.OpenInterpreter,image=self.GetImage("python/interpreter.png"))
@@ -86,7 +91,16 @@ class PyIDEApplication(ide.IDEApplication):
         #关闭软件启动图片
         self.CloseSplash()
         return True
-
+        
+    def open_turtle_demo(self, event = None):
+        interpreter = self.GetCurrentInterpreter()
+        if interpreter is None:
+            return "break"
+        cmd = [interpreter.Path,
+               '-c',
+               'from turtledemo.__main__ import main; main()']
+        subprocess.Popen(cmd, shell=False)
+        return "break"
 
     def GetInterpreterManager(self):
         return interpretermanager.InterpreterManager()

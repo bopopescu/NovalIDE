@@ -314,7 +314,6 @@ class IDEApplication(core.App):
         return self.frame
                 
     def GotoView(self,file_path,lineNum=-1,colno=-1,trace_track=True,load_outline=True):
-        file_path = os.path.abspath(file_path)
         docs = self.GetDocumentManager().CreateDocument(file_path, core.DOC_SILENT|core.DOC_OPEN_ONCE)
         if docs == []:
             return

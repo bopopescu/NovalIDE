@@ -180,7 +180,7 @@ class DefinitionsDialog(ui_base.CommonModaldialog):
     def __init__(self,parent,current_view,definitions):
         ui_base.CommonModaldialog.__init__(self,parent,width=400)
         self.title(_('Multiple Definitions'))
-
+        self.current_view = current_view                      
         v = tk.StringVar()
         self.definitions = definitions
         strings = self.GetStrings(definitions)
@@ -194,7 +194,11 @@ class DefinitionsDialog(ui_base.CommonModaldialog):
     def GetStrings(self,definitions):
         lines = []
         for definition in definitions:
-            line = "%s:Position %d,%d %s" % (definition.Root.Module.Path,definition.Node.Line,definition.Node.Col,"")
+            if self.current_view.GetDocument().GetFilename() == definition.Root.Module.Path:
+                path = os.path.basename(self.current_view.GetDocument().GetFilename())
+            else:
+                path = definition.Root.Module.Path
+            line = "%s- (%d,%d) %s" % (path,definition.Node.Line,definition.Node.Col,"")
             lines.append(line)
         return lines
 
@@ -203,5 +207,5 @@ class DefinitionsDialog(ui_base.CommonModaldialog):
         if i < 0:
             return
         definition = self.definitions[i]
-        GetApp().GotoView(definition.Root.Module.Path,definition.Node.Line)
+        GetApp().GotoView(definition.Root.Module.Path,definition.Node.Line,load_outline=False)
         ui_base.CommonModaldialog._ok(self,event)

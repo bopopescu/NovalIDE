@@ -145,7 +145,7 @@ class PythonOutlineView(ui_base.OutlineView):
             else:
                 if self._display_item_flag & self.DISPLAY_ITEM_LINE:
                     display_name = "%s[%d]" % (display_name,child.Line)
-                if child.Type == parserconfig.NODE_OBJECT_PROPERTY or \
+                if child.Type == parserconfig.NODE_CLASS_PROPERTY or \
                             child.Type == parserconfig.NODE_ASSIGN_TYPE:
                     current = self.tree.insert(
                         parent, "end", text=display_name, values=(child.Line,child.Col,child.Type), image=self.property_image

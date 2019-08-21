@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import fileparser, config,nodeast
-from utils import CmpMember
+import config,nodeast
+from utils import CmpMember,py_sorted
 import intellisence
 import noval.util.utils as logger_utils
 
@@ -12,6 +12,9 @@ class Scope(object):
         self._child_scopes = []
         if self._parent != None:
             self.Parent.AppendChildScope(self)
+            
+    def __str__(self):
+        return 'scope line start %d,end %d' % (self._line_start,self._line_end)
 
     @property
     def Parent(self):
@@ -43,8 +46,14 @@ class Scope(object):
             return True
         return False
         
+    def CompareScopeLine(self,x,y):
+        if x.LineEnd > y.LineEnd:
+            return 1
+        return -1
+        
     def RouteChildScopes(self):
-        self.ChildScopes.sort(key=lambda c :c.LineStart)
+        #按行号对子范围进行排序
+        self._child_scopes = py_sorted(self._child_scopes,self.CompareScopeLine)
         last_scope = None
         for child_scope in self.ChildScopes:
             ##exclude child scopes which is import from other modules
@@ -59,6 +68,7 @@ class Scope(object):
                     last_scope.LineEnd = child_scope.LineStart -1
                 last_scope.Parent.LineEnd = last_scope.LineEnd
             last_scope = child_scope
+        #最后一个子范围的末尾行作为此范围的末尾行
         if last_scope is not None:
             last_scope.Parent.LineEnd = last_scope.LineEnd
             
@@ -108,6 +118,7 @@ class Scope(object):
         return find_scopes
         
     def FindScopes(self,names):
+        ##TODO:注意!查找的范围列表可能包含自身
         scopes = self.FindTopScope(names)
         #search for __builtin__ member at last
         if not scopes and len(names) == 1:
@@ -118,30 +129,13 @@ class Scope(object):
     def GetDefinitions(self,name):
         if not name.strip():
             return []
-
-        is_self = False
-        is_cls = False
         names = name.split('.')
-        #如果类的成员方法,则搜索名称不包含self
-        if names[0] == 'self' and len(names) > 1 and self.IsMethodScope():
-            names = names[1:]
-            is_self = True
-        #如果类的静态方法,则搜索名称不包含cls
-        elif names[0] == 'cls' and len(names) > 1 and self.IsClassMethodScope():
-            names = names[1:]
-            is_cls = True
-
         find_scopes = self.FindScopes(names)
         if not find_scopes:
             return []
         definitions = []
         for find_scope in find_scopes:
-            if is_self:
-                members = find_scope.GetMember(name[5:])
-            elif is_cls:
-                members = find_scope.GetMember(name[4:])
-            else:
-                members = find_scope.GetMember(name)
+            members = find_scope.GetMember(name)
             for member in members:
                 #可能有重复的定义,只取一个
                 if member not in definitions:
@@ -149,6 +143,8 @@ class Scope(object):
         return definitions
         
     def FindNameScopes(self,name):
+        if not name.strip():
+            return []
         names = name.split('.')
         #when like self. or cls., route to parent class scope
         if (names[0] == 'self' and self.IsMethodScope())  or (names[0] == 'cls' and self.IsClassMethodScope()):
@@ -172,7 +168,6 @@ class Scope(object):
             return None
         # split the text into natural paragraphs (a blank line separated)
         paratext = alltext.split("\n\n")
-       
         # add text by paragraph until text limit or all paragraphs
         textlimit = 800
         if len(paratext[0]) < textlimit:
@@ -190,16 +185,6 @@ class Scope(object):
         # present the function signature only (first newline)
         else:
             calltiptext = alltext.split("\n")[0]
-
-##        if type(calltiptext) != types.UnicodeType:
-##            # Ensure it is unicode
-##            try:
-##                stcbuff = self.GetBuffer()
-##                encoding = stcbuff.GetEncoding()
-##                calltiptext = calltiptext.decode(encoding)
-##            except Exception, msg:
-##                dbg("%s" % msg)
-
         return calltiptext
             
 class ModuleScope(Scope):
@@ -235,7 +220,8 @@ class ModuleScope(Scope):
         
     def MakeScopes(self,node,parent_scope):
         for child in node.Childs:
-            if child.Type == config.NODE_FUNCDEF_TYPE:
+            #类属性也有可能是函数,但是其type为NODE_CLASS_PROPERTY
+            if child.Type == config.NODE_FUNCDEF_TYPE or type(child) == nodeast.FuncDef:
                 func_def_scope = FuncDefScope(child,parent_scope,self)
                 for arg in child.Args:
                     ArgScope(arg,func_def_scope,self)
@@ -243,7 +229,7 @@ class ModuleScope(Scope):
             elif child.Type == config.NODE_CLASSDEF_TYPE:
                 class_def_scope = ClassDefScope(child,parent_scope,self)
                 self.MakeScopes(child,class_def_scope)
-            elif child.Type == config.NODE_OBJECT_PROPERTY or\
+            elif child.Type == config.NODE_CLASS_PROPERTY or\
                         child.Type == config.NODE_ASSIGN_TYPE:
                 NameScope(child,parent_scope,self)
             elif child.Type == config.NODE_IMPORT_TYPE:
@@ -260,14 +246,10 @@ class ModuleScope(Scope):
                 self.MakeScopes(child,from_import_scope)
             elif child.Type == config.NODE_MAIN_FUNCTION_TYPE:
                 MainFunctionScope(child,parent_scope,self)
+            elif child.Type == config.NODE_RETURN_TYPE:
+                ReturnScope(child,parent_scope,self)
             elif child.Type == config.NODE_UNKNOWN_TYPE:
                 UnknownScope(child,parent_scope,self)
-                
-    def __str__(self):
-        #print 'module name is',self.Module.Name,'path is',self.Module.Path
-        #for child_scope in self.ChildScopes:
-         #   print 'module child:', child_scope
-        return self.Module.Name
         
     def FindScope(self,line):
         find_scope = Scope.FindScope(self,line)
@@ -292,6 +274,8 @@ class ModuleScope(Scope):
         return self.MakeBeautyDoc(self.Module.Doc)
                                   
 class NodeScope(Scope):
+    
+    NAME_SELF_KEYWARD = "self"
     def __init__(self,node,parent,root):
         super(NodeScope,self).__init__(node.Line,node.Line,parent)
         self._node= node
@@ -301,6 +285,8 @@ class NodeScope(Scope):
         return self._node
     
     def EqualName(self,name):
+        if self.Hasself() and name.find(self.NAME_SELF_KEYWARD) != -1:
+            return (self.NAME_SELF_KEYWARD + "." + self.Node.Name) == name
         return self.Node.Name == name
         
     def GetMemberList(self):
@@ -316,11 +302,18 @@ class NodeScope(Scope):
         return self._root
 
     def GetMember(self,name):
-        return [self]
+        if name == "" or self.EqualName(name):
+            return [self]
+        else:
+            return []
 
     def MakeFixName(self,name):
+        if self.Hasself() and name.find(self.NAME_SELF_KEYWARD) != -1:
+            node_name = self.NAME_SELF_KEYWARD + "." + self.Node.Name
+        else:
+           node_name = self.Node.Name 
         #muse only replace once
-        fix_name = name.replace(self.Node.Name,"",1)
+        fix_name = name.replace(node_name,"",1)
         if fix_name.startswith("."):
             fix_name = fix_name[1:]
         return fix_name
@@ -330,6 +323,12 @@ class NodeScope(Scope):
         
     def GetArgTip(self):
         return ''
+        
+    def __str__(self):
+        return Scope.__str__(self) + ",name %s,type %s" % (self._node.Name,self._node.__class__.__name__)
+        
+    def Hasself(self):
+        return self.IsMethodScope()
 
 class ArgScope(NodeScope):
     def __init__(self,arg_node,parent,root):
@@ -348,12 +347,6 @@ class ArgScope(NodeScope):
 class FuncDefScope(NodeScope):
     def __init__(self,func_def_node,parent,root):
         super(FuncDefScope,self).__init__(func_def_node,parent,root)
-        
-    def __str__(self):
-        #print 'type is func scope, name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
-        #for child in self.ChildScopes:
-         #   print 'func scope child:', child
-        return self.Node.Name
 
     def MakeFixName(self,name):
         if self.Node.IsMethod:
@@ -394,12 +387,6 @@ class ClassDefScope(NodeScope):
     INIT_METHOD_NAME = "__init__"
     def __init__(self,class_def_node,parent,root):
         super(ClassDefScope,self).__init__(class_def_node,parent,root)
-        
-    def __str__(self):
-        #print 'type is class scope, name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
-        #for child in self.ChildScopes:
-         #   print 'class scope child:', child
-        return self.Node.Name
         
     def FindScopeInChildScopes(self,name):
         #先在在类的儿子中去查找
@@ -472,20 +459,17 @@ class ClassDefScope(NodeScope):
 class NameScope(NodeScope):
     def __init__(self,name_property_node,parent,root):
         super(NameScope,self).__init__(name_property_node,parent,root)
-        
-    def __str__(self):
-        #print 'type is name scope, name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
-        return self.Node.Name
 
     def GetMemberList(self):
         member_list = []
         if self.Node.ValueType == config.ASSIGN_TYPE_OBJECT:
-            found_scope = self.FindDefinitionScope(self.Node.Value)
-            if found_scope is not None:
-                if found_scope.Node.Type == config.NODE_IMPORT_TYPE:
-                    member_list = found_scope.GetImportMemberList(self.Node.Value)
-                else:
-                    member_list = found_scope.GetMemberList()
+            found_scopes = self.FindNameScopes(self.Node.Value)
+            if found_scopes:
+                for found_scope in found_scopes:
+                    if found_scope.Node.Type == config.NODE_IMPORT_TYPE:
+                        member_list = found_scope.GetImportMemberList(self.Node.Value)
+                    else:
+                        member_list = found_scope.GetMemberList()
         else:
             member_list = intellisence.IntellisenceManager().GetTypeObjectMembers(self.Node.ValueType)
         return member_list
@@ -494,33 +478,39 @@ class NameScope(NodeScope):
         fix_name = self.MakeFixName(name)
         if fix_name == "":
             return [self]
-        if self.Node.Value is None:
+        if not self.Node.Value:
             return []
+        
         found_scopes = self.FindNameScopes(self.Node.Value)
         members = []
         if found_scopes:
+            #查找类对象里面的属性或方法
             for found_scope in found_scopes:
+                #不能包含自己,否则会出现无限递归调用
+                if found_scope == self:
+                    continue
                 if found_scope.Node.Type == config.NODE_IMPORT_TYPE:
                     members.extend(found_scope.GetMember(self.Node.Value + "." + fix_name))
                 else:
+                    assert(found_scope != self)
                     members.extend(found_scope.GetMember(fix_name))
-        return []
+        return members
+        
+    def EqualName(self,name):
+        if self.Hasself():
+            return (self.NAME_SELF_KEYWARD +  "." + self.Node.Name) == name
+        return self.Node.Name == name
+        
+    def Hasself(self):
+        return (self.Parent.IsMethodScope() or type(self.Parent) == ClassDefScope) and self._node.Type == config.NODE_CLASS_PROPERTY
             
 class UnknownScope(NodeScope):
     def __init__(self,unknown_type_node,parent,root):
         super(UnknownScope,self).__init__(unknown_type_node,parent,root)
-        
-    def __str__(self):
-        #print 'type is unknown scope, name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
-        return self.Node.Name
 
 class ImportScope(NodeScope):
     def __init__(self,import_node,parent,root):
         super(ImportScope,self).__init__(import_node,parent,root)
-        
-    def __str__(self):
-        #print 'type is import scope, import name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
-        return self.Node.Name
 
     def EqualName(self,name):
         if self.Node.AsName is not None:
@@ -563,10 +553,6 @@ class FromImportScope(NodeScope):
     def __init__(self,from_import_node,parent,root):
         super(FromImportScope,self).__init__(from_import_node,parent,root)
         
-    def __str__(self):
-        #print 'type is from import scope, from name is',self.Node.Name,'line start is',self.LineStart,'line end is',self.LineEnd
-        return self.Node.Name
-        
     def EqualName(self,name):
         for child_scope in self.ChildScopes:
             if child_scope.EqualName(name):
@@ -576,4 +562,9 @@ class FromImportScope(NodeScope):
 class MainFunctionScope(NodeScope):
     def __init__(self,main_function_node,parent,root):
         super(MainFunctionScope,self).__init__(main_function_node,parent,root)
+
+
+class ReturnScope(NodeScope):
+    def __init__(self,return_node,parent,root):
+        super(ReturnScope,self).__init__(return_node,parent,root)
 

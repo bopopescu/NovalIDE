@@ -148,13 +148,18 @@ class ArgNode(Node):
         self._default_value = default_value
 
 class FuncDef(Node):
-    def __init__(self,name,line,col,parent,doc,args = [],is_decorated = False,is_method = False,is_class_method = False,is_built_in = False):
-        super(FuncDef,self).__init__(name,line,col,config.NODE_FUNCDEF_TYPE,parent,doc,is_built_in)
+    def __init__(self,name,line,col,parent,doc,args = [],is_decorated = False,is_method = False,is_class_method = False,is_built_in = False,is_class_property = False):
+        #函数为类属性
+        if is_class_property:
+            super(FuncDef,self).__init__(name,line,col,config.NODE_CLASS_PROPERTY,parent,doc,is_built_in)
+        else:
+            super(FuncDef,self).__init__(name,line,col,config.NODE_FUNCDEF_TYPE,parent,doc,is_built_in)
         self._is_decorated = is_decorated
         self._is_method = is_method
         self._is_class_method = is_class_method
         self._args = args
         self._is_constructor = True if self._is_method and self.Name == "__init__" else False
+        self._is_class_property = is_class_property
         
     @property
     def IsDecorated(self):
@@ -169,6 +174,10 @@ class FuncDef(Node):
         return self._is_class_method
         
     @property
+    def IsClassProperty(self):
+        return self._is_class_property
+        
+    @property
     def Args(self):
         return self._args
         
@@ -181,6 +190,13 @@ class FuncDef(Node):
     @property
     def IsConstructor(self):
         return self._is_constructor
+        
+    def ReturnNodes(self):
+        ret_nodes = []
+        for child in self._childs:
+            if type(child) == ReturnNode:
+                ret_nodes.append(child)
+        return ret_nodes
 
 class ClassDef(Node):
     
@@ -230,13 +246,8 @@ class AssignDef(Node):
         
 class PropertyDef(AssignDef):
     
-    def __init__(self,name,line,col,value,value_type,parent,doc=None,is_class_property = False,is_built_in = False):
-        if is_class_property:
-            super(PropertyDef,self).__init__(name,line,col,value,value_type,parent,doc,\
-                                config.NODE_CLASS_PROPERTY,is_built_in)
-        else:
-            super(PropertyDef,self).__init__(name,line,col,value,value_type,parent,doc,\
-                                config.NODE_OBJECT_PROPERTY,is_built_in)
+    def __init__(self,name,line,col,value,value_type,parent,doc=None,is_built_in = False):
+        super(PropertyDef,self).__init__(name,line,col,value,value_type,parent,doc,config.NODE_CLASS_PROPERTY,is_built_in)
         ###self property is the child of method and method's class
         #如果是类方法属性,则除了属于当前方法的子节点以外,还是属于包含方法的类的子节点
         if self.Parent.Type == config.NODE_FUNCDEF_TYPE and self.Parent.IsMethod:
@@ -287,4 +298,21 @@ class MainFunctionNode(Node):
     
     def __init__(self,line,col,parent):
         super(MainFunctionNode,self).__init__(self.MAIN_FUNCTION_NAME,line,col,config.NODE_MAIN_FUNCTION_TYPE,parent)
+
+class ReturnNode(Node):
+    def __init__(self,name,line,col,value,value_type,parent):
+        super(ReturnNode,self).__init__(name,line,col,config.NODE_RETURN_TYPE,parent)
+        self._value_type = value_type
+        self._value = value
+        
+    @property
+    def ValueType(self):
+        return self._value_type
+        
+    @property
+    def Value(self):
+        return self._value
+        
+    def __str__(self):
+        return self._value + ":"+ self._value_type
         

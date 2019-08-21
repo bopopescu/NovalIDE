@@ -10,14 +10,6 @@ import functools
 import multiprocessing
 import datetime
 
-DATABASE_FILE = "version"
-UPDATE_FILE = 'update_time'
-
-ISO_8601_DATE_FORMAT = "%Y-%m-%d"
-ISO_8601_TIME_FORMAT = "%H:%M:%S"
-ISO_8601_DATETIME_FORMAT = "%s %s" %(ISO_8601_DATE_FORMAT,
-                                     ISO_8601_TIME_FORMAT)
-
 def generate_builtin_data(dest_path):
     def make_python2_builtin_types(builtin_type,recursive=True):
         childs = []
@@ -86,24 +78,20 @@ def generate_builtin_data(dest_path):
             pickle.dump(module_dict, j,protocol=0)
             
 def LoadDatabaseVersion(database_location):
-    with open(os.path.join(database_location,DATABASE_FILE)) as f:
+    with open(os.path.join(database_location,config.DATABASE_FILE)) as f:
         return f.read()
         
 def SaveDatabaseVersion(database_location,new_database_version):
-    with open(os.path.join(database_location,DATABASE_FILE),"w") as f:
+    with open(os.path.join(database_location,config.DATABASE_FILE),"w") as f:
         f.write(new_database_version)
         
-def GetLastUpdateTime(database_location):
-    with open(os.path.join(database_location,UPDATE_FILE)) as f:
-        return f.read()
-        
 def SaveLastUpdateTime(database_location):
-    with open(os.path.join(database_location,UPDATE_FILE),"w") as f:
-        datetime_str = datetime.datetime.strftime(datetime.datetime.now(), ISO_8601_DATETIME_FORMAT)
+    with open(os.path.join(database_location,config.UPDATE_FILE),"w") as f:
+        datetime_str = datetime.datetime.strftime(datetime.datetime.now(), config.ISO_8601_DATETIME_FORMAT)
         f.write(datetime_str)
         
 def NeedRenewDatabase(database_location,new_database_version):
-    if not os.path.exists(os.path.join(database_location,DATABASE_FILE)):
+    if not os.path.exists(os.path.join(database_location,config.DATABASE_FILE)):
         return True
     old_database_version = LoadDatabaseVersion(database_location)
     if 0 == utils.CompareDatabaseVersion(new_database_version,old_database_version):
@@ -205,12 +193,29 @@ def process_sys_modules(dest_path):
 
         file_parser = fileparser.FiledumpParser(fullpath,dest_path)
         file_parser.Dump()
+        
+
+def generate_intelligent_data(out_path,new_database_version):
+    version = get_python_version()
+    dest_path = os.path.join(out_path,version)
+    utils.MakeDirs(dest_path)
+    need_renew_database = NeedRenewDatabase(dest_path,new_database_version)
+    sys_path_list = sys.path
+    for i,path in enumerate(sys_path_list):
+        sys_path_list[i] = os.path.abspath(path)
+    for path in sys_path_list:
+        print ('start parse path data',path)
+        scan_sys_path(path,dest_path,need_renew_database)
+    process_sys_modules(dest_path)
+    if need_renew_database:
+        SaveDatabaseVersion(dest_path,new_database_version)
     
 if __name__ == "__main__":
     ###generate_builtin_data("./")
     start_time = time.time()
     out_path = sys.argv[1]
     new_database_version = sys.argv[2]
+    #generate_intelligent_data(out_path,new_database_version)
     generate_intelligent_data_by_pool(out_path,new_database_version)
     end_time = time.time()
     elapse = end_time - start_time

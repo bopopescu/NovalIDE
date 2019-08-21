@@ -280,7 +280,7 @@ class BaseSyntaxcolorer:
                 if self.stop_colorizing:
                     utils.get_logger().debug("colorizing stopped")
                     return
-                self.text.after(1,self.text.update)
+        self.text.after(1,self.text.update)
 
     def AddTag(self,head,match_start,match_end,key,value,chars):
         self.text.tag_add(key,

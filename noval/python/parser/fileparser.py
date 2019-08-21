@@ -39,24 +39,6 @@ def get_package_childs(module_path):
         childs.append(d)        
     return childs
 
-def fix_ref_module_name(module_dir,ref_module_name):
-    ref_module_path = os.path.join(module_dir,ref_module_name + ".py")
-    ref_module_package_path = os.path.join(module_dir,ref_module_name)
-    ref_module_package_file_path = os.path.join(ref_module_package_path,"__init__.py")
-    if os.path.exists(ref_module_path):
-        return utils.get_relative_name(ref_module_path)[0]
-    elif os.path.exists(ref_module_package_file_path):
-        return utils.get_relative_name(ref_module_package_file_path)[0]
-    #elif ref_module_name in sys.modules:
-     #   return sys.modules[ref_module_name].__name__
-    else:
-        return ref_module_name
-
-def fix_refs(module_dir,refs):
-    for ref in refs:
-        ref_module_name = fix_ref_module_name(module_dir,ref['module'])
-        ref['module'] = ref_module_name
-
 def make_module_dict(name,path,is_builtin,childs,doc,refs=[]):
     if is_builtin:
         module_data = dict(name=name,is_builtin=True,doc=doc,childs=childs,type=config.NODE_MODULE_TYPE)
@@ -72,6 +54,7 @@ class FiledumpParser(codeparser.CodebaseParser):
         self.output = output_path
         self.force_update = force_update
         self.module_path = module_path
+        self.raise_parse_error = False
 
     def ParsefileContent(self,filepath,content,encoding=None):
         node = codeparser.CodebaseParser.ParsefileContent(self,filepath,content,encoding)
@@ -81,7 +64,50 @@ class FiledumpParser(codeparser.CodebaseParser):
         return module_d
 
     def AddNodeData(self,name,lineno,col,node_type,parent,**kwargs):
-        if node_type in [config.NODE_CLASS_PROPERTY,config.NODE_FUNCDEF_TYPE,config.NODE_ARG_TYPE,config.NODE_CLASSDEF_TYPE,config.NODE_FROMIMPORT_TYPE,config.NODE_ASSIGN_TYPE]:
+        if node_type in [config.NODE_CLASS_PROPERTY,config.NODE_FUNCDEF_TYPE,config.NODE_ARG_TYPE,config.NODE_CLASSDEF_TYPE,config.NODE_IMPORT_TYPE,config.NODE_ASSIGN_TYPE,config.NODE_FROMIMPORT_TYPE]:
+            #导入模块作为儿子特殊处理
+            if node_type == config.NODE_IMPORT_TYPE:
+                #是否是from xx import yyy
+                is_parent_from = self.GetParentType(parent) == config.NODE_FROMIMPORT_TYPE
+                if is_parent_from:
+                    module = parent['name']
+                else:
+                    module = name
+                #查找导入模块的智能数据库文件
+                module_members_file = self.FindModuleMembersFile(module)
+                if module_members_file is not None:
+                    with open(module_members_file,'rb') as f:
+                        data = pickle.load(f)
+                        childs = []
+                        module_path = data.get('path',module)
+                        is_builtin = data.get('is_builtin',False)
+                        #如果是from xx import yyy导入该模块的所有儿子到当前模块作为儿子
+                        if is_parent_from:
+                            for child in data['childs']:
+                                #导入模块的所有成员
+                                if name == "*":
+                                    childs.append(child)
+                                #导入某一个成员
+                                else:
+                                    if name == child['name']:
+                                        childs.append(child)
+                            if childs == []:
+                                pass
+                                #print ('child %s is not find in module %s members file %s' % (name,module,module_members_file))
+                                #assert(False)
+                            
+                            for child_data in childs:
+                                #导入其它模块的成员到当前模块时parent必须为当前模块,root的值既是
+                                self.AddNodeData(child_data['name'],child_data.get('line',-1),child_data.get('col',-1),child_data['type'],kwargs.get('root'),**{'module_path':module_path,'is_builtin':is_builtin})
+                            kwargs.pop('root')
+                        #仅仅是import则只把导入模块作为当前模块的儿子
+                        else:
+                            kwargs.update({'module_path':module_path,'is_builtin':is_builtin})
+                else:
+                    #有可能导入模块的智能数据库文件还没有生成
+                    pass
+                    #print ("module %s members files is not exist"%module)
+                
             data = dict(name=name,line=lineno,col=col,type=node_type,**kwargs)
             #fromimport不能作为儿子
             if parent is None or node_type == config.NODE_FROMIMPORT_TYPE:
@@ -107,8 +133,12 @@ class FiledumpParser(codeparser.CodebaseParser):
         doc = None
         try:
             module_d = self.Parsefile(self.module_path)
-        except:
+        except Exception as e:
             print ('parse file %s error' %self.module_path)
+            if self.raise_parse_error:
+                tp,val,tb = sys.exc_info()
+                import traceback
+                traceback.print_exception(tp, val, tb)
             return
         #如果是包,则将文件夹下的所有python模块作为其儿子
         if self.is_package:
@@ -137,8 +167,19 @@ class FiledumpParser(codeparser.CodebaseParser):
                 o2.write(name)
                 o2.write('\n')
                 name_sets.add(name)
-           # for ref in refs:
-            #    for name in ref['names']:
-             #       o2.write( ref['module'] + "/" + name['name'])
-              #      o2.write('\n')
     
+    def FindModuleMembersFile(self,module_name):
+        if not module_name:
+            return None
+        #查找当前目录下是否存在模块的智能数据库文件
+        members_file_name = module_name + ".$members"
+        cur_members_file = os.path.join(self.output,members_file_name)
+        if not os.path.exists(cur_members_file):
+            #再查找是否是内建模块智能数据库文件
+            builtin_data_dir = os.path.dirname(os.path.dirname(self.output))
+            py_ver = "2" if utils.IsPython2() else "3"
+            builtin_members_file = os.path.join(builtin_data_dir,"builtins",py_ver,members_file_name)
+            if os.path.exists(builtin_members_file):
+                return builtin_members_file
+            return None
+        return cur_members_file

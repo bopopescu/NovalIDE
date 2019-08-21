@@ -15,7 +15,6 @@ import glob
 import signal
 from dummy.userdb import UserDataDb
 import noval.util.utils as utils
-from noval.python.parser import run
 import datetime
 import copy
 import noval.consts as consts
@@ -180,6 +179,10 @@ class IntellisenceManager(object):
             utils.update_statusbar(_("Intellisence database has been updated"))
         else:
             utils.get_logger().warn("smart intellisence analyse has been stopped by user")
+            
+    def GetLastUpdateTime(self,database_location):
+        with open(os.path.join(database_location,config.UPDATE_FILE)) as f:
+            return f.read()
     
     def ShareUserData(self):
         if GetApp().GetDebug():
@@ -195,8 +198,8 @@ class IntellisenceManager(object):
         try:
             #if could not find last update time,update database force
             intellisence_data_path = self.GetInterpreterIntellisenceDataPath(interpreter)
-            last_update_time = run.GetLastUpdateTime(intellisence_data_path)
-            last_datetime = datetime.datetime.strptime(last_update_time, run.ISO_8601_DATETIME_FORMAT)
+            last_update_time = self.GetLastUpdateTime(intellisence_data_path)
+            last_datetime = datetime.datetime.strptime(last_update_time, config.ISO_8601_DATETIME_FORMAT)
         except:
             utils.get_logger().exception('')
             return True

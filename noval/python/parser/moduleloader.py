@@ -192,8 +192,7 @@ class ModuleLoader(object):
             node = nodeast.ClassDef(name,line_no,col,parent,doc,bases=bases)
             for class_child in child.get(self.CHILD_KEY,[]):
                 self.MakeChildScope(class_child,node)
-        elif child[self.TYPE_KEY] == config.NODE_OBJECT_PROPERTY or \
-                child[self.TYPE_KEY] == config.NODE_CLASS_PROPERTY:
+        elif child[self.TYPE_KEY] == config.NODE_CLASS_PROPERTY:
             node = nodeast.PropertyDef(name,line_no,col,config.ASSIGN_TYPE_UNKNOWN,"",parent)
         elif child[self.TYPE_KEY] == config.NODE_ASSIGN_TYPE:
             node = nodeast.AssignDef(name,line_no,line_no,child['value'],child['value_type'],parent)

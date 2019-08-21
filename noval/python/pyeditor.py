@@ -779,7 +779,7 @@ class PythonCtrl(codeeditor.CodeCtrl):
                 at = self.GetCharAt(line,word_col)    
         word_start = "%d.%d" % (line,word_col+1)
         text = self.get(word_start,word_end)
-        return text
+        return text.strip()
 
     def perform_return(self, event):
         if not self.AutoCompActive():

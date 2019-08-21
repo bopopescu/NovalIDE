@@ -125,17 +125,17 @@ class CodebaseParser(object):
             self.WalkImportElement(element,parent)
         elif isinstance(element,ast.ImportFrom):
             self.WalkFromImportElement(element,parent)
-        if isinstance(element,ast.If):
+        elif isinstance(element,ast.If):
             self.WalkIfElement(element,parent)
+        elif (utils.IsPython3() and isinstance(element,ast.Try)) or (utils.IsPython2() and isinstance(element,ast.TryExcept)):
+            self.WalkTryExceptElement(element,parent)
         else:
             #进行更深入的分析,分析一些表达式
             if self._deep:
-                if (utils.IsPython3() and isinstance(element,ast.Try)) or (utils.IsPython2() and isinstance(element,ast.TryExcept)):
-                    self.WalkTryExceptElement(element,parent)
-                elif isinstance(element,ast.For):
+                if isinstance(element,ast.For):
                     self.WalkForElement(element,parent)
                 elif isinstance(element,ast.Return):
-                    pass
+                    self.WalkReturnElement(element,parent)
               #  elif isinstance(element,ast.Print):
                #     pass
                 elif isinstance(element,ast.With):
@@ -145,6 +145,23 @@ class CodebaseParser(object):
                 else:
                    # print (element,'is unknown')
                     self.AddNodeData('',element.lineno,element.col_offset,config.NODE_UNKNOWN_TYPE,parent=parent)
+                    
+    def WalkReturnElement(self,element,parent):
+        target = element.value
+        value_type,value = config.ASSIGN_TYPE_UNKNOWN,''
+        #连等表达式
+        if type(target) == ast.Tuple:
+            value_type,value = config.ASSIGN_TYPE_TUPLE,''
+        elif type(target) == ast.Name:
+            name = target.id
+            value_type,value = GetAssignValueType(element)
+        elif type(target) == ast.Attribute:
+            #如果函数中出现self.xx=yy类似这样的赋值表达式,则应该属于类的属性
+            if type(target.value) == ast.Name and target.value.id == "self" and self.GetParentType(parent) == config.NODE_FUNCDEF_TYPE and \
+                    parent.IsMethod:
+                name = target.attr
+                value_type,value = GetAssignValueType(element)  
+        self.AddNodeData('',element.lineno,element.col_offset,config.NODE_RETURN_TYPE,parent=parent,**{'value':value,'value_type':value_type})
             
     def WalkFuncElement(self,element,parent):
         def_name = element.name
@@ -156,16 +173,14 @@ class CodebaseParser(object):
         for deco in element.decorator_list:
             line_no += 1
             if type(deco) == ast.Name:
+                #property装饰符
                 if deco.id == "property":
-                    self.AddNodeData(def_name,line_no,col,config.NODE_CLASS_PROPERTY,parent,**{'value':'','value_type':config.ASSIGN_TYPE_UNKNOWN})
                     is_property_def = True
                     break
+                #classmthod和staticmethod装饰符
                 elif deco.id == CLASS_METHOD_NAME or deco.id == STATIC_METHOD_NAME:
                     is_class_method = True
                     break
-        #类属性函数体就一行,如果是类属性下面就不需要分析了
-        if is_property_def:
-            return
         is_method = False
         default_arg_num = len(element.args.defaults)
         arg_num = len(element.args.args)
@@ -208,7 +223,9 @@ class CodebaseParser(object):
             arg_node = self.AddNodeData(name,line_no,col,config.NODE_ARG_TYPE,None,**{'is_kw':True})
             args.append(arg_node)
         doc = self.get_node_doc(element)
-        func_def = self.AddNodeData(def_name,line_no,col,config.NODE_FUNCDEF_TYPE,parent,**{'doc':doc,'is_method':is_method,'is_class_method':is_class_method,'args':args})
+        #is_class_property必须是函数用property装饰并且为类方法时才为True
+        func_def = self.AddNodeData(def_name,line_no,col,config.NODE_FUNCDEF_TYPE,parent,**{'doc':doc,'is_method':is_method,\
+                                                                            'is_class_method':is_class_method,'args':args,'is_class_property':is_property_def and is_method})
         #深入分析函数体的内容,有些情况下不需要
         if self._deep:
             self.WalkBody(element.body,func_def)
@@ -275,7 +292,8 @@ class CodebaseParser(object):
         
         from_import_node = self.AddNodeData(module_name,element.lineno,element.col_offset,config.NODE_FROMIMPORT_TYPE,parent=parent)
         for name in element.names:
-            self.AddNodeData(name.name,element.lineno,element.col_offset,config.NODE_IMPORT_TYPE,parent=from_import_node,**{'as_name':name.asname})
+            #root在语法解析并存储到文件时才使用,用来表示要导入的模块对象
+            self.AddNodeData(name.name,element.lineno,element.col_offset,config.NODE_IMPORT_TYPE,parent=from_import_node,**{'as_name':name.asname,'root':parent})
             
     def WalkIfElement(self,element,parent):
         #处理if __name__ == "__main__" 函数
@@ -284,6 +302,8 @@ class CodebaseParser(object):
                 and len(element.test.comparators) > 0 and isinstance(element.test.comparators[0],ast.Str) \
                 and element.test.comparators[0].s == nodeast.MainFunctionNode.MAIN_FUNCTION_NAME:
             self.AddNodeData('',element.lineno,element.col_offset,config.NODE_MAIN_FUNCTION_TYPE,parent=parent)
+        else:
+           self.AddNodeData('',element.lineno,element.col_offset,config.NODE_UNKNOWN_TYPE,parent=parent) 
         self.WalkBody(element.body,parent)
         for orelse in element.orelse:
             self.MakeElementNode(orelse,parent)
@@ -334,6 +354,9 @@ class CodeParser(CodebaseParser):
         elif node_type == config.NODE_CLASSDEF_TYPE:
             return nodeast.ClassDef(name,lineno,col,parent=parent,**kwargs)
         elif node_type == config.NODE_IMPORT_TYPE:
+            #只有在把语法数据存储到文件时才使用,这里需要去除这个键
+            if 'root' in kwargs:
+                kwargs.pop('root')
             return nodeast.ImportNode(name,lineno,col,parent=parent,**kwargs)
         elif node_type == config.NODE_FROMIMPORT_TYPE:
             return nodeast.FromImportNode(name,lineno,col,parent=parent)
@@ -341,6 +364,8 @@ class CodeParser(CodebaseParser):
             return nodeast.MainFunctionNode(lineno,col,parent)
         elif node_type == config.NODE_ASSIGN_TYPE:
             return nodeast.AssignDef(name,lineno,col,parent=parent,**kwargs)
+        elif node_type == config.NODE_RETURN_TYPE:
+            return nodeast.ReturnNode(name,lineno,col,parent=parent,**kwargs)
         else:
             return nodeast.UnknownNode(lineno,col,parent)
 
