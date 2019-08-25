@@ -800,18 +800,14 @@ class TextCtrl(ui_base.TweakableText):
             self.mark_set("insert", first)
         prefix = self.get("insert linestart", "insert")
         raw, effective = classifyws(prefix, self.tabwidth)
-        if raw == len(prefix):
-            # only whitespace to the left
-            self._reindent_to(effective + self.indent_width)
+        # tab to the next 'stop' within or to right of line's text:
+        if self.indent_with_tabs:
+            pad = "\t"
         else:
-            # tab to the next 'stop' within or to right of line's text:
-            if self.indent_with_tabs:
-                pad = "\t"
-            else:
-                effective = len(prefix.expandtabs(self.tabwidth))
-                n = self.indent_width
-                pad = " " * (n - effective % n)
-            self.insert("insert", pad)
+            effective = len(prefix.expandtabs(self.tabwidth))
+            n = self.indent_width
+            pad = " " * (n - effective % n)
+        self.insert("insert", pad)
         self.see("insert")
         return "break"
 

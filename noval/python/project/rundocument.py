@@ -106,7 +106,7 @@ class PythonProjectDocument(ProjectDocument):
                 if not document.Save() or document.IsNewDocument:
                     return None
                 if self.GetDebugger().IsFileContainBreakPoints(document) or is_break_debug:
-                    wx.MessageBox(_("Debugger can only run in active project"),style=wx.OK|wx.ICON_WARNING)
+                    messagebox.showwarning(GetApp().GetAppName(),_("Debugger can only run in active project"))
             else:
                 return None
             run_parameter = document.GetRunParameter()
@@ -168,7 +168,7 @@ class PythonProjectDocument(ProjectDocument):
         if not run_parameter.IsBreakPointDebug:
             self.DebugRunScript(run_parameter)
         else:
-            self.DebugRunScriptBreakPoint(run_parameter)
+            self.DebugrunBreakpoint(run_parameter)
         self.GetDebugger().AppendRunParameter(run_parameter)
             
     def DebugRunScript(self,run_parameter):
@@ -262,3 +262,32 @@ class PythonProjectDocument(ProjectDocument):
     def SetParameterAndEnvironment(self):
         dlg = CommandPropertiesDialog(GetApp().GetTopWindow(), _('Set Parameter And Environment'), self,okButtonName=_("&OK"))
         dlg.ShowModal()
+
+
+    def BreakintoDebugger(self,filetoRun=None):
+        run_parameter = self.GetRunParameter(filetoRun,is_break_debug=True)
+        #debugger must run in project
+        if run_parameter is None or run_parameter.Project is None:
+            return
+        run_parameter.IsBreakPointDebug = True
+        self.DebugrunBreakpoint(run_parameter,autoContinue=False)
+        
+    def DebugrunBreakpoint(self,run_parameter,autoContinue=True):
+        '''
+            autoContinue可以让断点调式是否会在开始中断
+        '''
+        if BaseDebuggerUI.DebuggerRunning():
+            messagebox.showinfo( _("Debugger Running"),_("A debugger is already running. Please shut down the other debugger first."))
+            return
+        host = utils.profile_get("DebuggerHostName", DEFAULT_HOST)
+        if not host:
+            wx.MessageBox(_("No debugger host set. Please go to Tools->Options->Debugger and set one."), _("No Debugger Host"))
+            return
+        fileToRun = run_parameter.FilePath
+        shortFile = os.path.basename(fileToRun)
+        view = GetApp().MainFrame.AddView("Debugger"+ str(uuid.uuid1()).lower(),PythonDebuggerUI,_("Debugging: ") + shortFile,"s",visible_by_default=True,\
+                                   image_file="python/debugger/debugger.png",debugger=self.GetDebugger(), run_parameter=run_parameter,visible_in_menu=False,autoContinue=autoContinue)
+        page = view['instance']
+        page.Execute()
+        self.GetDebugger().SetDebuggerUI(page)
+        GetApp().GetDocumentManager().ActivateView(self.GetDebugger().GetView())

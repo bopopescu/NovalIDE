@@ -17,17 +17,17 @@ class TestGlobalFunction(unittest.TestCase):
         pass
 
     def ___testdump(self):
-        file_parser = fileparser.FiledumpParser(r"C:\Python27\Lib\os.py","./",force_update=True)
+        file_parser = fileparser.FiledumpParser(r"C:\Users\Administrator\AppData\Local\Programs\Python\Python36-32\Lib\os.py",r"C:\Users\Administrator\AppData\Roaming\NovalIDEDebug\intellisence\392\3.6.4rc1",force_update=True)
         file_parser.Dump()
         with open(file_parser.member_file_path,'rb') as f:
             datas = pickle.load(f)
         print (json.dumps(datas,indent=4))
 
     def testrun(self):
-        os.system(r"python G:\work\project\Noval\noval\python\parser\run.py ./tests 1.1.1")
+        os.system(r"python G:\work\project\Noval\noval\python\parser\run.py C:\Users\Administrator\AppData\Roaming\NovalIDEDebug\intellisence\1207 1.0.7")
         #os.system(r"C:\Users\Administrator\AppData\Local\Programs\Python\Python36-32\python.exe G:\work\project\Noval\noval\python\parser\run.py ./tests 1.1.1")
 
-    def testloader(self):
+    def ___testloader(self):
         file_path = r'C:\Users\Administrator\AppData\Roaming\NovalIDEDebug\intellisence\390\2.7.11\wx.stc.$members'
       #  file_path = r"G:\work\project\Noval\builtins\builtins.$members"
         with open(file_path,'rb') as f:

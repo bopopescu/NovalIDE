@@ -53,6 +53,16 @@ class CommonRunCommandUI(ttk.Frame):
             self._tb.pack(fill="x",expand=0)
         else:
             self._tb.pack(side=tk.LEFT,fill="y",expand=0)
+        self.CreateToolbarButtons()
+        self._output = self.GetOutputviewClass()(self) #id)
+        self._output.pack(side=tk.LEFT,fill="both",expand=1)
+        self._textCtrl = self._output.GetOutputCtrl()
+        # Executor initialization
+        if self._run_parameter is not None:
+            self.CreateExecutor()
+            
+    def CreateToolbarButtons(self):
+        
         self.terminate_all_image = GetApp().GetImage("python/debugger/terminate_all.png")
         self.restart_image = GetApp().GetImage("python/debugger/restart.png")
         self.close_img = GetApp().GetImage("python/debugger/close.png")
@@ -63,12 +73,7 @@ class CommonRunCommandUI(ttk.Frame):
         
         self._tb.AddButton(self.TERMINATE_ALL_PROCESS_ID,self.terminate_all_image,_("Stop All the Run."),lambda:self.OnToolClicked(self.TERMINATE_ALL_PROCESS_ID))
         self._tb.AddButton(self.RESTART_PROCESS_ID,self.restart_image,_("Restart the Run."),lambda:self.OnToolClicked(self.RESTART_PROCESS_ID))
-        self._output = self.GetOutputviewClass()(self) #id)
-        self._output.pack(side=tk.LEFT,fill="both",expand=1)
-        self._textCtrl = self._output.GetOutputCtrl()
-        # Executor initialization
-        if self._run_parameter is not None:
-            self.CreateExecutor()
+
 
     def SetRunParameter(self,run_parameter):
         self._run_parameter = run_parameter

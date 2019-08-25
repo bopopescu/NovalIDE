@@ -185,20 +185,22 @@ class PythonProjectView(ProjectView):
             self.OnRename()
             
     def Run(self):
-        selected_file_path = self.GetSelectedFile()
-        if selected_file_path is None and not fileutils.is_python_file(selected_file_path):
-            return
+        selected_file_path = self.GetSelectedFilePath()
         GetApp().GetDebugger().Runfile(filetoRun = selected_file_path)
         
     def DebugRun(self):
+        selected_file_path = self.GetSelectedFilePath()
+        GetApp().GetDebugger().RunWithoutDebug(filetoRun = selected_file_path)
+
+    def BreakintoDebugger(self):
+        selected_file_path = self.GetSelectedFilePath()
+        GetApp().GetDebugger().GetCurrentProject().BreakintoDebugger(filetoRun = selected_file_path)
+        
+    def GetSelectedFilePath(self):
         selected_file_path = self.GetSelectedFile()
         if selected_file_path is None and not fileutils.is_python_file(selected_file_path):
-            return
-        GetApp().GetDebugger().RunWithoutDebug(filetoRun = selected_file_path)
-        
-    @ui_utils.no_implemented_yet
-    def BreakintoDebugger(self):
-        pass
+            return None
+        return selected_file_path
         
     def AddPackageFolder(self, folderPath):
         self._treeCtrl.AddPackageFolder(folderPath)

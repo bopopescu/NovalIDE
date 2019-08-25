@@ -765,10 +765,12 @@ class DocManager(object):
                     newDoc.SetDocumentTemplate(temp)
                     if not newDoc.OnOpenDocument(path):
                         frame = newDoc.GetFirstView().GetFrame()
+                        #这里销毁文档的时候有可能已经把文档框架对象也同时销毁了
                         newDoc.DeleteAllViews()  # Implicitly deleted by DeleteAllViews
                         if frame:
+                            #这里销毁文档框架的时候需要判断文档框架是否已经不存在了
                             frame.Destroy() # DeleteAllViews doesn't get rid of the frame, so we'll explicitly destroy it.
-                        return None
+                        return []
                     self.AddFileToHistory(path)
                     ret_docs.append(newDoc)
 
@@ -1843,7 +1845,7 @@ class Document(object):
         msgTitle = GetApp().GetAppName()
         if not msgTitle:
             msgTitle = _("Warning")
-        #关闭文档之前询问用户是否保存修改
+        #关闭文档之前询问用户是否保存修改
         answer = messagebox.askyesnocancel(msgTitle,_("Save changes to '%s'?") % self.GetPrintableName())
         if answer == False:
             self.Modify(False)
@@ -1851,7 +1853,7 @@ class Document(object):
         elif answer == True:
             return self.Save()
         else: # elif res == wx.CANCEL:
-            return False
+            return False
 
     def AddView(self, view):
         """

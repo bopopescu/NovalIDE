@@ -20,7 +20,8 @@ class PyTimer(threading.Thread):
         self.start()
         
     def Stop(self):
-        self.schedule.cancel(self.schd)
+        if self.schd in self.schedule.queue:
+            self.schedule.cancel(self.schd)
         
     def WarpCallFunc(self):
         print ('callback func')

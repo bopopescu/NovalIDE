@@ -249,6 +249,10 @@ class CommononOutputview(ttk.Frame):
         self.text = self.GetOuputctrlClass()(self,font="SmallEditorFont",inactiveselectbackground="gray",read_only=True,yscrollcommand=self.vert_scrollbar.set,\
                                 borderwidth=0,undo=False,xscrollcommand=self.horizontal_scrollbar.set,trace_log=trace_log)
         self.text.grid(row=0, column=0, sticky=tk.NSEW)
+        
+        self._ui_theme_change_binding = self.bind(
+            "<<ThemeChanged>>", self.reload_ui_theme, True
+        )
         #关联垂直滚动条和文本控件
         self.vert_scrollbar["command"] = self.text.yview
         self.horizontal_scrollbar["command"] = self.text.xview
@@ -267,4 +271,7 @@ class CommononOutputview(ttk.Frame):
 
     def SetTraceLog(self,trace_log):
         self.text.SetTraceLog(trace_log)
+        
+    def reload_ui_theme(self, event=None):
+        self.text._reload_theme_options(force=True)
 

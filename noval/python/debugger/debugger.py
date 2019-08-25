@@ -48,9 +48,12 @@ import noval.util.appdirs as appdirs
 import noval.util.utils as utils
 import noval.python.project.runconfig as runconfig
 import noval.python.debugger.breakpoints as breakpoints
+import noval.python.debugger.watchs as watchs
+import noval.python.debugger.stacksframe as stacksframe
+import noval.python.debugger.inspectconsole as inspectconsole
 import pickle
 import noval.project.baseconfig as baseconfig
-import noval.python.debugger.watchs as watchs
+import noval.util.timer as pytimer
 import uuid
 import noval.constants as constants
 import noval.ui_base as ui_base
@@ -59,7 +62,7 @@ if utils.is_py2():
     import noval.python.debugger.debuggerharness as debuggerharness
 elif utils.is_py3_plus():
     import noval.python.debugger.debuggerharness3 as debuggerharness
-    
+import noval.util.fileutils as fileutils
 import noval.python.pyutils as pyutils
 import noval.terminal as terminal
 import noval.menu as tkmenu
@@ -69,10 +72,13 @@ import noval.project.executor as executor
 from noval.project.debugger import *
 from noval.python.debugger.output import *
 import tempfile
+import noval.core as core
 
 #VERBOSE mode will invoke threading.Thread _VERBOSE,which will print a lot of thread debug text on screen
 _VERBOSE = False
 _WATCHES_ON = True
+
+EVT_DEBUG_INTERNAL = "EVT_DEBUG_INTERNAL"
 
 class CommonExecutorMixin:
     def __init__(self):
@@ -131,7 +137,7 @@ class PythonDebuggerExecutor(PythonExecutor):
     
     def __init__(self, debugger_fileName,run_parameter, wxComponent, arg1=None, arg2=None, arg3=None, arg4=None, arg5=None, arg6=None, arg7=None, arg8=None, arg9=None, callbackOnExit=None):
         
-        super(DebuggerExecutor,self).__init__(run_parameter,wxComponent,callbackOnExit,cmd_contain_path=False)
+        super(PythonDebuggerExecutor,self).__init__(run_parameter,wxComponent,callbackOnExit,cmd_contain_path=False)
         self._debugger_fileName = debugger_fileName
         self._cmd += self.spaceAndQuote(self._debugger_fileName)
         
@@ -171,12 +177,13 @@ class RunCommandUI(CommonRunCommandUI):
     def StopAndRemoveAllUI():
         return GetApp().GetDebugger().CloseAllPages()
 
-    def __init__(self,parent, debugger,run_parameter):
+    def __init__(self,parent, debugger,run_parameter,append_runner=True,toolbar_orient=tk.VERTICAL):
         #toolbar使用垂直布局
-        CommonRunCommandUI.__init__(self, parent,debugger,run_parameter,toolbar_orient=tk.VERTICAL)
+        CommonRunCommandUI.__init__(self, parent,debugger,run_parameter,toolbar_orient=toolbar_orient)
         self._noteBook = parent
         threading._VERBOSE = _VERBOSE
-        RunCommandUI.runners.append(self)
+        if append_runner:
+            RunCommandUI.runners.append(self)
         #重写关闭窗口事件,关闭窗口时检查进程是否在运行
         self.master.close = self.Close
 
@@ -215,6 +222,9 @@ class RunCommandUI(CommonRunCommandUI):
                 return False
 
         self.StopExecution(unbind_evt=True)
+        return self.RemoveUI()
+
+    def RemoveUI(self):
         #关闭调试窗口,关闭notebook的子窗口
         self.master.master.close_child(self.master)
         #务必从视图列表中移除
@@ -259,14 +269,12 @@ DEFAULT_PORT = 32032
 DEFAULT_HOST = 'localhost'
 PORT_COUNT = 21
 
-class BaseDebuggerUI(ttk.Frame):
+class BaseDebuggerUI(RunCommandUI):
     debuggers = []
     
     KILL_PROCESS_ID = NewId()
     CLOSE_WINDOW_ID = NewId()
     CLEAR_ID = NewId()
-    STEP_INTO_ID = NewId()
-    STEP_NEXT_ID = NewId()
 
     def NotifyDebuggersOfBreakpointChange():
         for debugger in BaseDebuggerUI.debuggers:
@@ -306,11 +314,8 @@ class BaseDebuggerUI(ttk.Frame):
         BaseDebuggerUI.debuggers = []
     ShutdownAllDebuggers = staticmethod(ShutdownAllDebuggers)
 
-    def __init__(self, parent, id):
-        wx.Panel.__init__(self, parent, id)
-        self._parentNoteBook = parent
-
-        self._service = None
+    def __init__(self,parent, debugger,run_parameter):
+        RunCommandUI.__init__(self, parent,debugger,run_parameter,append_runner=False,toolbar_orient=tk.HORIZONTAL)
         self._executor = None
         self._callback = None
         self._stopped = False
@@ -318,92 +323,64 @@ class BaseDebuggerUI(ttk.Frame):
 
         BaseDebuggerUI.debuggers.append(self)
         self._stopped = True
-        self.Bind(EVT_UPDATE_STDTEXT, self.AppendText)
-        self.Bind(EVT_UPDATE_ERRTEXT, self.AppendErrorText)
+        self.run_menu = GetApp().Menubar.GetRunMenu()
+        self._toolEnabled = True
+        self.framesTab = self.MakeFramesUI()
+        self.DisableWhileDebuggerRunning()
+        utils.update_statusbar(_("Starting debug..."))
         
-        menubar = wx.GetApp().GetTopWindow().GetMenuBar()
-        run_menu_index = menubar.FindMenu(_("&Run"))
-        self.run_menu = menubar.GetMenu(run_menu_index)
-
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        self._tb = tb = wx.ToolBar(self,  -1, wx.DefaultPosition, (1000,30), wx.TB_HORIZONTAL| wx.NO_BORDER| wx.TB_FLAT, "Debugger" )
-        sizer.Add(tb, 0, wx.EXPAND |wx.ALIGN_LEFT|wx.ALL, 1)
-        tb.SetToolBitmapSize((16,16))
-
-        close_bmp = getCloseBitmap()
-        tb.AddSimpleTool( self.CLOSE_WINDOW_ID, close_bmp, _('Close Window'))
-        wx.EVT_TOOL(self, self.CLOSE_WINDOW_ID, self.StopAndRemoveUI)
-        tb.AddSeparator()
+    def CreateToolbarButtons(self):
         
-        continue_bmp = getContinueBitmap()
-        tb.AddSimpleTool( constants.ID_STEP_CONTINUE, continue_bmp, _("Continue Execution"))
-        wx.EVT_TOOL(self, constants.ID_STEP_CONTINUE, self.OnContinue)
-        self.Bind(EVT_DEBUG_INTERNAL, self.OnContinue)
+        self.close_bmp = GetApp().GetImage("python/debugger/close.png")
+        self._tb.AddButton( self.CLOSE_WINDOW_ID, self.close_bmp, _('Close Window'),self.StopAndRemoveUI)
+        self._tb.AddSeparator()
         
-        break_bmp = getBreakBitmap()
-        tb.AddSimpleTool( constants.ID_BREAK_INTO_DEBUGGER, break_bmp, _("Break into Debugger"))
-        wx.EVT_TOOL(self, constants.ID_BREAK_INTO_DEBUGGER, self.BreakExecution)
+        self.continue_bmp = GetApp().GetImage("python/debugger/step_continue.png")
+        self._tb.AddButton( constants.ID_STEP_CONTINUE, self.continue_bmp, _("Continue Execution"),self.OnContinue)
+        self.evt_debug_internal_binding = GetApp().bind(EVT_DEBUG_INTERNAL, self.OnContinue,True)
         
-        stop_bmp = getStopBitmap()
-        tb.AddSimpleTool( self.KILL_PROCESS_ID, stop_bmp, _("Stop Debugging"))
-        wx.EVT_TOOL(self, self.KILL_PROCESS_ID, self.StopExecution)
+        self.break_bmp = GetApp().GetImage("python/debugger/break_into.png")
+        self._tb.AddButton( constants.ID_BREAK_INTO_DEBUGGER, self.break_bmp, _("Break into Debugger"),self.BreakExecution)
         
-        restart_bmp = getRestartDebuggerBitmap()
-        tb.AddSimpleTool( constants.ID_RESTART_DEBUGGER, restart_bmp, _("Restart Debugging"))
-        wx.EVT_TOOL(self, constants.ID_RESTART_DEBUGGER, self.RestartDebugger)
+        self.stop_bmp = GetApp().GetImage("python/debugger/stop.png")
+        self._tb.AddButton( self.KILL_PROCESS_ID, self.stop_bmp, _("Stop Debugging"),self.StopExecution)
+        
+        self.restart_bmp = GetApp().GetImage("python/debugger/restart_debugger.png")
+        self._tb.AddButton( constants.ID_RESTART_DEBUGGER, self.restart_bmp, _("Restart Debugging"),self.RestartDebugger)
 
-        tb.AddSeparator()
-        next_bmp = getNextBitmap()
-        tb.AddSimpleTool( self.STEP_NEXT_ID, next_bmp, _("Step to next line"))
-        wx.EVT_TOOL(self, self.STEP_NEXT_ID, self.OnNext)
+        self._tb.AddSeparator()
+        self.next_bmp = GetApp().GetImage("python/debugger/step_next.png")
+        self._tb.AddButton( constants.ID_STEP_NEXT, self.next_bmp, _("Step to next line"),self.OnNext,accelerator=GetApp().Menubar.GetRunMenu().FindMenuItem(constants.ID_STEP_NEXT).accelerator)
 
-        step_bmp = getStepInBitmap()
-        tb.AddSimpleTool( self.STEP_INTO_ID, step_bmp, _("Step in"))
-        wx.EVT_TOOL(self, self.STEP_INTO_ID, self.OnSingleStep)
+        self.step_bmp = GetApp().GetImage("python/debugger/step_into.png")
+        self._tb.AddButton( constants.ID_STEP_INTO, self.step_bmp, _("Step in"),self.OnSingleStep,accelerator=GetApp().Menubar.GetRunMenu().FindMenuItem(constants.ID_STEP_INTO).accelerator)
 
-        stepOut_bmp = getStepReturnBitmap()
-        tb.AddSimpleTool(constants.ID_STEP_OUT, stepOut_bmp, _("Stop at function return"))
-        wx.EVT_TOOL(self, constants.ID_STEP_OUT, self.OnStepOut)
+        self.stepOut_bmp = GetApp().GetImage("python/debugger/step_return.png")
+        self._tb.AddButton(constants.ID_STEP_OUT, self.stepOut_bmp, _("Stop at function return"),self.OnStepOut)
 
-        tb.AddSeparator()
+        self._tb.AddSeparator()
         if _WATCHES_ON:
             
-            quick_watch_bmp = Watchs.getQuickAddWatchBitmap()
-            tb.AddSimpleTool(constants.ID_QUICK_ADD_WATCH, quick_watch_bmp, _("Quick Add a Watch"))
-            wx.EVT_TOOL(self, constants.ID_QUICK_ADD_WATCH, self.OnQuickAddWatch)
+            self.quick_watch_bmp = watchs.getQuickAddWatchBitmap()
+            self._tb.AddButton(constants.ID_QUICK_ADD_WATCH, self.quick_watch_bmp, _("Quick Add a Watch"),self.OnQuickAddWatch)
             
-            watch_bmp = Watchs.getAddWatchBitmap()
-            tb.AddSimpleTool(constants.ID_ADD_WATCH, watch_bmp, _("Add a Watch"))
-            wx.EVT_TOOL(self, constants.ID_ADD_WATCH, self.OnAddWatch)
-            tb.AddSeparator()
+            self.watch_bmp = watchs.getAddWatchBitmap()
+            self._tb.AddButton(constants.ID_ADD_WATCH, self.watch_bmp, _("Add a Watch"),self.OnAddWatch)
+            self._tb.AddSeparator()
 
-        clear_bmp = getClearOutputBitmap()
-        tb.AddSimpleTool(self.CLEAR_ID, clear_bmp, _("Clear output pane"))
-        wx.EVT_TOOL(self, self.CLEAR_ID, self.OnClearOutput)
+        self.clear_bmp = GetApp().GetImage("python/debugger/clear_output.png")
+        self._tb.AddButton(self.CLEAR_ID, self.clear_bmp, _("Clear output pane"),self.OnClearOutput)
 
-        self._toolEnabled = True
-        self.framesTab = None
-        self.DisableWhileDebuggerRunning()
-        self.framesTab = self.MakeFramesUI(self, wx.NewId(), None)
-        sizer.Add(self.framesTab, 1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 1)
-        self._statusBar = wx.StatusBar( self, -1)
-        self._statusBar.SetFieldsCount(1)
-        sizer.Add(self._statusBar, 0, wx.EXPAND |wx.ALIGN_LEFT|wx.ALL, 1)
-        self.SetStatusText("Starting debug...")
-        self.SetSizer(sizer)
-        tb.Realize()
-        sizer.Fit(self)
-
-    def OnSingleStep(self, event):
+    def OnSingleStep(self):
         self._callback.SingleStep()
 
-    def OnContinue(self, event):
+    def OnContinue(self,event=None):
         self._callback.Continue()
 
-    def OnStepOut(self, event):
+    def OnStepOut(self):
         self._callback.Return()
 
-    def OnNext(self, event):
+    def OnNext(self):
         self._callback.Next()
 
     def BreakPointChange(self):
@@ -417,16 +394,16 @@ class BaseDebuggerUI(ttk.Frame):
 
     def DisableWhileDebuggerRunning(self):
         if self._toolEnabled:
-            self._tb.EnableTool(self.STEP_INTO_ID, False)
+            self._tb.EnableTool(constants.ID_STEP_INTO, False)
             self._tb.EnableTool(constants.ID_STEP_CONTINUE, False)
-            if self.run_menu.FindItemById(constants.ID_STEP_CONTINUE):
+            if self.run_menu.FindMenuItem(constants.ID_STEP_CONTINUE):
                 self.run_menu.Enable(constants.ID_STEP_CONTINUE,False)
             self._tb.EnableTool(constants.ID_STEP_OUT, False)
-            if self.run_menu.FindItemById(constants.ID_STEP_OUT):
+            if self.run_menu.FindMenuItem(constants.ID_STEP_OUT):
                 self.run_menu.Enable(constants.ID_STEP_OUT,False)
-            self._tb.EnableTool(self.STEP_NEXT_ID, False)
+            self._tb.EnableTool(constants.ID_STEP_NEXT, False)
             self._tb.EnableTool(constants.ID_BREAK_INTO_DEBUGGER, True)
-            if self.run_menu.FindItemById(constants.ID_BREAK_INTO_DEBUGGER):
+            if self.run_menu.FindMenuItem(constants.ID_BREAK_INTO_DEBUGGER):
                 self.run_menu.Enable(constants.ID_BREAK_INTO_DEBUGGER,True)
     
             if _WATCHES_ON:
@@ -441,19 +418,19 @@ class BaseDebuggerUI(ttk.Frame):
             self._toolEnabled = False
 
     def EnableWhileDebuggerStopped(self):
-        self._tb.EnableTool(self.STEP_INTO_ID, True)
+        self._tb.EnableTool(constants.ID_STEP_INTO, True)
         self._tb.EnableTool(constants.ID_STEP_CONTINUE, True)
-        if self.run_menu.FindItemById(constants.ID_STEP_CONTINUE):
+        if self.run_menu.FindMenuItem(constants.ID_STEP_CONTINUE):
             self.run_menu.Enable(constants.ID_STEP_CONTINUE,True)
         self._tb.EnableTool(constants.ID_STEP_OUT, True)
-        if self.run_menu.FindItemById(constants.ID_STEP_OUT):
+        if self.run_menu.FindMenuItem(constants.ID_STEP_OUT):
             self.run_menu.Enable(constants.ID_STEP_OUT,True)
-        self._tb.EnableTool(self.STEP_NEXT_ID, True)
+        self._tb.EnableTool(constants.ID_STEP_NEXT, True)
         self._tb.EnableTool(constants.ID_BREAK_INTO_DEBUGGER, False)
-        if self.run_menu.FindItemById(constants.ID_BREAK_INTO_DEBUGGER):
+        if self.run_menu.FindMenuItem(constants.ID_BREAK_INTO_DEBUGGER):
             self.run_menu.Enable(constants.ID_BREAK_INTO_DEBUGGER,False)
         self._tb.EnableTool(self.KILL_PROCESS_ID, True)
-        if self.run_menu.FindItemById(constants.ID_TERMINATE_DEBUGGER):
+        if self.run_menu.FindMenuItem(constants.ID_TERMINATE_DEBUGGER):
             self.run_menu.Enable(constants.ID_TERMINATE_DEBUGGER,True)
 
         if _WATCHES_ON:
@@ -466,10 +443,10 @@ class BaseDebuggerUI(ttk.Frame):
         if self._toolEnabled:
             self.DisableWhileDebuggerRunning()
             self._tb.EnableTool(constants.ID_BREAK_INTO_DEBUGGER, False)
-            if self.run_menu.FindItemById(constants.ID_BREAK_INTO_DEBUGGER):
+            if self.run_menu.FindMenuItem(constants.ID_BREAK_INTO_DEBUGGER):
                 self.run_menu.Enable(constants.ID_BREAK_INTO_DEBUGGER,False)
             self._tb.EnableTool(self.KILL_PROCESS_ID, False)
-            if self.run_menu.FindItemById(constants.ID_TERMINATE_DEBUGGER):
+            if self.run_menu.FindMenuItem(constants.ID_TERMINATE_DEBUGGER):
                 self.run_menu.Enable(constants.ID_TERMINATE_DEBUGGER,False)
 
     def ExecutorFinished(self):
@@ -481,22 +458,23 @@ class BaseDebuggerUI(ttk.Frame):
         except wx._core.PyDeadObjectError:
             utils.GetLogger().warn("BaseDebuggerUI object has been deleted, attribute access no longer allowed when finish debug executor")
             return
-        wx.GetApp().GetService(DebuggerService).ShowHideDebuggerMenu(False)
+        #调式完成隐藏断点调式有关的菜单
+        self._debugger.ShowHideDebuggerMenu(False)
         if self._restarted:
             wx.MilliSleep(250)
             self.RestartDebuggerProcess()
             self._restarted = False
 
     def SetStatusText(self, text):
-        self._statusBar.SetStatusText(text,0)
+        utils.update_statusbar(text)
 
-    def BreakExecution(self, event):
+    def BreakExecution(self):
         if not BaseDebuggerUI.DebuggerRunning():
             wx.MessageBox(_("Debugger has been stopped."),style=wx.OK|wx.ICON_ERROR)
             return
         self._callback.BreakExecution()
 
-    def StopExecution(self, event):
+    def StopExecution(self):
         self._callback.ShutdownServer()
 
     def Execute(self, initialArgs, startIn, environment, onWebServer = False):
@@ -511,102 +489,70 @@ class BaseDebuggerUI(ttk.Frame):
         if filename == '<string>':
             return
         foundView = None
-        openDocs = wx.GetApp().GetDocumentManager().GetDocuments()
+        openDocs = GetApp().GetDocumentManager().GetDocuments()
         for openDoc in openDocs:
             # This ugliness to prevent comparison failing because the drive letter
             # gets lowercased occasionally. Don't know why that happens or why  it
             # only happens occasionally.
-            if DebuggerService.ComparePaths(openDoc.GetFilename(),filename):
+            if parserutils.ComparePath(openDoc.GetFilename(),filename):
                 foundView = openDoc.GetFirstView()
                 break
 
         if not foundView:
             if _VERBOSE:
                 print ("filename=", filename)
-            doc = wx.GetApp().GetDocumentManager().CreateDocument(DebuggerService.ExpandPath(filename), wx.lib.docview.DOC_SILENT)
+            doc = GetApp().GetDocumentManager().CreateDocument(filename, core.DOC_SILENT)[0]
             foundView = doc.GetFirstView()
 
         if foundView:
             foundView.GetFrame().SetFocus()
             foundView.Activate()
             foundView.GotoLine(lineNum)
-            startPos = foundView.PositionFromLine(lineNum)
 
         if not noArrow:
-            foundView.GetCtrl().MarkerAdd(lineNum -1, CodeEditor.CodeCtrl.CURRENT_LINE_MARKER_NUM)
-
+            #标记并高亮断点调试所在的行
+            foundView.GetCtrl().MarkerAdd(lineNum)
+            
+    def IsPythonDocument(self,openDoc):
+        return fileutils.is_python_file(openDoc.GetFilename())
+        
     def DeleteCurrentLineMarkers(self):
-        openDocs = wx.GetApp().GetDocumentManager().GetDocuments()
+        openDocs = GetApp().GetDocumentManager().GetDocuments()
         for openDoc in openDocs:
-            if(isinstance(openDoc, CodeEditor.CodeDocument)):
+            if self.IsPythonDocument(openDoc):
                 openDoc.GetFirstView().GetCtrl().ClearCurrentLineMarkers()
 
-    def StopAndRemoveUI(self, event):
+    def StopAndRemoveUI(self):
         if self._executor:
-            ret = wx.MessageBox(_("Debugger is still running,Do you want to kill the debugger and remove it?"), _("Debugger Running.."),
-                       wx.YES_NO  | wx.ICON_QUESTION ,self)
-            if ret == wx.NO:
+            ret = messagebox.askyesno(_("Debugger Running.."),_("Debugger is still running,Do you want to kill the debugger and remove it?"), parent=self)
+            if ret == False:
                 return False
-        self.StopExecution(None)
+        self.StopExecution()
         if self in BaseDebuggerUI.debuggers:
             BaseDebuggerUI.debuggers.remove(self)
-        tab_page_pane = self._service.AuiManager.GetPane(self)
-        tab_page_pane.Show(False)
-        #destroy the window pane after close,but not destroy pane window
-        tab_page_pane.DestroyOnClose()
-        self._service.AuiManager.ClosePane(tab_page_pane,destroy_pane_window=False)
-        self._service.AuiManager.Update()
+        self.RemoveUI()
         if self._callback.IsWait():
-            utils.GetLogger().warn("debugger callback is still wait for rpc when debugger stoped.will stop manualy")
+            utils.get_logger().warn("debugger callback is still wait for rpc when debugger stoped.will stop manualy")
             self._callback.StopWait()
-            
         return True
 
-    def OnAddWatch(self, event):
-        if self.framesTab:
-            self.framesTab.OnAddWatch(event)
+    def OnAddWatch(self):
+        self.framesTab.OnAddWatch()
             
-    def OnQuickAddWatch(self,event):
-        if self.framesTab:
-            self.framesTab.QuickAddWatch()
+    def OnQuickAddWatch(self):
+        self.framesTab.QuickAddWatch()
 
-    def MakeFramesUI(self, parent, id, debugger):
+    def MakeFramesUI(self):
         assert False, "MakeFramesUI not overridden"
 
-    def AppendText(self, event):
-        self.framesTab.AppendText(event.value)
-
-    def AppendErrorText(self, event):
-        self.framesTab.AppendErrorText(event.value)
-
-    def OnClearOutput(self, event):
-        self.framesTab.ClearOutput(None)
+    def OnClearOutput(self):
+        self.ClearOutput(None)
 
     def SwitchToOutputTab(self):
         self.framesTab.SwitchToOutputTab()
         
-    def RestartDebugger(self,event):
+    def RestartDebugger(self):
         assert False, "RestartDebugger not overridden"
-        
-    def UpdatePagePaneText(self,src_text,to_text):
-        nb = self._service.GetBottomTab()
-        pane_info = self._service.AuiManager.GetPane(self)
-        if nb is None:
-            text = pane_info.caption
-            newText = text.replace(src_text,to_text)
-            pane_info.Caption(newText)
-        else:
-            nb_pane_info = self._service.AuiManager.GetPane(nb)
-            for i in range(0,nb.GetPageCount()):
-                if self == nb.GetPage(i):
-                    text = nb.GetPageText(i)
-                    newText = text.replace(src_text,to_text)
-                    nb.SetPageText(i, newText)
-                    pane_info.Caption(newText)
-                    nb_pane_info.Caption(newText)
-                    break
-        self._service.AuiManager.Update()
-
 
 class PythonDebuggerUI(BaseDebuggerUI):
     debuggerPortList = None
@@ -632,8 +578,7 @@ class PythonDebuggerUI(BaseDebuggerUI):
     ReturnPortToPool = staticmethod(ReturnPortToPool)
 
     def PortAvailable(port):
-        config = wx.ConfigBase_Get()
-        hostname = config.Read("DebuggerHostName", DEFAULT_HOST)
+        hostname = utils.profile_get("DebuggerHostName", DEFAULT_HOST)
         try:
             server = AGXMLRPCServer((hostname, port))
             server.server_close()
@@ -648,53 +593,42 @@ class PythonDebuggerUI(BaseDebuggerUI):
     PortAvailable = staticmethod(PortAvailable)
 
     def NewPortRange():
-        config = wx.ConfigBase_Get()
-        startingPort = config.ReadInt("DebuggerStartingPort", DEFAULT_PORT)
-        PythonDebuggerUI.debuggerPortList = range(startingPort, startingPort + PORT_COUNT)
+        startingPort = utils.profile_get_int("DebuggerStartingPort", DEFAULT_PORT)
+        PythonDebuggerUI.debuggerPortList = list(range(startingPort, startingPort + PORT_COUNT))
     NewPortRange = staticmethod(NewPortRange)
 
-    def __init__(self, parent, id, command, service,run_parameter, autoContinue=True):
+    def __init__(self, parent, debugger,run_parameter ,autoContinue=True):
         # Check for ports before creating the panel.
         if not PythonDebuggerUI.debuggerPortList:
             PythonDebuggerUI.NewPortRange()
         self._debuggerPort = str(PythonDebuggerUI.GetAvailablePort())
         self._guiPort = str(PythonDebuggerUI.GetAvailablePort())
         self._debuggerBreakPort = str(PythonDebuggerUI.GetAvailablePort())
-        BaseDebuggerUI.__init__(self, parent, id)
+        self._debuggerHost = self._guiHost = utils.profile_get("DebuggerHostName", DEFAULT_HOST)
+        BaseDebuggerUI.__init__(self, parent, debugger,run_parameter)
         self._run_parameter = run_parameter
-        self._command = command
-        self._service = service
         self._autoContinue = autoContinue
         self._callback = None
-        config = wx.ConfigBase_Get()
-        self._debuggerHost = self._guiHost = config.Read("DebuggerHostName", DEFAULT_HOST)
+        
         self.CreateCallBack()
         self.CreateExecutor()
         self._stopped = False
 
     def CreateExecutor(self):
-        interpreter = interpretermanager.InterpreterManager.GetCurrentInterpreter()
-        if DebuggerHarness.__file__.find('library.zip') > 0:
-            try:
-                fname = DebuggerHarness.__file__
-                parts = fname.split('library.zip')
-                if interpreter.IsV2():
-                    path = os.path.join(parts[0],'noval', 'tool','debugger', 'DebuggerHarness.py')
-                elif interpreter.IsV3():
-                    path = os.path.join(parts[0],'noval', 'tool','debugger', 'DebuggerHarness3.py')
-            except:
-                tp, val, tb = sys.exc_info()
-                traceback.print_exception(tp, val, tb)
-
-        else:
+        interpreter = self._run_parameter.Interpreter
+        script_path = os.path.dirname(debuggerharness.__file__)
+        if debuggerharness.__file__.find('.pyc') == -1:
             print ("Starting debugger on these ports: %s, %s, %s" % (str(self._debuggerPort) , str(self._guiPort) , str(self._debuggerBreakPort)))
-            path = DebuggerService.ExpandPath(DebuggerHarness.__file__)
-            if interpreter.IsV3():
-                path = path.replace("DebuggerHarness","DebuggerHarness3").replace("DebuggerHarness3.pyc","DebuggerHarness3.py")
-        self._executor = DebuggerExecutor(path, self._run_parameter,self, self._debuggerHost, \
-                                                self._debuggerPort, self._debuggerBreakPort, self._guiHost, self._guiPort, self._command, callbackOnExit=self.ExecutorFinished)
-        self.framesTab.SetExecutor(self._executor)
         
+        if interpreter.IsV2():
+            path = os.path.join(script_path,"debuggerharness.py")
+        elif interpreter.IsV3():
+            path = os.path.join(script_path,"debuggerharness3.py")
+        self._executor = PythonDebuggerExecutor(path, self._run_parameter,self, self._debuggerHost, \
+                                                self._debuggerPort, self._debuggerBreakPort, self._guiHost, self._guiPort, self._run_parameter.FilePath, callbackOnExit=self.ExecutorFinished)
+        self.evt_stdtext_binding = GetApp().bind(executor.EVT_UPDATE_STDTEXT, self.AppendText,True)
+        self.evt_stdterr_binding = GetApp().bind(executor.EVT_UPDATE_ERRTEXT, self.AppendErrorText,True)
+            
     def LoadPythonFramesList(self, framesXML):
         self.framesTab.LoadFramesList(framesXML)
         self.framesTab.UpdateWatchs()
@@ -704,11 +638,11 @@ class PythonDebuggerUI(BaseDebuggerUI):
         startIn = self._run_parameter.StartupPath
         environment = self._run_parameter.Environment
         self._callback.Start()
-        self._executor.Execute(initialArgs, startIn, environment)
+        self._executor.Execute()
         self._callback.WaitForRPC()
 
 
-    def StopExecution(self, event):
+    def StopExecution(self):
         # This is a general comment on shutdown for the running and debugged processes. Basically, the
         # current state of this is the result of trial and error coding. The common problems were memory
         # access violations and threads that would not exit. Making the OutputReaderThreads daemons seems
@@ -720,7 +654,7 @@ class PythonDebuggerUI(BaseDebuggerUI):
             self._stopped = True
             try:
                 self.DisableAfterStop()
-            except wx._core.PyDeadObjectError:
+            except tk.TclError:
                 pass
             try:
                 self._callback.ShutdownServer()
@@ -748,8 +682,8 @@ class PythonDebuggerUI(BaseDebuggerUI):
                 traceback.print_exception(tp, val, tb)
 
 
-    def MakeFramesUI(self, parent, id, debugger):
-        panel = PythonFramesUI(parent, id, self)
+    def MakeFramesUI(self):
+        panel = PythonFramesUI(self)
         return panel
         
     def UpdateWatch(self,watch_obj,item):
@@ -758,38 +692,35 @@ class PythonDebuggerUI(BaseDebuggerUI):
     def UpdateWatchs(self,reset=False):
         self.framesTab.UpdateWatchs(reset)
 
-    def OnSingleStep(self, event):
-        BaseDebuggerUI.OnSingleStep(self,event)
-        self._service.UpdateWatchs()
+    def OnSingleStep(self):
+        BaseDebuggerUI.OnSingleStep(self)
+        self.UpdateWatchs()
 
-    def OnContinue(self, event):
+    def OnContinue(self,event=None):
         BaseDebuggerUI.OnContinue(self,event)
 
-    def OnStepOut(self, event):
-        BaseDebuggerUI.OnStepOut(self,event)
-        self._service.UpdateWatchs()
+    def OnStepOut(self):
+        BaseDebuggerUI.OnStepOut(self)
+        self.UpdateWatchs()
 
-    def OnNext(self, event):
-        BaseDebuggerUI.OnNext(self,event)
-        self._service.UpdateWatchs()
+    def OnNext(self):
+        BaseDebuggerUI.OnNext(self)
+        self.UpdateWatchs()
 
     def DisableWhileDebuggerRunning(self):
         BaseDebuggerUI.DisableWhileDebuggerRunning(self)
-        if self._service is not None:
         #when process is running normal,reset the watchs
-            self._service.UpdateWatchs(reset=True)
+        self.UpdateWatchs(reset=True)
             
     def CreateCallBack(self):
         url = 'http://' + self._debuggerHost + ':' + self._debuggerPort + '/'
         self._breakURL = 'http://' + self._debuggerHost + ':' + self._debuggerBreakPort + '/'
         self._callback = PythonDebuggerCallback(self._guiHost, self._guiPort, url, self._breakURL, self, self._autoContinue)
             
-    def RestartDebugger(self,event):
-        
-        projectService = wx.GetApp().GetService(project.ProjectEditor.ProjectService)
-        currentProj = projectService.GetCurrentProject()
+    def RestartDebugger(self):
+        currentProj = self._debugger.GetCurrentProject()
         if currentProj is not None and currentProj.GetModel().FindFile(self._run_parameter.FilePath):
-            wx.GetApp().GetService(DebuggerService).PromptToSaveFiles(currentProj)
+            currentProj.PromptToSaveFiles()
         else:
             openView = utils.GetOpenView(self._run_parameter.FilePath)
             if openView:
@@ -839,219 +770,30 @@ class PythonDebuggerUI(BaseDebuggerUI):
             utils.GetLogger().warn("debugger server port %s is not available,will use new port %s",old_debuggerPort,self._debuggerPort)
         else:
             utils.GetLogger().debug("when restart debugger ,debugger server port %s is still available",self._debuggerPort)
-            
-
-    def ProcessUpdateUIEvent(self,event):
-        return self.framesTab._textCtrl.ProcessUpdateUIEvent(event)
-        
-    def ProcessEvent(self,event):
-        return self.framesTab._textCtrl.ProcessEvent(event)
 
 class BaseFramesUI:
     
     THING_COLUMN_WIDTH = 175
-    def __init__(self, parent, id, ui):
-        wx.SplitterWindow.__init__(self, parent, id, style = wx.SP_3D)
-        self._ui = ui
-        self._p1 = p1 = wx.ScrolledWindow(self, -1)
-        self.MakeConsoleOutput(self._p1)
-
-        self._p2 = p2 = wx.Window(self, -1)
-        sizer3 = wx.BoxSizer(wx.HORIZONTAL)
-        p2.SetSizer(sizer3)
-        p2.Bind(wx.EVT_SIZE, self.OnSize)
-        self._notebook = wx.Notebook(p2, -1, size=(20,20))
-        iconList = wx.ImageList(16, 16, 4)
-        
-        stackframe_icon = images.load_icon("debugger/flag.ico")
-        stackframe_icon_index = iconList.AddIcon(stackframe_icon)
-        interact_icon = images.load_icon("debugger/interact.png")
-        interact_icon_index = iconList.AddIcon(interact_icon)
-        breakpoints_icon = images.load_icon("debugger/breakpoints.png")
-        breakpoints_icon_index = iconList.AddIcon(breakpoints_icon)
-        watchs_icon = images.load_icon("debugger/watches.png")
-        watchs_icon_index = iconList.AddIcon(watchs_icon)
-        
-        self._notebook.AssignImageList(iconList)
-        self._notebook.Hide()
-        sizer3.Add(self._notebook, 1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 1)
-        self.stackFrameTab = self.MakeStackFrameTab(self._notebook, wx.NewId())
-        self.inspectConsoleTab = self.MakeInspectConsoleTab(self._notebook, wx.NewId())
-        self.breakPointsTab = self.MakeBreakPointsTab(self._notebook, wx.NewId())
-        self.watchsTab = self.MakeWatchsTab(self._notebook, wx.NewId())
-        self._notebook.AddPage(self.stackFrameTab, _("Stack Frame"))
-        self._notebook.SetPageImage(self._notebook.GetPageCount() - 1,stackframe_icon_index)
-        self._notebook.AddPage(self.inspectConsoleTab, _("Interact"))
-        self._notebook.SetPageImage(self._notebook.GetPageCount() - 1,interact_icon_index)
-        self._notebook.AddPage(self.breakPointsTab, _("Break Points"))
-        self._notebook.SetPageImage(self._notebook.GetPageCount() - 1,breakpoints_icon_index)
-        self._notebook.AddPage(self.watchsTab, _("Watchs"))
-        self._notebook.SetPageImage(self._notebook.GetPageCount() - 1,watchs_icon_index)
-        self.SetMinimumPaneSize(20)
-        self.SplitVertically(p1, p2, 550)
-        self.currentItem = None
-        self._notebook.Show(True)
+    def __init__(self, output):
+        self._output = output
+        self._debugger = self._output._debugger
 
     def PopulateBPList(self):
         self.breakPointsTab.PopulateBPList()
 
-    def OnSize(self, event):
-        self._notebook.SetSize(self._p2.GetSize())
-        #fit thing column width
-        self._treeCtrl.SetColumnWidth(1, self._notebook.GetSize().x-self.THING_COLUMN_WIDTH-SPACE*2)
-        self.breakPointsTab._bpListCtrl.SetColumnWidth(2, self._notebook.GetSize().x-self.breakPointsTab.FILE_NAME_COLUMN_WIDTH - self.breakPointsTab.FILE_LINE_COLUMN_WIDTH-SPACE)
-        self.watchsTab._treeCtrl.SetColumnWidth(1, self._notebook.GetSize().x-self.watchsTab.WATCH_NAME_COLUMN_WIDTH-SPACE)
-
-    def MakeStackFrameTab(self, parent, id):
-        
-        panel = wx.Panel(parent, id)
-        panel_sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        framesLabel = wx.StaticText(panel, -1, _("Stack Frame:"))
-        sizer.Add(framesLabel, 0, flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT|wx.LEFT, border=2)
-
-        self._framesChoiceCtrl = wx.Choice(panel, -1, choices=["                                           "])
-        sizer.Add(self._framesChoiceCtrl, 1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 1)
-        self._framesChoiceCtrl.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.OnListRightClick)
-        self.Bind(wx.EVT_CHOICE, self.ListItemSelected, self._framesChoiceCtrl)
-        self._treeCtrl = wx.gizmos.TreeListCtrl(panel, -1, style=wx.TR_DEFAULT_STYLE| wx.TR_FULL_ROW_HIGHLIGHT)
-        self._treeCtrl.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnRightClick)
-        panel_sizer.Add(sizer, 0, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 1)
-        panel_sizer.Add(self._treeCtrl,1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 1)
-        tree = self._treeCtrl
-        tree.AddColumn("Thing")
-        tree.AddColumn("Value")
-        tree.SetMainColumn(0) # the one with the tree in it...
-        tree.SetColumnWidth(0, self.THING_COLUMN_WIDTH)
-        tree.SetColumnWidth(1, 355)
-        self._root = tree.AddRoot("Frame")
-        tree.SetPyData(self._root, "root")
-        tree.SetItemText(self._root, "", 1)
-        tree.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.IntrospectCallback)
-        panel.SetSizer(panel_sizer)
-        
-        return panel
-        
-    def MakeConsoleOutput(self, parent):
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self._textCtrl = DebugOutputCtrl.DebugOutputCtrl(parent, wx.NewId(),is_debug=True)
-        sizer.Add(self._textCtrl, 1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 2)
-        self._textCtrl.HideLineNumber()
-        self._textCtrl.SetReadOnly(True)
-        if wx.Platform == '__WXMSW__':
-            font = "Courier New"
-        else:
-            font = "Courier"
-        self._textCtrl.SetFont(wx.Font(9, wx.DEFAULT, wx.NORMAL, wx.NORMAL, faceName = font))
-        self._textCtrl.SetFontColor(wx.BLACK)
-        self._textCtrl.StyleClearAll()
-
-        parent.SetSizer(sizer)
-        #sizer.Fit(panel)
-        
-    def MakeWatchsTab(self, parent, id):
-        panel = Watchs.WatchsPanel(parent, id,wx.GetApp().GetService(DebuggerService))
-        return panel
-
     def ExecuteCommand(self, command):
         assert False, "ExecuteCommand not overridden"
-
-    def MakeInspectConsoleTab(self, parent, id):
-        def handleCommand():
-            cmdStr = self._cmdInput.GetValue()
-            if cmdStr:
-                self._cmdList.append(cmdStr)
-                self._cmdIndex = len(self._cmdList)
-            self._cmdInput.Clear()
-            self._cmdOutput.SetDefaultStyle(style=self._cmdOutputTextStyle)
-            self._cmdOutput.AppendText(">>> " + cmdStr + "\n")
-            self._cmdOutput.SetDefaultStyle(style=self._defaultOutputTextStyle)
-            self.ExecuteCommand(cmdStr)
-            return
-
-        def OnCmdButtonPressed(event):
-            if not BaseDebuggerUI.DebuggerRunning():
-                wx.MessageBox(_("Debugger has been stopped."),style=wx.OK|wx.ICON_ERROR)
-                return
-            handleCommand()
-            
-
-        def OnKeyPressed(event):
-            key = event.GetKeyCode()
-            if key == wx.WXK_RETURN:
-                handleCommand()
-            elif key == wx.WXK_UP:
-                if len(self._cmdList) < 1 or self._cmdIndex < 1:
-                    return
-
-                self._cmdInput.Clear()
-                self._cmdInput.AppendText(self._cmdList[self._cmdIndex - 1])
-                self._cmdIndex = self._cmdIndex - 1
-            elif key == wx.WXK_DOWN:
-                if len(self._cmdList) < 1 or self._cmdIndex >= len(self._cmdList):
-                    return
-
-                self._cmdInput.Clear()
-                self._cmdInput.AppendText(self._cmdList[self._cmdIndex - 1])
-                self._cmdIndex = self._cmdIndex + 1
-            else:
-                event.Skip()
-            return
-
-        def OnClrButtonPressed(event):
-            self._cmdOutput.Clear()
-
-        panel           = wx.Panel(parent, id)
-
-        cmdLabel        = wx.StaticText(panel, -1, _("Cmd: "))
-        #style wx.TE_PROCESS_ENTER will response enter key
-        self._cmdInput  = wx.TextCtrl(panel,style = wx.TE_PROCESS_ENTER)
-        ###self._cmdInput.Bind(wx.EVT_TEXT_ENTER,OnCmdButtonPressed)
-        cmdButton       = wx.Button(panel, label=_("Execute"))
-        clrButton       = wx.Button(panel, label=_("Clear"))
-        self._cmdOutput = wx.TextCtrl(panel, style=wx.TE_MULTILINE | wx.HSCROLL | wx.TE_READONLY | wx.TE_RICH2)
-
-        hbox            = wx.BoxSizer()
-        hbox.Add(cmdLabel, proportion=0, flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL)
-        hbox.Add(self._cmdInput, proportion=1, flag=wx.EXPAND)
-        hbox.Add(cmdButton, proportion=0, flag=wx.RIGHT)
-        hbox.Add(clrButton, proportion=0, flag=wx.RIGHT)
-
-        vbox            = wx.BoxSizer(wx.VERTICAL)
-        vbox.Add(hbox, proportion=0, flag=wx.EXPAND | wx.ALL, border=2)
-        vbox.Add(self._cmdOutput, proportion=1, flag=wx.EXPAND | wx.LEFT, border=2)
-
-        panel.SetSizer(vbox)
-        cmdButton.Bind(wx.EVT_BUTTON, OnCmdButtonPressed)
-        clrButton.Bind(wx.EVT_BUTTON, OnClrButtonPressed)
-        wx.EVT_KEY_DOWN(self._cmdInput, OnKeyPressed)
-
-        fixedFont = wx.Font(self._cmdInput.GetFont().GetPointSize(), family=wx.TELETYPE, style=wx.NORMAL, weight=wx.NORMAL)
-        self._defaultOutputTextStyle = wx.TextAttr("BLACK", wx.NullColour, fixedFont)
-        self._cmdOutputTextStyle = wx.TextAttr("RED", wx.NullColour, fixedFont)
-        self._cmdOutput.SetDefaultStyle(style=self._defaultOutputTextStyle)
-        self._cmdList  = []
-        self._cmdIndex = 0
-
-        panel.Show()
-        return panel
-
-    def MakeBreakPointsTab(self, parent, id):
-        panel = BreakPoints.BreakpointsUI(parent, id, self._ui,wx.GetApp().GetService(DebuggerService))
-        return panel
 
     def OnRightClick(self, event):
         assert False, "OnRightClick not overridden"
 
     def ClearWhileRunning(self):
-        list = self._framesChoiceCtrl
-        list.Clear()
-        list.Enable(False)
-        tree = self._treeCtrl
-        root = self._root
-        tree.DeleteChildren(root)
-        self._cmdInput.Enable(False)
-        self._cmdOutput.Enable(False)
+        self.stackFrameTab._framesChoiceCtrl['values'] = ()
+        self.stackFrameTab._framesChoiceCtrl['state'] = tk.DISABLED
+        root = self.stackFrameTab._root
+        self.stackFrameTab.DeleteChildren(root)
+        self.inspectConsoleTab._cmdInput["state"] = tk.DISABLED
+        self.inspectConsoleTab._cmdOutput["state"] = tk.DISABLED
 
     def OnListRightClick(self, event):
         if not hasattr(self, "syncFrameID"):
@@ -1078,21 +820,26 @@ class BaseFramesUI:
     def IntrospectCallback(self, event):
         assert False, "IntrospectCallback not overridden"
 
-    def AppendText(self, text):
-        self._textCtrl.AppendText(text,True)
+    def AppendText(self, event):
+        self._output.AppendText(event)
 
-    def AppendErrorText(self, text):
-        self._textCtrl.AppendErrorText(text,True)
+    def AppendErrorText(self, event):
+        self._output.AppendErrorText(event)
 
     def ClearOutput(self, event):
-        self._textCtrl.ClearOutput()
+        self._output.GetOutputCtrl().ClearOutput()
 
     def SwitchToOutputTab(self):
         self._notebook.SetSelection(0)
 
 class PythonFramesUI(BaseFramesUI):
-    def __init__(self, parent, id, ui):
-        BaseFramesUI.__init__(self, parent, id, ui)
+    def __init__(self, output):
+        BaseFramesUI.__init__(self, output)
+        #强制显示断点调式有关的视图
+        self.breakPointsTab = GetApp().MainFrame.GetCommonView(breakpoints.BREAKPOINTS_TAB_NAME)
+        self.stackFrameTab = GetApp().MainFrame.GetCommonView(stacksframe.STACKFRAME_TAB_NAME)
+        self.inspectConsoleTab = GetApp().MainFrame.GetCommonView(inspectconsole.INTERACTCONSOLE_TAB_NAME)
+        self.watchsTab = GetApp().MainFrame.GetCommonView(watchs.WATCH_TAB_NAME)
         
     def SetExecutor(self,executor):
         self._textCtrl.SetExecutor(executor)
@@ -1182,7 +929,7 @@ class PythonFramesUI(BaseFramesUI):
         #swith to interact tab page
         self._notebook.SetSelection(1)
 
-    def OnAddWatch(self, event):
+    def OnAddWatch(self):
         self.AddWatch()
         
     def AddWatch(self,watch_obj=None):
@@ -1190,12 +937,10 @@ class PythonFramesUI(BaseFramesUI):
             if hasattr(self, '_parentChain'):
                 wd = Watchs.WatchDialog(wx.GetApp().GetTopWindow(), _("Add a Watch"), self._parentChain,watch_obj=watch_obj)
             else:
-                wd = Watchs.WatchDialog(wx.GetApp().GetTopWindow(), _("Add a Watch"), None,watch_obj=watch_obj)
-            wd.CenterOnParent()
-            if wd.ShowModal() == wx.ID_OK:
+                wd = watchs.WatchDialog(GetApp().GetTopWindow(), _("Add a Watch"), None,watch_obj=watch_obj)
+            if wd.ShowModal() == constants.ID_OK:
                 watch_obj = wd.GetSettings()
                 self.AddtoWatch(watch_obj)
-            wd.Destroy()
         except:
             tp, val, tb = sys.exc_info()
             traceback.print_exception(tp, val, tb)
@@ -1206,9 +951,8 @@ class PythonFramesUI(BaseFramesUI):
         self.AddtoWatch(watch_obj)
         
     def QuickAddWatch(self,watch_obj=None):
-        wd = Watchs.WatchDialog(wx.GetApp().GetTopWindow(), _("Quick Add a Watch"), None,True,watch_obj)
-        wd.CenterOnParent()
-        if wd.ShowModal() == wx.ID_OK:
+        wd = watchs.WatchDialog(GetApp().GetTopWindow(), _("Quick Add a Watch"), None,True,watch_obj)
+        if wd.ShowModal() == constants.ID_OK:
             watch_obj = wd.GetSettings()
             self.AddtoWatch(watch_obj)
             
@@ -1282,50 +1026,47 @@ class PythonFramesUI(BaseFramesUI):
             wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_DEFAULT))
 
     def OnSyncFrame(self, event):
-        list = self._framesChoiceCtrl
         frameNode = self._stack[int(self.currentItem)]
         file = frameNode.getAttribute("file")
         line = frameNode.getAttribute("line")
-        self._ui.SynchCurrentLine( file, int(line) )
+        self._output.SynchCurrentLine( file, int(line) )
 
     def LoadFramesList(self, framesXML):
-        wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
+        GetApp().configure(cursor="circle")
         try:
-            self._cmdInput.Enable(True)
-            self._cmdOutput.Enable(True)
-
+            self.inspectConsoleTab._cmdInput["state"] = tk.NORMAL
+            self.inspectConsoleTab._cmdOutput["state"] = tk.NORMAL
             try:
                 domDoc = parseString(framesXML)
-                list = self._framesChoiceCtrl
-                list.Clear()
+                frame_values = []
                 self._stack = []
                 nodeList = domDoc.getElementsByTagName('frame')
                 frame_count = -1
                 for index in range(0, nodeList.length):
                     frameNode = nodeList.item(index)
                     message = frameNode.getAttribute("message")
-                    list.Append(message)
+                    frame_values.append(message)
                     self._stack.append(frameNode)
                     frame_count += 1
                 index = len(self._stack) - 1
-                list.SetSelection(index)
+                self.stackFrameTab._framesChoiceCtrl['values'] = frame_values
+                self.stackFrameTab._framesChoiceCtrl.current(index)
 
                 node = self._stack[index]
                 self.currentItem = index
                 self.PopulateTreeFromFrameNode(node)
                 self.OnSyncFrame(None)
 
-                self._p1.FitInside()
                 frameNode = nodeList.item(index)
                 file = frameNode.getAttribute("file")
                 line = frameNode.getAttribute("line")
-                self._ui.SynchCurrentLine( file, int(line) )
+                self._output.SynchCurrentLine( file, int(line) )
             except:
                 tp,val,tb=sys.exc_info()
                 traceback.print_exception(tp, val, tb)
 
         finally:
-            wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_DEFAULT))
+            GetApp().configure(cursor="")
 
 
     def ListItemSelected(self, event):
@@ -1347,12 +1088,10 @@ class PythonFramesUI(BaseFramesUI):
             index = index + 1
 
     def PopulateTreeFromFrameNode(self, frameNode):
-        list = self._framesChoiceCtrl
-        list.Enable(True)
-        tree = self._treeCtrl
-        #tree.Show(True)
-        root = self._root
-        tree.DeleteChildren(root)
+        self.stackFrameTab._framesChoiceCtrl['state'] = 'readonly'
+        tree = self.stackFrameTab.tree
+        root = self.stackFrameTab._root
+        self.stackFrameTab.DeleteChildren(root)
         children = frameNode.childNodes
         firstChild = None
         for index in range(0, children.length):
@@ -1360,10 +1099,9 @@ class PythonFramesUI(BaseFramesUI):
             treeNode = self.AppendSubTreeFromNode(subNode, subNode.getAttribute('name'), root)
             if not firstChild:
                 firstChild = treeNode
-        tree.Expand(root)
+        tree.item(root,open=True)
         if firstChild:
-            tree.Expand(firstChild)
-        self._p2.FitInside()
+            tree.item(firstChild,open=True)
 
     def IntrospectCallback(self, event):
         tree = self._treeCtrl
@@ -1379,19 +1117,20 @@ class PythonFramesUI(BaseFramesUI):
         event.Skip()
 
     def AppendSubTreeFromNode(self, node, name, parent, insertBefore=None):
-        tree = self._treeCtrl
+        tree = self.stackFrameTab.tree
         if insertBefore != None:
             treeNode = tree.InsertItem(parent, insertBefore, name)
         else:
-            treeNode = tree.AppendItem(parent, name)
+            treeNode = tree.insert(parent,"end",text=name)
         children = node.childNodes
         intro = node.getAttribute('intro')
 
         if intro == "True":
-            tree.SetItemHasChildren(treeNode, True)
-            tree.SetPyData(treeNode, "Introspect")
+          #  tree.SetItemHasChildren(treeNode, True)
+            self.stackFrameTab.SetPyData(treeNode, "Introspect")
         if node.getAttribute("value"):
-            tree.SetItemText(treeNode, self.StripOuterSingleQuotes(node.getAttribute("value")), 1)
+            #tree.SetItemText(treeNode, self.StripOuterSingleQuotes(node.getAttribute("value")), 1)
+            tree.set(treeNode, column='Value', value=self.StripOuterSingleQuotes(node.getAttribute("value")))
         for index in range(0, children.length):
             subNode = children.item(index)
             if self.HasChildren(subNode):
@@ -1399,14 +1138,14 @@ class PythonFramesUI(BaseFramesUI):
             else:
                 name = subNode.getAttribute("name")
                 value = self.StripOuterSingleQuotes(subNode.getAttribute("value"))
-                n = tree.AppendItem(treeNode, name)
-                tree.SetItemText(n, value, 1)
+                n = tree.insert(treeNode, "end",text=name)
+                tree.set(n, value=value, column='Value')
                 intro = subNode.getAttribute('intro')
                 if intro == "True":
-                    tree.SetItemHasChildren(n, True)
-                    tree.SetPyData(n, "Introspect")
+                    #tree.SetItemHasChildren(n, True)
+                    self.stackFrameTab.SetPyData(n, "Introspect")
         if name.find('[') == -1:
-            self._treeCtrl.SortChildren(treeNode)
+            self.stackFrameTab.SortChildren(treeNode)
         return treeNode
 
     def StripOuterSingleQuotes(self, string):
@@ -1511,7 +1250,7 @@ class RequestHandlerThread(threading.Thread):
         self.input_evt.set()
 
     def AskToStop(self):
-        if type(self._server) is not types.NoneType:
+        if self._server is not None:
             try:
                 # This is a really ugly way to make sure this thread isn't blocked in
                 # handle_request.
@@ -1607,7 +1346,6 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
         self._debugger_url = debugger_url
         self._debuggerServer = None
         self._waiting = False
-        self._service = wx.GetApp().GetService(DebuggerService)
         self._debuggerUI = debuggerUI
         self._break_url = break_url
         self._breakServer = None
@@ -1628,7 +1366,7 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
             
     def CheckBreakServer(self):
         if self._breakServer is None:
-            wx.MessageBox(_("Could not connect to break server!"),style=wx.OK|wx.ICON_ERROR)
+            messagebox.showerror(GetApp().GetAppName(),_("Could not connect to break server!"))
             return False
         return True
 
@@ -1675,7 +1413,7 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
         if not self.CheckBreakServer():
             return
             
-        rbt = RequestBreakThread(self._breakServer, pushBreakpoints=True, breakDict=self._service.GetMasterBreakpointDict())
+        rbt = RequestBreakThread(self._breakServer, pushBreakpoints=True, breakDict=self._debuggerUI._debugger.GetMasterBreakpointDict())
         rbt.start()
         
     def PushExceptionBreakpoints(self):
@@ -1683,36 +1421,40 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
 
     def WaitForRPC(self):
         self._waiting = True
-        while self._waiting:
-            try:
-                self.ReadQueue()
-                import time
-                time.sleep(0.02)
-            except:
-                tp, val, tb = sys.exc_info()
-                traceback.print_exception(tp, val, tb)
-            wx.GetApp().Yield(True)
-        utils.GetLogger().debug("Exiting WaitForRPC.")
+        self.RotateForRpc()
+        
+    def RotateForRpc(self):
+        if not self._waiting:
+            utils.get_logger().debug("Exiting WaitForRPC.")
+            return
+        self._debuggerUI.after(1000,self.RotateForRpc)
+        try:
+            self.ReadQueue()
+            import time
+            time.sleep(0.02)
+        except:
+            tp, val, tb = sys.exc_info()
+            traceback.print_exception(tp, val, tb)
 
     def interaction(self, message, frameXML, info, quit):
 
         #This method should be hit as the debugger starts.
         #if the debugger starts.then show the debugger menu
         if self._firstInteraction:
-            assert(self._debuggerUI._service != None)
-            self._debuggerUI._service.ShowHideDebuggerMenu()
+            #断点调试时显示断点调式有关的菜单
+            self._debuggerUI._debugger.ShowHideDebuggerMenu()
             self._firstInteraction = False
             self._debuggerServer = xmlrpclib.ServerProxy(self._debugger_url,  allow_none=1)
             self._breakServer = xmlrpclib.ServerProxy(self._break_url, allow_none=1)
             self.PushBreakpoints()
-            if self._service.GetExceptions():
+            if self._debuggerUI._debugger.GetExceptions():
                 self.PushExceptionBreakpoints()
         self._waiting = False
         if _VERBOSE: print ("+"*40)
         #quit gui server
         if(quit):
             #whhen quit gui server stop the debugger execution
-            self._debuggerUI.StopExecution(None)
+            self._debuggerUI.StopExecution()
             return ""
         if(info != ""):
             if _VERBOSE: print ("Hit interaction with exception")
@@ -1728,23 +1470,25 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
             self._debuggerUI.EnableWhileDebuggerStopped()
 
         if self._autoContinue:
-            self._timer = wx.PyTimer(self.DoContinue)
+            self._timer = pytimer.PyTimer(self.DoContinue)
             self._autoContinue = False
-            self._timer.Start(250)
+            self._timer.Start(0.25)
         if _VERBOSE: print ("+"*40)
 
     def DoContinue(self):
         self._timer.Stop()
-        dbgService = wx.GetApp().GetService(DebuggerService)
-        evt = DebugInternalWebServer()
-        evt.SetId(constants.ID_STEP_CONTINUE)
-        wx.PostEvent(self._debuggerUI, evt)
+       # dbgService = wx.GetApp().GetService(DebuggerService)
+        #evt = DebugInternalWebServer()
+        #evt.SetId(constants.ID_STEP_CONTINUE)
+        #wx.PostEvent(self._debuggerUI, evt)
+        
+        GetApp().event_generate(EVT_DEBUG_INTERNAL)
         if _VERBOSE: print ("Event Continue posted")
-
-        evt = DebugInternalWebServer()
-        evt.SetId(DebuggerService.DEBUG_WEBSERVER_NOW_RUN_PROJECT_ID)
-        wx.PostEvent(dbgService._frame, evt)
-        if _VERBOSE: print ("Event RunProject posted")
+##
+##        evt = DebugInternalWebServer()
+##        evt.SetId(DebuggerService.DEBUG_WEBSERVER_NOW_RUN_PROJECT_ID)
+##        wx.PostEvent(dbgService._frame, evt)
+##        if _VERBOSE: print ("Event RunProject posted")
 
     def SendRunEvent(self):
         class SendEventThread(threading.Thread):
@@ -1772,6 +1516,8 @@ class PythonDebugger(Debugger):
     # Constants
     #----------------------------------------------------------------------------
     RUN_PARAMETERS = []
+    #调试器只允许运行一个
+    _debugger_ui = None
 
     #----------------------------------------------------------------------------
     # Overridden methods
@@ -1796,10 +1542,22 @@ class PythonDebugger(Debugger):
         self.projectPath = None
         self.phpDbgParam = None
        # self.dbgLanguage = projectmodel.LANGUAGE_DEFAULT
-        self._debugger_ui = None
         self._tabs_menu = None
         self._popup_index = -1
         self._watch_separater = None
+        
+    def GetMasterBreakpointDict(self):
+        return self._masterBPDict
+        
+    @classmethod
+    def SetDebuggerUI(cls,debugger_ui):
+        cls._debugger_ui  = debugger_ui
+        
+    def GetExceptions(self):
+        return self._exceptions
+        
+    def SetExceptions(self,exceptions):
+        self._exceptions = exceptions
 
     def _right_btn_press(self, event):
         try:
@@ -1905,6 +1663,22 @@ class PythonDebugger(Debugger):
     @common_run_exception
     def RunLast(self):
         self.GetCurrentProject().RunLast()
+        
+    def StepNext(self):
+        #如果调试器在运行,则执行单步调试
+        if BaseDebuggerUI.DebuggerRunning():
+            self._debugger_ui.OnNext()
+        else:
+            #否则进入断点调试并在开始出中断
+            self.GetCurrentProject().BreakintoDebugger()
+        
+    def StepInto(self):
+        #如果调试器在运行,则执行调试方法
+        if BaseDebuggerUI.DebuggerRunning():
+            self._debugger_ui.OnSingleStep()
+        else:
+            #否则进入断点调试并在开始出中断
+            self.GetCurrentProject().BreakintoDebugger()
 
     def SetParameterAndEnvironment(self):
         self.GetCurrentProject().SetParameterAndEnvironment()
@@ -1936,6 +1710,58 @@ class PythonDebugger(Debugger):
         if doc_path in self._masterBPDict and len(self._masterBPDict[doc_path]) > 0:
             return True
         return False
+        
+    def CreateDebuggerMenuItem(self,runMenu,menu_id,text,image,handler,menu_index):
+        '''
+            添加断点调式菜单项,如果菜单项已经存在不能重复添加
+        '''
+        if not runMenu.FindMenuItem(menu_id):
+            runMenu.Insert(menu_index,menu_id,text,img=image,handler=handler)
+            
+    def DeleteDebuggerMenuItem(self,runMenu,menu_id):
+        '''
+            删除断点调式菜单项,只有在菜单项已经存在时才能删除
+        '''
+        if runMenu.FindMenuItem(menu_id):
+            menu_index = runMenu.GetMenuIndex(menu_id)
+            runMenu.delete(menu_index,menu_index)
+
+    def ShowHideDebuggerMenu(self,show=True):
+        run_menu = GetApp().Menubar.GetRunMenu()
+        if show:
+            menu_index = 3
+            self.CreateDebuggerMenuItem(run_menu,constants.ID_RESTART_DEBUGGER,_("&Restart"),self._debugger_ui.restart_bmp,self._debugger_ui.RestartDebugger,menu_index)
+            self.CreateDebuggerMenuItem(run_menu,constants.ID_TERMINATE_DEBUGGER,_("&Stop Debugging"),self._debugger_ui.stop_bmp,self._debugger_ui.StopExecution,menu_index)
+            self.CreateDebuggerMenuItem(run_menu,constants.ID_BREAK_INTO_DEBUGGER,_("&Break"),self._debugger_ui.break_bmp,self._debugger_ui.BreakExecution,menu_index)
+            self.CreateDebuggerMenuItem(run_menu,constants.ID_STEP_CONTINUE,_("&Continue"),self._debugger_ui.continue_bmp,self._debugger_ui.OnContinue,menu_index) 
+            self.CreateDebuggerMenuItem(run_menu,constants.ID_STEP_OUT,_("&Step Out"),self._debugger_ui.stepOut_bmp,self._debugger_ui.OnStepOut,11)
+            self.CreateDebuggerMenuItem(run_menu,constants.ID_QUICK_ADD_WATCH,_("&Quick add Watch"),self._debugger_ui.quick_watch_bmp,self._debugger_ui.OnQuickAddWatch,12)
+            self.CreateDebuggerMenuItem(run_menu,constants.ID_ADD_WATCH,_("&Add Watch"),self._debugger_ui.watch_bmp,self._debugger_ui.OnAddWatch,13)            
+        else:
+            self.DeleteDebuggerMenuItem(run_menu,constants.ID_STEP_OUT)
+            self.DeleteDebuggerMenuItem(run_menu,constants.ID_TERMINATE_DEBUGGER)
+            self.DeleteDebuggerMenuItem(run_menu,constants.ID_STEP_CONTINUE)
+            self.DeleteDebuggerMenuItem(run_menu,constants.ID_BREAK_INTO_DEBUGGER)
+            self.DeleteDebuggerMenuItem(run_menu,constants.ID_RESTART_DEBUGGER)
+            self.DeleteDebuggerMenuItem(run_menu,constants.ID_ADD_WATCH)
+            self.DeleteDebuggerMenuItem(run_menu,constants.ID_QUICK_ADD_WATCH)
+            
+            GetApp().MainFrame.GetCommonView(stacksframe.STACKFRAME_TAB_NAME,show=False)
+            GetApp().MainFrame.GetCommonView(inspectconsole.INTERACTCONSOLE_TAB_NAME,show=False)
+            GetApp().MainFrame.GetCommonView(breakpoints.BREAKPOINTS_TAB_NAME,show=False)
+            GetApp().MainFrame.GetCommonView(watchs.WATCH_TAB_NAME,show=False)
+            
+    def AppendWatch(self,watch_obj):
+        self.watchs.append(watch_obj)
+        
+    def AddtoWatch(self,watch_obj):
+        self._debugger_ui.framesTab.AddtoWatch(watch_obj)
+        
+    def AddWatch(self,watch_obj=None,is_quick_watch=False):
+        if is_quick_watch:
+            self._debugger_ui.framesTab.QuickAddWatch(watch_obj)
+        else:
+            self._debugger_ui.framesTab.AddWatch(watch_obj)
 
 class DebuggerOptionsPanel(ttk.Frame):
 

@@ -25,7 +25,7 @@ class TestCodeParser(unittest.TestCase):
         pass
 
     def testParseContentPY3(self):
-        filepath = r"G:\work\project\Noval\noval\python\parser\codeparser.py"
+        filepath = r"C:\Python27\Lib\site-packages\wx-3.0-msw\wx\_core.py"
         print (self._code_parser.Parsefile(filepath),"=============")
 
 if __name__ == "__main__":

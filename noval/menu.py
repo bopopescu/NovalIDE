@@ -434,6 +434,8 @@ class PopupMenu(tk.Menu):
                           available in the ArtProvider
         插入某个菜单项
         """
+        if pos == -1:
+            return self.Append(id_, text, helpstr, handler, img,accelerator,kind,variable,tester)
         menu_item,kwargs = self.GetMenuData(id_,text,handler,img,accelerator,kind,variable,tester)
         self._items.insert(pos,menu_item)
         self.insert(
@@ -579,6 +581,8 @@ class PopupMenu(tk.Menu):
     def delete(self,start,end="end"):
         if end == "end":
             end_index = len(self._items) -1
+        else:
+            end_index = end
         
         #倒序删除,防止数组越界或者索引错误
         for i in range(end_index,start-1,-1):
@@ -614,7 +618,6 @@ class PopupMenu(tk.Menu):
                 #更新子菜单
                 submenu._update_menu()
             elif "label" in item_data:
-                command_label = self.entrycget(i, "label")
                 menu_item = self._items[i]
                 tester = menu_item.tester
                 #根据菜单回调函数返回bool值设置菜单是否是灰色状态
@@ -622,6 +625,18 @@ class PopupMenu(tk.Menu):
                     self.entryconfigure(i, state=tk.DISABLED)
                 else:
                     self.entryconfigure(i, state=tk.NORMAL)
+                    
+    def Enable(self,menu_id,enabled=True):
+        for i in range(self.index("end") + 1):
+            item_data = self.entryconfigure(i)
+            if "label" in item_data:
+                menu_item = self._items[i]
+                if menu_id == menu_item.id:
+                    if not enabled:
+                        self.entryconfigure(i, state=tk.DISABLED)
+                    else:
+                        self.entryconfigure(i, state=tk.NORMAL)
+        
         
 class MenuBar(tk.Menu):
     """Custom menubar to allow for easier access and updating

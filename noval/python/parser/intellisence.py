@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from noval import _,GetApp
 import noval.util.appdirs as appdirs
 import noval.python.interpreter.interpreter as pythoninterpreter
@@ -45,14 +46,14 @@ class IntellisenceDataLoader(object):
     
     def LoadIntellisenceDirData(self,data_path):
         name_sets = set()
-        for filepath in glob.glob(os.path.join(data_path,"*.$members")):
+        for filepath in glob.glob(os.path.join(data_path,"*" + config.MEMBERS_FILE_EXTENSION)):
             filename = os.path.basename(filepath)
             module_name = '.'.join(filename.split(".")[0:-1])
             name_sets.add(module_name)
 
         for name in name_sets:
-            d = dict(members=os.path.join(data_path,name +".$members"),\
-                     member_list=os.path.join(data_path,name +".$memberlist"))
+            d = dict(members=os.path.join(data_path,name +config.MEMBERS_FILE_EXTENSION),\
+                     member_list=os.path.join(data_path,name +config.MEMBERLIST_FILE_EXTENSION))
             self.module_dicts[name] = d
 
     def Load(self,interpreter,share_user_data=False):
@@ -116,8 +117,10 @@ class IntellisenceManager(object):
         self._is_running = False
         self._process_obj = None
         self._is_stopped = False
+        self.unfinish_files = {}
         
     def Stop(self):
+        self.WriteUnfinishFiles()
         self._is_stopped = True
         if self._process_obj != None and self.IsRunning:
             for pid in utils.get_child_pids(self._process_obj.pid):
@@ -309,3 +312,28 @@ class IntellisenceManager(object):
         if not scopes:
             return ''
         return scopes[0].GetArgTip()
+        
+    def AddUnfinishModuleFile(self,module_file):
+        '''
+            将需要再次分析的模块添加到unfinish列表当中
+        '''
+        interpreter = GetApp().GetCurrentInterpreter()
+        if not interpreter.Path in self.unfinish_files:
+            self.unfinish_files[interpreter.Path] = set([module_file])
+        else:
+            self.unfinish_files[interpreter.Path].add(module_file)
+        
+    def WriteUnfinishFiles(self):
+        '''
+            保存unfinish列表,以便下次运行run.py时强制分析这些模块并重新生成数据库
+        '''
+        if len(self.unfinish_files) > 0:
+            unfinished_file_name = "unfinish.txt"
+            for interpreter_path in self.unfinish_files:
+                interpreter = interpretermanager.InterpreterManager().GetInterpreterByPath(interpreter_path)
+                database_path = self.GetInterpreterDatabasePath(interpreter)
+                unfinished_file_path = os.path.join(database_path,unfinished_file_name)
+                with open(unfinished_file_path,"w") as f:
+                    unfinish_file_paths = list(self.unfinish_files[interpreter_path])
+                    for path in unfinish_file_paths:
+                        f.write(path + "\n")

@@ -1,7 +1,14 @@
+from noval import GetApp,_
 import os
 import noval.constants as constants
 import noval.ui_base as ui_base
+import noval.iface as iface
+import noval.plugin as plugin
 from tkinter import ttk
+import noval.ttkwidgets.treeviewframe as treeviewframe
+import noval.imageutils as imageutils
+
+BREAKPOINTS_TAB_NAME = "Breakpoints"
 
 class BreakpointExceptionDialog(ui_base.CommonModaldialog):
     EXCEPTIONS = ['ArithmeticError', 'AssertionError', 'AttributeError', 'BaseException', 'BufferError', \
@@ -92,47 +99,36 @@ class BreakpointExceptionDialog(ui_base.CommonModaldialog):
             return
         self.listbox.Append(other_exception)
         
-class BreakpointsUI(ttk.Frame):
+class BreakpointsUI(treeviewframe.TreeViewFrame):
     FILE_NAME_COLUMN_WIDTH = 150
     FILE_LINE_COLUMN_WIDTH = 50
-    def __init__(self, parent, id, ui,degugger_service):
-        wx.Panel.__init__(self, parent, id)
-        self._ui = ui
-        self._degugger_service = degugger_service
+    def __init__(self, parent):
+        columns = ["File","Line","Path"]
+        treeviewframe.TreeViewFrame.__init__(self, parent,columns=columns,show="headings",displaycolumns=(0,1,2))
         self.currentItem = None
-        self.clearBPID = wx.NewId()
-        self.Bind(wx.EVT_MENU, self.ClearBreakPoint, id=self.clearBPID)
-        self.syncLineID = wx.NewId()
-        self.Bind(wx.EVT_MENU, self.SyncBPLine, id=self.syncLineID)
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        p1 = self
-        self._bpListCtrl = wx.ListCtrl(p1, -1, pos=wx.DefaultPosition, size=(1000,1000), style=wx.LC_REPORT)
-        il = wx.ImageList(16, 16)
-        breakpoint_bmp = images.load("debugger/breakpoint.png")
-        self.BreakpointIndex = il.Add(breakpoint_bmp)
-        self._bpListCtrl.AssignImageList(il, wx.IMAGE_LIST_SMALL)
-        
-        sizer.Add(self._bpListCtrl, 1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 1)
-        self._bpListCtrl.InsertColumn(0, _("File"))
-        self._bpListCtrl.InsertColumn(1, _("Line"))
-        self._bpListCtrl.InsertColumn(2, _("Path"))
-        self._bpListCtrl.SetColumnWidth(0, self.FILE_NAME_COLUMN_WIDTH)
-        self._bpListCtrl.SetColumnWidth(1, self.FILE_LINE_COLUMN_WIDTH)
-        self._bpListCtrl.SetColumnWidth(2, 450)
-        self._bpListCtrl.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.OnListRightClick)
-        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.ListItemSelected, self._bpListCtrl)
-        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.ListItemDeselected, self._bpListCtrl)
+        for column in columns:
+            self.tree.heading(column, text=_(column))
+        self.tree.column('0',width=100,anchor='w')
+        self.tree.column('1',width=60,anchor='w')
 
+        
+##        self.clearBPID = wx.NewId()
+##        self.Bind(wx.EVT_MENU, self.ClearBreakPoint, id=self.clearBPID)
+##        self.syncLineID = wx.NewId()
+##        self.Bind(wx.EVT_MENU, self.SyncBPLine, id=self.syncLineID)
+
+
+        self.breakpoint_bmp = imageutils.load_image("","python/debugger/breakpoint.png")
+##        self._bpListCtrl.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.OnListRightClick)
+##        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.ListItemSelected, self._bpListCtrl)
+##        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.ListItemDeselected, self._bpListCtrl)
+##
         def OnLeftDoubleClick(event):
             self.SyncBPLine(event)
 
-        wx.EVT_LEFT_DCLICK(self._bpListCtrl, OnLeftDoubleClick)
+#        wx.EVT_LEFT_DCLICK(self._bpListCtrl, OnLeftDoubleClick)
 
-        self.PopulateBPList()
-
-        p1.SetSizer(sizer)
-        sizer.Fit(p1)
-        p1.Layout()
+ #       self.PopulateBPList()
 
     def PopulateBPList(self):
         list = self._bpListCtrl
@@ -179,3 +175,10 @@ class BreakpointsUI(ttk.Frame):
 
     def ListItemDeselected(self, event):
         self.currentItem = -1
+
+
+class BreakpointsViewLoader(plugin.Plugin):
+    plugin.Implements(iface.CommonPluginI)
+    def Load(self):
+        GetApp().MainFrame.AddView(BREAKPOINTS_TAB_NAME,BreakpointsUI, _("Break Points"), "se",image_file="python/debugger/breakpoints.png")
+        

@@ -161,6 +161,10 @@ class DocTabbedParentFrame(ttk.Frame):
         main_window_addon.Init(self)
             
     def RemoveNotebookPage(self,panel):
+        #需要判断文档框架是否已经在notebook中不存在了
+        if not self._editor_notebook.has_editor(panel):
+            utils.get_logger().warn("child editor is not in notebook yet when remove it....")
+            return
         self._editor_notebook.close_editor(panel)
         
     def CloseDoc(self):
@@ -407,6 +411,8 @@ class DocTabbedParentFrame(ttk.Frame):
         frame_view = self.GetView(view_name)
         if show:
             self.ShowView(view_name,toogle_visibility_flag=True)
+        else:
+            self.ShowView(view_name,hidden=True,toogle_visibility_flag=True)
         return frame_view
         
     def GetOutlineView(self,show=False):

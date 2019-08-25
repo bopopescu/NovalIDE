@@ -90,8 +90,13 @@ class ClosableNotebook(ttk.Notebook):
             child.destroy()
             
     def close_child(self,child):
+        assert(self.has_child(child))
         self.forget(child)
         child.destroy()
+        
+    def has_child(self,child):
+        childs = self.winfo_children()
+        return child in childs
 
     def get_child_by_index(self, index):
         tab_id = self.tabs()[index]

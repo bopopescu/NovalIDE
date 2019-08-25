@@ -2,7 +2,7 @@
 from noval import GetApp,_
 import os
 import tkinter as tk
-from tkinter import ttk,messagebox
+from tkinter import ttk,messagebox,filedialog
 import noval.ui_base as ui_base
 import noval.consts as consts
 import noval.python.project.viewer as projectviewer

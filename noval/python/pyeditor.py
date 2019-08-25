@@ -38,6 +38,8 @@ import noval.ui_utils as ui_utils
 from noval.python.project.rundocument import *
 import noval.python.pyutils as pyutils
 import io as StringIO  # For indent
+import noval.python.debugger.debugger as pythondebugger
+import noval.python.debugger.watchs as watchs
 
 class PythonDocument(codeeditor.CodeDocument): 
 
@@ -281,6 +283,9 @@ class PythonView(codeeditor.CodeView):
         elif command_id == constants.ID_GOTO_DEFINITION:
             return self.GetCtrl().IsCaretLocateInWord()
         return codeeditor.CodeView.UpdateUI(self,command_id)
+        
+    def GotoDefinition(self):
+        self.GetCtrl().GotoDefinition()
 
 class PythonCtrl(codeeditor.CodeCtrl):
     TYPE_POINT_WORD = "."
@@ -343,22 +348,16 @@ class PythonCtrl(codeeditor.CodeCtrl):
         item = tkmenu.MenuItem(constants.ID_BREAK_INTO_DEBUGGER,_("&Break into Debugger"), None,None,None)
         debug_menu.AppendMenuItem(item,handler=self.BreakintoDebugger)
         
-##        if debugger.DebuggerService.BaseDebuggerUI.DebuggerRunning():
-##            
-##            item = wx.MenuItem(menu,constants.ID_QUICK_ADD_WATCH,_("&Quick add Watch"), kind = wx.ITEM_NORMAL)
-##            item.SetBitmap(debugger.Watchs.getQuickAddWatchBitmap())
-##            menu.AppendItem(item)
-##            wx.EVT_MENU(self, constants.ID_QUICK_ADD_WATCH, self.QuickAddWatch)
-##            
-##            item = wx.MenuItem(menu,constants.ID_ADD_WATCH,_("&Add Watch"), kind = wx.ITEM_NORMAL)
-##            item.SetBitmap(debugger.Watchs.getAddWatchBitmap())
-##            menu.AppendItem(item)
-##            wx.EVT_MENU(self, constants.ID_ADD_WATCH, self.AddWatch)
-##            
-##            item = wx.MenuItem(menu,constants.ID_ADD_TO_WATCH,_("&Add to Watch"), kind = wx.ITEM_NORMAL)
-##            item.SetBitmap(debugger.Watchs.getAddtoWatchBitmap())
-##            menu.AppendItem(item)
-##            wx.EVT_MENU(self, constants.ID_ADD_TO_WATCH, self.AddtoWatch)
+        if pythondebugger.BaseDebuggerUI.DebuggerRunning():
+            
+            item = tkmenu.MenuItem(constants.ID_QUICK_ADD_WATCH,_("&Quick add Watch"), None,watchs.getQuickAddWatchBitmap(),None)
+            self._popup_menu.AppendMenuItem(item,handler=self.QuickAddWatch)
+            
+            item = tkmenu.MenuItem(constants.ID_ADD_WATCH,_("&Add Watch"), None,watchs.getAddWatchBitmap(),None)
+            self._popup_menu.AppendMenuItem(item,handler=self.AddWatch)
+            
+            item = tkmenu.MenuItem(constants.ID_ADD_TO_WATCH,_("&Add to Watch"), None,watchs.getAddtoWatchBitmap(),None)
+            self._popup_menu.AppendMenuItem(item,handler=self.AddtoWatch)
             
     def ExecCode(self):
         first,last = self.get_selection()
@@ -388,9 +387,9 @@ class PythonCtrl(codeeditor.CodeCtrl):
                 watch = debugger.Watchs.Watch(text,text)
                 wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).AddWatch(watch,True)
             else:
-                wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).AddWatch(None,True)
+                GetApp().GetDebugger().AddWatch(None,True)
         
-    def AddWatch(self,event):
+    def AddWatch(self):
         if self.HasSelection():
             text = self.GetSelectedText()
             watch = debugger.Watchs.Watch(text,text)
@@ -402,10 +401,9 @@ class PythonCtrl(codeeditor.CodeCtrl):
                 watch = debugger.Watchs.Watch(text,text)
                 wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).AddWatch(watch)
             else:
-                wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).AddWatch(None)
+                GetApp().GetDebugger().AddWatch(None)
 
-    def AddtoWatch(self,event):
-        
+    def AddtoWatch(self):
         if self.HasSelection():
             text = self.GetSelectedText()
             watch = debugger.Watchs.Watch(text,text)
@@ -417,11 +415,10 @@ class PythonCtrl(codeeditor.CodeCtrl):
                 watch = debugger.Watchs.Watch(text,text)
                 wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).AddtoWatch(watch)
         
-    @ui_utils.no_implemented_yet
+
     def BreakintoDebugger(self):
-        pass
-       # view = wx.GetApp().GetDocumentManager().GetCurrentView()
-        #wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).BreakIntoDebugger(view.GetDocument().GetFilename())
+        view = GetApp().GetDocumentManager().GetCurrentView()
+        GetApp().GetDebugger().GetCurrentProject().BreakintoDebugger(view.GetDocument().GetFilename())
     
     def RunScript(self):
         view = GetApp().GetDocumentManager().GetCurrentView()
@@ -752,7 +749,7 @@ class PythonCtrl(codeeditor.CodeCtrl):
                         doc_view.GotoPos(definition.Node.Line , definition.Node.Col)
                     else:
                         #找到python内建函数,无法定位到行
-                        if -1 == definition.Node.Line:
+                        if -1 == definition.Node.Line or definition.Node.IsBuiltIn:
                             NotFoundDefinition(text)
                             return
                         GetApp().GotoView(definition.Root.Module.Path,definition.Node.Line,definition.Node.Col)

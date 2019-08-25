@@ -1,22 +1,31 @@
-from noval import _,NewId
+from noval import GetApp,_,NewId
 import noval.util.apputils as sysutils
+import noval.iface as iface
+import noval.plugin as plugin
 import noval.ui_base as ui_base
 from tkinter import ttk
+import tkinter as tk
 import noval.util.utils as utils
+import noval.ttkwidgets.treeviewframe as treeviewframe
+import noval.imageutils as imageutils
+import noval.editor.text as texteditor
+import noval.consts as consts
+import noval.menu as tkmenu
 
 ERROR_NAME_VALUE = "<errors:could not evaluate the value>"
+WATCH_TAB_NAME = "Watchs"
 
 def getAddWatchBitmap():
-    return images.load("debugger/newWatch.png")
+    return GetApp().GetImage("python/debugger/newWatch.png")
 
 def getQuickAddWatchBitmap():
-    return images.load("debugger/watch.png")
+    return GetApp().GetImage("python/debugger/watch.png")
     
 def getAddtoWatchBitmap():
-    return images.load("debugger/addToWatch.png")
+    return GetApp().GetImage("python/debugger/addToWatch.png")
     
 def getClearWatchBitmap():
-    return images.load("debugger/delete.png")
+    return GetApp().GetImage("python/debugger/delete.png")
 
 class Watch:
     CODE_ALL_FRAMES = 0
@@ -91,38 +100,36 @@ class WatchDialog(ui_base.CommonModaldialog):
         Watch.CODE_RUN_ONCE:WATCH_ONCE
     }
     def __init__(self, parent, title, chain,is_quick_watch=False,watch_obj=None):
-        wx.Dialog.__init__(self, parent, -1, title, style=wx.DEFAULT_DIALOG_STYLE)
+        ui_base.CommonModaldialog.__init__(self, parent)
+        self.title(title)
         self._chain = chain
         self._is_quick_watch = is_quick_watch
         self._watch_obj = watch_obj
         self._watch_frame_type = Watch.CODE_ALL_FRAMES
-        self.label_2 = wx.StaticText(self, -1, _("Watch Name:"))
-        self._watchNameTextCtrl = wx.TextCtrl(self, -1, "")
-        self._watchNameTextCtrl.Bind(wx.EVT_TEXT,self.SetNameValue)
-        self.label_3 = wx.StaticText(self, -1, _("Expression:"), style=wx.ALIGN_RIGHT)
-        self._watchValueTextCtrl = wx.TextCtrl(self, -1, "",size=(400,200),style = wx.TE_MULTILINE)
+        row = ttk.Frame(self.main_frame)
+        ttk.Label(row,text=_("Watch Name:")).pack(fill="x",side=tk.LEFT)
+        self._watchNameTextCtrl = ttk.Entry(row)
+        self._watchNameTextCtrl.pack(fill="x",side=tk.LEFT,expand=1)
+        row.pack(fill="x")
+       # self._watchNameTextCtrl.Bind(wx.EVT_TEXT,self.SetNameValue)
+        ttk.Label(self.main_frame, text=_("Expression:")).pack(fill="x")
+        self._watchValueTextCtrl = texteditor.TextCtrl(self.main_frame)
+        self._watchValueTextCtrl.pack(fill="both",expand=1)
         if is_quick_watch:
-            self._watchValueTextCtrl.Enable(False)
-        self.radio_box_1 = wx.RadioBox(self, -1, _("Watch Information"), choices=[WatchDialog.WATCH_ALL_FRAMES, WatchDialog.WATCH_THIS_FRAME, WatchDialog.WATCH_ONCE], majorDimension=0, style=wx.RA_SPECIFY_ROWS)
+            self._watchValueTextCtrl['state'] = tk.DISABLED
+      #  self.radio_box_1 = ttk.Radiobutton(self, text=_("Watch Information"), choices=[WatchDialog.WATCH_ALL_FRAMES, WatchDialog.WATCH_THIS_FRAME, WatchDialog.WATCH_ONCE], majorDimension=0, style=wx.RA_SPECIFY_ROWS)
 
-        self._okButton = wx.Button(self, wx.ID_OK, _("&OK"))
-        self._okButton.SetDefault()
-        self._okButton.SetHelpText(_("The OK button completes the dialog"))
-        def OnOkClick(event):
-            if self._watchNameTextCtrl.GetValue() == "":
-                wx.MessageBox(_("You must enter a name for the watch."), _("Add a Watch"))
-                return
-            if self._watchValueTextCtrl.GetValue() == "":
-                wx.MessageBox(_("You must enter some code to run for the watch."), _("Add a Watch"))
-                return
-            self.EndModal(wx.ID_OK)
-        self.Bind(wx.EVT_BUTTON, OnOkClick, self._okButton)
-
-        self._cancelButton = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
-        self._cancelButton.SetHelpText(_("The Cancel button cancels the dialog."))
-
-        self.__set_properties()
-        self.__do_layout()
+        sbox_frame = ttk.LabelFrame(self.main_frame, text=_("Watch Information"))
+        self.watchallVar = tk.IntVar(value=False)
+        ttk.Radiobutton(sbox_frame, variable=self.watchallVar,text = WatchDialog.WATCH_ALL_FRAMES).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
+        self.watchthisVar = tk.IntVar(value=False)
+        ttk.Radiobutton(sbox_frame, variable=self.watchthisVar,text = WatchDialog.WATCH_THIS_FRAME).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+        self.watchonceVar = tk.IntVar(value=False)
+        ttk.Radiobutton(sbox_frame, variable=self.watchonceVar,text = WatchDialog.WATCH_ONCE).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+        sbox_frame.pack(fill="x")
+        
+        self.AddokcancelButton()
+        #self.__set_properties()
 
     def GetSettings(self):
         if self.radio_box_1.GetStringSelection() == WatchDialog.WATCH_ALL_FRAMES:
@@ -147,33 +154,22 @@ class WatchDialog(ui_base.CommonModaldialog):
             self._watchNameTextCtrl.SetValue(self._watch_obj.Name)
             self._watchValueTextCtrl.SetValue(self._watch_obj.Expression)
         self.radio_box_1.SetStringSelection(self.WATCH_FRAME_TYPES[self._watch_frame_type])
-
-    def __do_layout(self):
-        sizer_1 = wx.BoxSizer(wx.VERTICAL)
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        lineSizer.Add(self.label_2, 0, wx.ALL, 0)
-        lineSizer.Add(self._watchNameTextCtrl, 1, wx.EXPAND|wx.LEFT, HALF_SPACE)
-        sizer_1.Add(lineSizer, 0, wx.EXPAND|wx.ALL, HALF_SPACE)
-        sizer_1.Add(self.label_3, 0, wx.LEFT, HALF_SPACE)
-        sizer_1.Add(self._watchValueTextCtrl, 1, wx.EXPAND|wx.ALL, HALF_SPACE)
-        sizer_1.Add(self.radio_box_1, 0, wx.EXPAND|wx.ALL, HALF_SPACE)
-        
-        bsizer = wx.StdDialogButtonSizer()
-        #set ok button default focused
-        self._okButton.SetDefault()
-        bsizer.AddButton(self._okButton)
-        bsizer.AddButton(self._cancelButton)
-        bsizer.Realize()
-        sizer_1.Add(bsizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM,HALF_SPACE)
-        
-        self.SetSizer(sizer_1)
-        self.Fit()
         
     def SetNameValue(self,event):
         if self._is_quick_watch:
             self._watchValueTextCtrl.SetValue(self._watchNameTextCtrl.GetValue())
+            
 
-class WatchsPanel(ttk.Frame):
+    def _ok(self,event=None):
+        if self._watchNameTextCtrl.GetValue() == "":
+            wx.MessageBox(_("You must enter a name for the watch."), _("Add a Watch"))
+            return
+        if self._watchValueTextCtrl.GetValue() == "":
+            wx.MessageBox(_("You must enter some code to run for the watch."), _("Add a Watch"))
+            return
+        self.EndModal(wx.ID_OK)
+
+class WatchsPanel(treeviewframe.TreeViewFrame):
     """description of class"""
     ID_ClEAR_WATCH = NewId()
     ID_ClEAR_ALL_WATCH = NewId()
@@ -181,46 +177,38 @@ class WatchsPanel(ttk.Frame):
     ID_COPY_WATCH_EXPRESSION = NewId()
     WATCH_NAME_COLUMN_WIDTH = 150
     
-    def __init__(self,parent,id,debuggerService):
-        wx.Panel.__init__(self, parent, id)
-        self._debugger_service = debuggerService
-        panel_sizer = wx.BoxSizer(wx.VERTICAL)
-        self._treeCtrl = wx.gizmos.TreeListCtrl(self, -1, style=wx.TR_DEFAULT_STYLE| wx.TR_FULL_ROW_HIGHLIGHT|wx.TR_HIDE_ROOT)
-        self._treeCtrl.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnRightClick)
-        panel_sizer.Add(self._treeCtrl,1, wx.ALIGN_LEFT|wx.ALL|wx.EXPAND, 1)
-        tree = self._treeCtrl
-        tree.AddColumn(_("Name"))
-        tree.AddColumn(_("Value"))
-        tree.SetMainColumn(0) # the one with the tree in it...
-        tree.SetColumnWidth(0, self.WATCH_NAME_COLUMN_WIDTH)
-        tree.SetColumnWidth(1, 300)
+    def __init__(self,parent):
+        treeviewframe.TreeViewFrame.__init__(self, parent,columns= ['Value'],displaycolumns=(0,))
+      
+        self.tree.heading("#0", text=_("Name"), anchor=tk.W)
+        self.tree.heading("Value", text=_("Value"), anchor=tk.W)
+            
+        self.tree.column('#0',width=80,anchor='w')
+        self.tree["show"] = ("headings", "tree")
         
-        iconList = wx.ImageList(16, 16, 3)
-        error_bmp = images.load("debugger/error.png")
-        self.ErrorIndex = iconList.Add(error_bmp)
-        watch_expr_bmp = images.load("debugger/watch_exp.png")
-        self.WatchExprIndex = iconList.Add(watch_expr_bmp)
-        self._treeCtrl.AssignImageList(iconList)
+        self.error_bmp = imageutils.load_image("","python/debugger/error.png")
+        self.watch_expr_bmp = imageutils.load_image("","python/debugger/watch_exp.png")
         
-        self._root = tree.AddRoot("Expression")
-        
-        self.SetSizer(panel_sizer)
-        self.Fit()
-        self.LoadWatches()
+        self._root = self.tree.insert("","end",text="Expression")
+        self.tree.bind("<3>", self.OnRightClick, True)
+        #self.LoadWatches()
         
     def OnRightClick(self, event):
         #Refactor this...
-        self._introspectItem = event.GetItem()
-        self._parentChain = self.GetItemChain(event.GetItem())
+        sel_items = self.tree.selection()
+        self._introspectItem = None
+        if sel_items:
+            self._introspectItem = sel_items[0]
+        self._parentChain = self.GetItemChain(self._introspectItem)
         watchOnly = len(self._parentChain) < 1
         #if not _WATCHES_ON and watchOnly:
          #   return
-        menu = wx.Menu()
+        menu = tkmenu.PopupMenu()
 
         if not hasattr(self, "watchID"):
             self.watchID = wx.NewId()
             self.Bind(wx.EVT_MENU, self.OnAddWatch, id=self.watchID)
-        item = wx.MenuItem(menu, self.watchID, _("Add a Watch"))
+        item = tkmenu.MenuItem(menu, self.watchID, _("Add a Watch"))
         item.SetBitmap(getAddWatchBitmap())
         menu.AppendItem(item)
         menu.AppendSeparator()
@@ -228,23 +216,23 @@ class WatchsPanel(ttk.Frame):
             if not hasattr(self, "viewID"):
                 self.viewID = wx.NewId()
                 self.Bind(wx.EVT_MENU, self.OnView, id=self.viewID)
-            item = wx.MenuItem(menu, self.viewID, _("View in Dialog"))
+            item = tkmenu.MenuItem(menu, self.viewID, _("View in Dialog"))
             menu.AppendItem(item)
             
-        item = wx.MenuItem(menu, self.ID_EDIT_WATCH, _("Edit Watch"))
+        item = tkmenu.MenuItem(menu, self.ID_EDIT_WATCH, _("Edit Watch"))
         self.Bind(wx.EVT_MENU, self.EditWatch, id=self.ID_EDIT_WATCH)
         menu.AppendItem(item)
         
-        item = wx.MenuItem(menu, self.ID_COPY_WATCH_EXPRESSION, _("Copy Watch Expression"))
+        item = tkmenu.MenuItem(menu, self.ID_COPY_WATCH_EXPRESSION, _("Copy Watch Expression"))
         self.Bind(wx.EVT_MENU, self.CopyWatchExpression, id=self.ID_COPY_WATCH_EXPRESSION)
         menu.AppendItem(item)
             
-        item = wx.MenuItem(menu, self.ID_ClEAR_WATCH, _("Clear"))
+        item = tkmenu.MenuItem(menu, self.ID_ClEAR_WATCH, _("Clear"))
         item.SetBitmap(getClearWatchBitmap())
         self.Bind(wx.EVT_MENU, self.ClearWatch, id=self.ID_ClEAR_WATCH)
         menu.AppendItem(item)
         
-        item = wx.MenuItem(menu, self.ID_ClEAR_ALL_WATCH, _("Clear All"))
+        item = tkmenu.MenuItem(menu, self.ID_ClEAR_ALL_WATCH, _("Clear All"))
         self.Bind(wx.EVT_MENU, self.ClearAllWatch, id=self.ID_ClEAR_ALL_WATCH)
         menu.AppendItem(item)
 
@@ -309,10 +297,10 @@ class WatchsPanel(ttk.Frame):
     def GetItemChain(self, item):
         parentChain = []
         if item:
-            utils.GetLogger().debug('Exploding: %s' , self._treeCtrl.GetItemText(item, 0))
+            utils.get_logger().debug('Exploding: %s' , self._treeCtrl.GetItemText(item, 0))
             while item != self._root:
                 text = self._treeCtrl.GetItemText(item, 0)
-                utils.GetLogger().debug("Appending %s", text)
+                utils.get_logger().debug("Appending %s", text)
                 parentChain.append(text)
                 item = self._treeCtrl.GetItemParent(item)
             parentChain.reverse()
@@ -356,22 +344,20 @@ class WatchsPanel(ttk.Frame):
         sysutils.CopyToClipboard(title + "\t" + value)
         
     def LoadWatches(self):
-        watchs = self._debugger_service.watchs
-        root_item = self._treeCtrl.GetRootItem()
-        for i,watch_obj in enumerate(watchs):
-            treeNode = self._treeCtrl.AppendItem(root_item, watch_obj.Name)
+        watchs = GetApp().GetDebugger().watchs
+        root_item = self.GetRootItem()
+        for i,watch_data in enumerate(watchs):
+            treeNode = self._treeCtrl.AppendItem(root_item, watch_data.Name)
             self._treeCtrl.SetItemText(treeNode, ERROR_NAME_VALUE, 1)
             self._treeCtrl.SetItemImage(treeNode,self.ErrorIndex)
             self._treeCtrl.SetPyData(treeNode, i)
 
     def UpdateWatchs(self):
-        root_item = self._treeCtrl.GetRootItem()
-        (item, cookie) = self._treeCtrl.GetFirstChild(root_item)
-        while item:
-            name = self._treeCtrl.GetItemText(item)
-            watch_obj = self.GetItemWatchObj(item)
-            self._debugger_service._debugger_ui.UpdateWatch(watch_obj,item)
-            (item, cookie) = self._treeCtrl.GetNextChild(root_item, cookie)
+        root_item = self.GetRootItem()
+        childs = self.tree.get_children(root_item)
+        for item in childs:
+            watch_data = self.GetItemWatchData(item)
+            self._debugger_service._debugger_ui.UpdateWatch(watch_data,item)
             
     def UpdateSubTreeFromNode(self, node, name, item):
         tree = self._treeCtrl
@@ -402,19 +388,23 @@ class WatchsPanel(ttk.Frame):
             self._treeCtrl.SortChildren(treeNode)
         return treeNode
         
+    def GetRootItem(self):
+        childs = self.tree.get_children()
+        return childs[0]
+        
     def ResetWatchs(self):
-        root_item = self._treeCtrl.GetRootItem()
-        (item, cookie) = self._treeCtrl.GetFirstChild(root_item)
-        while item:
-            name = self._treeCtrl.GetItemText(item)
+        root_item = self.GetRootItem()
+        childs = self.tree.get_children(root_item)
+        for item in childs:
             self.DeleteItemChild(item)
-            self._treeCtrl.SetItemText(item, ERROR_NAME_VALUE, 1)
-            self._treeCtrl.SetItemImage(item,self.ErrorIndex)
-            (item, cookie) = self._treeCtrl.GetNextChild(root_item, cookie)
+            self.tree.item(item, text=ERROR_NAME_VALUE)
+            self.tree.item(item, image=self.error_bmp)
             
     def DeleteItemChild(self,item):
-        if self._treeCtrl.ItemHasChildren(item):
-            self._treeCtrl.DeleteChildren(item)
+        childs = self.tree.get_children(item)
+        if childs:
+            for child in childs:
+                self.tree.delete(child)
             
     def AppendErrorWatch(self,  watch_obj, parent):
         treeNode = self._treeCtrl.AppendItem(parent, watch_obj.Name)
@@ -435,10 +425,10 @@ class WatchsPanel(ttk.Frame):
         watch_count = len(self._debugger_service.watchs) - 1
         self._treeCtrl.SetPyData(treeItem, watch_count)
         
-    def GetItemWatchObj(self,treeItem):
+    def GetItemWatchData(self,treeItem):
         index = self._treeCtrl.GetPyData(treeItem)
-        watch_obj = self._debugger_service.watchs[index]
-        return watch_obj
+        watch_data = self._debugger_service.watchs[index]
+        return watch_data
         
     def UpdateItemData(self):
         root_item = self._treeCtrl.GetRootItem()
@@ -448,4 +438,10 @@ class WatchsPanel(ttk.Frame):
             self._treeCtrl.SetPyData(item, i)
             (item, cookie) = self._treeCtrl.GetNextChild(root_item, cookie)
             i += 1
+            
+
+class WatchsViewLoader(plugin.Plugin):
+    plugin.Implements(iface.CommonPluginI)
+    def Load(self):
+        GetApp().MainFrame.AddView(WATCH_TAB_NAME,WatchsPanel, _("Watchs"), "ne",image_file="python/debugger/watches.png")
         

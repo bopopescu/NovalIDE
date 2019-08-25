@@ -68,12 +68,12 @@ def generate_builtin_data(dest_path):
     for built_module in sys.builtin_module_names:
         module_instance = __import__(built_module)
         childs = make_builtin_types(module_instance)
-        with open(dest_path + "/" + built_module + ".$memberlist", 'w') as f:
+        with open(dest_path + "/" + built_module + config.MEMBERLIST_FILE_EXTENSION, 'w') as f:
             for node in childs:
                 f.write(node['name'])
                 f.write('\n')
         module_dict = fileparser.make_module_dict(built_module,'',True,childs,doc=module_instance.__doc__)
-        with open(dest_path + "/" + built_module + ".$members", 'wb') as j:
+        with open(dest_path + "/" + built_module + config.MEMBERS_FILE_EXTENSION, 'wb') as j:
             # Pickle dictionary using protocol 0.
             pickle.dump(module_dict, j,protocol=0)
             
@@ -143,6 +143,20 @@ def generate_intelligent_data_by_pool(out_path,new_database_version):
     if need_renew_database:
         SaveDatabaseVersion(dest_path,new_database_version)
     SaveLastUpdateTime(dest_path)
+    
+def get_unfinished_modules(outpath):
+    unfinished_file_name = "unfinish.txt"
+    unfinished_file_path = os.path.join(outpath,unfinished_file_name)
+    if not os.path.exists(unfinished_file_path):
+        return []
+    module_paths = []
+    try:
+        with open(unfinished_file_path) as f:
+            module_paths = f.read().split()
+        os.remove(unfinished_file_path)
+    except:
+        pass
+    return module_paths
      
 def scan_sys_path(src_path,dest_path,need_renew_database):
 
@@ -152,6 +166,7 @@ def scan_sys_path(src_path,dest_path,need_renew_database):
                 return True
         return False
     ignore_path_list = []
+    unfinished_module_paths = get_unfinished_modules(os.path.dirname(dest_path))
     for root,path,files in os.walk(src_path):
         if is_path_ignored(root):
             continue
@@ -168,7 +183,9 @@ def scan_sys_path(src_path,dest_path,need_renew_database):
             ext = os.path.splitext(fullpath)[1].lower()
             if not ext in ['.py','.pyw']:
                 continue
-            file_parser = fileparser.FiledumpParser(fullpath,dest_path,force_update=need_renew_database)
+            is_file_unfinished =  fullpath in unfinished_module_paths
+            file_need_renew_database = need_renew_database or is_file_unfinished
+            file_parser = fileparser.FiledumpParser(fullpath,dest_path,force_update=file_need_renew_database)
             file_parser.Dump()
            
 def is_test_dir(dir_path):
@@ -181,7 +198,7 @@ def is_test_dir(dir_path):
 
 def process_sys_modules(dest_path):
     for name in list(sys.modules.keys()):
-        module_members_file = os.path.join(dest_path,name+ ".$members")
+        module_members_file = os.path.join(dest_path,name+ config.MEMBERS_FILE_EXTENSION)
         if os.path.exists(module_members_file):
             ###print 'sys module',name,'has been already analyzed'
             continue

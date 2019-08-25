@@ -54,7 +54,7 @@ class FiledumpParser(codeparser.CodebaseParser):
         self.output = output_path
         self.force_update = force_update
         self.module_path = module_path
-        self.raise_parse_error = False
+        self.raise_parse_error = True
 
     def ParsefileContent(self,filepath,content,encoding=None):
         node = codeparser.CodebaseParser.ParsefileContent(self,filepath,content,encoding)
@@ -74,13 +74,12 @@ class FiledumpParser(codeparser.CodebaseParser):
                 else:
                     module = name
                 #查找导入模块的智能数据库文件
-                module_members_file = self.FindModuleMembersFile(module)
+                module_members_file,is_builtin = self.FindModuleMembersFile(module)
                 if module_members_file is not None:
                     with open(module_members_file,'rb') as f:
                         data = pickle.load(f)
                         childs = []
                         module_path = data.get('path',module)
-                        is_builtin = data.get('is_builtin',False)
                         #如果是from xx import yyy导入该模块的所有儿子到当前模块作为儿子
                         if is_parent_from:
                             for child in data['childs']:
@@ -98,14 +97,21 @@ class FiledumpParser(codeparser.CodebaseParser):
                             
                             for child_data in childs:
                                 #导入其它模块的成员到当前模块时parent必须为当前模块,root的值既是
-                                self.AddNodeData(child_data['name'],child_data.get('line',-1),child_data.get('col',-1),child_data['type'],kwargs.get('root'),**{'module_path':module_path,'is_builtin':is_builtin})
+                                extra_args = {'module_path':module_path,'is_builtin':is_builtin}
+                                #如果是赋值类型的成员,获取其值以及值类型
+                                if child_data['type'] == config.NODE_ASSIGN_TYPE:
+                                    extra_args.update({'value':child_data['value'],'value_type':child_data['value_type']})
+                                self.AddNodeData(child_data['name'],child_data.get('line',-1),child_data.get('col',-1),child_data['type'],kwargs.get('root'),**extra_args)
                             kwargs.pop('root')
-                        #仅仅是import则只把导入模块作为当前模块的儿子
+                        #仅仅是import则只把导入模块作为当前模块的儿子,设置line和col为0,即转到模块文件时默认定位到第一行
                         else:
+                            lineno = 0
+                            col = 0
                             kwargs.update({'module_path':module_path,'is_builtin':is_builtin})
                 else:
-                    #有可能导入模块的智能数据库文件还没有生成
-                    pass
+                    #有可能导入模块的智能数据库文件还没有生成,标记col和line为-1,加入到unfinish列表,以便下次重新分析并生成数据库文件
+                    lineno = -1
+                    col = -1
                     #print ("module %s members files is not exist"%module)
                 
             data = dict(name=name,line=lineno,col=col,type=node_type,**kwargs)
@@ -125,7 +131,7 @@ class FiledumpParser(codeparser.CodebaseParser):
         if self.top_module_name == "":
             return
         dest_file_name = os.path.join(self.output,self.top_module_name)
-        self.member_file_path = dest_file_name + ".$members"
+        self.member_file_path = dest_file_name + config.MEMBERS_FILE_EXTENSION
         if os.path.exists(self.member_file_path) and not self.force_update:
             #print (self.module_path,'has been already analyzed')
             return
@@ -158,7 +164,7 @@ class FiledumpParser(codeparser.CodebaseParser):
             # Pickle dictionary using protocol 0.
             pickle.dump(module_d, o1,protocol=0)
         childs = module_d['childs']
-        with open(dest_file_name + ".$memberlist", 'w') as o2:
+        with open(dest_file_name + config.MEMBERLIST_FILE_EXTENSION, 'w') as o2:
             name_sets = set()
             for data in childs:
                 name = data['name']
@@ -170,9 +176,9 @@ class FiledumpParser(codeparser.CodebaseParser):
     
     def FindModuleMembersFile(self,module_name):
         if not module_name:
-            return None
+            return None,False
         #查找当前目录下是否存在模块的智能数据库文件
-        members_file_name = module_name + ".$members"
+        members_file_name = module_name + config.MEMBERS_FILE_EXTENSION
         cur_members_file = os.path.join(self.output,members_file_name)
         if not os.path.exists(cur_members_file):
             #再查找是否是内建模块智能数据库文件
@@ -180,6 +186,6 @@ class FiledumpParser(codeparser.CodebaseParser):
             py_ver = "2" if utils.IsPython2() else "3"
             builtin_members_file = os.path.join(builtin_data_dir,"builtins",py_ver,members_file_name)
             if os.path.exists(builtin_members_file):
-                return builtin_members_file
-            return None
-        return cur_members_file
+                return builtin_members_file,True
+            return None,False
+        return cur_members_file,False

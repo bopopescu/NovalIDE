@@ -258,8 +258,8 @@ class PropertyDef(AssignDef):
         return self.Name
         
 class ImportNode(Node):
-     def __init__(self,name,line,col,parent,as_name=None):
-        super(ImportNode,self).__init__(name,line,col,config.NODE_IMPORT_TYPE,parent)
+     def __init__(self,name,line,col,parent,as_name=None,is_built_in = False):
+        super(ImportNode,self).__init__(name,line,col,config.NODE_IMPORT_TYPE,parent,is_built_in=is_built_in)
         self._as_name = as_name
      @property
      def AsName(self):

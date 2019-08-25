@@ -116,12 +116,13 @@ class ToolBar(ui_base.DockFrame):
                 elif self._orient == tk.VERTICAL:
                     ctrl.grid(row=i,column=0)
 
-    def AddSeparator(self,pos=-1):
+    def AddSeparator(self):
         slaves = self.grid_slaves(0, self.toolbar_group)
         group_frame = slaves[0]
         separator = ttk.Separator (group_frame, orient = tk.VERTICAL)
-        separator.pack(side=tk.LEFT,expand=1,fill="y",pady = 3)
-       # separator.grid(row=0,column=pos)
+        pos = len(self._commands)
+        separator.grid(row=0,column=pos,sticky=tk.NSEW, padx=0, pady=3)
+        self._commands.append([None,separator])
         return separator
         
     def EnableTool(self,button_id,enable=True):

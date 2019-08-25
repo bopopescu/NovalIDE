@@ -134,14 +134,8 @@ class EditorNotebook(ui_base.ClosableNotebook):
                 return True
         return False
 
-    def close_single_untitled_unmodified_editor(self):
-        editors = self.winfo_children()
-        if (
-            len(editors) == 1
-            and not editors[0].is_modified()
-            and not editors[0].get_filename()
-        ):
-            self._cmd_close_file()
+    def has_editor(self,editor):
+        return ui_base.ClosableNotebook.has_child(self,editor)
 
     def get_current_editor(self):
         return self.get_current_child()

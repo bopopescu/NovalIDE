@@ -360,6 +360,7 @@ class CodeCtrl(texteditor.SyntaxTextCtrl):
         self.fixwordbreaks(GetApp())
         self.autocompleter = None
         self.calltip = None
+        self.tag_configure("before", syntax.SyntaxThemeManager().get_syntax_options_for_tag("active_focus"))
 
     def CreatePopupMenu(self):
         texteditor.TextCtrl.CreatePopupMenu(self)
@@ -476,6 +477,60 @@ class CodeCtrl(texteditor.SyntaxTextCtrl):
         if self.calltip is None:
             return
         self.calltip._close()
+        
+    def ClearCurrentLineMarkers(self):
+        '''
+            调试下一步时,先要删除所有断点调试的标记,以便标记下一行
+        '''
+        self.remove_focus_tags()
+        
+    def MarkerAdd(self,line):
+        '''
+            标记并高亮断点调试的当前行
+        '''
+        self._tag_range(line,line,"active_focus")
+        
+    def _tag_range(self, start_line,end_line, tag):
+        # For most statements I want to highlight block of whole lines
+        # but for pseudo-statements (like header in for-loop) I want to highlight only the indicated range
+
+        line_prefix = self.GetLineText(start_line)
+        if line_prefix.strip():
+            # pseudo-statement
+            first_line = start_line
+            last_line = end_line
+            self.tag_add(
+                tag,
+                "%d.0" % (first_line),
+                "%d.end" % (last_line),
+            )
+        else:
+            # normal statement
+            first_line, first_col, last_line = self._get_text_range_block(text_range)
+
+            for lineno in range(first_line, last_line + 1):
+                self._text.tag_add(tag, "%d.%d" % (lineno, first_col), "%d.0" % (lineno + 1))
+
+        self.update_idletasks()
+        self.see("%d.0" % (last_line))
+        self.see("%d.0" % (first_line))
+
+        if last_line - first_line < 3:
+            # if it's safe to assume that whole code fits into screen
+            # then scroll it down a bit so that expression view doesn't hide behind
+            # lower edge of the editor
+            self.update_idletasks()
+            self.see("%d.0" % (first_line + 3))
+            
+    def remove_focus_tags(self):
+        for name in [
+            "exception_focus",
+            "active_focus",
+            "completed_focus",
+            "suspended_focus",
+            "sel",
+        ]:
+            self.tag_remove(name, "0.0", "end")
         
 #重写perform_midline_tab方法,这里实现tab键自动完成单词功能
 CodeCtrl.perform_midline_tab = autocomplete.patched_perform_midline_tab

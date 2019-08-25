@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
 import nodeast
 import scope
 import pickle
 import config
 from noval.python.parser.utils import CmpMember,py_sorted
+import os
+
 class ModuleLoader(object):
     CHILD_KEY = "childs"
     NAME_KEY = "name"
@@ -43,28 +46,14 @@ class ModuleLoader(object):
     def LoadMembeList(self):
         member_list = []
         with open(self._member_list_file) as f:
-            for line in f.readlines():
-                if -1 == line.find("/"):
-                    member_list.append(line.strip())
-                else:
-                    names = line.strip().split("/")
-                    module_name = names[0]
-                    ref_name = names[1]
-                    if ref_name != "*":
-                        member_list.append(ref_name)
-                    else:
-                        ref_module = self._manager.GetModule(module_name)
-                        if ref_module is None:
-                            continue
-                        else:
-                            member_list.extend(ref_module.GetMemberList())
-            ##return map(lambda s:s.strip(),f.readlines())
+           # for line in f.readlines():
+            #    member_list.append(line.strip())
+            return(map(lambda s:s.strip(),f.readlines()))
         return member_list
 
     def GetMemberList(self):
-        member_list = self.LoadMembeList()
-        return py_sorted(member_list,CmpMember)
-
+        return self.LoadMembeList()
+        #return py_sorted(member_list,CmpMember)
 
     def GetMembersWithName(self,name):
         strip_name = name.strip()
@@ -164,16 +153,30 @@ class ModuleLoader(object):
             child_module._path = child[self.PATH_KEY]
             child_module.GetDoc()
             return [child_module.MakeModuleScope()]
-        module_scope = self.MakeModuleScope()
+            
+        if 'module_path' in child:
+            module = nodeast.Module("",child['module_path'],"")
+            module_scope = scope.ModuleScope(module,-1)
+        else:
+            module_scope = self.MakeModuleScope()
+            #有些导入模块由于智能提示数据库先后生成的问题未完全分析成功,需要找出这些模块,并将其放至unfinish.txt文件列表中,等待下次生成数据库的时候再次强制分析
+            if child[self.TYPE_KEY] == config.NODE_IMPORT_TYPE and child.get(self.LINE_KEY,-1) == -1:
+                module_name = child[self.NAME_KEY]
+                module_members_file = os.path.join(os.path.dirname(self._members_file),module_name + config.MEMBERS_FILE_EXTENSION)
+                if os.path.exists(module_members_file):
+                    print ('import module name %s in module %s members file %s exist,but code line is -1' % (module_name,self._path,module_members_file))
+                    self._manager.AddUnfinishModuleFile(self._path)
+                    
         self.MakeChildScope(child,module_scope.Module)
         module_scope.MakeModuleScopes()
-        return [module_scope.ChildScopes[0],]
+        return module_scope.ChildScopes
         
     def MakeChildScope(self,child,parent):
         name = child[self.NAME_KEY]
         line_no = child.get(self.LINE_KEY,-1)
         col = child.get(self.COL_KEY,-1)
         doc = child.get('doc',None)
+        is_builtin = child.get('is_builtin',False)
         if child[self.TYPE_KEY] == config.NODE_FUNCDEF_TYPE:
             datas = child.get('args',[])
             args = []
@@ -183,19 +186,21 @@ class ModuleLoader(object):
                         is_var=arg_data.get('is_var',False),is_kw=arg_data.get('is_kw',False),parent=None)
                 args.append(arg)
             node = nodeast.FuncDef(name,line_no,col,parent,doc,is_method=child.get('is_method',False),\
-                    is_class_method=child.get('is_class_method',False),args=args)
+                    is_class_method=child.get('is_class_method',False),args=args,is_built_in=is_builtin)
         elif child[self.TYPE_KEY] == config.NODE_CLASSDEF_TYPE:
             bases = child.get('bases',[])
             for i,base in enumerate(bases):
                 bases[i] = parent.Name + "." + base
             #print (bases)
-            node = nodeast.ClassDef(name,line_no,col,parent,doc,bases=bases)
+            node = nodeast.ClassDef(name,line_no,col,parent,doc,bases=bases,is_built_in=is_builtin)
             for class_child in child.get(self.CHILD_KEY,[]):
                 self.MakeChildScope(class_child,node)
         elif child[self.TYPE_KEY] == config.NODE_CLASS_PROPERTY:
-            node = nodeast.PropertyDef(name,line_no,col,config.ASSIGN_TYPE_UNKNOWN,"",parent)
+            node = nodeast.PropertyDef(name,line_no,col,config.ASSIGN_TYPE_UNKNOWN,"",parent,is_built_in=is_builtin)
         elif child[self.TYPE_KEY] == config.NODE_ASSIGN_TYPE:
-            node = nodeast.AssignDef(name,line_no,line_no,child['value'],child['value_type'],parent)
+            node = nodeast.AssignDef(name,line_no,col,child['value'],child['value_type'],parent,is_built_in=is_builtin)
+        elif child[self.TYPE_KEY] == config.NODE_IMPORT_TYPE:
+            node = nodeast.ImportNode(name,line_no,col,parent,is_built_in=is_builtin)
         else:
             node = nodeast.UnknownNode(line_no,col,parent)
                 

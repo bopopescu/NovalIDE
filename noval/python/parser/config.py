@@ -38,3 +38,7 @@ ISO_8601_DATE_FORMAT = "%Y-%m-%d"
 ISO_8601_TIME_FORMAT = "%H:%M:%S"
 ISO_8601_DATETIME_FORMAT = "%s %s" %(ISO_8601_DATE_FORMAT,
                                      ISO_8601_TIME_FORMAT)
+                                     
+
+MEMBERS_FILE_EXTENSION = ".$members"
+MEMBERLIST_FILE_EXTENSION = ".$memberlist"

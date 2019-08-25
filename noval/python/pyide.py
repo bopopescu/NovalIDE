@@ -99,7 +99,14 @@ class PyIDEApplication(ide.IDEApplication):
         cmd = [interpreter.Path,
                '-c',
                'from turtledemo.__main__ import main; main()']
-        subprocess.Popen(cmd, shell=False)
+        #隐藏命令行黑框
+        if apputils.is_windows():
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = subprocess.SW_HIDE
+        else:
+            startupinfo = None
+        subprocess.Popen(cmd, shell=False,startupinfo=startupinfo)
         return "break"
 
     def GetInterpreterManager(self):
@@ -109,13 +116,11 @@ class PyIDEApplication(ide.IDEApplication):
     def SetExceptionBreakPoint(self):
         pass
         
-    @ui_utils.no_implemented_yet
     def StepNext(self):
-        pass
+        self.GetDebugger().StepNext()
         
-    @ui_utils.no_implemented_yet
     def StepInto(self):
-        pass
+        self.GetDebugger().StepNext()
         
     def DebugLast(self):
         self.GetDebugger().DebugLast()
@@ -135,7 +140,10 @@ class PyIDEApplication(ide.IDEApplication):
         
     def GotoDefinition(self):
         current_view = self.GetDocumentManager().GetCurrentView()
-        current_view.GetCtrl().GotoDefinition()
+        #只有python文件才能执行转到定义功能
+        if current_view is None or not hasattr(current_view,"GotoDefinition"):
+            return
+        current_view.GotoDefinition()
 
     def LoadDefaultPlugins(self):
         '''
@@ -146,6 +154,10 @@ class PyIDEApplication(ide.IDEApplication):
         consts.DEFAULT_PLUGINS += ('noval.python.plugins.outline.PythonOutlineViewLoader',)
         consts.DEFAULT_PLUGINS += ('noval.python.project.viewer.DefaultProjectTemplateLoader',)
         consts.DEFAULT_PLUGINS += ('noval.python.plugins.unittest.UnittestLoader',)
+        consts.DEFAULT_PLUGINS += ('noval.python.debugger.watchs.WatchsViewLoader',)
+        consts.DEFAULT_PLUGINS += ('noval.python.debugger.breakpoints.BreakpointsViewLoader',)
+        consts.DEFAULT_PLUGINS += ('noval.python.debugger.stacksframe.StackframeViewLoader',)
+        consts.DEFAULT_PLUGINS += ('noval.python.debugger.inspectconsole.InspectConsoleViewLoader',)
         
     def GetProjectTemplateClassData(self):
         '''
@@ -244,12 +256,12 @@ class PyIDEApplication(ide.IDEApplication):
             return
         try:
             if utils.is_windows():
-                fileutils.start_file(interpreter.Path)
+                fileutils.startfile(interpreter.Path)
             else:
                 cmd_list = ['gnome-terminal','-x','bash','-c',interpreter.Path]
                 subprocess.Popen(cmd_list,shell = False)
         except Exception as e:
-            wx.MessageBox(_("%s") % str(e),_("Open Error"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
+            messagebox.showerror(_("Open Error"),_("%s") % str(e),parent=self.GetTopWindow())
 
     def OpenTerminator(self,filename=None):
         if filename:

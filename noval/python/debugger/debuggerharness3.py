@@ -185,7 +185,7 @@ class Adb(bdb.Bdb):
         #global_dict = {}
         #global_dict['__name__'] = '__main__'
         try:
-            fileToRun = open(fileName, mode='r')
+            fileToRun = open(fileName, mode='r',encoding="utf-8")
             code_obj = compile(fileToRun.read(),fileName,mode='exec')
             if _VERBOSE: print ("Running file ", fileName)
             sys.settrace(self.trace_dispatch)

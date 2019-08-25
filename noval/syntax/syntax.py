@@ -121,3 +121,8 @@ class SyntaxThemeManager(object):
     @classmethod
     def SetSyntaxTheme(cls,style_set):
         cls.SYNTAX_THEMES = style_set
+        
+    def get_syntax_options_for_tag(self,tag, **base_options):
+        if tag in self.SYNTAX_THEMES:
+            base_options.update(self.SYNTAX_THEMES[tag])
+        return base_options
