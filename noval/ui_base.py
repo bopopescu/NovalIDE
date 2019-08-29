@@ -1069,3 +1069,4 @@ class SplashScreen(CommonDialog):
         GetApp().MaxmizeWindow()
         GetApp().update()
         GetApp().deiconify()
+        GetApp().attributes("-alpha", 100)

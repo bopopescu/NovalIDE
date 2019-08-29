@@ -354,9 +354,11 @@ class App(tk.Tk):
         Shows a splash window with the given image.  Input parameter 'image' can either be a wx.Bitmap or a filename.
         """
         self._splash = ui_base.SplashScreen(self,image_path)
+        self._splash.Show()
         #隐藏主窗口
         self.withdraw()
-        self._splash.Show()
+        self.attributes("-alpha", 0)
+        
 
     def CloseSplash(self):
         """

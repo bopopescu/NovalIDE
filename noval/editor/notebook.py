@@ -360,6 +360,9 @@ class EditorNotebook(ui_base.ClosableNotebook):
                                             default_tester=True,default_command=True)
         GetApp().AddCommand(constants.ID_DEDENT_LINES,_("&Format"),_("&Dedent Lines"),lambda:self.ProcessFormatterEvent(constants.ID_DEDENT_LINES),image=GetApp().GetImage("dedent.png"),\
                                             default_tester=True,default_command=True)
+                                            
+        GetApp().AddCommand(constants.ID_TAB_SPACE,_("&Format"),_("Tabs To Spaces"),lambda:self.ProcessFormatterEvent(constants.ID_TAB_SPACE), default_tester=True,default_command=True)
+        GetApp().AddCommand(constants.ID_SPACE_TAB,_("&Format"), _("Spaces To Tabs"), lambda:self.ProcessFormatterEvent(constants.ID_SPACE_TAB),default_tester=True,default_command=True)
 
         advanceMenu = tkmenu.PopupMenu()
         edit_menu.AppendMenu(constants.ID_ADVANCE, _("&Advance"),advanceMenu)

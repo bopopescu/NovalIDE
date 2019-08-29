@@ -17,6 +17,10 @@ from noval.project.templatemanager import ProjectTemplateManager
 from noval.project.debugger import OutputRunCommandUI
 from noval.python.debugger.output import *
 from noval.project.baseconfig import *
+import noval.python.debugger.debugger as pythondebugger
+
+        
+
 
 # Local imports
 import pyinstaller.pyinstall as pyinstall
@@ -29,6 +33,7 @@ import pyinstaller.pyinstall as pyinstall
 
 class OutputView(OutputRunCommandUI):
     def __init__(self,master):
+        GetApp()._debugger_class = pythondebugger.PythonDebugger
         OutputRunCommandUI.__init__(self,master,GetApp().GetDebugger())
 
     def ExecutorFinished(self,stopped=True):

@@ -31,18 +31,13 @@ from tkinter import ttk
 from noval.syntax import synglob,syntax
 from noval.util import record
 import noval.menu as tkmenu
-import noval.editor.code as codeeditor
 import noval.syntax.lang as lang
 import noval.preference as preference
 from tkinter import messagebox
 import subprocess
-import noval.ui_common as ui_common
-import noval.project.baseviewer as baseprojectviewer
-import noval.project.document as projectdocument
 import noval.docposition as docposition
 import noval.ui_utils as ui_utils
 import noval.ui_lang as ui_lang
-import noval.project.debugger as basedebugger
 import traceback
 import noval.ttkwidgets.messagedialog as messagedialog
 import noval.util.fileutils as fileutils
@@ -78,17 +73,26 @@ class IDEApplication(core.App):
         if not core.App.OnInit(self):
             return False
 
-      #  self.ShowSplash(self.GetIDESplashBitmap())
+        self.ShowSplash(self.GetIDESplashBitmap())
         #尽量在这里导入模块
         from noval.editor import text as texteditor
         import noval.colorfont as colorfont
         import noval.docoption as docoption
         import noval.generalopt as generalopt
+        import noval.project.debugger as basedebugger
+        import noval.project.baseviewer as baseprojectviewer
+        import noval.project.document as projectdocument
         #将tk程序的异常输出重定向
         tk.Tk.report_callback_exception = self._on_tk_exception
         self._open_project_path = None
         self.frame = None           
         self._pluginmgr = None
+        
+        self._debugger_class = basedebugger.Debugger
+        self._debugger_view_class = basedebugger.DebugView
+        self.project_template_class = baseprojectviewer.ProjectTemplate
+        self.project_document_class = projectdocument.ProjectDocument
+        self.project_view_class = baseprojectviewer.ProjectView
         self._config = utils.Config(self.GetAppName())
         self._init_theming()
         #设置窗体大小
@@ -159,8 +163,7 @@ class IDEApplication(core.App):
         except RuntimeError as e:
             messagebox.showerror(self.GetAppName(),str(e),parent=self)
             return False
-        #创建项目模板
-        self.CreateProjectTemplate()
+
         #创建各种支持编程语言的模板
         self.CreateLexerTemplates()
         self.LoadLexerTemplates()
@@ -256,7 +259,7 @@ class IDEApplication(core.App):
         '''
         openDocs = self.GetDocumentManager().GetDocuments()
         for doc in openDocs:
-            if isinstance(doc,projectdocument.ProjectDocument):
+            if isinstance(doc,self.project_document_class):
                 view = self.MainFrame.GetProjectView(False).GetView()
             else:
                 view = doc.GetFirstView()
@@ -272,11 +275,14 @@ class IDEApplication(core.App):
             text = event.text_widget
         else:
             text = event.widget
+            
+        #是否是要渲染颜色的文本控件
+        is_syntax_color_ctrl = hasattr(text,"GetColorClass")
         if not hasattr(text, "syntax_colorer"):
-            if isinstance(text, codeeditor.CodeCtrl):
+            if is_syntax_color_ctrl:
                 class_ = text.GetColorClass()
                 text.syntax_colorer = class_(text)
-        if isinstance(text, codeeditor.CodeCtrl):
+        if is_syntax_color_ctrl:
             text.syntax_colorer.schedule_update(event, use_coloring=utils.profile_get_int("TextHighlightSyntax", True))
             #整个文本创建motion标签,用来实现鼠标在文本上悬停,显示文本的提示文档信息
             text.tag_remove("motion", "1.0", "end")
@@ -956,10 +962,10 @@ class IDEApplication(core.App):
         return syntax.SyntaxThemeManager().GetLexer(self.GetDefaultLangId()).GetDocTypeName()
         
     def GetDebugviewClass(self):
-        return basedebugger.DebugView
+        return self._debugger_view_class
 
     def GetDebuggerClass(self):
-        return basedebugger.Debugger
+        return self._debugger_class
 
     def GetDebugger(self):
         debugger = self.GetDebuggerClass()()
@@ -971,8 +977,8 @@ class IDEApplication(core.App):
         '''
             返回项目实际的模板类,文档类,以及视图类
         '''
-        return baseprojectviewer.ProjectTemplate,projectdocument.ProjectDocument,baseprojectviewer.ProjectView
-
+        return self.project_template_class,self.project_document_class,self.project_view_class
+        
 class AppEvent(record.Record):
     def __init__(self, sequence, **kwargs):
         record.Record.__init__(self, **kwargs)

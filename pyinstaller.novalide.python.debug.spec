@@ -33,6 +33,7 @@ datas = [
 	("noval/find/findresult.py","noval/find"),
         ('noval/python/debugger/debuggerharness.py','noval/python/debugger'),
         ('noval/python/debugger/debuggerharness3.py','noval/python/debugger'),
+		('noval/python/debugger/inspectconsole.py','noval/python/debugger'),
         ("./tkdnd/*.*","./tkdnd"),
 	("noval.ico","./"),
 	("version.txt","./"),

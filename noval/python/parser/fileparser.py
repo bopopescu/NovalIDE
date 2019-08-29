@@ -54,7 +54,7 @@ class FiledumpParser(codeparser.CodebaseParser):
         self.output = output_path
         self.force_update = force_update
         self.module_path = module_path
-        self.raise_parse_error = True
+        self.raise_parse_error = False
 
     def ParsefileContent(self,filepath,content,encoding=None):
         node = codeparser.CodebaseParser.ParsefileContent(self,filepath,content,encoding)

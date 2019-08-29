@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 from noval import _
 from noval.project.document import ProjectDocument
-from noval.python.debugger.debugger import *
+from noval.python.debugger.executor import *
 from noval.python.debugger.commandproperty import *
 import noval.python.project.model as pyprojectlib
+import noval.python.pyutils as pyutils
+import uuid
+from noval.python.debugger.commandui import *
+import noval.python.project.runconfiguration as runconfiguration
 
 '''
     运行python文件或者项目

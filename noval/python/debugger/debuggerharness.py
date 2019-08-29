@@ -707,7 +707,7 @@ class DebuggerHarness(object):
         self.frame_stack = []
         frame = base_frame
         while frame is not None:
-            if((frame.f_code.co_filename.count('DebuggerHarness.py') == 0) or _DEBUG_DEBUGGER):
+            if((frame.f_code.co_filename.count('debuggerharness.py') == 0) or _DEBUG_DEBUGGER):
                 self.frame_stack.append(frame)
             frame = frame.f_back
         self.frame_stack.reverse()

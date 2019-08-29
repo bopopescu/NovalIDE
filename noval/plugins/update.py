@@ -49,7 +49,7 @@ class FileDownloader(object):
             self.DownloadFile(download_file_path,download_progress_dlg,callback=DownloadCallBack,err_callback=download_progress_dlg.destroy)
         except:
             return
-        download_progress_dlg.ShowModal()
+        download_progress_dlg.ShowModal()
 
     def DownloadFile(self,download_file_path,progress_ui,callback,err_callback=None):
         t = threading.Thread(target=self.DownloadFileContent,args=(download_file_path,self._req,progress_ui,callback,err_callback))
@@ -136,13 +136,28 @@ def Install(app_path):
         #wait a moment to avoid single instance limit
         subprocess.Popen("/bin/sleep 2;%s" % app_startup_path,shell=True)
     GetApp().Quit()
+    
+
+def CheckForceupdate():
+    '''
+        某些版本太老了,需要强制更新
+    '''
+    app_version = apputils.get_app_version()
+    check_url = '%s/member/check_force_update' % (UserDataDb.HOST_SERVER_ADDR)
+    try:
+        req = requests.get(check_url,**{'app_version':app_version})
+        return req.get('force_update',False)
+    except:
+        return False
 
 class UpdateLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)
     def Load(self):
+        #是否需要强制更新
+        force_update = CheckForceupdate()
         GetApp().InsertCommand(constants.ID_GOTO_OFFICIAL_WEB,constants.ID_CHECK_UPDATE,_("&Help"),_("&Check for Updates"),\
                     handler=lambda:self.CheckUpdate(ignore_error=False),pos="before")
-        if utils.profile_get_int(consts.CHECK_UPDATE_ATSTARTUP_KEY, True):
+        if utils.profile_get_int(consts.CHECK_UPDATE_ATSTARTUP_KEY, True) or force_update:
             GetApp().after(1000,self.CheckUpdate)
 
     def CheckUpdate(self,ignore_error=True):

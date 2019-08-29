@@ -11,6 +11,7 @@ import noval.imageutils as imageutils
 import noval.editor.text as texteditor
 import noval.consts as consts
 import noval.menu as tkmenu
+import noval.constants as constants
 
 ERROR_NAME_VALUE = "<errors:could not evaluate the value>"
 WATCH_TAB_NAME = "Watchs"
@@ -176,6 +177,7 @@ class WatchsPanel(treeviewframe.TreeViewFrame):
     ID_EDIT_WATCH = NewId()
     ID_COPY_WATCH_EXPRESSION = NewId()
     WATCH_NAME_COLUMN_WIDTH = 150
+    ID_VIEW_WATCH = NewId()
     
     def __init__(self,parent):
         treeviewframe.TreeViewFrame.__init__(self, parent,columns= ['Value'],displaycolumns=(0,))
@@ -192,6 +194,7 @@ class WatchsPanel(treeviewframe.TreeViewFrame):
         self._root = self.tree.insert("","end",text="Expression")
         self.tree.bind("<3>", self.OnRightClick, True)
         #self.LoadWatches()
+        self.menu = None
         
     def OnRightClick(self, event):
         #Refactor this...
@@ -203,43 +206,32 @@ class WatchsPanel(treeviewframe.TreeViewFrame):
         watchOnly = len(self._parentChain) < 1
         #if not _WATCHES_ON and watchOnly:
          #   return
-        menu = tkmenu.PopupMenu()
+        if self.menu is None:
+            self.menu = tkmenu.PopupMenu()
 
-        if not hasattr(self, "watchID"):
-            self.watchID = wx.NewId()
-            self.Bind(wx.EVT_MENU, self.OnAddWatch, id=self.watchID)
-        item = tkmenu.MenuItem(menu, self.watchID, _("Add a Watch"))
-        item.SetBitmap(getAddWatchBitmap())
-        menu.AppendItem(item)
-        menu.AppendSeparator()
-        if not watchOnly:
-            if not hasattr(self, "viewID"):
-                self.viewID = wx.NewId()
-                self.Bind(wx.EVT_MENU, self.OnView, id=self.viewID)
-            item = tkmenu.MenuItem(menu, self.viewID, _("View in Dialog"))
-            menu.AppendItem(item)
+    #    if not hasattr(self, "watchID"):
+     #       self.watchID = wx.NewId()
+      #      self.Bind(wx.EVT_MENU, self.OnAddWatch, id=self.ID_ADD_WATCH)
+            item = tkmenu.MenuItem(constants.ID_ADD_WATCH, _("Add a Watch"),None,getAddWatchBitmap(),None)
+            self.menu.AppendMenuItem(item,handler=self.OnAddWatch)
+            #menu.AppendSeparator()
+            if not watchOnly:
+                item = tkmenu.MenuItem(self.ID_VIEW_WATCH, _("View in Dialog"),None,None,None)
+                menu.AppendMenuItem(item,handler,self.OnView)
+                
+            item = tkmenu.MenuItem(self.ID_EDIT_WATCH, _("Edit Watch"),None,None,None)
+            self.menu.AppendMenuItem(item,handler=self.EditWatch)
             
-        item = tkmenu.MenuItem(menu, self.ID_EDIT_WATCH, _("Edit Watch"))
-        self.Bind(wx.EVT_MENU, self.EditWatch, id=self.ID_EDIT_WATCH)
-        menu.AppendItem(item)
-        
-        item = tkmenu.MenuItem(menu, self.ID_COPY_WATCH_EXPRESSION, _("Copy Watch Expression"))
-        self.Bind(wx.EVT_MENU, self.CopyWatchExpression, id=self.ID_COPY_WATCH_EXPRESSION)
-        menu.AppendItem(item)
+            item = tkmenu.MenuItem(self.ID_COPY_WATCH_EXPRESSION, _("Copy Watch Expression"),None,None,None)
+            self.menu.AppendMenuItem(item,hanlder=self.CopyWatchExpression)
+                
+            item = tkmenu.MenuItem(self.ID_ClEAR_WATCH, _("Clear"),None,getClearWatchBitmap(),None)
+            self.menu.AppendMenuItem(item,handler=self.ClearWatch)
             
-        item = tkmenu.MenuItem(menu, self.ID_ClEAR_WATCH, _("Clear"))
-        item.SetBitmap(getClearWatchBitmap())
-        self.Bind(wx.EVT_MENU, self.ClearWatch, id=self.ID_ClEAR_WATCH)
-        menu.AppendItem(item)
-        
-        item = tkmenu.MenuItem(menu, self.ID_ClEAR_ALL_WATCH, _("Clear All"))
-        self.Bind(wx.EVT_MENU, self.ClearAllWatch, id=self.ID_ClEAR_ALL_WATCH)
-        menu.AppendItem(item)
+            item = tkmenu.MenuItem(self.ID_ClEAR_ALL_WATCH, _("Clear All"),None,None,None)
+            self.menu.AppendMenuItem(item,handler=self.ClearAllWatch)
 
-        offset = wx.Point(x=0, y=20)
-        menuSpot = event.GetPoint() + offset
-        self._treeCtrl.PopupMenu(menu, menuSpot)
-        menu.Destroy()
+        self.menu.tk_popup(event.x_root, event.y_root)
         self._parentChain = None
         self._introspectItem = None
         
@@ -297,48 +289,51 @@ class WatchsPanel(treeviewframe.TreeViewFrame):
     def GetItemChain(self, item):
         parentChain = []
         if item:
-            utils.get_logger().debug('Exploding: %s' , self._treeCtrl.GetItemText(item, 0))
+            utils.get_logger().debug('Exploding: %s' , self.tree.item(item,"text"))
             while item != self._root:
-                text = self._treeCtrl.GetItemText(item, 0)
+                text = self.tree.item(item,"text")
                 utils.get_logger().debug("Appending %s", text)
                 parentChain.append(text)
-                item = self._treeCtrl.GetItemParent(item)
+                item = self.tree.parent(item)
             parentChain.reverse()
         return parentChain
         
-    def OnAddWatch(self,event):
-        self._debugger_service._debugger_ui.OnAddWatch(event)
+    def OnAddWatch(self):
+        GetApp().GetDebugger()._debugger_ui.OnAddWatch()
         
-    def OnView(self,event):
+    def OnView(self):
         title = self._treeCtrl.GetItemText(self._introspectItem,0)
         value = self._treeCtrl.GetItemText(self._introspectItem,1)
         dlg = wx.lib.dialogs.ScrolledMessageDialog(self, value, title, style=wx.DD_DEFAULT_STYLE | wx.RESIZE_BORDER)
         dlg.Show()
         
-    def ClearWatch(self,event):
+    def ClearWatch(self):
         watch_obj = self.GetItemWatchObj(self._introspectItem)
         self._debugger_service.watchs.remove(watch_obj)
-        self._treeCtrl.Delete(self._introspectItem)
+        self.tree.delete(self._introspectItem)
         self.UpdateItemData()
         
-    def ClearAllWatch(self,event):
-        self._treeCtrl.DeleteAllItems()
+    def _clear_tree(self):
+        for child_id in self.tree.get_children():
+            self.tree.delete(child_id)
+        
+    def ClearAllWatch(self):
+        self._clear_tree()
         self._debugger_service.watchs = []
         #recreate root item
         self._root = self._treeCtrl.AddRoot("Expression")
         
-    def EditWatch(self,event):
-        watch_obj = self.GetItemWatchObj(self._introspectItem)
+    def EditWatch(self):
+        watch_data = self.GetItemWatchData(self._introspectItem)
         index = self._treeCtrl.GetPyData(self._introspectItem)
-        wd = WatchDialog(wx.GetApp().GetTopWindow(), _("Edit a Watch"), None,watch_obj=watch_obj)
-        wd.CenterOnParent()
-        if wd.ShowModal() == wx.ID_OK:
+        wd = WatchDialog(GetApp().GetTopWindow(), _("Edit a Watch"), None,watch_obj=watch_data)
+        if wd.ShowModal() == constants.ID_OK:
             watch_obj = wd.GetSettings()
-            self._treeCtrl.SetItemText(self._introspectItem, watch_obj.Name, 0)
-            self._debugger_service._debugger_ui.UpdateWatch(watch_obj,self._introspectItem)
-            self._debugger_service.watchs[index] = watch_obj
+            self._treeCtrl.item(self._introspectItem, text=watch_data.Name)
+            GetApp().GetDebugger()._debugger_ui.UpdateWatch(watch_obj,self._introspectItem)
+            GetApp().GetDebugger().watchs[index] = watch_obj
         
-    def CopyWatchExpression(self,event):
+    def CopyWatchExpression(self):
         title = self._treeCtrl.GetItemText(self._introspectItem,0)
         value = self._treeCtrl.GetItemText(self._introspectItem,1)
         sysutils.CopyToClipboard(title + "\t" + value)

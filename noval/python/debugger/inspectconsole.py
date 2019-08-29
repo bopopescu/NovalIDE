@@ -1,32 +1,39 @@
 from noval import GetApp,_
 import noval.iface as iface
 import noval.plugin as plugin
-from tkinter import ttk
+from tkinter import ttk,messagebox
 import tkinter as tk
 import noval.editor.text as texteditor
 import noval.ttkwidgets.textframe as textframe
-
-INTERACTCONSOLE_TAB_NAME = "InteractConsole"
+from noval.python.debugger.commandui import BaseDebuggerUI,INTERACTCONSOLE_TAB_NAME
 
 class InspectConsoleTab(ttk.Frame):
     """description of class"""
     def handleCommand(self):
-        cmdStr = self._cmdInput.GetValue()
-        if cmdStr:
-            self._cmdList.append(cmdStr)
-            self._cmdIndex = len(self._cmdList)
-        self._cmdInput.Clear()
-        self._cmdOutput.SetDefaultStyle(style=self._cmdOutputTextStyle)
-        self._cmdOutput.AppendText(">>> " + cmdStr + "\n")
-        self._cmdOutput.SetDefaultStyle(style=self._defaultOutputTextStyle)
+        cmdStr = self.inputTxt.get()
+        if not cmdStr:
+            return
+
+        self._cmdList.append(cmdStr)
+        self._cmdIndex = len(self._cmdList)
+        self.inputTxt.set('')
+        self.AppendText(">>> " + cmdStr + "\n",tags = ("io",'stdout'))
         self.ExecuteCommand(cmdStr)
         return
+        
+    def ExecuteCommand(self, command):
+        GetApp().GetDebugger()._debugger_ui.framesTab.ExecuteCommand(command)
 
     def OnCmdButtonPressed(self):
         if not BaseDebuggerUI.DebuggerRunning():
-            wx.MessageBox(_("Debugger has been stopped."),style=wx.OK|wx.ICON_ERROR)
+            messagebox.showinfo(GetApp().GetAppName(),_("Debugger has been stopped."))
             return
-        handleCommand()
+        self.handleCommand()
+        
+    def AppendText(self,text,tags):
+        self._cmdOutput.set_read_only(False)
+        self._cmdOutput.intercept_insert("end", text, tags)
+        self._cmdOutput.set_read_only(True)
 
     def OnKeyPressed(self,event):
         key = event.GetKeyCode()
@@ -51,14 +58,20 @@ class InspectConsoleTab(ttk.Frame):
         return
 
     def OnClrButtonPressed(self):
-        self._cmdOutput.Clear()
+        self.Clear()
+        
+    def Clear(self):
+        self._cmdOutput.set_read_only(False)
+        self._cmdOutput.delete("1.0","end")
+        self._cmdOutput.set_read_only(True)
         
     def __init__(self,parent):
         ttk.Frame.__init__(self,parent)
         row = ttk.Frame(self)   
         ttk.Label(row, text= _("Cmd: ")).pack(fill="x",side=tk.LEFT)
         #style wx.TE_PROCESS_ENTER will response enter key
-        self._cmdInput  = ttk.Entry(row,)
+        self.inputTxt = tk.StringVar()
+        self._cmdInput  = ttk.Entry(row,textvariable=self.inputTxt)
         self._cmdInput.pack(fill="x",side=tk.LEFT,expand=1)
         ###self._cmdInput.Bind(wx.EVT_TEXT_ENTER,OnCmdButtonPressed)
         cmdButton       = ttk.Button(row, text=_("Execute"),command=self.OnCmdButtonPressed)
@@ -70,6 +83,20 @@ class InspectConsoleTab(ttk.Frame):
         
         text_frame = textframe.TextFrame(self,borderwidth=0,text_class=texteditor.TextCtrl,font="SmallEditorFont",read_only=True,undo=False)
         self._cmdOutput = text_frame.text
+        
+        self._cmdOutput.tag_configure(
+            "io",
+            font="IOFont",
+        )
+        self._cmdOutput.tag_configure(
+            "stdout",
+            foreground="Black"
+        )
+        
+        self._cmdOutput.tag_configure(
+            "stderr",
+            foreground="Red"
+        )
         
         self._ui_theme_change_binding = self.bind(
             "<<ThemeChanged>>", self.reload_ui_theme, True

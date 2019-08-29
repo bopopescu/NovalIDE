@@ -6,6 +6,7 @@ from noval.project.basebrowser import *
 import noval.consts as consts
 import os
 import noval.python.project.viewer as projectviewer
+import noval.python.project.rundocument as runprojectdocument
 
 class PythonProjectTreeCtrl(ProjectTreeCtrl):
     #----------------------------------------------------------------------------
@@ -102,7 +103,7 @@ class ProjectBrowser(BaseProjectbrowser):
             item = tkmenu.MenuItem(constants.ID_BREAK_INTO_DEBUGGER,_("&Break into Debugger"), None,None,None)
             debug_menu.AppendMenuItem(item,handler=lambda:self.ProcessEvent(constants.ID_BREAK_INTO_DEBUGGER))
             
-            menu.InsertAfter(debug_menu_id,constants.ID_SET_PROJECT_STARTUP_FILE,_("Set as Startup File..."),handler=lambda:self.ProcessEvent(constants.ID_SET_PROJECT_STARTUP_FILE))
+            menu.InsertAfter(debug_menu_id,constants.ID_SET_PROJECT_STARTUP_FILE,_("Set as Startup File..."),handler=lambda:self.ProcessEvent(constants.ID_SET_PROJECT_STARTUP_FILE))
  
         return menu
 
@@ -146,6 +147,12 @@ class ProjectBrowser(BaseProjectbrowser):
 class ProjectViewLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)
     def Load(self):
+        #更改默认项目模板类
+        GetApp().project_template_class = projectviewer.PythonProjectTemplate
+        GetApp().project_document_class = runprojectdocument.PythonProjectDocument
+        GetApp().project_view_class = projectviewer.PythonProjectView
+        #此处创建项目模板,时机最佳
+        GetApp().CreateProjectTemplate()
         GetApp().MainFrame.AddView(consts.PROJECT_VIEW_NAME,ProjectBrowser, _("Project Browser"), "nw",default_position_key="A",image_file="project/project_view.ico")
 
 

@@ -20,8 +20,6 @@ import noval.constants as constants
 import noval.model as model
 import os
 import sys
-import noval.python.project.viewer as projectviewer
-import noval.python.project.rundocument as runprojectdocument
 from noval.syntax import synglob
 import noval.syntax.lang as lang
 import noval.ui_utils as ui_utils
@@ -29,9 +27,7 @@ import subprocess
 import noval.util.fileutils as fileutils
 import noval.terminal as terminal
 import noval.preference as preference
-import noval.python.debugger.debugger as pythondebugger
 import noval.ui_common as ui_common
-from noval.project.document import ProjectDocument
 import noval.misc as misc
 
 ID_TURTLE_DEMO = NewId()
@@ -48,6 +44,9 @@ class PyIDEApplication(ide.IDEApplication):
         import noval.python.interpreter.interpreterconfigruation as interpreterconfigruation
         #这里必须用相对导入,因为搜索路径已经添加了,如果使用长路径导入会导致IntellisenceManager的实例信息和其它地方的不一样
         import intellisence
+        from noval.project.document import ProjectDocument
+        import noval.python.debugger.debugger as pythondebugger
+        self._debugger_class = pythondebugger.PythonDebugger
         
         #pyc和pyo二进制文件类型禁止添加到项目中
         ProjectDocument.BIN_FILE_EXTS = ProjectDocument.BIN_FILE_EXTS + ['pyc','pyo']
@@ -159,12 +158,7 @@ class PyIDEApplication(ide.IDEApplication):
         consts.DEFAULT_PLUGINS += ('noval.python.debugger.stacksframe.StackframeViewLoader',)
         consts.DEFAULT_PLUGINS += ('noval.python.debugger.inspectconsole.InspectConsoleViewLoader',)
         
-    def GetProjectTemplateClassData(self):
-        '''
-            返回python项目实际的模板类,文档类,以及视图类
-        '''
-        return projectviewer.PythonProjectTemplate,runprojectdocument.PythonProjectDocument,projectviewer.PythonProjectView
-        
+
     def CreateLexerTemplates(self):
         #添加parser路径,导入模块时用相对路径即可.
         parser_path = os.path.join(utils.get_app_path(),"noval","python","parser")
@@ -343,7 +337,4 @@ class PyIDEApplication(ide.IDEApplication):
             if command_id in all_item_ids:
                 return True
         return ide.IDEApplication.UpdateUI(self,command_id)
-
-    def GetDebuggerClass(self):
-        return pythondebugger.PythonDebugger
             
