@@ -376,45 +376,35 @@ class PythonCtrl(codeeditor.CodeCtrl):
         GetApp().GetDebugger().RunWithoutDebug(view.GetDocument().GetFilename())
         
     def QuickAddWatch(self):
-        if self.HasSelection():
-            text = self.GetSelectedText()
-            watch = debugger.Watchs.Watch(text,text)
-            wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).AddWatch(watch,True)
-        else:
-            if self.IsCaretLocateInWord():
-                pos = self.GetCurrentPos()
-                text = self.GetTypeWord(pos)
-                watch = debugger.Watchs.Watch(text,text)
-                wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).AddWatch(watch,True)
-            else:
-                GetApp().GetDebugger().AddWatch(None,True)
+        '''
+            快速添加监视,弹出监视对话框,监视的名称和表达式初始一样
+        '''
+        self.AddWatchText(quick_add=True)
         
     def AddWatch(self):
-        if self.HasSelection():
-            text = self.GetSelectedText()
-            watch = debugger.Watchs.Watch(text,text)
-            wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).AddWatch(watch)
-        else:
-            if self.IsCaretLocateInWord():
-                pos = self.GetCurrentPos()
-                text = self.GetTypeWord(pos)
-                watch = debugger.Watchs.Watch(text,text)
-                wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).AddWatch(watch)
-            else:
-                GetApp().GetDebugger().AddWatch(None)
+        '''
+            添加监视,弹出监视对话框,监视的名称和表达式初始不一样
+        '''
+        self.AddWatchText()
 
     def AddtoWatch(self):
+        '''
+            直接添加监视,不弹出监视对话框
+        '''
+        self.AddWatchText(add_to=True)
+                
+    def AddWatchText(self,quick_add=False,add_to=False):
+        text = ""
         if self.HasSelection():
-            text = self.GetSelectedText()
-            watch = debugger.Watchs.Watch(text,text)
-            wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).AddtoWatch(watch)
+            text = self.GetSelectionText()
         else:
             if self.IsCaretLocateInWord():
-                pos = self.GetCurrentPos()
-                text = self.GetTypeWord(pos)
-                watch = debugger.Watchs.Watch(text,text)
-                wx.GetApp().GetService(debugger.DebuggerService.DebuggerService).AddtoWatch(watch)
-        
+                line,col= self.GetCurrentLineColumn()
+                text = self.GetTypeWord(line,col-1)
+        if not add_to:
+           GetApp().GetDebugger().AddWatchText(text,quick_add)
+        elif add_to and text:
+            GetApp().GetDebugger().AddtoWatchText(text)
 
     def BreakintoDebugger(self):
         view = GetApp().GetDocumentManager().GetCurrentView()

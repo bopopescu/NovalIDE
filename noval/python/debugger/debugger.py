@@ -46,7 +46,6 @@ class PythonDebugger(Debugger):
                 self._masterBPDict = {}
         else:
             self._masterBPDict = {}
-        self.watchs = watchs.Watch.Load()
         self._exceptions = []
         self._frame = None
         self.projectPath = None
@@ -193,13 +192,13 @@ class PythonDebugger(Debugger):
     def SetParameterAndEnvironment(self):
         self.GetCurrentProject().SetParameterAndEnvironment()
 
-    @staticmethod
-    def CloseDebugger():
+    @classmethod
+    def CloseDebugger(cls):
         # IS THIS THE RIGHT PLACE?
         try:
-          #  config = wx.ConfigBase_Get()
-           # config.Write(self.BREAKPOINT_DICT_STRING, pickle.dumps(self._masterBPDict))
-            #Watchs.Watch.Dump(self.watchs)
+            #config.Write(self.BREAKPOINT_DICT_STRING, pickle.dumps(self._masterBPDict))
+            if cls._debugger_ui is not None:
+                cls._debugger_ui.framesTab.watchsTab.SaveWatchs()
             if not RunCommandUI.StopAndRemoveAllUI():
                 return False
         except:
@@ -256,18 +255,12 @@ class PythonDebugger(Debugger):
             self.DeleteDebuggerMenuItem(run_menu,constants.ID_ADD_WATCH)
             self.DeleteDebuggerMenuItem(run_menu,constants.ID_QUICK_ADD_WATCH)
             ShowBreakdebugViews(False)
-            
-    def AppendWatch(self,watch_obj):
-        self.watchs.append(watch_obj)
         
-    def AddtoWatch(self,watch_obj):
-        self._debugger_ui.framesTab.AddtoWatch(watch_obj)
+    def AddtoWatchText(self,text):
+        self._debugger_ui.framesTab.AddtoWatchExpression(text,text)
         
-    def AddWatch(self,watch_obj=None,is_quick_watch=False):
-        if is_quick_watch:
-            self._debugger_ui.framesTab.QuickAddWatch(watch_obj)
-        else:
-            self._debugger_ui.framesTab.AddWatch(watch_obj)
+    def AddWatchText(self,text,quick_watch=False):
+        self._debugger_ui.framesTab.AddWatchExpression(text,text,quick_watch)
 
 class DebuggerOptionsPanel(ttk.Frame):
 
@@ -329,12 +322,5 @@ class DebuggerOptionsPanel(ttk.Frame):
 
     def GetIcon(self):
         return getContinueIcon()
-    
-def getBreakPointBitmap():
-    return images.load("debugger/breakpoint.png")
-    
-def getRestartDebuggerBitmap():
-    return images.load("debugger/restart_debugger.png")
 
-#----------------------------------------------------------------------
 

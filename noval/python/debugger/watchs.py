@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 from noval import GetApp,_,NewId
 import noval.util.apputils as sysutils
 import noval.iface as iface
 import noval.plugin as plugin
 import noval.ui_base as ui_base
-from tkinter import ttk
+from tkinter import ttk,messagebox
 import tkinter as tk
 import noval.util.utils as utils
 import noval.ttkwidgets.treeviewframe as treeviewframe
@@ -12,6 +13,8 @@ import noval.editor.text as texteditor
 import noval.consts as consts
 import noval.menu as tkmenu
 import noval.constants as constants
+from noval.python.parser.utils import py_sorted,py_cmp
+import noval.ttkwidgets.messagedialog as messagedialog
 
 ERROR_NAME_VALUE = "<errors:could not evaluate the value>"
 WATCH_TAB_NAME = "Watchs"
@@ -27,6 +30,110 @@ def getAddtoWatchBitmap():
     
 def getClearWatchBitmap():
     return GetApp().GetImage("python/debugger/delete.png")
+    
+
+class CommonWatcher:
+    
+
+    def GetItemIndex(self,parent,item):
+        children = self.tree.get_children(parent)
+        for i,child in enumerate(children):
+            if child == item:
+                return i
+        return "end"
+        
+    def AppendSubTreeFromNode(self, node, name, parent, insertBefore=None):
+        if insertBefore != None:
+            index = self.GetItemIndex(parent,insertBefore)
+            treeNode = self.tree.insert(parent, index, text=name)
+        else:
+            treeNode = self.tree.insert(parent,"end",text=name)
+        return self.UpdateSubTreeFromNode(node,name,treeNode)
+        
+    def UpdateSubTreeFromNode(self, node, name, treeNode):
+        '''
+            单步调试过程中,不断更新监视节点的值
+        '''
+        tree = self.tree
+        children = node.childNodes
+        intro = node.getAttribute('intro')
+        if intro == "True":
+            #这些节点只有展开时才能实时获取监视值
+            self.SetItemHasChildren(treeNode)
+            self.SetPyData(treeNode, "Introspect")
+        if node.getAttribute("value"):
+            tree.set(treeNode, column='Value', value=self.StripOuterSingleQuotes(node.getAttribute("value")))
+        for index in range(0, children.length):
+            subNode = children.item(index)
+            if self.HasChildren(subNode):
+                self.AppendSubTreeFromNode(subNode, subNode.getAttribute("name"), treeNode)
+            else:
+                name = subNode.getAttribute("name")
+                value = self.StripOuterSingleQuotes(subNode.getAttribute("value"))
+                n = tree.insert(treeNode, "end",text=name)
+                tree.set(n, value=value, column='Value')
+                intro = subNode.getAttribute('intro')
+                if intro == "True":
+                    #这些节点只有展开时才能实时获取监视值
+                    self.SetItemHasChildren(n)
+                    self.SetPyData(n, "Introspect")
+        if name.find('[') == -1:
+            self.SortChildren(treeNode)
+        return treeNode
+
+    def StripOuterSingleQuotes(self, string):
+        if string.startswith("'") and string.endswith("'"):
+            retval =  string[1:-1]
+        elif string.startswith("\"") and string.endswith("\""):
+            retval = string[1:-1]
+        else:
+            retval = string
+        if retval.startswith("u'") and retval.endswith("'"):
+            retval = retval[1:]
+        return retval
+
+    def HasChildren(self, node):
+        try:
+            return node.childNodes.length > 0
+        except:
+            tp,val,tb=sys.exc_info()
+            return False
+
+    def SortChildren(self,node):
+        # update tree
+        children = self.tree.get_children(node)
+        ids_sorted_by_name = py_sorted(children, cmp_func=self.OnCompareItems)
+        self.tree.set_children(node, *ids_sorted_by_name)
+        
+    def OnCompareItems(self, item1, item2):
+        return py_cmp(self.tree.item(item1,"text").lower(), self.tree.item(item2,"text").lower())
+        
+    def SetPyData(self,item,data):
+        self.tree.set(item, value=data, column='Hide')
+        
+    def GetPyData(self,item):
+        return self.tree.item(item)['values'][1]
+        
+    def SetItemHasChildren(self,item):
+        self.tree.insert(item,"end",text="")
+        
+    def GetItemChain(self, item):
+        parentChain = []
+        if item:
+            utils.get_logger().debug('Exploding: %s' , self.tree.item(item,"text"))
+            while item != self._root and item:
+                text = self.tree.item(item,"text")
+                utils.get_logger().debug("Appending %s,item is %s", text,item)
+                parentChain.append(text)
+                item = self.tree.parent(item)
+            parentChain.reverse()
+        return parentChain
+
+    def ViewExpression(self,item):
+        title = self.tree.item(item,"text")
+        value = self.tree.item(item,"values")[0]
+        dlg = messagedialog.ScrolledMessageDialog(GetApp().GetTopWindow(),title, value)
+        dlg.ShowModal()
 
 class Watch:
     CODE_ALL_FRAMES = 0
@@ -58,8 +165,8 @@ class Watch:
         return self._show_code
         
     @staticmethod
-    def CreateWatch(name):
-        return Watch(name,name)
+    def CreateWatch(name,expression):
+        return Watch(name,expression)
         
     def IsRunOnce(self):
         return (self.ShowCodeFrame == self.CODE_RUN_ONCE)
@@ -74,16 +181,11 @@ class Watch:
                 cls.SHOW_CODE_FRAME_KEY:watch.ShowCodeFrame,
             }
             watch_list.append(dct)
-        utils.ProfileSet(cls.WATCH_LIST_KEY, watch_list.__repr__())
+        utils.profile_set(cls.WATCH_LIST_KEY, watch_list)
         
     @classmethod
     def Load(cls):
-        watchs_str = utils.profile_get(cls.WATCH_LIST_KEY,"[]")
-        try:
-            watch_list = eval(watchs_str)
-        except Exception as e:
-            print (e)
-            watch_list = []
+        watch_list = utils.profile_get(cls.WATCH_LIST_KEY,[])
         watchs = []
         for dct in watch_list:
             watch = Watch(dct[cls.NAME_KEY],dct[cls.EXPERSSION_KEY],dct.get(cls.SHOW_CODE_FRAME_KEY,cls.CODE_ALL_FRAMES))
@@ -94,12 +196,6 @@ class WatchDialog(ui_base.CommonModaldialog):
     WATCH_ALL_FRAMES = "Watch in all frames"
     WATCH_THIS_FRAME = "Watch in this frame only"
     WATCH_ONCE = "Watch once and delete"
-    
-    WATCH_FRAME_TYPES = {
-        Watch.CODE_ALL_FRAMES:WATCH_ALL_FRAMES,
-        Watch.CODE_THIS_LINE:WATCH_THIS_FRAME,
-        Watch.CODE_RUN_ONCE:WATCH_ONCE
-    }
     def __init__(self, parent, title, chain,is_quick_watch=False,watch_obj=None):
         ui_base.CommonModaldialog.__init__(self, parent)
         self.title(title)
@@ -109,7 +205,8 @@ class WatchDialog(ui_base.CommonModaldialog):
         self._watch_frame_type = Watch.CODE_ALL_FRAMES
         row = ttk.Frame(self.main_frame)
         ttk.Label(row,text=_("Watch Name:")).pack(fill="x",side=tk.LEFT)
-        self._watchNameTextCtrl = ttk.Entry(row)
+        self.nameVar = tk.StringVar()
+        self._watchNameTextCtrl = ttk.Entry(row,textvariable=self.nameVar)
         self._watchNameTextCtrl.pack(fill="x",side=tk.LEFT,expand=1)
         row.pack(fill="x")
        # self._watchNameTextCtrl.Bind(wx.EVT_TEXT,self.SetNameValue)
@@ -118,19 +215,15 @@ class WatchDialog(ui_base.CommonModaldialog):
         self._watchValueTextCtrl.pack(fill="both",expand=1)
         if is_quick_watch:
             self._watchValueTextCtrl['state'] = tk.DISABLED
-      #  self.radio_box_1 = ttk.Radiobutton(self, text=_("Watch Information"), choices=[WatchDialog.WATCH_ALL_FRAMES, WatchDialog.WATCH_THIS_FRAME, WatchDialog.WATCH_ONCE], majorDimension=0, style=wx.RA_SPECIFY_ROWS)
-
         sbox_frame = ttk.LabelFrame(self.main_frame, text=_("Watch Information"))
-        self.watchallVar = tk.IntVar(value=False)
-        ttk.Radiobutton(sbox_frame, variable=self.watchallVar,text = WatchDialog.WATCH_ALL_FRAMES).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
-        self.watchthisVar = tk.IntVar(value=False)
-        ttk.Radiobutton(sbox_frame, variable=self.watchthisVar,text = WatchDialog.WATCH_THIS_FRAME).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
-        self.watchonceVar = tk.IntVar(value=False)
-        ttk.Radiobutton(sbox_frame, variable=self.watchonceVar,text = WatchDialog.WATCH_ONCE).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+        self.watchVar = tk.IntVar(value=Watch.CODE_ALL_FRAMES)
+        ttk.Radiobutton(sbox_frame, variable=self.watchVar,value=Watch.CODE_ALL_FRAMES,text = WatchDialog.WATCH_ALL_FRAMES).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
+        ttk.Radiobutton(sbox_frame, variable=self.watchVar,value=Watch.CODE_THIS_LINE,text = WatchDialog.WATCH_THIS_FRAME).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
+        ttk.Radiobutton(sbox_frame, variable=self.watchVar,value=Watch.CODE_RUN_ONCE,text = WatchDialog.WATCH_ONCE).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
         sbox_frame.pack(fill="x")
         
         self.AddokcancelButton()
-        #self.__set_properties()
+        self.__set_properties()
 
     def GetSettings(self):
         if self.radio_box_1.GetStringSelection() == WatchDialog.WATCH_ALL_FRAMES:
@@ -148,29 +241,26 @@ class WatchDialog(ui_base.CommonModaldialog):
         return (WatchDialog.WATCH_ONCE == self.radio_box_1.GetStringSelection())
 
     def __set_properties(self):
-        ###self.SetTitle("Add a Watch")
-        #self.SetSize((400, 250))
         if self._watch_obj is not None:
             self._watch_frame_type = self._watch_obj.ShowCodeFrame
-            self._watchNameTextCtrl.SetValue(self._watch_obj.Name)
-            self._watchValueTextCtrl.SetValue(self._watch_obj.Expression)
-        self.radio_box_1.SetStringSelection(self.WATCH_FRAME_TYPES[self._watch_frame_type])
+            self.nameVar.set(self._watch_obj.Name)
+            self._watchValueTextCtrl.AddText(self._watch_obj.Expression)
+        self.watchVar.set(self._watch_frame_type)
         
     def SetNameValue(self,event):
         if self._is_quick_watch:
             self._watchValueTextCtrl.SetValue(self._watchNameTextCtrl.GetValue())
             
-
     def _ok(self,event=None):
-        if self._watchNameTextCtrl.GetValue() == "":
-            wx.MessageBox(_("You must enter a name for the watch."), _("Add a Watch"))
+        if self.nameVar.get().strip() == "":
+            messagebox.showinfo( _("Add a Watch"),_("You must enter a name for the watch."))
             return
         if self._watchValueTextCtrl.GetValue() == "":
-            wx.MessageBox(_("You must enter some code to run for the watch."), _("Add a Watch"))
+            messagebox.showinfo(_("Add a Watch"),_("You must enter some code to run for the watch."))
             return
-        self.EndModal(wx.ID_OK)
+        ui_base.CommonModaldialog._ok(self)
 
-class WatchsPanel(treeviewframe.TreeViewFrame):
+class WatchsPanel(treeviewframe.TreeViewFrame,CommonWatcher):
     """description of class"""
     ID_ClEAR_WATCH = NewId()
     ID_ClEAR_ALL_WATCH = NewId()
@@ -180,7 +270,7 @@ class WatchsPanel(treeviewframe.TreeViewFrame):
     ID_VIEW_WATCH = NewId()
     
     def __init__(self,parent):
-        treeviewframe.TreeViewFrame.__init__(self, parent,columns= ['Value'],displaycolumns=(0,))
+        treeviewframe.TreeViewFrame.__init__(self, parent,columns= ['Value','Hide'],displaycolumns=(0,))
       
         self.tree.heading("#0", text=_("Name"), anchor=tk.W)
         self.tree.heading("Value", text=_("Value"), anchor=tk.W)
@@ -191,10 +281,24 @@ class WatchsPanel(treeviewframe.TreeViewFrame):
         self.error_bmp = imageutils.load_image("","python/debugger/error.png")
         self.watch_expr_bmp = imageutils.load_image("","python/debugger/watch_exp.png")
         
-        self._root = self.tree.insert("","end",text="Expression")
+        self._root = None
+        self.ShowRoot()
         self.tree.bind("<3>", self.OnRightClick, True)
-        #self.LoadWatches()
+        self.watchs = Watch.Load()
+        self.LoadWatches()
         self.menu = None
+   #     self.tree.bind("<<TreeviewOpen>>", self.IntrospectCallback)
+        
+    def ShowRoot(self,show=True):
+        if show:
+            self._root = self.tree.insert("","end",text="Expression")
+        else:
+            if self._root is not None:
+                self._clear_tree()
+                self._root = None
+
+    def SaveWatchs(self):
+        Watch.Dump(self.watchs)        
         
     def OnRightClick(self, event):
         #Refactor this...
@@ -217,13 +321,13 @@ class WatchsPanel(treeviewframe.TreeViewFrame):
             #menu.AppendSeparator()
             if not watchOnly:
                 item = tkmenu.MenuItem(self.ID_VIEW_WATCH, _("View in Dialog"),None,None,None)
-                menu.AppendMenuItem(item,handler,self.OnView)
+                self.menu.AppendMenuItem(item,handler=self.OnView)
                 
             item = tkmenu.MenuItem(self.ID_EDIT_WATCH, _("Edit Watch"),None,None,None)
             self.menu.AppendMenuItem(item,handler=self.EditWatch)
             
             item = tkmenu.MenuItem(self.ID_COPY_WATCH_EXPRESSION, _("Copy Watch Expression"),None,None,None)
-            self.menu.AppendMenuItem(item,hanlder=self.CopyWatchExpression)
+            self.menu.AppendMenuItem(item,handler=self.CopyWatchExpression)
                 
             item = tkmenu.MenuItem(self.ID_ClEAR_WATCH, _("Clear"),None,getClearWatchBitmap(),None)
             self.menu.AppendMenuItem(item,handler=self.ClearWatch)
@@ -232,167 +336,74 @@ class WatchsPanel(treeviewframe.TreeViewFrame):
             self.menu.AppendMenuItem(item,handler=self.ClearAllWatch)
 
         self.menu.tk_popup(event.x_root, event.y_root)
-        self._parentChain = None
-        self._introspectItem = None
-        
-
-    def AppendSubTreeFromNode(self, node, name, parent, insertBefore=None):
-        tree = self._treeCtrl
-        if insertBefore != None:
-            treeNode = tree.InsertItem(parent, insertBefore, name)
-        else:
-            treeNode = tree.AppendItem(parent, name)
-        self._treeCtrl.SetItemImage(treeNode,self.WatchExprIndex)
-        children = node.childNodes
-        intro = node.getAttribute('intro')
-
-        if intro == "True":
-            tree.SetItemHasChildren(treeNode, True)
-            tree.SetPyData(treeNode, "Introspect")
-        if node.getAttribute("value"):
-            tree.SetItemText(treeNode, self.StripOuterSingleQuotes(node.getAttribute("value")), 1)
-        for index in range(0, children.length):
-            subNode = children.item(index)
-            if self.HasChildren(subNode):
-                self.AppendSubTreeFromNode(subNode, subNode.getAttribute("name"), treeNode)
-            else:
-                name = subNode.getAttribute("name")
-                value = self.StripOuterSingleQuotes(subNode.getAttribute("value"))
-                n = tree.AppendItem(treeNode, name)
-                tree.SetItemText(n, value, 1)
-                intro = subNode.getAttribute('intro')
-                if intro == "True":
-                    tree.SetItemHasChildren(n, True)
-                    tree.SetPyData(n, "Introspect")
-        if name.find('[') == -1:
-            self._treeCtrl.SortChildren(treeNode)
-        return treeNode
-
-    def StripOuterSingleQuotes(self, string):
-        if string.startswith("'") and string.endswith("'"):
-            retval =  string[1:-1]
-        elif string.startswith("\"") and string.endswith("\""):
-            retval = string[1:-1]
-        else:
-            retval = string
-        if retval.startswith("u'") and retval.endswith("'"):
-            retval = retval[1:]
-        return retval
-        
-    def HasChildren(self, node):
-        try:
-            return node.childNodes.length > 0
-        except:
-            tp,val,tb=sys.exc_info()
-            return False
-            
-    def GetItemChain(self, item):
-        parentChain = []
-        if item:
-            utils.get_logger().debug('Exploding: %s' , self.tree.item(item,"text"))
-            while item != self._root:
-                text = self.tree.item(item,"text")
-                utils.get_logger().debug("Appending %s", text)
-                parentChain.append(text)
-                item = self.tree.parent(item)
-            parentChain.reverse()
-        return parentChain
+      #  self._parentChain = None
+       # self._introspectItem = None
         
     def OnAddWatch(self):
         GetApp().GetDebugger()._debugger_ui.OnAddWatch()
         
-    def OnView(self):
-        title = self._treeCtrl.GetItemText(self._introspectItem,0)
-        value = self._treeCtrl.GetItemText(self._introspectItem,1)
-        dlg = wx.lib.dialogs.ScrolledMessageDialog(self, value, title, style=wx.DD_DEFAULT_STYLE | wx.RESIZE_BORDER)
-        dlg.Show()
-        
     def ClearWatch(self):
-        watch_obj = self.GetItemWatchObj(self._introspectItem)
-        self._debugger_service.watchs.remove(watch_obj)
+        watch_obj = self.GetItemWatchData(self._introspectItem)
+        self.watchs.remove(watch_obj)
         self.tree.delete(self._introspectItem)
-        self.UpdateItemData()
         
     def _clear_tree(self):
         for child_id in self.tree.get_children():
             self.tree.delete(child_id)
+            
+    def OnView(self):
+        self.ViewExpression(self._introspectItem)
         
     def ClearAllWatch(self):
         self._clear_tree()
-        self._debugger_service.watchs = []
-        #recreate root item
-        self._root = self._treeCtrl.AddRoot("Expression")
+        GetApp().GetDebugger()._debugger_ui.watchs = []
+        self.ShowRoot(True)
         
     def EditWatch(self):
         watch_data = self.GetItemWatchData(self._introspectItem)
-        index = self._treeCtrl.GetPyData(self._introspectItem)
+        index = self.GetWatchItemIndex(self._introspectItem)
         wd = WatchDialog(GetApp().GetTopWindow(), _("Edit a Watch"), None,watch_obj=watch_data)
         if wd.ShowModal() == constants.ID_OK:
             watch_obj = wd.GetSettings()
-            self._treeCtrl.item(self._introspectItem, text=watch_data.Name)
+            self.item(self._introspectItem, text=watch_data.Name)
             GetApp().GetDebugger()._debugger_ui.UpdateWatch(watch_obj,self._introspectItem)
             GetApp().GetDebugger().watchs[index] = watch_obj
         
     def CopyWatchExpression(self):
-        title = self._treeCtrl.GetItemText(self._introspectItem,0)
-        value = self._treeCtrl.GetItemText(self._introspectItem,1)
-        sysutils.CopyToClipboard(title + "\t" + value)
+        title = self.tree.item(self._introspectItem,"text")
+        value = self.tree.item(self._introspectItem,"values")[0]
+        utils.CopyToClipboard(title + "\t" + value)
         
     def LoadWatches(self):
-        watchs = GetApp().GetDebugger().watchs
-        root_item = self.GetRootItem()
-        for i,watch_data in enumerate(watchs):
-            treeNode = self._treeCtrl.AppendItem(root_item, watch_data.Name)
-            self._treeCtrl.SetItemText(treeNode, ERROR_NAME_VALUE, 1)
-            self._treeCtrl.SetItemImage(treeNode,self.ErrorIndex)
-            self._treeCtrl.SetPyData(treeNode, i)
+        '''
+            初始化监视点时调试器关闭,值是不可预测的
+        '''
+        self.ShowRoot(False)
+        for i,watch_data in enumerate(self.watchs):
+            treeNode = self.tree.insert("","end",text=watch_data.Name,image=self.error_bmp)
+            self.tree.set(treeNode, value=ERROR_NAME_VALUE, column='Value')
 
     def UpdateWatchs(self):
         root_item = self.GetRootItem()
         childs = self.tree.get_children(root_item)
         for item in childs:
             watch_data = self.GetItemWatchData(item)
-            self._debugger_service._debugger_ui.UpdateWatch(watch_data,item)
+            GetApp().GetDebugger()._debugger_ui.UpdateWatch(watch_data,item)
             
     def UpdateSubTreeFromNode(self, node, name, item):
-        tree = self._treeCtrl
-        children = node.childNodes
-        intro = node.getAttribute('intro')
-        treeNode = item
-        self.DeleteItemChild(treeNode)
-        self._treeCtrl.SetItemImage(treeNode,self.WatchExprIndex)
-        if intro == "True":
-            tree.SetItemHasChildren(treeNode, True)
-            tree.SetPyData(treeNode, "Introspect")
-        if node.getAttribute("value"):
-            tree.SetItemText(treeNode, self.StripOuterSingleQuotes(node.getAttribute("value")), 1)
-        for index in range(0, children.length):
-            subNode = children.item(index)
-            if self.HasChildren(subNode):
-                self.AppendSubTreeFromNode(subNode, subNode.getAttribute("name"), treeNode)
-            else:
-                name = subNode.getAttribute("name")
-                value = self.StripOuterSingleQuotes(subNode.getAttribute("value"))
-                n = tree.AppendItem(treeNode, name)
-                tree.SetItemText(n, value, 1)
-                intro = subNode.getAttribute('intro')
-                if intro == "True":
-                    tree.SetItemHasChildren(n, True)
-                    tree.SetPyData(n, "Introspect")
-        if name.find('[') == -1:
-            self._treeCtrl.SortChildren(treeNode)
-        return treeNode
+        self.DeleteItemChild(item)
+        self.tree.item(item,image=self.watch_expr_bmp)
+        CommonWatcher.UpdateSubTreeFromNode(self,node,name,item)
         
     def GetRootItem(self):
-        childs = self.tree.get_children()
-        return childs[0]
+        return self._root
         
     def ResetWatchs(self):
         root_item = self.GetRootItem()
         childs = self.tree.get_children(root_item)
         for item in childs:
             self.DeleteItemChild(item)
-            self.tree.item(item, text=ERROR_NAME_VALUE)
+            self.tree.set(item, value=ERROR_NAME_VALUE, column='Value')
             self.tree.item(item, image=self.error_bmp)
             
     def DeleteItemChild(self,item):
@@ -412,28 +423,23 @@ class WatchsPanel(treeviewframe.TreeViewFrame):
         self.UpdateSubTreeFromNode(node,watch_obj.Name,treeNode)
             
     def AddWatch(self, node, watch_obj, parent, insertBefore=None):
+        if parent == self._root:
+            parent = ""
+        self.ShowRoot(False)
         treeNode = self.AppendSubTreeFromNode(node,watch_obj.Name,parent,insertBefore)
-        self._debugger_service.AppendWatch(watch_obj)
-        self.SetItemPyData(treeNode,watch_obj)
-        
-    def SetItemPyData(self,treeItem,watch_obj):
-        watch_count = len(self._debugger_service.watchs) - 1
-        self._treeCtrl.SetPyData(treeItem, watch_count)
-        
+        self.watchs.append(watch_obj)
+
     def GetItemWatchData(self,treeItem):
-        index = self._treeCtrl.GetPyData(treeItem)
-        watch_data = self._debugger_service.watchs[index]
+        index = self.GetWatchItemIndex(treeItem)
+        watch_data = self.watchs[index]
         return watch_data
-        
-    def UpdateItemData(self):
-        root_item = self._treeCtrl.GetRootItem()
-        (item, cookie) = self._treeCtrl.GetFirstChild(root_item)
-        i = 0
-        while item:
-            self._treeCtrl.SetPyData(item, i)
-            (item, cookie) = self._treeCtrl.GetNextChild(root_item, cookie)
-            i += 1
-            
+
+    def GetWatchItemIndex(self,item):
+        childs = self.tree.get_children()
+        for i,child in enumerate(childs):
+            if child == item:
+                return i
+        assert(False)
 
 class WatchsViewLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)

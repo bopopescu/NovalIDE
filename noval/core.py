@@ -312,6 +312,9 @@ class App(tk.Tk):
             tk.Tk.quit(self)
 
     def RaiseWindow(self, force=True):
+        '''
+            将程序窗口置于桌面前台
+        '''
         # Looks like at least on Windows all following is required
         # for ensuring the window gets focus
         # (deiconify, ..., iconify, deiconify)

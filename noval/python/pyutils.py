@@ -67,13 +67,6 @@ def get_override_runparameter(run_parameter):
     for key in interpreter_specific_keys:
         if key in os.environ:
             del environment[key]
-        #in windows and if is python3 interpreter ,shoud add 'SYSTEMROOT' Environment Variable
-        #othersise it will raise progblem below when add a Environment Variable
-        #Fatal Python error: failed to get random numbers to initialize Python
-       # if sysutilslib.isWindows() and interpreter.IsV3():
-        #    SYSTEMROOT_KEY = 'SYSTEMROOT'
-         #   if not environment.has_key(SYSTEMROOT_KEY):
-          #      environment[SYSTEMROOT_KEY] = os.environ[SYSTEMROOT_KEY]
     #add python path to env
     if len(interpreter.PythonPathList) > 0:
         environment = update_pythonpath_env(environment,interpreter.PythonPathList)

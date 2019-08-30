@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from noval import GetApp,_
 import noval.iface as iface
 import noval.plugin as plugin
@@ -9,7 +10,7 @@ from noval.python.debugger.commandui import BaseDebuggerUI,INTERACTCONSOLE_TAB_N
 
 class InspectConsoleTab(ttk.Frame):
     """description of class"""
-    def handleCommand(self):
+    def handleCommand(self,event=None):
         cmdStr = self.inputTxt.get()
         if not cmdStr:
             return
@@ -17,7 +18,7 @@ class InspectConsoleTab(ttk.Frame):
         self._cmdList.append(cmdStr)
         self._cmdIndex = len(self._cmdList)
         self.inputTxt.set('')
-        self.AppendText(">>> " + cmdStr + "\n",tags = ("io",'stdout'))
+        
         self.ExecuteCommand(cmdStr)
         return
         
@@ -103,6 +104,8 @@ class InspectConsoleTab(ttk.Frame):
         )
         text_frame.pack(fill="both",expand=1)
       #  wx.EVT_KEY_DOWN(self._cmdInput, OnKeyPressed)
+        #回车键发送命令
+        self._cmdInput.bind("<Return>",self.handleCommand,True)
         self._cmdList  = []
         self._cmdIndex = 0
         

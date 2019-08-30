@@ -52,7 +52,7 @@ elif utils.is_py3_plus():
     import noval.python.debugger.debuggerharness3 as debuggerharness
 
 #VERBOSE mode will invoke threading.Thread _VERBOSE,which will print a lot of thread debug text on screen
-_VERBOSE = False
+_VERBOSE = True
 _WATCHES_ON = True
 EVT_DEBUG_INTERNAL = "EVT_DEBUG_INTERNAL"
 INTERACTCONSOLE_TAB_NAME = "InteractConsole"
@@ -261,12 +261,14 @@ class BaseDebuggerUI(RunCommandUI):
         self._tb.AddButton( constants.ID_RESTART_DEBUGGER, self.restart_bmp, _("Restart Debugging"),self.RestartDebugger)
 
         self._tb.AddSeparator()
+        #表示运行下一行代码,快捷键为F10
         self.next_bmp = GetApp().GetImage("python/debugger/step_next.png")
         self._tb.AddButton( constants.ID_STEP_NEXT, self.next_bmp, _("Step to next line"),self.OnNext,accelerator=GetApp().Menubar.GetRunMenu().FindMenuItem(constants.ID_STEP_NEXT).accelerator)
 
         self.step_bmp = GetApp().GetImage("python/debugger/step_into.png")
+        #表示进入当前方法,快捷键为F11
         self._tb.AddButton( constants.ID_STEP_INTO, self.step_bmp, _("Step in"),self.OnSingleStep,accelerator=GetApp().Menubar.GetRunMenu().FindMenuItem(constants.ID_STEP_INTO).accelerator)
-
+        #表示退出当前方法,返回到调用层,快捷键为
         self.stepOut_bmp = GetApp().GetImage("python/debugger/step_return.png")
         self._tb.AddButton(constants.ID_STEP_OUT, self.stepOut_bmp, _("Stop at function return"),self.OnStepOut)
 
@@ -283,17 +285,17 @@ class BaseDebuggerUI(RunCommandUI):
         self.clear_bmp = GetApp().GetImage("python/debugger/clear_output.png")
         self._tb.AddButton(self.CLEAR_ID, self.clear_bmp, _("Clear output pane"),self.OnClearOutput)
 
-    def OnSingleStep(self):
-        self._callback.SingleStep()
+    def OnSingleStep(self,callback=None):
+        self._callback.SingleStep(callback)
 
     def OnContinue(self,event=None):
         self._callback.Continue()
 
-    def OnStepOut(self):
-        self._callback.Return()
+    def OnStepOut(self,callback=None):
+        self._callback.Return(callback)
 
-    def OnNext(self):
-        self._callback.Next()
+    def OnNext(self,callback=None):
+        self._callback.Next(callback)
 
     def BreakPointChange(self):
         if not self._stopped:
@@ -305,6 +307,9 @@ class BaseDebuggerUI(RunCommandUI):
         self.StopExecution(None)
 
     def DisableWhileDebuggerRunning(self):
+        '''
+            调试器运行时需要禁止的菜单
+        '''
         if self._toolEnabled:
             self._tb.EnableTool(constants.ID_STEP_INTO, False)
             self._tb.EnableTool(constants.ID_STEP_CONTINUE, False)
@@ -330,6 +335,9 @@ class BaseDebuggerUI(RunCommandUI):
             self._toolEnabled = False
 
     def EnableWhileDebuggerStopped(self):
+        '''
+            调试器中断时需要允许使用的菜单
+        '''
         self._tb.EnableTool(constants.ID_STEP_INTO, True)
         self._tb.EnableTool(constants.ID_STEP_CONTINUE, True)
         if self.run_menu.FindMenuItem(constants.ID_STEP_CONTINUE):
@@ -352,6 +360,9 @@ class BaseDebuggerUI(RunCommandUI):
         self._toolEnabled = True
 
     def DisableAfterStop(self):
+        '''
+            调试器停止时需要禁止的菜单
+        '''
         if self._toolEnabled:
             self.DisableWhileDebuggerRunning()
             self._tb.EnableTool(constants.ID_BREAK_INTO_DEBUGGER, False)
@@ -367,8 +378,8 @@ class BaseDebuggerUI(RunCommandUI):
             self.DisableAfterStop()
             self.UpdatePagePaneText(_("Debugging"), _("Finished Debugging"))
             self._tb.EnableTool(self.KILL_PROCESS_ID, False)
-        except wx._core.PyDeadObjectError:
-            utils.GetLogger().warn("BaseDebuggerUI object has been deleted, attribute access no longer allowed when finish debug executor")
+        except tk.TclError:
+            utils.get_logger().warn("BaseDebuggerUI object has been deleted, attribute access no longer allowed when finish debug executor")
             return
         #调式完成隐藏断点调式有关的菜单
         self._debugger.ShowHideDebuggerMenu(False)
@@ -449,10 +460,10 @@ class BaseDebuggerUI(RunCommandUI):
         return True
 
     def OnAddWatch(self):
-        self.framesTab.OnAddWatch()
+        self.framesTab.AddWatchExpression("","",False)
             
     def OnQuickAddWatch(self):
-        self.framesTab.QuickAddWatch()
+        self.framesTab.AddWatchExpression("","",True)
 
     def MakeFramesUI(self):
         assert False, "MakeFramesUI not overridden"
@@ -543,6 +554,7 @@ class PythonDebuggerUI(BaseDebuggerUI):
             
     def LoadPythonFramesList(self, framesXML):
         self.framesTab.LoadFramesList(framesXML)
+        #进入断掉调试,更新监视的值
         self.framesTab.UpdateWatchs()
 
     def Execute(self, onWebServer = False):
@@ -605,23 +617,23 @@ class PythonDebuggerUI(BaseDebuggerUI):
         self.framesTab.UpdateWatchs(reset)
 
     def OnSingleStep(self):
-        BaseDebuggerUI.OnSingleStep(self)
-        self.UpdateWatchs()
+        #进入方法之后更新监视值
+        BaseDebuggerUI.OnSingleStep(self,callback=self.UpdateWatchs)
 
     def OnContinue(self,event=None):
         BaseDebuggerUI.OnContinue(self,event)
 
     def OnStepOut(self):
-        BaseDebuggerUI.OnStepOut(self)
-        self.UpdateWatchs()
+        #退出方法之后更新监视值
+        BaseDebuggerUI.OnStepOut(self,callback=self.UpdateWatchs)
 
     def OnNext(self):
-        BaseDebuggerUI.OnNext(self)
-        self.UpdateWatchs()
+        #单步调试之后更新监视值
+        BaseDebuggerUI.OnNext(self,callback=self.UpdateWatchs)
 
     def DisableWhileDebuggerRunning(self):
         BaseDebuggerUI.DisableWhileDebuggerRunning(self)
-        #when process is running normal,reset the watchs
+        #运行调试器,在执行下一步调试的空隙,这个时间段调试器是没有运行的,故需要重置监视值
         self.UpdateWatchs(reset=True)
             
     def CreateCallBack(self):
@@ -697,9 +709,6 @@ class BaseFramesUI:
     def ExecuteCommand(self, command):
         assert False, "ExecuteCommand not overridden"
 
-    def OnRightClick(self, event):
-        assert False, "OnRightClick not overridden"
-
     def ClearWhileRunning(self):
         self.stackFrameTab._framesChoiceCtrl['values'] = ()
         self.stackFrameTab._framesChoiceCtrl['state'] = tk.DISABLED
@@ -727,12 +736,6 @@ class BaseFramesUI:
     def ListItemSelected(self, event):
         assert False, "ListItemSelected not overridden"
 
-    def PopulateTreeFromFrameMessage(self, message):
-        assert False, "PopulateTreeFromFrameMessage not overridden"
-
-    def IntrospectCallback(self, event):
-        assert False, "IntrospectCallback not overridden"
-
     def AppendText(self, event):
         self._output.AppendText(event)
 
@@ -752,146 +755,45 @@ class PythonFramesUI(BaseFramesUI):
         self._textCtrl.SetExecutor(executor)
 
     def ExecuteCommand(self, command):
+        '''
+            在交互窗口中执行解释器命令,并将执行的结果反馈到堆栈窗口中
+        '''
+        self.inspectConsoleTab.AppendText(">>> " + command + "\n",tags = ("io",'stdout'))
         retval = self._output._callback._debuggerServer.execute_in_frame(self.stackFrameTab.frameValue.get(), command)
         self.inspectConsoleTab.AppendText(str(retval) + "\n",tags = ("io",'stderr'))
         # Refresh the tree view in case this command resulted in changes there. TODO: Need to reopen tree items.
-        self.PopulateTreeFromFrameMessage(self.stackFrameTab.frameValue.get())
+        self.stackFrameTab.PopulateTreeFromFrameMessage(self.stackFrameTab.frameValue.get())
 
-    def OnRightClick(self, event):
-        #Refactor this...
-        self._introspectItem = event.GetItem()
-        self._parentChain = self.GetItemChain(event.GetItem())
-        watchOnly = len(self._parentChain) < 1
-        if not _WATCHES_ON and watchOnly:
-            return
-        menu = wx.Menu()
-        if _WATCHES_ON:
-            if not hasattr(self, "watchID"):
-                self.watchID = wx.NewId()
-                self.Bind(wx.EVT_MENU, self.OnAddWatch, id=self.watchID)
-            item = wx.MenuItem(menu, self.watchID, _("Add a Watch"))
-            item.SetBitmap(Watchs.getAddWatchBitmap())
-            menu.AppendItem(item)
-            menu.AppendSeparator()
-        if not watchOnly:
-            AddWatchId = wx.NewId()
-            item = wx.MenuItem(menu, AddWatchId, _("Add to Watch"))
-            item.SetBitmap(Watchs.getAddtoWatchBitmap())
-            menu.AppendItem(item)
-            self.Bind(wx.EVT_MENU, self.OnAddToWatch, id=AddWatchId)
-            
-            if not hasattr(self, "viewID"):
-                self.viewID = wx.NewId()
-                self.Bind(wx.EVT_MENU, self.OnView, id=self.viewID)
-            item = wx.MenuItem(menu, self.viewID, _("View in Dialog"))
-            menu.AppendItem(item)
-            if not hasattr(self, "toInteractID"):
-                self.toInteractID = wx.NewId()
-                self.Bind(wx.EVT_MENU, self.OnSendToInteract, id=self.toInteractID)
-            item = wx.MenuItem(menu, self.toInteractID, _("Send to Interact"))
-            menu.AppendItem(item)
-
-        offset = wx.Point(x=0, y=20)
-        menuSpot = event.GetPoint() + offset
-        self._treeCtrl.PopupMenu(menu, menuSpot)
-        menu.Destroy()
-        self._parentChain = None
-        self._introspectItem = None
-
-    def GetItemChain(self, item):
-        parentChain = []
-        if item:
-            if _VERBOSE: print ('Exploding: %s' % self._treeCtrl.GetItemText(item, 0))
-            while item != self._root:
-                text = self._treeCtrl.GetItemText(item, 0)
-                if _VERBOSE: print ("Appending ", text)
-                parentChain.append(text)
-                item = self._treeCtrl.GetItemParent(item)
-            parentChain.reverse()
-        return parentChain
-
-    def OnView(self, event):
-        title = self._treeCtrl.GetItemText(self._introspectItem,0)
-        value = self._treeCtrl.GetItemText(self._introspectItem,1)
-        dlg = wx.lib.dialogs.ScrolledMessageDialog(self, value, title, style=wx.DD_DEFAULT_STYLE | wx.RESIZE_BORDER)
-        dlg.Show()
-
-    def OnSendToInteract(self, event):
-        value = ""
-        prevItem = ""
-        for item in self._parentChain:
-
-            if item.find(prevItem + '[') != -1:
-               value += item[item.find('['):]
-               continue
-            if value != "":
-                value = value + '.'
-            if item == 'globals':
-                item = 'globals()'
-            if item != 'locals':
-                value += item
-                prevItem = item
-        print (value)
-        self.ExecuteCommand(value)
-        #swith to interact tab page
-        self._notebook.SetSelection(1)
-
-    def OnAddWatch(self):
-        self.AddWatch()
-        
-    def AddWatch(self,watch_obj=None):
-        try:
-            if hasattr(self, '_parentChain'):
-                wd = Watchs.WatchDialog(wx.GetApp().GetTopWindow(), _("Add a Watch"), self._parentChain,watch_obj=watch_obj)
-            else:
-                wd = watchs.WatchDialog(GetApp().GetTopWindow(), _("Add a Watch"), None,watch_obj=watch_obj)
-            if wd.ShowModal() == constants.ID_OK:
-                watch_obj = wd.GetSettings()
-                self.AddtoWatch(watch_obj)
-        except:
-            tp, val, tb = sys.exc_info()
-            traceback.print_exception(tp, val, tb)
-            
-    def OnAddToWatch(self,event):
-        name = self._treeCtrl.GetItemText(self._introspectItem,0)
-        watch_obj = Watchs.Watch.CreateWatch(name)
-        self.AddtoWatch(watch_obj)
-        
-    def QuickAddWatch(self,watch_obj=None):
-        wd = watchs.WatchDialog(GetApp().GetTopWindow(), _("Quick Add a Watch"), None,True,watch_obj)
+    def AddWatchExpression(self,name,expression,quick_watch):
+        if quick_watch:
+            title = _("Quick Add a Watch")
+        else:
+            title = _("Add a Watch")
+        watch_obj = watchs.Watch.CreateWatch(name,expression)
+        if hasattr(self.stackFrameTab, '_parentChain'):
+            wd = watchs.WatchDialog(GetApp().GetTopWindow(),title , self.stackFrameTab._parentChain,watch_obj=watch_obj,is_quick_watch=quick_watch)
+        else:
+            wd = watchs.WatchDialog(GetApp().GetTopWindow(), title, None,watch_obj=watch_obj,is_quick_watch=quick_watch)
         if wd.ShowModal() == constants.ID_OK:
             watch_obj = wd.GetSettings()
-            self.AddtoWatch(watch_obj)
+            self.AddtoWatchExpression(watch_obj.Name,watch_obj.Expression)
             
-    def AddtoWatch(self,watch_obj):
-        if not BaseDebuggerUI.DebuggerRunning() or not hasattr(self,"_stack"):
-            self.watchsTab.AppendErrorWatch(watch_obj,self.watchsTab._treeCtrl.GetRootItem())
+    def AddtoWatchExpression(self,name,expression):
+        watch_obj = watchs.Watch.CreateWatch(name,expression)
+        if not BaseDebuggerUI.DebuggerRunning() or not self.stackFrameTab.HasStack():
+            self.watchsTab.AppendErrorWatch(watch_obj,self.watchsTab.GetRootItem())
         else:
-            frameNode = self._stack[int(self.currentItem)]
-            message = frameNode.getAttribute("message")
-            binType = self._ui._callback._debuggerServer.add_watch(watch_obj.Name, watch_obj.Expression, message, watch_obj.IsRunOnce())
-            xmldoc = bz2.decompress(binType.data)
-            domDoc = parseString(xmldoc)
-            nodeList = domDoc.getElementsByTagName('watch')
+            nodeList = self.stackFrameTab.GetWatchList(watch_obj)
             if len(nodeList) == 1:
                 watchValue = nodeList[0].childNodes[0].getAttribute("value")
-                self.watchsTab.AddWatch(nodeList[0].childNodes[0],watch_obj,self.watchsTab._treeCtrl.GetRootItem())
-                ####self.watchsTab.AppendSubTreeFromNode(nodeList[0].childNodes[0],watch_obj.Name,self.watchsTab._treeCtrl.GetRootItem())
-        #swith to watchs tab page
-        self._notebook.SetSelection(3)
+                self.watchsTab.AddWatch(nodeList[0].childNodes[0],watch_obj,self.watchsTab.GetRootItem())
             
     #when step next,into,out action,will update watchs value
     def UpdateWatch(self,watch_obj,item):
-        frameNode = self._stack[int(self.currentItem)]
-        message = frameNode.getAttribute("message")
-        binType = self._ui._callback._debuggerServer.add_watch(watch_obj.Name, watch_obj.Expression, message, watch_obj.IsRunOnce())
-        xmldoc = bz2.decompress(binType.data)
-        domDoc = parseString(xmldoc)
-        nodeList = domDoc.getElementsByTagName('watch')
+        nodeList = self.stackFrameTab.GetWatchList(watch_obj)
         if len(nodeList) == 1:
             watchValue = nodeList[0].childNodes[0].getAttribute("value")
             self.watchsTab.UpdateWatch(nodeList[0].childNodes[0],watch_obj,item)
-            ####self.watchsTab.UpdateSubTreeFromNode(nodeList[0].childNodes[0],name,item)
             
     def UpdateWatchs(self,reset=False):
         if not reset:
@@ -902,40 +804,7 @@ class PythonFramesUI(BaseFramesUI):
     def ResetWatchs(self):
         self.watchsTab.ResetWatchs()
 
-    def OnIntrospect(self, event):
-        wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
-
-        try:
-
-            try:
-                list = self._framesChoiceCtrl
-                frameNode = self._stack[int(self.currentItem)]
-                message = frameNode.getAttribute("message")
-                binType = self._ui._callback._debuggerServer.attempt_introspection(message, self._parentChain)
-                xmldoc = bz2.decompress(binType.data)
-                domDoc = parseString(xmldoc)
-                nodeList = domDoc.getElementsByTagName('replacement')
-                replacementNode = nodeList.item(0)
-                if len(replacementNode.childNodes):
-                    thingToWalk = replacementNode.childNodes.item(0)
-                    tree = self._treeCtrl
-                    parent = tree.GetItemParent(self._introspectItem)
-                    treeNode = self.AppendSubTreeFromNode(thingToWalk, thingToWalk.getAttribute('name'), parent, insertBefore=self._introspectItem)
-                    if thingToWalk.getAttribute('name').find('[') == -1:
-                        self._treeCtrl.SortChildren(treeNode)
-                    self._treeCtrl.Expand(treeNode)
-                    tree.Delete(self._introspectItem)
-            except:
-                tp,val,tb = sys.exc_info()
-                traceback.print_exception(tp, val, tb)
-
-        finally:
-            wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_DEFAULT))
-
-    def OnSyncFrame(self, event):
-        frameNode = self._stack[int(self.currentItem)]
-        file = frameNode.getAttribute("file")
-        line = frameNode.getAttribute("line")
+    def SynchCurrentLine(self,file,line):
         self._output.SynchCurrentLine( file, int(line) )
 
     def LoadFramesList(self, framesXML):
@@ -945,133 +814,25 @@ class PythonFramesUI(BaseFramesUI):
             self.inspectConsoleTab._cmdOutput["state"] = tk.NORMAL
             try:
                 domDoc = parseString(framesXML)
-                frame_values = []
-                self._stack = []
-                nodeList = domDoc.getElementsByTagName('frame')
-                frame_count = -1
-                for index in range(0, nodeList.length):
-                    frameNode = nodeList.item(index)
-                    message = frameNode.getAttribute("message")
-                    frame_values.append(message)
-                    self._stack.append(frameNode)
-                    frame_count += 1
-                index = len(self._stack) - 1
-                self.stackFrameTab._framesChoiceCtrl['values'] = frame_values
-                self.stackFrameTab._framesChoiceCtrl.current(index)
-
-                node = self._stack[index]
-                self.currentItem = index
-                self.PopulateTreeFromFrameNode(node)
-                self.OnSyncFrame(None)
-
-                frameNode = nodeList.item(index)
-                file = frameNode.getAttribute("file")
-                line = frameNode.getAttribute("line")
-                self._output.SynchCurrentLine( file, int(line) )
+                self.stackFrameTab.LoadFrame(domDoc)
             except:
                 tp,val,tb=sys.exc_info()
                 traceback.print_exception(tp, val, tb)
-
         finally:
             GetApp().configure(cursor="")
-
 
     def ListItemSelected(self, event):
         self.PopulateTreeFromFrameMessage(event.GetString())
         self.OnSyncFrame(None)
-
-    def PopulateTreeFromFrameMessage(self, message):
-        index = 0
-        for node in self._stack:
-            if node.getAttribute("message") == message:
-                binType = self._output._callback._debuggerServer.request_frame_document(message)
-                xmldoc = bz2.decompress(binType.data)
-                domDoc = parseString(xmldoc)
-                nodeList = domDoc.getElementsByTagName('frame')
-                self.currentItem = index
-                if len(nodeList):
-                    self.PopulateTreeFromFrameNode(nodeList[0])
-                return
-            index = index + 1
-
-    def PopulateTreeFromFrameNode(self, frameNode):
-        self.stackFrameTab._framesChoiceCtrl['state'] = 'readonly'
-        tree = self.stackFrameTab.tree
-        root = self.stackFrameTab._root
-        self.stackFrameTab.DeleteChildren(root)
-        children = frameNode.childNodes
-        firstChild = None
-        for index in range(0, children.length):
-            subNode = children.item(index)
-            treeNode = self.AppendSubTreeFromNode(subNode, subNode.getAttribute('name'), root)
-            if not firstChild:
-                firstChild = treeNode
-        tree.item(root,open=True)
-        if firstChild:
-            tree.item(firstChild,open=True)
-
-    def IntrospectCallback(self, event):
-        tree = self._treeCtrl
-        item = event.GetItem()
-        if _VERBOSE:
-            print ("In introspectCallback item is %s, pydata is %s" % (event.GetItem(), tree.GetPyData(item)))
-        if tree.GetPyData(item) != "Introspect":
-            event.Skip()
-            return
-        self._introspectItem = item
-        self._parentChain = self.GetItemChain(item)
-        self.OnIntrospect(event)
-        event.Skip()
-
-    def AppendSubTreeFromNode(self, node, name, parent, insertBefore=None):
-        tree = self.stackFrameTab.tree
-        if insertBefore != None:
-            treeNode = tree.InsertItem(parent, insertBefore, name)
-        else:
-            treeNode = tree.insert(parent,"end",text=name)
-        children = node.childNodes
-        intro = node.getAttribute('intro')
-
-        if intro == "True":
-          #  tree.SetItemHasChildren(treeNode, True)
-            self.stackFrameTab.SetPyData(treeNode, "Introspect")
-        if node.getAttribute("value"):
-            #tree.SetItemText(treeNode, self.StripOuterSingleQuotes(node.getAttribute("value")), 1)
-            tree.set(treeNode, column='Value', value=self.StripOuterSingleQuotes(node.getAttribute("value")))
-        for index in range(0, children.length):
-            subNode = children.item(index)
-            if self.HasChildren(subNode):
-                self.AppendSubTreeFromNode(subNode, subNode.getAttribute("name"), treeNode)
-            else:
-                name = subNode.getAttribute("name")
-                value = self.StripOuterSingleQuotes(subNode.getAttribute("value"))
-                n = tree.insert(treeNode, "end",text=name)
-                tree.set(n, value=value, column='Value')
-                intro = subNode.getAttribute('intro')
-                if intro == "True":
-                    #tree.SetItemHasChildren(n, True)
-                    self.stackFrameTab.SetPyData(n, "Introspect")
-        if name.find('[') == -1:
-            self.stackFrameTab.SortChildren(treeNode)
-        return treeNode
-
-    def StripOuterSingleQuotes(self, string):
-        if string.startswith("'") and string.endswith("'"):
-            retval =  string[1:-1]
-        elif string.startswith("\"") and string.endswith("\""):
-            retval = string[1:-1]
-        else:
-            retval = string
-        if retval.startswith("u'") and retval.endswith("'"):
-            retval = retval[1:]
-        return retval
-
-    def HasChildren(self, node):
-        try:
-            return node.childNodes.length > 0
-        except:
-            tp,val,tb=sys.exc_info()
-            return False
+            
+    def attempt_introspection(self,message,chain):
+        return self._output._callback._debuggerServer.attempt_introspection(message, chain)
+        
+    def request_frame_document(self,message):
+        return self._output._callback._debuggerServer.request_frame_document(message)
+        
+    def add_watch(self,message,watch_data):
+        return self._output._callback._debuggerServer.add_watch(watch_data.Name, watch_data.Expression, message, watch_data.IsRunOnce())
 
 class Interaction:
     def __init__(self, message, framesXML,  info=None, quit=False):
@@ -1219,16 +980,16 @@ class BaseDebuggerCallback(object):
     def BreakExecution(self):
         assert False, "BreakExecution not overridden"
 
-    def SingleStep(self):
+    def SingleStep(self,callback=None):
         assert False, "SingleStep not overridden"
 
-    def Next(self):
+    def Next(self,callback=None):
         assert False, "Next not overridden"
 
     def Continue(self):
         assert False, "Start not overridden"
 
-    def Return(self):
+    def Return(self,callback=None):
         assert False, "Return not overridden"
 
     def PushBreakpoints(self):
@@ -1278,25 +1039,37 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
         rbt = RequestBreakThread(self._breakServer, interrupt=True)
         rbt.start()
 
-    def SingleStep(self):
+    def SingleStep(self,callback):
+        '''
+            进入当前方法
+        '''
+        #执行下一步调试之前,在没有返回之前需要先禁止一些东西
         self._debuggerUI.DisableWhileDebuggerRunning()
         self._debuggerServer.set_step() # Figure out where to set allowNone
-        self.WaitForRPC()
+        self.WaitForRPC(callback)
 
-    def Next(self):
+    def Next(self,callback):
+        '''
+            运行下一行代码
+        '''
+        #执行下一步调试之前,在没有返回之前需要先禁止一些东西
         self._debuggerUI.DisableWhileDebuggerRunning()
         self._debuggerServer.set_next()
-        self.WaitForRPC()
+        self.WaitForRPC(callback)
 
     def Continue(self):
         self._debuggerUI.DisableWhileDebuggerRunning()
         self._debuggerServer.set_continue()
         self.WaitForRPC()
 
-    def Return(self):
+    def Return(self,callback):
+        '''
+            退出当前方法，返回到调用层
+        '''
+        #执行下一步调试之前,在没有返回之前需要先禁止一些东西
         self._debuggerUI.DisableWhileDebuggerRunning()
         self._debuggerServer.set_return()
-        self.WaitForRPC()
+        self.WaitForRPC(callback)
 
     def ReadQueue(self):
         if self._queue.qsize():
@@ -1321,15 +1094,18 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
     def PushExceptionBreakpoints(self):
         self._debuggerServer.set_all_exceptions(self._service.GetExceptions())
 
-    def WaitForRPC(self):
+    def WaitForRPC(self,callback=None):
         self._waiting = True
-        self.RotateForRpc()
+        self.RotateForRpc(callback)
         
-    def RotateForRpc(self):
+    def RotateForRpc(self,callback):
         if not self._waiting:
             utils.get_logger().debug("Exiting WaitForRPC.")
+            if callback:
+                utils.get_logger().debug("After exit rpc,callback.....")
+                callback()
             return
-        self._debuggerUI.after(1000,self.RotateForRpc)
+        self._debuggerUI.after(1,self.RotateForRpc,*[callback])
         try:
             self.ReadQueue()
             import time

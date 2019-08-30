@@ -1068,5 +1068,5 @@ class SplashScreen(CommonDialog):
         tk.Toplevel.destroy(self)
         GetApp().MaxmizeWindow()
         GetApp().update()
-        GetApp().deiconify()
+        GetApp().RaiseWindow()
         GetApp().attributes("-alpha", 100)

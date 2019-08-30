@@ -145,7 +145,7 @@ def CheckForceupdate():
     app_version = apputils.get_app_version()
     check_url = '%s/member/check_force_update' % (UserDataDb.HOST_SERVER_ADDR)
     try:
-        req = requests.get(check_url,**{'app_version':app_version})
+        req = urlutils.RequestData(check_url,arg={'app_version':app_version})
         return req.get('force_update',False)
     except:
         return False
