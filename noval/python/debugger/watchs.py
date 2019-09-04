@@ -15,9 +15,11 @@ import noval.menu as tkmenu
 import noval.constants as constants
 from noval.python.parser.utils import py_sorted,py_cmp
 import noval.ttkwidgets.messagedialog as messagedialog
+import bz2
+from xml.dom.minidom import parseString
 
 ERROR_NAME_VALUE = "<errors:could not evaluate the value>"
-WATCH_TAB_NAME = "Watchs"
+
 
 def getAddWatchBitmap():
     return GetApp().GetImage("python/debugger/newWatch.png")
@@ -33,8 +35,6 @@ def getClearWatchBitmap():
     
 
 class CommonWatcher:
-    
-
     def GetItemIndex(self,parent,item):
         children = self.tree.get_children(parent)
         for i,child in enumerate(children):
@@ -134,6 +134,51 @@ class CommonWatcher:
         value = self.tree.item(item,"values")[0]
         dlg = messagedialog.ScrolledMessageDialog(GetApp().GetTopWindow(),title, value)
         dlg.ShowModal()
+        
+    def IntrospectCallback(self, is_watch=False):
+        '''
+            展开节点时实时获取节点的所有子节点的值
+        '''
+        item = self.tree.selection()[0]
+        if is_watch:
+            panel = "watchs"
+        else:
+            panel = "statckframe"
+        utils.get_logger().debug("In %s introspectCallback item is %s, pydata is %s" , panel,item, self.GetPyData(item))
+        if self.GetPyData(item) != "Introspect":
+            return
+        self._introspectItem = item
+        self._parentChain = self.GetItemChain(item)
+        self.OnIntrospect()
+
+    def OnIntrospect(self):
+        GetApp().configure(cursor="circle")
+        try:
+            try:
+                frameNode = self.GetFrameNode()
+                message = frameNode.getAttribute("message")
+                binType = GetApp().GetDebugger()._debugger_ui.framesTab.attempt_introspection(message, self._parentChain)
+                xmldoc = bz2.decompress(binType.data)
+                domDoc = parseString(xmldoc)
+                nodeList = domDoc.getElementsByTagName('replacement')
+                replacementNode = nodeList.item(0)
+                if len(replacementNode.childNodes):
+                    thingToWalk = replacementNode.childNodes.item(0)
+                    tree = self.tree
+                    parent = tree.parent(self._introspectItem)
+                    treeNode = self.AppendSubTreeFromNode(thingToWalk, thingToWalk.getAttribute('name'), parent, insertBefore=self._introspectItem)
+                    if thingToWalk.getAttribute('name').find('[') == -1:
+                        self.SortChildren(treeNode)
+                    tree.item(treeNode,open=True)
+                    tree.delete(self._introspectItem)
+            except:
+                utils.get_logger().exception('')
+
+        finally:
+            GetApp().configure(cursor="")
+            
+    def GetFrameNode(self):
+        assert False, "GetFrameNode not overridden"
 
 class Watch:
     CODE_ALL_FRAMES = 0
@@ -287,7 +332,13 @@ class WatchsPanel(treeviewframe.TreeViewFrame,CommonWatcher):
         self.watchs = Watch.Load()
         self.LoadWatches()
         self.menu = None
-   #     self.tree.bind("<<TreeviewOpen>>", self.IntrospectCallback)
+        self.tree.bind("<<TreeviewOpen>>", self.IntrospectCallback)
+
+    def IntrospectCallback(self, event):
+        '''
+            展开节点时实时获取节点的所有子节点的值
+        '''
+        CommonWatcher.IntrospectCallback(self,True)
         
     def ShowRoot(self,show=True):
         if show:
@@ -393,7 +444,7 @@ class WatchsPanel(treeviewframe.TreeViewFrame,CommonWatcher):
     def UpdateSubTreeFromNode(self, node, name, item):
         self.DeleteItemChild(item)
         self.tree.item(item,image=self.watch_expr_bmp)
-        CommonWatcher.UpdateSubTreeFromNode(self,node,name,item)
+        return CommonWatcher.UpdateSubTreeFromNode(self,node,name,item)
         
     def GetRootItem(self):
         return self._root
@@ -441,8 +492,11 @@ class WatchsPanel(treeviewframe.TreeViewFrame,CommonWatcher):
                 return i
         assert(False)
 
+    def GetFrameNode(self):
+        return GetApp().GetDebugger()._debugger_ui.framesTab.stackFrameTab.GetFrameNode()
+
 class WatchsViewLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)
     def Load(self):
-        GetApp().MainFrame.AddView(WATCH_TAB_NAME,WatchsPanel, _("Watchs"), "ne",image_file="python/debugger/watches.png")
+        GetApp().MainFrame.AddView(consts.WATCH_TAB_NAME,WatchsPanel, _("Watchs"), "ne",image_file="python/debugger/watches.png")
         

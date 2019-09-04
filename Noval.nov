@@ -431,7 +431,6 @@
   <noval:file filePath="./noval/bmp_source/debugger/watch.png" logicalFolder="noval/bmp_source/debugger"/>
   <noval:file filePath="./noval/bmp_source/debugger/watches.png" logicalFolder="noval/bmp_source/debugger"/>
   <noval:file filePath="./noval/bmp_source/debugger/watch_exp.png" logicalFolder="noval/bmp_source/debugger"/>
-  <noval:file filePath="./noval/EOLFormat.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/bmp_source/images/alipay.jpg" logicalFolder="noval/bmp_source/images"/>
   <noval:file filePath="./noval/bmp_source/images/banner_01.png" logicalFolder="noval/bmp_source/images"/>
   <noval:file filePath="./noval/bmp_source/images/banner_02.png" logicalFolder="noval/bmp_source/images"/>
@@ -547,7 +546,6 @@
   <noval:file filePath="./noval/preference.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/mttkinter/__init__.py" logicalFolder="noval/mttkinter"/>
   <noval:file filePath="./noval/mttkinter/mtTkinter.py" logicalFolder="noval/mttkinter"/>
-  <noval:file filePath="./noval/formatter.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/python/explain_environment.py" logicalFolder="noval/python"/>
   <noval:file filePath="./noval/generalopt.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/newTkDnD.py" logicalFolder="noval"/>
@@ -606,7 +604,6 @@
   <noval:file filePath="./noval/python/plugins/__init__.py" logicalFolder="noval/python/plugins"/>
   <noval:file filePath="./noval/python/plugins/pyshell.py" logicalFolder="noval/python/plugins"/>
   <noval:file filePath="./noval/python/plugins/outline.py" logicalFolder="noval/python/plugins"/>
-  <noval:file filePath="./noval/plugins/logmanager.py" logicalFolder="noval/plugins"/>
   <noval:file filePath="./noval/plugins/printer/__init__.py" logicalFolder="noval/plugins/printer"/>
   <noval:file filePath="./noval/plugins/printer/template.html" logicalFolder="noval/plugins/printer"/>
   <noval:file filePath="./noval/python/project/pages/__init__.py" logicalFolder="noval/python/project/pages"/>
@@ -633,6 +630,8 @@
   <noval:file filePath="./noval/python/debugger/inspectconsole.py" logicalFolder="noval/python/debugger"/>
   <noval:file filePath="./noval/python/debugger/executor.py" logicalFolder="noval/python/debugger"/>
   <noval:file filePath="./noval/python/debugger/commandui.py" logicalFolder="noval/python/debugger"/>
+  <noval:file filePath="./noval/editor/format.py" logicalFolder="noval/editor"/>
+  <noval:file filePath="G:/work/project/Noval/noval/plugins/logview.py" logicalFolder="noval/plugins"/>
   <noval:_properties>
     <noval:page name="Resource" item="root" objclass="noval.project.resource.ResourcePanel"/>
     <noval:page name="Debug/Run" item="root" objclass="noval.python.project.pages.debugrun.DebugRunPanel"/>

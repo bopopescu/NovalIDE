@@ -12,7 +12,6 @@
 from noval import _,consts,NewId
 from tkinter import messagebox
 import noval.ide as ide
-import noval.util.apputils as apputils
 import noval.python.interpreter.interpretermanager as interpretermanager
 from noval.util import strutils
 from noval.util import utils
@@ -20,13 +19,11 @@ import noval.constants as constants
 import noval.model as model
 import os
 import sys
-from noval.syntax import synglob
 import noval.syntax.lang as lang
 import noval.ui_utils as ui_utils
 import subprocess
 import noval.util.fileutils as fileutils
 import noval.terminal as terminal
-import noval.preference as preference
 import noval.ui_common as ui_common
 import noval.misc as misc
 
@@ -46,6 +43,7 @@ class PyIDEApplication(ide.IDEApplication):
         import intellisence
         from noval.project.document import ProjectDocument
         import noval.python.debugger.debugger as pythondebugger
+        import noval.preference as preference
         self._debugger_class = pythondebugger.PythonDebugger
         
         #pyc和pyo二进制文件类型禁止添加到项目中
@@ -53,10 +51,7 @@ class PyIDEApplication(ide.IDEApplication):
         self.interpreter_combo = self.MainFrame.GetToolBar().AddCombox()
         self.interpreter_combo.bind("<<ComboboxSelected>>",self.OnCombo)
         
-        self.LoadDefaultInterpreter()
-        self.AddInterpreters()
-        self.intellisence_mananger = intellisence.IntellisenceManager()
-        self.intellisence_mananger.generate_default_intellisence_data()
+
       
         if utils.is_windows():
             self.InsertCommand(consts.ID_FEEDBACK,constants.ID_OPEN_PYTHON_HELP,_("&Help"),_("&Python Help Document"),handler=self.OpenPythonHelpDocument,image=self.GetImage("pydoc.png"),pos="before")
@@ -86,9 +81,17 @@ class PyIDEApplication(ide.IDEApplication):
         self.AddCommand(constants.ID_CHECK_SYNTAX,_("&Run"),_("&Check Syntax..."),self.CheckSyntax,default_tester=True,default_command=True)
         self.AddCommand(constants.ID_SET_PARAMETER_ENVIRONMENT,_("&Run"),_("&Set Parameter And Environment"),self.SetParameterEnvironment,default_tester=True,default_command=True,image=self.GetImage('python/debugger/runconfig.png'))
         self.AddCommand(constants.ID_RUN_LAST,_("&Run"),_("&Run Using Last Settings"),self.RunLast,default_tester=True,default_command=True)
-        self.AddCommand(constants.ID_DEBUG_LAST,_("&Run"),_("&Debug Using Last Settings"),self.DebugLast,default_tester=True,default_command=True)     
+        self.AddCommand(constants.ID_DEBUG_LAST,_("&Run"),_("&Debug Using Last Settings"),self.DebugLast,default_tester=True,default_command=True,add_separator=True)    
+        
+        self.AddCommand(constants.ID_TOGGLE_BREAKPOINT,_("&Run"),_("&Toggle Breakpoint"),self.ToogleBreakPoint,default_tester=True,default_command=True,image=self.GetImage('python/debugger/breakpoint.png'))
+        self.AddCommand(constants.ID_CLEAR_ALL_BREAKPOINTS,_("&Run"),_("&Clear All Breakpoints"),self.ClearAllBreakPoints,default_tester=True,default_command=True) 
         #关闭软件启动图片
         self.CloseSplash()
+        
+        self.LoadDefaultInterpreter()
+        self.AddInterpreters()
+        self.intellisence_mananger = intellisence.IntellisenceManager()
+        self.intellisence_mananger.generate_default_intellisence_data()
         return True
         
     def open_turtle_demo(self, event = None):
@@ -99,7 +102,7 @@ class PyIDEApplication(ide.IDEApplication):
                '-c',
                'from turtledemo.__main__ import main; main()']
         #隐藏命令行黑框
-        if apputils.is_windows():
+        if utils.is_windows():
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             startupinfo.wShowWindow = subprocess.SW_HIDE
@@ -133,6 +136,16 @@ class PyIDEApplication(ide.IDEApplication):
     def SetParameterEnvironment(self):
         self.GetDebugger().SetParameterAndEnvironment()
         
+    def ToogleBreakPoint(self):
+        current_view = self.GetDocumentManager().GetCurrentView()
+        #只有python文件才能设置断点
+        if current_view is None or not hasattr(current_view,"ToogleBreakpoint"):
+            return
+        current_view.GetCtrl().ToogleBreakpoint()
+        
+    def ClearAllBreakPoints(self):
+        self.MainFrame.GetView(consts.BREAKPOINTS_TAB_NAME).ClearAllBreakPoints()
+        
     @misc.update_toolbar
     def LoadDefaultInterpreter(self):
         interpretermanager.InterpreterManager().LoadDefaultInterpreter()
@@ -148,6 +161,7 @@ class PyIDEApplication(ide.IDEApplication):
         '''
             加载python默认插件
         '''
+        ide.IDEApplication.LoadDefaultPlugins(self)
         consts.DEFAULT_PLUGINS += ("noval.python.project.browser.ProjectViewLoader",)
         consts.DEFAULT_PLUGINS += ('noval.python.plugins.pyshell.PyshellViewLoader',)
         consts.DEFAULT_PLUGINS += ('noval.python.plugins.outline.PythonOutlineViewLoader',)
@@ -158,8 +172,8 @@ class PyIDEApplication(ide.IDEApplication):
         consts.DEFAULT_PLUGINS += ('noval.python.debugger.stacksframe.StackframeViewLoader',)
         consts.DEFAULT_PLUGINS += ('noval.python.debugger.inspectconsole.InspectConsoleViewLoader',)
         
-
     def CreateLexerTemplates(self):
+        from noval.syntax import synglob
         #添加parser路径,导入模块时用相对路径即可.
         parser_path = os.path.join(utils.get_app_path(),"noval","python","parser")
         sys.path.append(parser_path)
@@ -281,7 +295,7 @@ class PyIDEApplication(ide.IDEApplication):
         env_overrides["PATH"] = ui_utils.get_augmented_system_path(exe_dirs) 
         #设置安装路径的环境变量,运行程序时需要在路径中移除此路径
         #python2.7中环境变量不能为unicode类型
-        env_overrides['MAIN_MODULE_APTH'] = str(apputils.mainModuleDir)
+        env_overrides['MAIN_MODULE_APTH'] = str(utils.get_app_path())
         explainer = os.path.join(os.path.dirname(__file__), "explain_environment.py")
         cmd = [target_executable, explainer]
         #检测是否虚拟解释器

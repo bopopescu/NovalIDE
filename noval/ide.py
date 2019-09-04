@@ -13,7 +13,7 @@
     尽量少在文件头部导入太多模块,会导致程序启动很慢
 '''
 import tkinter as tk
-from noval import core,imageutils,consts,_,Locale,menu
+from noval import core,imageutils,consts,_,Locale
 import noval.python.parser.utils as parserutils
 from dummy.userdb import UserDataDb
 from noval.util import utils
@@ -23,8 +23,6 @@ from pkg_resources import resource_filename
 import sys
 import noval.util.logger as logger
 import os
-import noval.frame as frame
-from noval.editor import imageviewer as imageviewer
 import noval.misc as misc
 import tkinter.font as tk_font
 from tkinter import ttk
@@ -37,7 +35,6 @@ from tkinter import messagebox
 import subprocess
 import noval.docposition as docposition
 import noval.ui_utils as ui_utils
-import noval.ui_lang as ui_lang
 import traceback
 import noval.ttkwidgets.messagedialog as messagedialog
 import noval.util.fileutils as fileutils
@@ -82,6 +79,7 @@ class IDEApplication(core.App):
         import noval.project.debugger as basedebugger
         import noval.project.baseviewer as baseprojectviewer
         import noval.project.document as projectdocument
+        from noval.editor import imageviewer as imageviewer
         #将tk程序的异常输出重定向
         tk.Tk.report_callback_exception = self._on_tk_exception
         self._open_project_path = None
@@ -240,6 +238,9 @@ class IDEApplication(core.App):
         '''
             默认插件在consts.DEFAULT_PLUGINS中指定
         '''
+        if self.GetDebug():
+            consts.DEFAULT_PLUGINS += ('noval.plugins.logview.LogViewLoader',)
+            
         
     def AppendDefaultCommand(self,command_id):
         self._default_command_ids.append(command_id)
@@ -369,7 +370,7 @@ class IDEApplication(core.App):
             self.locale.AddCatalog(name)
         
     def _InitMenu(self):
-        self._menu_bar = menu.MenuBar(self)
+        self._menu_bar = tkmenu.MenuBar(self)
         self.config(menu=self._menu_bar)
         self._menu_bar.GetFileMenu()
         self._menu_bar.GetEditMenu()
@@ -535,6 +536,7 @@ class IDEApplication(core.App):
         return imageutils.load_image("",file_name)
 
     def _InitMainFrame(self):
+        import noval.frame as frame
         self.frame = frame.DocTabbedParentFrame(self,None, None, -1, self.GetAppName(),tk.NSEW)
         self.columnconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)

@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 from noval import GetApp,_
+from tkinter import messagebox
 import noval.project.executor as executor
 import noval.util.strutils as strutils
+import noval.ui_common as ui_common
 
 class CommonExecutorMixin:
     def __init__(self):

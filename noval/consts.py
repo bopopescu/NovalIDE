@@ -42,7 +42,6 @@ PROJECT_DOCS_SAVED_KEY = "IsProjectSaveDocs"
 PROJECT_SAVE_DOCS_KEY  = "ProjectSavedDocs"
 ENABLE_MRU_KEY = "EnableMRU"
 MRU_LENGTH_KEY = "MRULength"
-CHECK_EOL_KEY = "CheckEOL"
 LANGUANGE_ID_KEY = "LanguageId"
 
 
@@ -113,3 +112,18 @@ PYTHON_PATH_NAME = 'PYTHONPATH'
 NOT_IN_ANY_PROJECT = "Not in any Project"
 
 DEFAULT_EDGE_GUIDE_WIDTH = 78
+
+EOL_CR = 0
+EOL_LF = 1
+EOL_CRLF = 2
+
+EOL_DIC = {
+    EOL_CR:"\r",
+    EOL_LF:"\n",
+    EOL_CRLF:"\r\n"
+}
+
+INTERACTCONSOLE_TAB_NAME = "InteractConsole"
+BREAKPOINTS_TAB_NAME = "Breakpoints"
+STACKFRAME_TAB_NAME = "StackFrame"
+WATCH_TAB_NAME = "Watchs"

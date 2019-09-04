@@ -34,5 +34,6 @@ DEFAULT_KEY_BINDS = {
     ID_UPPERCASE        :   'Ctrl+Shift+U',
     ID_LOWERCASE        :   'Ctrl+U',
     ID_CUT_LINE         :   'Ctrl+L',
-    ID_AUTO_COMPLETE    :   'Ctrl+space'
+    ID_AUTO_COMPLETE    :   'Ctrl+space',
+    ID_TOGGLE_BREAKPOINT:   'Ctrl+B'
 }

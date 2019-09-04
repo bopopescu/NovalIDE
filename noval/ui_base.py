@@ -17,8 +17,7 @@ import noval.constants as constants
 from tkinter import font as tkfont
 import noval.consts as consts
 from noval.python.parser.utils import py_cmp,py_sorted
-from PIL import Image
-from PIL import ImageTk
+import noval.imageutils as imageutils
 
 class ClosableNotebook(ttk.Notebook):
     def __init__(self, master, style="ButtonNotebook.TNotebook", **kw):
@@ -235,7 +234,26 @@ class TextviewFrame(ttk.Frame):
         final_text_options.update(text_options)
         self.text = text_class(self, **final_text_options)
         self.text.grid(row=0, column=2, sticky=tk.NSEW)
-
+        self.bp_margin = tk.Text(
+            self,
+            width=2,
+            padx=0,
+            pady=5,
+            highlightthickness=0,
+            bd=0,
+            takefocus=False,
+            font=self.text["font"],
+            background="#e0e0e0",
+            foreground=gutter_foreground,
+            selectbackground=gutter_background,
+            selectforeground=gutter_foreground,
+            cursor="arrow",
+            state="disabled",
+            undo=False,
+            wrap="none",
+        )
+        self.bp_margin.grid(row=0, column=0, sticky=tk.NSEW)
+        self.bp_bmp = imageutils.load_image("","python/debugger/breakmark.png")
         self._gutter = tk.Text(
             self,
             width=5,
@@ -316,16 +334,20 @@ class TextviewFrame(ttk.Frame):
 
     def set_gutter_visibility(self, value):
         if value and not self._gutter.winfo_ismapped():
-            self._gutter.grid(row=0, column=0, sticky=tk.NSEW)
+            self._gutter.grid(row=0, column=1, sticky=tk.NSEW)
         elif not value and self._gutter.winfo_ismapped():
             self._gutter.grid_forget()
 
         # insert first line number (NB! Without trailing linebreak. See update_gutter)
         self._gutter.config(state="normal")
+        self.bp_margin.config(state="normal")
         self._gutter.delete("1.0", "end")
+        self.bp_margin.delete("1.0", "end")
         for content, tags in self.compute_gutter_line(self._first_line_number):
             self._gutter.insert("end", content, ("content",) + tags)
+            self.bp_margin.insert("end", '', ("content",) + tags)
         self._gutter.config(state="disabled")
+        self.bp_margin.config(state="disabled")
 
         self.update_gutter()
 
@@ -344,6 +366,7 @@ class TextviewFrame(ttk.Frame):
     def _vertical_scrollbar_update(self, *args):
         self._vbar.set(*args)
         self._gutter.yview(tk.MOVETO, args[0])
+        self.bp_margin.yview(tk.MOVETO, args[0])
 
     def _gutter_scroll(self, *args):
         # FIXME: this doesn't work properly
@@ -360,6 +383,7 @@ class TextviewFrame(ttk.Frame):
     def _vertical_scroll(self, *args):
         self.text.yview(*args)
         self._gutter.yview(*args)
+        self.bp_margin.yview(*args)
 
     def _horizontal_scroll(self, *args):
         self.text.xview(*args)
@@ -371,18 +395,23 @@ class TextviewFrame(ttk.Frame):
 
         if clean:
             self._gutter.config(state="normal")
+            self.bp_margin.config(state="normal")
             self._gutter.delete("1.0", "end")
+            self.bp_margin.delete("1.0", "end")
             # need to add first item separately, because Text can't report 0 rows
             for content, tags in self.compute_gutter_line(self._first_line_number):
                 self._gutter.insert("end-1c", content, tags + ("content",))
+                self.bp_margin.insert("end", '', ("content",) + tags)
 
             self._gutter.config(state="disabled")
+            self.bp_margin.config(state="disabled")
 
         text_line_count = int(self.text.index("end").split(".")[0])
         gutter_line_count = int(self._gutter.index("end").split(".")[0])
 
         if text_line_count != gutter_line_count:
             self._gutter.config(state="normal")
+            self.bp_margin.config(state="normal")
 
             # NB! Text acts weird with last symbol
             # (don't really understand whether it automatically keeps a newline there or not)
@@ -392,17 +421,22 @@ class TextviewFrame(ttk.Frame):
                 start = gutter_line_count + self._first_line_number - 1
                 for i in range(start, start + delta):
                     self._gutter.insert("end-1c", "\n", ("content",))
+                    self.bp_margin.insert("end-1c", "\n", ("content",))
                     for content, tags in self.compute_gutter_line(i):
                         self._gutter.insert("end-1c", content, ("content",) + tags)
+                        self.bp_margin.insert("end-1c","",("content",) + tags)
             else:
                 self._gutter.delete(line2index(text_line_count) + "-1c", "end-1c")
+                self.bp_margin.delete(line2index(text_line_count) + "-1c", "end-1c")
 
             self._gutter.config(state="disabled")
+            self.bp_margin.config(state="disabled")
 
         # synchronize gutter scroll position with text
         # https://mail.python.org/pipermail/tkinter-discuss/2010-March/002197.html
         first, _ = self.text.yview()
         self._gutter.yview_moveto(first)
+        self.bp_margin.yview_moveto(first)
         self._update_gutter_active_line()
 
     def _update_gutter_active_line(self):
@@ -460,7 +494,7 @@ class TextviewFrame(ttk.Frame):
                 self.text.tag_remove("sel", "1.0", "end")
         except tk.TclError:
             exception("on_gutter_click")
-
+            
     def on_gutter_motion(self, event=None):
         try:
             linepos = int(
@@ -483,6 +517,7 @@ class TextviewFrame(ttk.Frame):
         background = style.lookup("GUTTER", "background")
         if background:
             self._gutter.configure(background=background, selectbackground=background)
+            self.bp_margin.configure(background=background, selectbackground=background)
             self._margin_line.configure(background=background)
 
         foreground = style.lookup("GUTTER", "foreground")
@@ -1047,7 +1082,7 @@ class SplashScreen(CommonDialog):
         self.overrideredirect(True)
         #窗口置顶
         self.wm_attributes('-topmost',1)
-        self.img = ImageTk.PhotoImage(Image.open(image_path))
+        self.img = imageutils.load_image("",image_path)
         self.geometry("{}x{}".format(self.img.width(), self.img.height()))
         label = tk.Label(self.main_frame, image=self.img,compound='center',bg="white")
         #label = tk.Label(self, image=self.img,compound='center')

@@ -11,8 +11,7 @@ import noval.constants as constants
 import noval.util.utils as utils
 import bz2
 from xml.dom.minidom import parseString
-
-STACKFRAME_TAB_NAME = "StackFrame"
+import noval.consts as consts
 
 class StackFrameTab(ttk.Frame,watchs.CommonWatcher):
     """description of class"""
@@ -42,7 +41,6 @@ class StackFrameTab(ttk.Frame,watchs.CommonWatcher):
         self.tree["show"] = ("headings", "tree")
         self.treeview.pack(fill="both",expand=1)
         row.pack(fill="both",expand=1)
-      #  self._treeCtrl.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.OnRightClick)
         self._root = self.tree.insert("","end",text="Frame")
         #tree.SetPyData(self._root, "root")
         #tree.SetItemText(self._root, "", 1)
@@ -52,6 +50,8 @@ class StackFrameTab(ttk.Frame,watchs.CommonWatcher):
         
 
     def OnRightClick(self, event):
+        if not self.tree.selection():
+            return
         #Refactor this...
         self._introspectItem = self.tree.selection()[0]
         self._parentChain = self.GetItemChain(self._introspectItem)
@@ -112,39 +112,10 @@ class StackFrameTab(ttk.Frame,watchs.CommonWatcher):
         '''
             展开节点时实时获取节点的所有子节点的值
         '''
-        item = self.tree.selection()[0]
-        utils.get_logger().debug("In introspectCallback item is %s, pydata is %s" , item, self.GetPyData(item))
-        if self.GetPyData(item) != "Introspect":
-            return
-        self._introspectItem = item
-        self._parentChain = self.GetItemChain(item)
-        self.OnIntrospect()
+        watchs.CommonWatcher.IntrospectCallback(self)
         
-    def OnIntrospect(self):
-        GetApp().configure(cursor="circle")
-        try:
-            try:
-                frameNode = self._stack[int(self.currentItem)]
-                message = frameNode.getAttribute("message")
-                binType = GetApp().GetDebugger()._debugger_ui.framesTab.attempt_introspection(message, self._parentChain)
-                xmldoc = bz2.decompress(binType.data)
-                domDoc = parseString(xmldoc)
-                nodeList = domDoc.getElementsByTagName('replacement')
-                replacementNode = nodeList.item(0)
-                if len(replacementNode.childNodes):
-                    thingToWalk = replacementNode.childNodes.item(0)
-                    tree = self.tree
-                    parent = tree.parent(self._introspectItem)
-                    treeNode = self.AppendSubTreeFromNode(thingToWalk, thingToWalk.getAttribute('name'), parent, insertBefore=self._introspectItem)
-                    if thingToWalk.getAttribute('name').find('[') == -1:
-                        self.SortChildren(treeNode)
-                    tree.item(treeNode,open=True)
-                    tree.delete(self._introspectItem)
-            except:
-                utils.get_logger().exception('')
-
-        finally:
-            GetApp().configure(cursor="")
+    def GetFrameNode(self):
+        return self._stack[int(self.currentItem)]
             
     def PopulateTreeFromFrameNode(self, frameNode):
         self._framesChoiceCtrl['state'] = 'readonly'
@@ -228,5 +199,5 @@ class StackFrameTab(ttk.Frame,watchs.CommonWatcher):
 class StackframeViewLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)
     def Load(self):
-        GetApp().MainFrame.AddView(STACKFRAME_TAB_NAME,StackFrameTab, _("Stack Frame"), "se",image_file="python/debugger/flag.ico")
+        GetApp().MainFrame.AddView(consts.STACKFRAME_TAB_NAME,StackFrameTab, _("Stack Frame"), "se",image_file="python/debugger/flag.ico")
         

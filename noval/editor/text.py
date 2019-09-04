@@ -38,6 +38,7 @@ import noval.python.pyutils as pyutils
 import noval.ui_utils as ui_utils
 import noval.syntax.syntax as syntax
 import noval.find.findtext as findtext
+import noval.editor.format as textformat
 
 def classifyws(s, tabwidth):
     raw = effective = 0
@@ -430,7 +431,42 @@ class TextView(misc.AlarmEventView):
         if not keep_undo:
             self.GetCtrl().edit_reset()
         self._text_frame.update_gutter()
+        self.GetCtrl().after(100,self.CheckEol,value)
         
+    def CheckEol(self,value):
+        end_line = self.GetCtrl().get_line_col(self.GetCtrl().index('end'))[0]
+        check_mixed_eol = utils.profile_get_int("check_mixed_eol",False)
+        #检查混合行尾时检查全部行,否则只检查前10行文本作为eol的判断依据
+        if not check_mixed_eol:
+            end_line = min(end_line,10)
+        mixed = False
+        tmp = None
+        line_eol = None
+        for cur in range(1, end_line):
+            txt = self.GetCtrl().get('%i.0' % cur, '%i.end' % cur)
+            txt2 = self.GetCtrl().get('%i.0' % cur, '%i.end+1c' % cur)
+            if txt.endswith(consts.EOL_DIC[consts.EOL_CR]) and txt2.endswith(consts.EOL_DIC[consts.EOL_LF]):
+                self.GetCtrl().SetEol(consts.EOL_CRLF)
+                line_eol = consts.EOL_CRLF
+            #最后一行总是在最后添加\n换行符,故排除最后一行
+            elif txt2.endswith(consts.EOL_DIC[consts.EOL_LF]) and cur != (end_line-1):
+                self.GetCtrl().SetEol(consts.EOL_LF)
+                line_eol = consts.EOL_LF
+            elif txt.endswith(consts.EOL_DIC[consts.EOL_CR]):
+                self.GetCtrl().SetEol(consts.EOL_CR)
+                line_eol = consts.EOL_CR
+            if check_mixed_eol:
+                if line_eol and not tmp:
+                    tmp = line_eol
+                elif tmp:
+                    if line_eol != tmp:
+                        mixed = True
+                        break
+        if mixed:
+            dlg = textformat.EOLFormatDlg(self.GetFrame(),self)
+            if dlg.ShowModal() == constants.ID_OK:
+                self.GetCtrl().SetEol(dlg.eol)
+                self.GetCtrl().edit_modified(True)
     @docposition.jump
     def GotoLine(self,line):
         self.GetCtrl().GotoLine(line)
@@ -543,7 +579,7 @@ class TextView(misc.AlarmEventView):
             return self.GetDocument().IsModified()
         elif command_id in [constants.ID_INSERT_COMMENT_TEMPLATE,constants.ID_INSERT_DECLARE_ENCODING,constants.ID_UNITTEST,constants.ID_COMMENT_LINES,constants.ID_UNCOMMENT_LINES,\
                         constants.ID_RUN,constants.ID_DEBUG,constants.ID_GOTO_DEFINITION,constants.ID_SET_EXCEPTION_BREAKPOINT,constants.ID_STEP_INTO,constants.ID_STEP_NEXT,constants.ID_RUN_LAST,\
-                    constants.ID_CHECK_SYNTAX,constants.ID_SET_PARAMETER_ENVIRONMENT,constants.ID_DEBUG_LAST,constants.ID_START_WITHOUT_DEBUG,constants.ID_AUTO_COMPLETE]:
+                    constants.ID_CHECK_SYNTAX,constants.ID_SET_PARAMETER_ENVIRONMENT,constants.ID_DEBUG_LAST,constants.ID_START_WITHOUT_DEBUG,constants.ID_AUTO_COMPLETE,constants.ID_TOGGLE_BREAKPOINT]:
             return False
         elif command_id == constants.ID_UNDO:
             return self.GetCtrl().CanUndo()
@@ -553,8 +589,10 @@ class TextView(misc.AlarmEventView):
             return self.GetCtrl().CanCopy()
         elif command_id == constants.ID_PASTE:
             return True
-        elif command_id in [constants.ID_UPPERCASE,constants.ID_LOWERCASE]:
+        elif command_id in [constants.ID_UPPERCASE,constants.ID_LOWERCASE,constants.ID_CLEAN_WHITESPACE,constants.ID_TAB_SPACE,constants.ID_SPACE_TAB]:
             return self.GetCtrl().HasSelection()
+        elif command_id in [constants.ID_EOL_MAC,constants.ID_EOL_UNIX,constants.ID_EOL_WIN]:
+            GetApp().MainFrame.GetNotebook().eol_var.set(self.GetCtrl().eol)
         return True
         
 class TextCtrl(ui_base.TweakableText):
@@ -584,6 +622,7 @@ class TextCtrl(ui_base.TweakableText):
         self.indent_width = 4
         self.indent_with_tabs = indent_with_tabs
         self.replace_tabs = replace_tabs
+        self.eol = GetApp().MainFrame.GetNotebook().eol_var.get()
 
         self._last_event_kind = None
         self._last_key_time = None
@@ -608,6 +647,12 @@ class TextCtrl(ui_base.TweakableText):
         self.bind("<<TextChange>>", self._tag_current_line, True)
         if tag_current_line:
             self._tag_current_line()
+            
+    def GetEol(self):
+        return self.eol
+        
+    def SetEol(self,eol):
+        self.eol = eol
         
     def SetTagCurrentLine(self,tag_current_line=False):
         self._should_tag_current_line = tag_current_line
@@ -1326,7 +1371,7 @@ class TextCtrl(ui_base.TweakableText):
         #tkintext text控件只支持\n换行符,保存文件时,需要全部处理\r换行符
         chars = value.replace("\r", "")
         #如果是windows系统,则适应windows换行符
-        if utils.is_windows():
+        if self.eol == consts.EOL_CRLF:
             chars = chars.replace("\n", "\r\n")
         return chars
         
@@ -1389,6 +1434,26 @@ class TextCtrl(ui_base.TweakableText):
 
     def AddText(self,txt):
         self.insert("insert", txt)
+        
+    def tabify_region(self):
+        head, tail, chars, lines = self._get_region()
+        tabwidth = 4
+        if tabwidth is None: return
+        for pos in range(len(lines)):
+            line = lines[pos]
+            if line:
+                raw, effective = classifyws(line, tabwidth)
+                ntabs, nspaces = divmod(effective, tabwidth)
+                lines[pos] = '\t' * ntabs + ' ' * nspaces + line[raw:]
+        self._set_region(head, tail, chars, lines)
+
+    def untabify_region(self):
+        head, tail, chars, lines = self._get_region()
+        tabwidth = 4
+        if tabwidth is None: return
+        for pos in range(len(lines)):
+            lines[pos] = lines[pos].expandtabs(tabwidth)
+        self._set_region(head, tail, chars, lines)
 
 class SyntaxTextCtrl(TextCtrl,findtext.FindTextEngine):
     '''

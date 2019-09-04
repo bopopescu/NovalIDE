@@ -6,7 +6,8 @@ from tkinter import ttk,messagebox
 import tkinter as tk
 import noval.editor.text as texteditor
 import noval.ttkwidgets.textframe as textframe
-from noval.python.debugger.commandui import BaseDebuggerUI,INTERACTCONSOLE_TAB_NAME
+from noval.python.debugger.commandui import BaseDebuggerUI
+import noval.consts as consts
 
 class InspectConsoleTab(ttk.Frame):
     """description of class"""
@@ -115,5 +116,5 @@ class InspectConsoleTab(ttk.Frame):
 class InspectConsoleViewLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)
     def Load(self):
-        GetApp().MainFrame.AddView(INTERACTCONSOLE_TAB_NAME,InspectConsoleTab, _("Interact"), "e",image_file="python/debugger/interact.png")
+        GetApp().MainFrame.AddView(consts.INTERACTCONSOLE_TAB_NAME,InspectConsoleTab, _("Interact"), "e",image_file="python/debugger/interact.png")
         

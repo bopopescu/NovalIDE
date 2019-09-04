@@ -89,7 +89,7 @@ class DocumentOptionsPanel(ui_utils.BaseConfigurationPanel):
         chkModifyCheckBox = ttk.Checkbutton(self, text=_("Check if on disk file has been modified by others"),variable=self._chkModifyCheckVar)
         chkModifyCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
         
-        self._chkEOLCheckVar = tk.IntVar(value=utils.profile_get_int(consts.CHECK_EOL_KEY, False))
+        self._chkEOLCheckVar = tk.IntVar(value=utils.profile_get_int("check_mixed_eol", False))
         chkEOLCheckBox = ttk.Checkbutton(self, text=_("Warn when mixed eol characters are detected"),variable=self._chkEOLCheckVar)
         chkEOLCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
         
@@ -111,6 +111,7 @@ class DocumentOptionsPanel(ui_utils.BaseConfigurationPanel):
        # utils.profile_set(consts.CHECK_EOL_KEY, self._chkEOLCheckBox.GetValue())
         template = self.templates[self.document_types_combox.current()]
         utils.profile_set("DefaultDocumentType",template.GetDocumentName())
+        utils.profile_set("check_mixed_eol",self._chkEOLCheckVar.get())
         return True
 
     def GetDocumentTypes(self):

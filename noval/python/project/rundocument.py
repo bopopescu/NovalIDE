@@ -8,6 +8,7 @@ import noval.python.pyutils as pyutils
 import uuid
 from noval.python.debugger.commandui import *
 import noval.python.project.runconfiguration as runconfiguration
+import noval.consts as consts
 
 '''
     运行python文件或者项目
@@ -130,6 +131,10 @@ class PythonProjectDocument(ProjectDocument):
         return run_parameter
 
     def IsProjectContainBreakPoints(self):
+        masterBPDict = GetApp().MainFrame.GetView(consts.BREAKPOINTS_TAB_NAME).GetMasterBreakpointDict()
+        for key in masterBPDict:
+            if self.GetModel().FindFile(key) and len(masterBPDict[key]) > 0:
+                return True
         return False
         
     def GetRunParameter(self,filetoRun=None,is_break_debug=False):

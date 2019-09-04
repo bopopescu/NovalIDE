@@ -31,9 +31,10 @@ import noval.find.find as findtext
 import noval.find.findindir as findindir 
 from noval.editor import text as texteditor
 import noval.docposition as docposition
-import noval.formatter as formatter
+import noval.editor.format as textformat
 import datetime
 import noval.project.variables as variablesutils
+import noval.ui_utils as ui_utils
 
 class EditorNotebook(ui_base.ClosableNotebook):
     """
@@ -59,6 +60,7 @@ class EditorNotebook(ui_base.ClosableNotebook):
             
         GetApp().bind("InitTkDnd",self.SetDropTarget,True)
         self.images = []
+        self.eol_var = tk.IntVar(value=ui_utils.get_default_eol())
         
     def SetDropTarget(self,event):
         
@@ -363,6 +365,22 @@ class EditorNotebook(ui_base.ClosableNotebook):
                                             
         GetApp().AddCommand(constants.ID_TAB_SPACE,_("&Format"),_("Tabs To Spaces"),lambda:self.ProcessFormatterEvent(constants.ID_TAB_SPACE), default_tester=True,default_command=True)
         GetApp().AddCommand(constants.ID_SPACE_TAB,_("&Format"), _("Spaces To Tabs"), lambda:self.ProcessFormatterEvent(constants.ID_SPACE_TAB),default_tester=True,default_command=True)
+        GetApp().AddCommand(constants.ID_CLEAN_WHITESPACE,_("&Format"), _("Clean trailing whitespace"), lambda:self.ProcessFormatterEvent(constants.ID_CLEAN_WHITESPACE),default_tester=True,default_command=True)
+        
+        format_menu = GetApp().Menubar.GetMenu(_("&Format"))
+        GetApp().AddMenuCommand(constants.ID_USE_TABS, format_menu,_("Use &Tabs"),lambda:self.ProcessFormatterEvent(constants.ID_TAB_SPACE), default_tester=True,default_command=True,kind=consts.CHECK_MENU_ITEM_KIND)
+        GetApp().AddCommand(constants.ID_SET_INDENT_WIDTH, _("&Format"),_("&Set Indent Width..."),lambda:self.ProcessFormatterEvent(constants.ID_SET_INDENT_WIDTH), default_tester=True,default_command=True)
+            
+        
+        lineformat_menu = tkmenu.PopupMenu()
+        format_menu.AppendMenu(constants.ID_EOL_MODE, _("&EOL Mode"),lineformat_menu)
+        
+        GetApp().AddMenuCommand(constants.ID_EOL_MAC,lineformat_menu,_(textformat.EOLFormatDlg.EOL_CHOICES[0]),lambda:self.ProcessFormatterEvent(constants.ID_EOL_MAC),default_command=True,\
+                            default_tester=True,kind=consts.RADIO_MENU_ITEM_KIND,value=consts.EOL_CR,variable=self.eol_var)
+        GetApp().AddMenuCommand(constants.ID_EOL_UNIX,lineformat_menu,_(textformat.EOLFormatDlg.EOL_CHOICES[1]),lambda:self.ProcessFormatterEvent(constants.ID_EOL_UNIX),default_command=True,\
+                                default_tester=True,kind=consts.RADIO_MENU_ITEM_KIND,value=consts.EOL_LF,variable=self.eol_var)
+        GetApp().AddMenuCommand(constants.ID_EOL_WIN,lineformat_menu,_(textformat.EOLFormatDlg.EOL_CHOICES[2]),lambda:self.ProcessFormatterEvent(constants.ID_EOL_WIN),default_command=True,\
+                                default_tester=True,kind=consts.RADIO_MENU_ITEM_KIND,value=consts.EOL_CRLF,variable=self.eol_var) 
 
         advanceMenu = tkmenu.PopupMenu()
         edit_menu.AppendMenu(constants.ID_ADVANCE, _("&Advance"),advanceMenu)
@@ -390,8 +408,7 @@ class EditorNotebook(ui_base.ClosableNotebook):
                             
 
     def ProcessFormatterEvent(self,event_id):
-
-        opj = formatter.Formatter(self.get_current_editor())
+        opj = textformat.Formatter(self.get_current_editor())
         if event_id == constants.ID_COMMENT_LINES:
             opj.CommentRegion()
         elif event_id == constants.ID_UNCOMMENT_LINES:
@@ -406,6 +423,14 @@ class EditorNotebook(ui_base.ClosableNotebook):
             opj.LowerCase()
         elif event_id == constants.ID_FIRST_UPPERCASE:
             opj.FirstUppercase()
+        elif event_id == constants.ID_TAB_SPACE:
+            opj.untabify_region()
+        elif event_id == constants.ID_SPACE_TAB:
+            opj.tabify_region()
+        elif event_id == constants.ID_CLEAN_WHITESPACE:
+            opj.do_rstrip()
+        elif event_id in [constants.ID_EOL_MAC,constants.ID_EOL_WIN,constants.ID_EOL_UNIX]:
+            opj.do_eol(event_id)
         elif event_id in [constants.ID_COPY_LINE,constants.ID_CUT_LINE,constants.ID_DELETE_LINE,constants.ID_CLONE_LINE]:
             opj.EditLineEvent(event_id)
         

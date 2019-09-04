@@ -481,3 +481,14 @@ def no_implemented_yet(func):
     def _wrapper(*args, **kwargs): 
         messagebox.showwarning(GetApp().GetAppName(),_("This function does not implemented yet!"))
     return _wrapper 
+    
+
+def get_default_eol():
+    '''
+        返回操作系统默认的行尾模式
+    '''
+    if utils.is_windows():
+        return consts.EOL_CRLF
+    elif utils.is_linux():
+        return consts.EOL_LF
+    return consts.EOL_CR

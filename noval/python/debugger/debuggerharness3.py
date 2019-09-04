@@ -467,17 +467,34 @@ class DebuggerHarness(object):
             return output.getvalue()   
                
     def attempt_introspection(self, frame_message, chain):
+        
+        def get_item(source_item,name,chain):
+            item = source_item
+            for name in chain:
+                item = self.getNextItem(item, name)
+            return item,name
         try:
             frame = self.message_frame_dict[frame_message]
             if frame:
-                name = chain.pop(0)
+                name = chain[0]
                 if name == 'globals':
-                    item = frame.f_globals
+                    chain.pop(0)
+                    items = [frame.f_globals]
                 elif name == 'locals':
-                    item = frame.f_locals
- 
-                for name in chain:
-                    item = self.getNextItem(item, name)
+                    chain.pop(0)
+                    items = [frame.f_locals]
+                else:
+                    items = [frame.f_globals,frame.f_locals]
+                if 1 == len(items):
+                    item,name = get_item(items[0],name,chain)
+                else:
+                    item = None
+                    source_name = name
+                    for source_item in items:
+                        value,item_name = get_item(source_item,source_name,chain)
+                        if value is not None:
+                            item = value
+                        name = item_name
                 return self.get_introspection_document(item, name)
         except:
             tp, val, tb = sys.exc_info()
@@ -490,7 +507,7 @@ class DebuggerHarness(object):
             return self.deTupleize(link, identifier)
         else:
             if tp is dict or tp == types.MappingProxyType:
-                return link[identifier]
+                return link.get(identifier,None)
             else:
                 if hasattr(link, identifier):
                     return getattr(link, identifier)

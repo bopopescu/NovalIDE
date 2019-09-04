@@ -11,6 +11,7 @@ import os
 import noval.constants as constants
 import noval.consts as consts
 import noval.util.strutils as strutils
+import noval.util.utils as utils
 
 class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
     '''
@@ -67,9 +68,8 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         return "break"
       
     def OnChar(self, event):
-        tags = ("io",'stdin')
         c = event.char
-        texteditor.TextCtrl.intercept_insert(self, "insert", c, tags)
+        self.AddInputTags(c)
         #纪录输入的字符
         self.inputText += c
         return "break"
@@ -190,49 +190,21 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         else:
             #enable back delete key
             self.CmdKeyAssign(wx.stc.STC_KEY_BACK ,0,wx.stc.STC_CMD_DELETEBACK)
-    
-    def OnKeyPressed(self, event):
-        #when ctrl is read only,disable all key events
-        if self.GetReadOnly():
-            return
-        key = event.GetKeyCode()
-        if key in [wx.WXK_LEFT,wx.WXK_UP,wx.WXK_RIGHT,wx.WXK_DOWN]:
-            event.Skip()
-            return
-        if self.GetCurrentPos() < self.InputStartPos:
-            return
-        if self.IsFirstInput:
-            self.InputStartPos = self.GetCurrentPos()
-            self.IsFirstInput = False
-        self.SetInputStyle()
-        if key == wx.WXK_RETURN:
-            inputText = self.GetRange(self.InputStartPos,self.GetCurrentPos())
-            #should colorize last input char
-            if self.GetCurrentPos() - 1 >= 0:
-                self.StartStyling(self.GetCurrentPos()-1, 31)
-                self.SetStyling(1, self.INPUT_COLOR_STYLE)
-            self.AddText('\n')
-            self._executor.WriteInput(inputText + "\n")
-            self.IsFirstInput = True
-        else:
-            pos = self.GetCurrentPos()
-            event.Skip()
-            if pos-1 >= 0:
-                #should colorize input char from last pos
-                self.StartStyling(pos-1, 31)
-                self.SetStyling(1, self.INPUT_COLOR_STYLE)
                 
     def SetExecutor(self,executor):
         self._executor = executor
         
     def AddInputText(self,text):
-        self.SetReadOnly(False)
-        self.SetInputStyle()
-        pos = self.GetCurrentPos()
-        self.AddText(text+"\n")
-        self.StartStyling(pos, 31)
-        self.SetStyling(len(text), self.INPUT_COLOR_STYLE)
-        self.SetReadOnly(True)
+        self.set_read_only(False)
+        self.AddInputTags(text)
+        self.set_read_only(True)
+        
+    def AddInputTags(self,text):
+        '''
+            设置输入文本标签,渲染颜色
+        '''
+        tags = ("io",'stdin')
+        texteditor.TextCtrl.intercept_insert(self, "insert", text, tags)
         
 
 class CommononOutputview(ttk.Frame):

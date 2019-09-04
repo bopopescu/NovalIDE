@@ -17,13 +17,9 @@ except ImportError:
     from xmlrpc.server import SimpleXMLRPCServer
 import os
 import threading
-import noval.project.basemodel as projectlib
 import types
 from xml.dom.minidom import parse, parseString
 import bz2
-import pickle
-import traceback
-import noval.util.apputils as sysutilslib
 import subprocess
 import shutil
 import noval.python.interpreter.interpreter as pythoninterpreter
@@ -32,14 +28,11 @@ import copy
 import noval.util.appdirs as appdirs
 import noval.util.utils as utils
 import noval.python.project.runconfig as runconfig
-import noval.python.debugger.breakpoints as breakpoints
 import noval.python.debugger.watchs as watchs
-import noval.python.debugger.stacksframe as stacksframe
 import pickle
 import noval.util.timer as pytimer
 import noval.constants as constants
 import noval.ui_base as ui_base
-import noval.ui_common as ui_common
 import noval.util.fileutils as fileutils
 import noval.consts as consts
 from noval.project.debugger import *
@@ -50,19 +43,24 @@ if utils.is_py2():
     import noval.python.debugger.debuggerharness as debuggerharness
 elif utils.is_py3_plus():
     import noval.python.debugger.debuggerharness3 as debuggerharness
+    
+try:
+    import tkSimpleDialog
+except ImportError:
+    import tkinter.simpledialog as tkSimpleDialog
 
 #VERBOSE mode will invoke threading.Thread _VERBOSE,which will print a lot of thread debug text on screen
 _VERBOSE = True
 _WATCHES_ON = True
 EVT_DEBUG_INTERNAL = "EVT_DEBUG_INTERNAL"
-INTERACTCONSOLE_TAB_NAME = "InteractConsole"
+
 
 def ShowBreakdebugViews(show=True):
 
-    GetApp().MainFrame.GetCommonView(stacksframe.STACKFRAME_TAB_NAME,show=show)
-    GetApp().MainFrame.GetCommonView(INTERACTCONSOLE_TAB_NAME,show=show)
-    GetApp().MainFrame.GetCommonView(breakpoints.BREAKPOINTS_TAB_NAME,show=show)
-    GetApp().MainFrame.GetCommonView(watchs.WATCH_TAB_NAME,show=show)
+    GetApp().MainFrame.GetCommonView(consts.STACKFRAME_TAB_NAME,show=show)
+    GetApp().MainFrame.GetCommonView(consts.INTERACTCONSOLE_TAB_NAME,show=show)
+    GetApp().MainFrame.GetCommonView(consts.BREAKPOINTS_TAB_NAME,show=show)
+    GetApp().MainFrame.GetCommonView(consts.WATCH_TAB_NAME,show=show)
 
 
 class RunCommandUI(CommonRunCommandUI):
@@ -508,8 +506,7 @@ class PythonDebuggerUI(BaseDebuggerUI):
             if _VERBOSE: print ("Port ", str(port), " available.")
             return True
         except:
-            tp,val,tb = sys.exc_info()
-            if _VERBOSE: traceback.print_exception(tp, val, tb)
+            utils.get_logger().exception('')
             if _VERBOSE: print ("Port ", str(port), " unavailable.")
             return False
 
@@ -583,8 +580,7 @@ class PythonDebuggerUI(BaseDebuggerUI):
             try:
                 self._callback.ShutdownServer()
             except:
-                tp,val,tb = sys.exc_info()
-                traceback.print_exception(tp, val, tb)
+                utils.get_logger().exception('')
 
             try:
                 self.DeleteCurrentLineMarkers()
@@ -602,8 +598,7 @@ class PythonDebuggerUI(BaseDebuggerUI):
                     self.framesTab.ResetWatchs()
                     self._executor = None
             except:
-                tp,val,tb = sys.exc_info()
-                traceback.print_exception(tp, val, tb)
+                utils.get_logger().exception('')
 
 
     def MakeFramesUI(self):
@@ -653,17 +648,17 @@ class PythonDebuggerUI(BaseDebuggerUI):
         
         if not self._stopped:
             self._restarted = True
-            self.StopExecution(None)
+            self.StopExecution()
         else:
             self.RestartDebuggerProcess()
             
     def RestartDebuggerProcess(self):
         
         if BaseDebuggerUI.DebuggerRunning():
-            wx.MessageBox(_("A debugger is already running. Please shut down the other debugger first."), _("Debugger Running"))
+            messagebox.showinfo( _("Debugger Running"),_("A debugger is already running. Please shut down the other debugger first."))
             return
 
-        self.OnClearOutput(None)
+        self.OnClearOutput()
         self._tb.EnableTool(self.KILL_PROCESS_ID, True)
         self._stopped = False
         self.CheckPortAvailable()
@@ -677,23 +672,23 @@ class PythonDebuggerUI(BaseDebuggerUI):
         if not PythonDebuggerUI.PortAvailable(int(self._debuggerBreakPort)):
             old_debuggerBreakPort = self._debuggerBreakPort
             self._debuggerPort = str(PythonDebuggerUI.GetAvailablePort())
-            utils.GetLogger().warn("debugger break server port %s is not available,will use new port %s",old_debuggerBreakPort,self._debuggerPort)
+            utils.get_logger().warn("debugger break server port %s is not available,will use new port %s",old_debuggerBreakPort,self._debuggerPort)
         else:
-            utils.GetLogger().debug("when restart debugger ,break server port %s is still available",self._debuggerBreakPort)
+            utils.get_logger().debug("when restart debugger ,break server port %s is still available",self._debuggerBreakPort)
 
         if not PythonDebuggerUI.PortAvailable(int(self._guiPort)):
             old_guiPort = self._guiPort
             self._guiPort = str(PythonDebuggerUI.GetAvailablePort())
-            utils.GetLogger().warn("debugger gui server port %s is not available,will use new port %s",old_guiPort,self._guiPort)
+            utils.get_logger().warn("debugger gui server port %s is not available,will use new port %s",old_guiPort,self._guiPort)
         else:
-            utils.GetLogger().debug("when restart debugger ,gui server port %s is still available",self._guiPort)
+            utils.get_logger().debug("when restart debugger ,gui server port %s is still available",self._guiPort)
             
         if not PythonDebuggerUI.PortAvailable(int(self._debuggerPort)):
             old_debuggerPort = self._debuggerPort
             self._debuggerPort = str(PythonDebuggerUI.GetAvailablePort())
-            utils.GetLogger().warn("debugger server port %s is not available,will use new port %s",old_debuggerPort,self._debuggerPort)
+            utils.get_logger().warn("debugger server port %s is not available,will use new port %s",old_debuggerPort,self._debuggerPort)
         else:
-            utils.GetLogger().debug("when restart debugger ,debugger server port %s is still available",self._debuggerPort)
+            utils.get_logger().debug("when restart debugger ,debugger server port %s is still available",self._debuggerPort)
             
 
 class BaseFramesUI:
@@ -746,10 +741,10 @@ class PythonFramesUI(BaseFramesUI):
     def __init__(self, output):
         BaseFramesUI.__init__(self, output)
         #强制显示断点调式有关的视图
-        self.breakPointsTab = GetApp().MainFrame.GetCommonView(breakpoints.BREAKPOINTS_TAB_NAME)
-        self.stackFrameTab = GetApp().MainFrame.GetCommonView(stacksframe.STACKFRAME_TAB_NAME)
-        self.inspectConsoleTab = GetApp().MainFrame.GetCommonView(INTERACTCONSOLE_TAB_NAME)
-        self.watchsTab = GetApp().MainFrame.GetCommonView(watchs.WATCH_TAB_NAME)
+        self.breakPointsTab = GetApp().MainFrame.GetCommonView(consts.BREAKPOINTS_TAB_NAME)
+        self.stackFrameTab = GetApp().MainFrame.GetCommonView(consts.STACKFRAME_TAB_NAME)
+        self.inspectConsoleTab = GetApp().MainFrame.GetCommonView(consts.INTERACTCONSOLE_TAB_NAME)
+        self.watchsTab = GetApp().MainFrame.GetCommonView(consts.WATCH_TAB_NAME)
         
     def SetExecutor(self,executor):
         self._textCtrl.SetExecutor(executor)
@@ -816,8 +811,7 @@ class PythonFramesUI(BaseFramesUI):
                 domDoc = parseString(framesXML)
                 self.stackFrameTab.LoadFrame(domDoc)
             except:
-                tp,val,tb=sys.exc_info()
-                traceback.print_exception(tp, val, tb)
+                utils.get_logger().exception('')
         finally:
             GetApp().configure(cursor="")
 
@@ -873,8 +867,7 @@ class RequestHandlerThread(threading.Thread):
             try:
                 self._server.handle_request()
             except:
-                tp, val, tb = sys.exc_info()
-                traceback.print_exception(tp, val, tb)
+                utils.get_logger().exception('')
                 self._keepGoing = False
         if _VERBOSE: print ("Exiting Request Handler Thread.")
 
@@ -901,11 +894,15 @@ class RequestHandlerThread(threading.Thread):
         self.input_evt.wait()
         return self._input_text
         
+    @utils.call_after
     def get_input_text(self):
-        dialog = wx.TextEntryDialog(self._debuggerUI.framesTab._textCtrl, "Enter the input text:" , "Enter input")
-        if dialog.ShowModal() == wx.ID_OK:
-            self._input_text = dialog.GetValue()
-            self._debuggerUI.framesTab._textCtrl.AddInputText(self._input_text)
+        text = tkSimpleDialog.askstring(
+            _("Enter input"),
+            _("Enter the input text:")
+        )
+        if text:
+            self._input_text = text
+            self._debuggerUI._textCtrl.AddInputText(self._input_text)
         else:
             ##simulate the keyboard interrupt when cancel button is pressed
             self._input_text = None
@@ -922,8 +919,7 @@ class RequestHandlerThread(threading.Thread):
                 tempServer.dummyOperation()
                 self._keepGoing = False
             except:
-                tp, val, tb = sys.exc_info()
-                traceback.print_exception(tp, val, tb)
+                utils.get_logger().exception('')
             self._server.server_close()
 
 
@@ -951,8 +947,7 @@ class RequestBreakThread(threading.Thread):
                         pass
                 if _VERBOSE: print ("RequestBreakThread, after call")
             except:
-                tp,val,tb = sys.exc_info()
-                traceback.print_exception(tp, val, tb)
+                utils.get_logger().exception('')
 
 class DebuggerOperationThread(threading.Thread):
         def __init__(self, function):
@@ -964,8 +959,7 @@ class DebuggerOperationThread(threading.Thread):
             try:
                 self._function()
             except:
-                tp,val,tb = sys.exc_info()
-                traceback.print_exception(tp, val, tb)
+                utils.get_logger().exception('')
             if _VERBOSE:
                 print ("In DOT, after call")
 
@@ -1088,7 +1082,7 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
         if not self.CheckBreakServer():
             return
             
-        rbt = RequestBreakThread(self._breakServer, pushBreakpoints=True, breakDict=self._debuggerUI._debugger.GetMasterBreakpointDict())
+        rbt = RequestBreakThread(self._breakServer, pushBreakpoints=True, breakDict=self._debuggerUI.framesTab.breakPointsTab.GetMasterBreakpointDict())
         rbt.start()
         
     def PushExceptionBreakpoints(self):
@@ -1105,14 +1099,14 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
                 utils.get_logger().debug("After exit rpc,callback.....")
                 callback()
             return
-        self._debuggerUI.after(1,self.RotateForRpc,*[callback])
+        #1000毫秒设置的正好,不能设置得太长也不能设置得太短,设置太短程序会很卡
+        self._debuggerUI.after(1000,self.RotateForRpc,*[callback])
         try:
             self.ReadQueue()
             import time
             time.sleep(0.02)
         except:
-            tp, val, tb = sys.exc_info()
-            traceback.print_exception(tp, val, tb)
+            utils.get_logger().exception('')
 
     def interaction(self, message, frameXML, info, quit):
 
@@ -1135,10 +1129,9 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
             self._debuggerUI.StopExecution()
             return ""
         if(info != ""):
-            if _VERBOSE: print ("Hit interaction with exception")
-            #self._debuggerUI.StopExecution(None)
-            #self._debuggerUI.SetStatusText("Got exception: " + str(info))
-            self._debuggerUI.SwitchToOutputTab()
+            utils.get_logger().error("Hit interaction with exception")
+            #self._debuggerUI.StopExecution()
+            self._debuggerUI.SetStatusText("Got exception: " + str(info))
         else:
             if _VERBOSE: print ("Hit interaction no exception")
         #if not self._autoContinue:

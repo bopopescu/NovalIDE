@@ -35,17 +35,6 @@ class PythonDebugger(Debugger):
 
     def __init__(self):
         Debugger.__init__(self)
-        self.BREAKPOINT_DICT_STRING = "MasterBreakpointDict"
-        pickledbps = utils.profile_get(self.BREAKPOINT_DICT_STRING)
-        if pickledbps:
-            try:
-                self._masterBPDict = pickle.loads(pickledbps.encode('ascii'))
-            except:
-                tp, val, tb = sys.exc_info()
-                traceback.print_exception(tp,val,tb)
-                self._masterBPDict = {}
-        else:
-            self._masterBPDict = {}
         self._exceptions = []
         self._frame = None
         self.projectPath = None
@@ -54,9 +43,6 @@ class PythonDebugger(Debugger):
         self._tabs_menu = None
         self._popup_index = -1
         self._watch_separater = None
-        
-    def GetMasterBreakpointDict(self):
-        return self._masterBPDict
         
     @classmethod
     def SetDebuggerUI(cls,debugger_ui):
@@ -196,9 +182,11 @@ class PythonDebugger(Debugger):
     def CloseDebugger(cls):
         # IS THIS THE RIGHT PLACE?
         try:
-            #config.Write(self.BREAKPOINT_DICT_STRING, pickle.dumps(self._masterBPDict))
             if cls._debugger_ui is not None:
+                #保存监视信息
                 cls._debugger_ui.framesTab.watchsTab.SaveWatchs()
+                #保存断点信息
+                cls._debugger_ui.framesTab.breakPointsTab.SaveBreakpoints()
             if not RunCommandUI.StopAndRemoveAllUI():
                 return False
         except:
@@ -216,7 +204,8 @@ class PythonDebugger(Debugger):
             判断单个文件是否包含断点信息
         '''
         doc_path = document.GetFilename()
-        if doc_path in self._masterBPDict and len(self._masterBPDict[doc_path]) > 0:
+        masterBPDict = GetApp().MainFrame.GetView(consts.BREAKPOINTS_TAB_NAME).GetMasterBreakpointDict()
+        if doc_path in masterBPDict and len(masterBPDict[doc_path]) > 0:
             return True
         return False
         

@@ -1,4 +1,5 @@
-from noval import GetApp,_
+# -*- coding: utf-8 -*-
+from noval import GetApp,_,NewId
 import os
 import noval.constants as constants
 import noval.ui_base as ui_base
@@ -7,8 +8,9 @@ import noval.plugin as plugin
 from tkinter import ttk
 import noval.ttkwidgets.treeviewframe as treeviewframe
 import noval.imageutils as imageutils
-
-BREAKPOINTS_TAB_NAME = "Breakpoints"
+import noval.consts as consts
+import noval.menu as tkmenu
+import noval.util.utils as utils
 
 class BreakpointExceptionDialog(ui_base.CommonModaldialog):
     EXCEPTIONS = ['ArithmeticError', 'AssertionError', 'AttributeError', 'BaseException', 'BufferError', \
@@ -102,6 +104,8 @@ class BreakpointExceptionDialog(ui_base.CommonModaldialog):
 class BreakpointsUI(treeviewframe.TreeViewFrame):
     FILE_NAME_COLUMN_WIDTH = 150
     FILE_LINE_COLUMN_WIDTH = 50
+    clearBPID = NewId()
+    syncLineID = NewId()
     def __init__(self, parent):
         columns = ["File","Line","Path"]
         treeviewframe.TreeViewFrame.__init__(self, parent,columns=columns,show="headings",displaycolumns=(0,1,2))
@@ -111,64 +115,62 @@ class BreakpointsUI(treeviewframe.TreeViewFrame):
         self.tree.column('0',width=100,anchor='w')
         self.tree.column('1',width=60,anchor='w')
 
-        
-##        self.clearBPID = wx.NewId()
-##        self.Bind(wx.EVT_MENU, self.ClearBreakPoint, id=self.clearBPID)
-##        self.syncLineID = wx.NewId()
-##        self.Bind(wx.EVT_MENU, self.SyncBPLine, id=self.syncLineID)
-
 
         self.breakpoint_bmp = imageutils.load_image("","python/debugger/breakpoint.png")
-##        self._bpListCtrl.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.OnListRightClick)
-##        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.ListItemSelected, self._bpListCtrl)
-##        self.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.ListItemDeselected, self._bpListCtrl)
-##
-        def OnLeftDoubleClick(event):
-            self.SyncBPLine(event)
-
-#        wx.EVT_LEFT_DCLICK(self._bpListCtrl, OnLeftDoubleClick)
-
- #       self.PopulateBPList()
+        self.tree.bind("<3>", self.OnListRightClick, True)
+        self.tree.bind("<Double-Button-1>", self.OnDoubleClick, "+")
+        self.currentItem = None
+        self._masterBPDict = {}
+        self.PopulateBPList()
 
     def PopulateBPList(self):
-        list = self._bpListCtrl
-        list.DeleteAllItems()
-
-        bps = self._degugger_service.GetMasterBreakpointDict()
-        index = 0
-        for fileName in bps.keys():
-            shortFile = os.path.basename(fileName)
-            lines = bps[fileName]
-            if lines:
-                for line in lines:
-                    list.InsertImageStringItem( index,shortFile ,self.BreakpointIndex)
-                    list.SetStringItem(index, 1, str(line))
-                    list.SetStringItem(index, 2, fileName)
+        breakpoints = utils.profile_get("MasterBreakpointDict",[])
+        for dct in breakpoints:
+            self.tree.insert("","end",image=self.breakpoint_bmp,values=(dct['filename'],dct['lineno'],dct['path']))
+            self.AddBreakpoint(dct['path'],dct['lineno'])
+            
+    def OnDoubleClick(self, event):
+        if not self.tree.selection():
+            return
+        self.currentItem = self.tree.selection()[0]
+        self.SyncBPLine()
 
     def OnListRightClick(self, event):
-        menu = wx.Menu()
-        item = wx.MenuItem(menu, self.clearBPID, _("Clear Breakpoint"))
-        menu.AppendItem(item)
-        item = wx.MenuItem(menu, self.syncLineID, _("Goto Source Line"))
-        menu.AppendItem(item)
-        item = wx.MenuItem(menu, constants.ID_CLEAR_ALL_BREAKPOINTS, _("&Clear All Breakpoints"))
-        menu.AppendItem(item)
-        self.PopupMenu(menu, event.GetPosition())
-        menu.Destroy()
+        if not self.tree.selection():
+            return
+        self.currentItem = self.tree.selection()[0]
+        menu = tkmenu.PopupMenu()
+        item = tkmenu.MenuItem(self.clearBPID, _("Clear Breakpoint"),None,None,None)
+        menu.AppendMenuItem(item,handler=self.ClearBreakPoint)
+        item = tkmenu.MenuItem(self.syncLineID, _("Goto Source Line"),None,None,None)
+        menu.AppendMenuItem(item,handler=self.SyncBPLine)
+        item = tkmenu.MenuItem( constants.ID_CLEAR_ALL_BREAKPOINTS, _("&Clear All Breakpoints"),None,None,None)
+        menu.AppendMenuItem(item,handler=self.ClearAllBreakPoints)
+        menu.tk_popup(event.x_root, event.y_root)
 
-    def SyncBPLine(self, event):
-        if self.currentItem != -1:
-            list = self._bpListCtrl
-            fileName = list.GetItem(self.currentItem, 2).GetText()
-            lineNumber = list.GetItem(self.currentItem, 1).GetText()
-            self._ui.SynchCurrentLine( fileName, int(lineNumber) , noArrow=True)
+    def SyncBPLine(self):
+        if self.currentItem != None:
+            values = self.tree.item(self.currentItem,"values")
+            fileName = values[2]
+            lineNumber = values[1]
+            GetApp().GotoView(fileName,int(lineNumber))
 
-    def ClearBreakPoint(self, event):
-        if self.currentItem >= 0:
-            list = self._bpListCtrl
-            fileName = list.GetItem(self.currentItem, 2).GetText()
-            lineNumber = list.GetItem(self.currentItem, 1).GetText()
-            self._degugger_service.OnToggleBreakpoint(None, line=int(lineNumber) -1, fileName=fileName )
+    def ClearBreakPoint(self):
+        if self.currentItem != None:
+            self.DeleteBreakPoint(self.currentItem)
+            
+    def DeleteBreakPoint(self,item):
+        values = self.tree.item(item,"values")
+        fileName = values[2]
+        lineNumber = values[1]
+        doc = GetApp().GetDocumentManager().GetDocument(fileName)
+        #如果断点所在的文件打开了,同时要删除文件中的断点标记
+        if doc:
+            doc.GetFirstView().DeleteBpMark(int(lineNumber))
+        #否则直接删除节点即可
+        else:
+            self.tree.delete(item)
+            del self._masterBPDict[fileName]
 
     def ListItemSelected(self, event):
         self.currentItem = event.m_itemIndex
@@ -176,9 +178,63 @@ class BreakpointsUI(treeviewframe.TreeViewFrame):
     def ListItemDeselected(self, event):
         self.currentItem = -1
 
-
+    def ToogleBreakpoint(self,lineno,filename,delete=False):
+        if not delete:
+           self.tree.insert("","end",image=self.breakpoint_bmp,values=(os.path.basename(filename),lineno,filename))
+           self.AddBreakpoint(filename,lineno)
+        else:
+           for child in self.tree.get_children():
+               values = self.tree.item(child,"values")
+               if values[1] == lineno and values[2] == filename:
+                   self.tree.delete(child)
+                   del self._masterBPDict[filename]
+                   break
+                   
+    def ClearAllBreakPoints(self):
+        for child in self.tree.get_children():
+            self.DeleteBreakPoint(child)
+            
+    def SaveBreakpoints(self):
+        breakpoints = []
+        for child in self.tree.get_children():
+            values = self.tree.item(child,"values")
+            dct = {
+                "filename":values[0],
+                "lineno":values[1],
+                "path":values[2],
+            }
+            breakpoints.append(dct)
+        utils.profile_set("MasterBreakpointDict", breakpoints)
+        
+    def GetMasterBreakpointDict(self):
+        return self._masterBPDict
+        
+    def AddBreakpoint(self,filename,lineno):
+        '''
+            通知断点服务器添加断点
+        '''
+        lineno = int(lineno)
+        if not filename in self._masterBPDict:
+            self._masterBPDict[filename] = [lineno]
+        else:
+            self._masterBPDict[filename] += [lineno]
+            
+    def RemoveBreakpoint(self,filename,lineno):
+        '''
+            通知断点服务器删除断点
+        '''
+        lineno = int(lineno)
+        if not filename in self._masterBPDict:
+            utils.get_logger().error("In ClearBreak: no filename %s",filename)
+            return
+        else:
+            if lineno in self._masterBPDict[filename]:
+                self._masterBPDict[filename].remove(lineno)
+            else:
+                utils.get_logger().error("In ClearBreak: no filename %s line %d",filename,lineno)
+       
 class BreakpointsViewLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)
     def Load(self):
-        GetApp().MainFrame.AddView(BREAKPOINTS_TAB_NAME,BreakpointsUI, _("Break Points"), "se",image_file="python/debugger/breakpoints.png")
+        GetApp().MainFrame.AddView(consts.BREAKPOINTS_TAB_NAME,BreakpointsUI, _("Break Points"), "se",image_file="python/debugger/breakpoints.png")
         

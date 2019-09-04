@@ -138,6 +138,20 @@ class PythonView(codeeditor.CodeView):
         #document checksum to check document is updated
         self._checkSum = -1
         
+    def OnCreate(self, doc, flags):
+        if not codeeditor.CodeView.OnCreate(self,doc,flags):
+            return False
+        self.bp_margin = self._text_frame.bp_margin
+        #单击左边空白框添加断点
+        self.bp_margin.bind("<Button-1>", self.on_bp_click)
+        return True
+        
+    def OnUpdate(self, sender = None, hint = None):
+        if codeeditor.CodeView.OnUpdate(self, sender, hint):
+            return
+        #加载文档断点信息
+        self.SetCurrentBreakpointMarkers()
+        
     @property
     def ModuleAnalyzer(self):
         return self._module_analyzer
@@ -194,43 +208,6 @@ class PythonView(codeeditor.CodeView):
             kw.extend(members)
         return kw
 
-    def OnJumpToFoundLine(self, event):
-        messageService = wx.GetApp().GetService(MessageService.MessageService)
-        lineText, pos = messageService.GetView().GetCurrLine()
-        
-        lineEnd = lineText.find(".py:")
-        if lineEnd == -1:
-            return
-
-        lineStart = lineEnd + len(".py:")
-        lineEnd = lineText.find(":", lineStart)
-        lineNum = int(lineText[lineStart:lineEnd])
-
-        filename = lineText[0:lineStart - 1]
-
-        foundView = None
-        openDocs = wx.GetApp().GetDocumentManager().GetDocuments()
-        for openDoc in openDocs:
-            if openDoc.GetFilename() == filename:
-                foundView = openDoc.GetFirstView()
-                break
-
-        if not foundView:
-            doc = wx.GetApp().GetDocumentManager().CreateDocument(filename, wx.lib.docview.DOC_SILENT|wx.lib.docview.DOC_OPEN_ONCE)
-            foundView = doc.GetFirstView()
-
-        if foundView:
-            foundView.GetFrame().SetFocus()
-            foundView.Activate()
-            foundView.GotoLine(lineNum)
-            startPos = foundView.PositionFromLine(lineNum)
-            endPos = foundView.GetLineEndPosition(lineNum)
-            # wxBug:  Need to select in reverse order, (end, start) to put cursor at head of line so positioning is correct
-            #         Also, if we use the correct positioning order (start, end), somehow, when we open a edit window for the first
-            #         time, we don't see the selection, it is scrolled off screen
-            foundView.SetSelection(endPos, startPos)
-            wx.GetApp().GetService(OutlineService.OutlineService).LoadOutline(foundView, position=startPos)
-
     def LoadOutLine(self, outlineView,force=False,lineNum=-1):
         callback_view = outlineView.GetCallbackView()
         newCheckSum = self.GenCheckSum()
@@ -249,10 +226,6 @@ class PythonView(codeeditor.CodeView):
             return True
         self.GetCtrl().after(1,self._module_analyzer.AnalyzeModuleSynchronizeTree,callback_view,outlineView,force,lineNum)
         return True
-        
-    def IsUnitTestEnable(self):
-        return True
-        
 
     def OnCommentLines(self):
         newText = ""
@@ -278,7 +251,7 @@ class PythonView(codeeditor.CodeView):
 
     def UpdateUI(self, command_id):
         if command_id in [constants.ID_INSERT_DECLARE_ENCODING, constants.ID_UNITTEST,constants.ID_RUN,constants.ID_DEBUG,constants.ID_SET_EXCEPTION_BREAKPOINT,constants.ID_STEP_INTO,constants.ID_STEP_NEXT,constants.ID_RUN_LAST,\
-                    constants.ID_CHECK_SYNTAX,constants.ID_SET_PARAMETER_ENVIRONMENT,constants.ID_DEBUG_LAST,constants.ID_START_WITHOUT_DEBUG]:
+                    constants.ID_CHECK_SYNTAX,constants.ID_SET_PARAMETER_ENVIRONMENT,constants.ID_DEBUG_LAST,constants.ID_START_WITHOUT_DEBUG,constants.ID_TOGGLE_BREAKPOINT]:
             return True
         elif command_id == constants.ID_GOTO_DEFINITION:
             return self.GetCtrl().IsCaretLocateInWord()
@@ -286,6 +259,45 @@ class PythonView(codeeditor.CodeView):
         
     def GotoDefinition(self):
         self.GetCtrl().GotoDefinition()
+        
+    def on_bp_click(self, event=None):
+        linepos = int(self.bp_margin.index("@%s,%s" % (event.x, event.y)).split(".")[0])
+        self.ToogleBreakpoint(linepos)
+            
+    def DeleteBpMark(self,lineno,delete_master_bp=True):
+        try:
+            self.bp_margin.image_cget("%d.0"%lineno,option="name")
+            self.bp_margin.config(state="normal")
+            self.bp_margin.delete("%d.0"%lineno,"%d.1"%lineno)
+            self.bp_margin.config(state="disabled")
+        except:
+            return False
+        #删除断点视图中断点数据
+        if delete_master_bp:
+            GetApp().MainFrame.GetView(consts.BREAKPOINTS_TAB_NAME).ToogleBreakpoint(str(lineno),self.GetDocument().GetFilename(),delete=True)
+        return True
+        
+    def SetCurrentBreakpointMarkers(self):
+        breakpoints = GetApp().MainFrame.GetView(consts.BREAKPOINTS_TAB_NAME).GetMasterBreakpointDict()
+        for linenum in breakpoints.get(self.GetDocument().GetFilename(),[]):
+            self.DeleteBpMark(linenum,delete_master_bp=False)
+            self.bp_margin.image_create("%d.0"%linenum,image=self._text_frame.bp_bmp)
+            
+
+    def ToogleBreakpoint(self,lineno):
+        '''
+            设置断点,断点存在时删除断点,否则添加断点
+        '''
+        try:
+            line_text = self.GetCtrl().GetLineText(lineno).strip()
+            #空行或者注释行不能添加断点
+            if not self.DeleteBpMark(lineno) and line_text and not line_text.startswith('#'):
+                self.bp_margin.image_create("%d.0"%lineno,image=self._text_frame.bp_bmp)
+                #往断点视图中添加断点数据
+                GetApp().MainFrame.GetView(consts.BREAKPOINTS_TAB_NAME).ToogleBreakpoint(lineno,self.GetDocument().GetFilename())
+        except tk.TclError:
+            utils.exception("on_bp_click")
+        
 
 class PythonCtrl(codeeditor.CodeCtrl):
     TYPE_POINT_WORD = "."
@@ -324,12 +336,16 @@ class PythonCtrl(codeeditor.CodeCtrl):
 
     def CreatePopupMenu(self):
         codeeditor.CodeCtrl.CreatePopupMenu(self)
+        menuBar = GetApp().Menubar
+        
+        menu_item = menuBar.FindItemById(constants.ID_TOGGLE_BREAKPOINT)
+        self._popup_menu.AppendMenuItem(menu_item,handler=self.ToogleBreakpoint)
         self._popup_menu.add_separator()
 
         menu_item = tkmenu.MenuItem(constants.ID_OUTLINE_SYNCTREE,_("Find in Outline View"),None,None,None)
         self._popup_menu.AppendMenuItem(menu_item,handler=self.SyncOutline)
         
-        menuBar = GetApp().Menubar
+        
         menu_item = menuBar.FindItemById(constants.ID_GOTO_DEFINITION)
         self._popup_menu.AppendMenuItem(menu_item,handler=self.GotoDefinition)
 
@@ -365,6 +381,10 @@ class PythonCtrl(codeeditor.CodeCtrl):
         GetApp().MainFrame.ShowView(consts.PYTHON_INTERPRETER_VIEW_NAME,toogle_visibility_flag=True)
         python_interpreter_view = GetApp().MainFrame.GetCommonView(consts.PYTHON_INTERPRETER_VIEW_NAME)
         python_interpreter_view.runsource(code)
+        
+    def ToogleBreakpoint(self):
+        line_no = self.GetCurrentLine()
+        GetApp().GetDocumentManager().GetCurrentView().ToogleBreakpoint(line_no)
         
     def SyncOutline(self):
         line_no = self.GetCurrentLine()
@@ -769,6 +789,9 @@ class PythonCtrl(codeeditor.CodeCtrl):
         return text.strip()
 
     def perform_return(self, event):
+        '''
+            回车键自动缩进文本
+        '''
         if not self.AutoCompActive():
             self.DoIndent()
             #屏蔽默认回车键事件
