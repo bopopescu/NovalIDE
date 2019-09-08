@@ -101,6 +101,7 @@ class FindIndirService:
                 break
             #是否搜索隐藏目录
             if not find_dir_option.search_hidden and fileutils.is_file_path_hidden(root):
+                utils.get_logger().debug('search path %s is hidden',root)
                 continue
             for name in files:
                 #后缀文件名列表为空表示搜索所有后缀的文件
@@ -108,10 +109,12 @@ class FindIndirService:
                     file_ext = strutils.get_file_extension(name)
                     #查找时过滤文件后缀名
                     if file_ext not in find_dir_option.file_types:
+                        utils.get_logger().debug('search path %s/%s extension %s is filtered',root,name,file_ext)
                         continue
                 filename = os.path.join(root, name)
                 #是否搜索隐藏文件
                 if not find_dir_option.search_hidden and fileutils.is_file_path_hidden(filename):
+                    utils.get_logger().debug('search file %s is hidden',filename)
                     break
                 list_files.append(filename)
                 self.total_find_filecount += 1
@@ -130,6 +133,7 @@ class FindIndirService:
         self._is_searching_text = False
         #结束进度条的标志
         que.put((None,None))
+        utils.get_logger().debug('find %d results in %d files',total_found_line,self.total_find_filecount)
         view.AddLine(_("Search completed,Find total %d results.") % total_found_line)
         
     def IsProgressRunning(self):
@@ -149,6 +153,7 @@ class FindIndirService:
             if self.progress_dlg is not None and not self.progress_dlg.keep_going:
                 break
             found_line += self.FindTextInFile(list_file,find_text_option,view)
+            utils.get_logger().debug('find %s in file %s %d results',find_text_option.findstr,list_file,found_line)
             msg=_("search file:%s") % list_file
             que.put((cur_pos,msg))
             cur_pos += 1
@@ -726,11 +731,6 @@ def ShowFindIndirDialog(master,editor):
         
     dlg = FindIndirDialog(master,findString)
     dlg.ShowModal()
-  #  dlg.grab_set()
-   # import noval.misc as misc
-    #misc.center_window(dlg, master)
-    #master.wait_window(dlg)
-    
 
 def ShowFindInfileDialog(master):
     findString = master.GetView().GetCtrl().GetSelectionText()

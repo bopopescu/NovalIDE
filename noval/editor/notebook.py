@@ -326,8 +326,9 @@ class EditorNotebook(ui_base.ClosableNotebook):
         if self.get_current_editor() is None:
             return
         text_view = self.get_current_editor().GetView()
+        line_count = text_view.GetCtrl().GetLineCount()
         lineno = tkSimpleDialog.askinteger(_("Go to Line"),
-                _("Enter line number to go to:(1-%d)") % text_view.GetCtrl().GetLineCount(),parent=self.get_current_editor())
+                _("Enter line number to go to:(1-%d)") % line_count,parent=self.get_current_editor(),minvalue=1,maxvalue=line_count)
         if lineno is None:
             return "break"
         if lineno <= 0:
@@ -368,8 +369,8 @@ class EditorNotebook(ui_base.ClosableNotebook):
         GetApp().AddCommand(constants.ID_CLEAN_WHITESPACE,_("&Format"), _("Clean trailing whitespace"), lambda:self.ProcessFormatterEvent(constants.ID_CLEAN_WHITESPACE),default_tester=True,default_command=True)
         
         format_menu = GetApp().Menubar.GetMenu(_("&Format"))
-        GetApp().AddMenuCommand(constants.ID_USE_TABS, format_menu,_("Use &Tabs"),lambda:self.ProcessFormatterEvent(constants.ID_TAB_SPACE), default_tester=True,default_command=True,kind=consts.CHECK_MENU_ITEM_KIND)
-        GetApp().AddCommand(constants.ID_SET_INDENT_WIDTH, _("&Format"),_("&Set Indent Width..."),lambda:self.ProcessFormatterEvent(constants.ID_SET_INDENT_WIDTH), default_tester=True,default_command=True)
+#        GetApp().AddMenuCommand(constants.ID_USE_TABS, format_menu,_("Use &Tabs"),lambda:self.ProcessFormatterEvent(constants.ID_TAB_SPACE), default_tester=True,default_command=True,kind=consts.CHECK_MENU_ITEM_KIND)
+ #       GetApp().AddCommand(constants.ID_SET_INDENT_WIDTH, _("&Format"),_("&Set Indent Width..."),lambda:self.ProcessFormatterEvent(constants.ID_SET_INDENT_WIDTH), default_tester=True,default_command=True)
             
         
         lineformat_menu = tkmenu.PopupMenu()

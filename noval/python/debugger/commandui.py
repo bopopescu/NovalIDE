@@ -20,7 +20,6 @@ import threading
 import types
 from xml.dom.minidom import parse, parseString
 import bz2
-import subprocess
 import shutil
 import noval.python.interpreter.interpreter as pythoninterpreter
 import noval.python.parser.utils as parserutils
@@ -37,7 +36,7 @@ import noval.util.fileutils as fileutils
 import noval.consts as consts
 from noval.project.debugger import *
 
-import tempfile
+
 import noval.core as core
 if utils.is_py2():
     import noval.python.debugger.debuggerharness as debuggerharness
@@ -50,18 +49,16 @@ except ImportError:
     import tkinter.simpledialog as tkSimpleDialog
 
 #VERBOSE mode will invoke threading.Thread _VERBOSE,which will print a lot of thread debug text on screen
-_VERBOSE = True
+_VERBOSE = False
 _WATCHES_ON = True
 EVT_DEBUG_INTERNAL = "EVT_DEBUG_INTERNAL"
 
 
 def ShowBreakdebugViews(show=True):
-
-    GetApp().MainFrame.GetCommonView(consts.STACKFRAME_TAB_NAME,show=show)
     GetApp().MainFrame.GetCommonView(consts.INTERACTCONSOLE_TAB_NAME,show=show)
     GetApp().MainFrame.GetCommonView(consts.BREAKPOINTS_TAB_NAME,show=show)
     GetApp().MainFrame.GetCommonView(consts.WATCH_TAB_NAME,show=show)
-
+    GetApp().MainFrame.GetCommonView(consts.STACKFRAME_TAB_NAME,show=show)
 
 class RunCommandUI(CommonRunCommandUI):
     runners = []
@@ -73,7 +70,6 @@ class RunCommandUI(CommonRunCommandUI):
                 runner.UpdateAllRunnerTerminateAllUI()
             except tk.TclError:
                 pass
-        RunCommandUI.runners = []
     ShutdownAllRunners = staticmethod(ShutdownAllRunners)
     
     @staticmethod
@@ -92,10 +88,10 @@ class RunCommandUI(CommonRunCommandUI):
     def GetOutputviewClass(self):
         return DebugOutputView
 
-    def __del__(self):
+    def destroy(self):
         # See comment on PythonDebuggerUI.StopExecution
-        CommonRunCommandUI.__del__(self)
         RunCommandUI.runners.remove(self)
+        CommonRunCommandUI.destroy(self)
 
     def GetExecutorClass(self):
         #python执行器
@@ -109,9 +105,22 @@ class RunCommandUI(CommonRunCommandUI):
         for runner in self.runners:
             runner.UpdateTerminateAllUI()
         
+    @utils.call_after
     def ExecutorFinished(self,stopped=True):
         self.UpdateFinishedPagePaneText()
         CommonRunCommandUI.ExecutorFinished(self,stopped=stopped)
+        
+    def UpdateViewLabel(self,src_text,to_text):
+        '''
+            更新调式视图刚开始的标签文本,否则在最大化和恢复文档窗口时,调式窗口显示的标签文本不准确
+        '''
+        for view_name in GetApp().MainFrame._views:
+            instance = GetApp().MainFrame._views[view_name]["instance"]
+            if instance == self:
+                old_label = GetApp().MainFrame._views[view_name]['label']
+                newLabel = old_label.replace(src_text,to_text)
+                GetApp().MainFrame._views[view_name]['label'] = newLabel
+                break
             
     #when process finished,update tag page text
     def UpdateFinishedPagePaneText(self):
@@ -149,7 +158,7 @@ class RunCommandUI(CommonRunCommandUI):
                 newText = text.replace(src_text,to_text)
                 nb.tab(nb.tabs()[index], text=newText)
                 break
-        
+        self.UpdateViewLabel(src_text,to_text)
     #when restart process,update tag page text
     def UpdateRestartPagePaneText(self):
         self.UpdatePagePaneText(_("Finished Running"), _("Running"))
@@ -297,12 +306,14 @@ class BaseDebuggerUI(RunCommandUI):
 
     def BreakPointChange(self):
         if not self._stopped:
+            #更改断点时,重新发送断点信息给服务器
             self._callback.PushBreakpoints()
-        self.framesTab.PopulateBPList()
 
-    def __del__(self):
+    def destroy(self):
         # See comment on PythonDebuggerUI.StopExecution
-        self.StopExecution(None)
+        self.StopExecution()
+        BaseDebuggerUI.debuggers.remove(self)
+        ttk.Frame.destroy(self)
 
     def DisableWhileDebuggerRunning(self):
         '''
@@ -370,6 +381,7 @@ class BaseDebuggerUI(RunCommandUI):
             if self.run_menu.FindMenuItem(constants.ID_TERMINATE_DEBUGGER):
                 self.run_menu.Enable(constants.ID_TERMINATE_DEBUGGER,False)
 
+    @utils.call_after
     def ExecutorFinished(self):
         if _VERBOSE: print ("In ExectorFinished")
         try:
@@ -378,20 +390,25 @@ class BaseDebuggerUI(RunCommandUI):
             self._tb.EnableTool(self.KILL_PROCESS_ID, False)
         except tk.TclError:
             utils.get_logger().warn("BaseDebuggerUI object has been deleted, attribute access no longer allowed when finish debug executor")
+            #关闭断点调式窗口,隐藏断点调式有关的菜单
+            self._debugger.ShowHideDebuggerMenu(False)
             return
-        #调式完成隐藏断点调式有关的菜单
-        self._debugger.ShowHideDebuggerMenu(False)
         if self._restarted:
-            wx.MilliSleep(250)
-            self.RestartDebuggerProcess()
-            self._restarted = False
+            self.after(250,self.DoRestartDebugger)
+        else:
+            #调式完成并且不是重启调试器的话,隐藏断点调式有关的菜单
+            self._debugger.ShowHideDebuggerMenu(False)
+            
+    def DoRestartDebugger(self):
+        self.RestartDebuggerProcess()
+        self._restarted = False
 
     def SetStatusText(self, text):
         utils.update_statusbar(text)
 
     def BreakExecution(self):
         if not BaseDebuggerUI.DebuggerRunning():
-            wx.MessageBox(_("Debugger has been stopped."),style=wx.OK|wx.ICON_ERROR)
+            messagebox.showinfo(GetApp().GetAppName(),_("Debugger has been stopped."))
             return
         self._callback.BreakExecution()
 
@@ -449,8 +466,6 @@ class BaseDebuggerUI(RunCommandUI):
             if ret == False:
                 return False
         self.StopExecution()
-        if self in BaseDebuggerUI.debuggers:
-            BaseDebuggerUI.debuggers.remove(self)
         self.RemoveUI()
         if self._callback.IsWait():
             utils.get_logger().warn("debugger callback is still wait for rpc when debugger stoped.will stop manualy")
@@ -698,9 +713,6 @@ class BaseFramesUI:
         self._output = output
         self._debugger = self._output._debugger
 
-    def PopulateBPList(self):
-        self.breakPointsTab.PopulateBPList()
-
     def ExecuteCommand(self, command):
         assert False, "ExecuteCommand not overridden"
 
@@ -712,24 +724,8 @@ class BaseFramesUI:
         self.inspectConsoleTab._cmdInput["state"] = tk.DISABLED
         self.inspectConsoleTab._cmdOutput["state"] = tk.DISABLED
 
-    def OnListRightClick(self, event):
-        if not hasattr(self, "syncFrameID"):
-            self.syncFrameID = wx.NewId()
-            self.Bind(wx.EVT_MENU, self.OnSyncFrame, id=self.syncFrameID)
-        menu = wx.Menu()
-        item = wx.MenuItem(menu, self.syncFrameID, "Goto Source Line")
-        menu.AppendItem(item)
-        self.PopupMenu(menu, event.GetPosition())
-        menu.Destroy()
-
-    def OnSyncFrame(self, event):
-        assert False, "OnSyncFrame not overridden"
-
     def LoadFramesList(self, framesXML):
         assert False, "LoadFramesList not overridden"
-
-    def ListItemSelected(self, event):
-        assert False, "ListItemSelected not overridden"
 
     def AppendText(self, event):
         self._output.AppendText(event)
@@ -814,10 +810,6 @@ class PythonFramesUI(BaseFramesUI):
                 utils.get_logger().exception('')
         finally:
             GetApp().configure(cursor="")
-
-    def ListItemSelected(self, event):
-        self.PopulateTreeFromFrameMessage(event.GetString())
-        self.OnSyncFrame(None)
             
     def attempt_introspection(self,message,chain):
         return self._output._callback._debuggerServer.attempt_introspection(message, chain)

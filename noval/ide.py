@@ -238,8 +238,8 @@ class IDEApplication(core.App):
         '''
             默认插件在consts.DEFAULT_PLUGINS中指定
         '''
-        if self.GetDebug():
-            consts.DEFAULT_PLUGINS += ('noval.plugins.logview.LogViewLoader',)
+        #if self.GetDebug():
+         #   consts.DEFAULT_PLUGINS += ('noval.plugins.logview.LogViewLoader',)
             
         
     def AppendDefaultCommand(self,command_id):

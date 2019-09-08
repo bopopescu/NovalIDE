@@ -4,6 +4,9 @@ from tkinter import messagebox
 import noval.project.executor as executor
 import noval.util.strutils as strutils
 import noval.ui_common as ui_common
+import noval.util.utils as utils
+import tempfile
+import subprocess
 
 class CommonExecutorMixin:
     def __init__(self):

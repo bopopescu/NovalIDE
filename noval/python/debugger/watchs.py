@@ -254,7 +254,7 @@ class WatchDialog(ui_base.CommonModaldialog):
         self._watchNameTextCtrl = ttk.Entry(row,textvariable=self.nameVar)
         self._watchNameTextCtrl.pack(fill="x",side=tk.LEFT,expand=1)
         row.pack(fill="x")
-       # self._watchNameTextCtrl.Bind(wx.EVT_TEXT,self.SetNameValue)
+        self.nameVar.trace("w", self.SetNameValue)
         ttk.Label(self.main_frame, text=_("Expression:")).pack(fill="x")
         self._watchValueTextCtrl = texteditor.TextCtrl(self.main_frame)
         self._watchValueTextCtrl.pack(fill="both",expand=1)
@@ -271,13 +271,8 @@ class WatchDialog(ui_base.CommonModaldialog):
         self.__set_properties()
 
     def GetSettings(self):
-        if self.radio_box_1.GetStringSelection() == WatchDialog.WATCH_ALL_FRAMES:
-            watch_code_frame = Watch.CODE_ALL_FRAMES
-        elif self.radio_box_1.GetStringSelection() == WatchDialog.WATCH_THIS_FRAME:
-            watch_code_frame = Watch.CODE_THIS_LINE
-        elif self.radio_box_1.GetStringSelection() == WatchDialog.WATCH_ONCE:
-            watch_code_frame = Watch.CODE_RUN_ONCE
-        return Watch(self._watchNameTextCtrl.GetValue(),self._watchValueTextCtrl.GetValue(),watch_code_frame)
+        watch_code_frame = self.watchVar.get()
+        return Watch(self.nameVar.get(),self.expresstion,watch_code_frame)
 
     def GetSendFrame(self):
         return (WatchDialog.WATCH_ALL_FRAMES != self.radio_box_1.GetStringSelection())
@@ -292,9 +287,11 @@ class WatchDialog(ui_base.CommonModaldialog):
             self._watchValueTextCtrl.AddText(self._watch_obj.Expression)
         self.watchVar.set(self._watch_frame_type)
         
-    def SetNameValue(self,event):
+    def SetNameValue(self,*args):
         if self._is_quick_watch:
-            self._watchValueTextCtrl.SetValue(self._watchNameTextCtrl.GetValue())
+            self._watchValueTextCtrl['state'] = tk.NORMAL
+            self._watchValueTextCtrl.set_content(self.nameVar.get())
+            self._watchValueTextCtrl['state'] = tk.DISABLED
             
     def _ok(self,event=None):
         if self.nameVar.get().strip() == "":
@@ -303,6 +300,7 @@ class WatchDialog(ui_base.CommonModaldialog):
         if self._watchValueTextCtrl.GetValue() == "":
             messagebox.showinfo(_("Add a Watch"),_("You must enter some code to run for the watch."))
             return
+        self.expresstion = self._watchValueTextCtrl.GetValue()
         ui_base.CommonModaldialog._ok(self)
 
 class WatchsPanel(treeviewframe.TreeViewFrame,CommonWatcher):
@@ -352,6 +350,8 @@ class WatchsPanel(treeviewframe.TreeViewFrame,CommonWatcher):
         Watch.Dump(self.watchs)        
         
     def OnRightClick(self, event):
+        if not self.tree.selection():
+            return
         #Refactor this...
         sel_items = self.tree.selection()
         self._introspectItem = None
@@ -391,6 +391,9 @@ class WatchsPanel(treeviewframe.TreeViewFrame,CommonWatcher):
        # self._introspectItem = None
         
     def OnAddWatch(self):
+        if GetApp().GetDebugger()._debugger_ui is None:
+            messagebox.showinfo(GetApp().GetAppName(),_("Debugger has been stopped."))
+            return
         GetApp().GetDebugger()._debugger_ui.OnAddWatch()
         
     def ClearWatch(self):

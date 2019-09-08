@@ -123,7 +123,7 @@ class InterpreterGeneralConfigurationPanel(ui_utils.BaseConfigurationPanel):
         try:
             intellisence_data_path = intellisence.IntellisenceManager().\
                         GetInterpreterIntellisenceDataPath(interpreter)
-            last_update_time = pythonrun.GetLastUpdateTime(intellisence_data_path)
+            last_update_time = intellisence.IntellisenceManager().GetLastUpdateTime(intellisence_data_path)
             messagebox.showinfo("",last_update_time)
         except Exception as e:
             messagebox.showerror("",str(e))

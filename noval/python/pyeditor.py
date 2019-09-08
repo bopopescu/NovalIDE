@@ -264,7 +264,7 @@ class PythonView(codeeditor.CodeView):
         linepos = int(self.bp_margin.index("@%s,%s" % (event.x, event.y)).split(".")[0])
         self.ToogleBreakpoint(linepos)
             
-    def DeleteBpMark(self,lineno,delete_master_bp=True):
+    def DeleteBpMark(self,lineno,delete_master_bp=True,notify=True):
         try:
             self.bp_margin.image_cget("%d.0"%lineno,option="name")
             self.bp_margin.config(state="normal")
@@ -274,7 +274,7 @@ class PythonView(codeeditor.CodeView):
             return False
         #删除断点视图中断点数据
         if delete_master_bp:
-            GetApp().MainFrame.GetView(consts.BREAKPOINTS_TAB_NAME).ToogleBreakpoint(str(lineno),self.GetDocument().GetFilename(),delete=True)
+            GetApp().MainFrame.GetView(consts.BREAKPOINTS_TAB_NAME).ToogleBreakpoint(str(lineno),self.GetDocument().GetFilename(),delete=True,notify=notify)
         return True
         
     def SetCurrentBreakpointMarkers(self):

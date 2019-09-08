@@ -1322,16 +1322,18 @@ class TextCtrl(ui_base.TweakableText):
             )
     
     def check_convert_tabs_to_spaces(self, chars):
+        '''
+            检查插入文本是否包含制表符, 并是否弹出警告提示
+        '''
         tab_count = chars.count("\t")
         if not self.replace_tabs or tab_count == 0:
             return chars
         else:
-            
-            if messagebox.askyesno("Convert tabs to spaces?",
-                                   "Thonny (according to Python recommendation) uses spaces for indentation, "
-                                   + "but the text you are about to insert/open contains %d tab characters. " % tab_count
-                                   + "To avoid confusion, it's better to convert them into spaces (unless you know they should be kept as tabs).\n\n" 
-                                   + "Do you want me to replace each tab with %d spaces?\n\n" % self.indent_width,
+            if messagebox.askyesno(_("Convert tabs to spaces?"),
+                                   _("NovalIDE (according to Python recommendation) uses spaces for indentation, ")
+                                   + _("but the text you are about to insert/open contains %d tab characters. ") % tab_count
+                                   + _("To avoid confusion, it's better to convert them into spaces (unless you know they should be kept as tabs).\n\n" )
+                                   + _("Do you want me to replace each tab with %d spaces?\n\n") % self.indent_width,
                                    parent=tk._default_root):
                 return chars.expandtabs(self.indent_width)
             else:
@@ -1462,6 +1464,7 @@ class SyntaxTextCtrl(TextCtrl,findtext.FindTextEngine):
 
     def __init__(self, master=None, cnf={}, **kw):
         TextCtrl.__init__(self, master, cnf=cnf, **kw)
+        self.replace_tabs = utils.profile_get_int("check_text_tabs",True)
         findtext.FindTextEngine.__init__(self)
         self.UpdateSyntaxTheme()
 
@@ -1519,21 +1522,23 @@ class TextOptionsPanel(ui_utils.BaseConfigurationPanel):
         highlightSyntaxCheckBox = ttk.Checkbutton(self,text=_("Highlight syntax elements"),variable=self._highlightSyntaxVar)
         highlightSyntaxCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
         
-        self._hasTabsVar = tk.IntVar(value=utils.profile_get_int("TextEditorUseTabs", False))
-        hasTabsCheckBox = ttk.Checkbutton(self,text=_("Use spaces instead of tabs"),variable=self._hasTabsVar)
-        hasTabsCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
+  #      self._hasTabsVar = tk.IntVar(value=utils.profile_get_int("TextEditorUseTabs", False))
+   #     hasTabsCheckBox = ttk.Checkbutton(self,text=_("Use spaces instead of tabs"),variable=self._hasTabsVar)
+    #    hasTabsCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
         
         self._tabCompletionVar = tk.IntVar(value=utils.profile_get_int("TextTabCompletion", True))
         tabCompletionCheckBox = ttk.Checkbutton(self,text=_("Allow code completion with tab-key"),variable=self._tabCompletionVar)
         tabCompletionCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
-
-        row = ttk.Frame(self)
-        indentWidthLabel = ttk.Label(row,text=_("Indent Width:"))
-        indentWidthLabel.pack(side=tk.LEFT)
-        self._indentWidthVar = tk.IntVar(value = utils.profile_get_int("TextEditorIndentWidth", 4))
-        indentWidthChoice = ttk.Combobox(row, values = ["2", "4", "6", "8", "10"],textvariable=self._indentWidthVar)
-        indentWidthChoice.pack(side=tk.LEFT)
-        row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+##        row = ttk.Frame(self)
+##        indentWidthLabel = ttk.Label(row,text=_("Indent Width:"))
+##        indentWidthLabel.pack(side=tk.LEFT)
+##        self._indentWidthVar = tk.IntVar(value = utils.profile_get_int("TextEditorIndentWidth", 4))
+##        indentWidthChoice = ttk.Combobox(row, values = ["2", "4", "6", "8", "10"],textvariable=self._indentWidthVar)
+##        indentWidthChoice.pack(side=tk.LEFT)
+##        row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        self.checkTabsVar = tk.IntVar(value=utils.profile_get_int("check_text_tabs", True))
+        chkTabBox = ttk.Checkbutton(self, text=_("Warn when text contains Tabs"),variable=self.checkTabsVar)
+        chkTabBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
         
         row = ttk.Frame(self)
         edgeWidthLabel = ttk.Label(row, text= _("Edge Guide Width:"))
@@ -1608,6 +1613,7 @@ class TextOptionsPanel(ui_utils.BaseConfigurationPanel):
                 config.WriteInt(self._configPrefix + "EditorIndentWidth", newIndentWidth)
         GetApp().MainFrame.GetNotebook().update_appearance()
         utils.profile_set("TextTabCompletion",self._tabCompletionVar.get())
+        utils.profile_set("check_text_tabs",self.checkTabsVar.get())
         return True
                
          

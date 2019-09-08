@@ -170,14 +170,16 @@ class Completer(listboxframe.ListboxFrame):
             return "break"
         else:
             #根据输入内容匹配列表框关键字
-            if event.char in self.text.DEFAULT_WORD_CHARS or event.keysym == "BackSpace":
-                word = self.GetInputword()
+            is_back_space = event.keysym == "BackSpace"
+            if event.char in self.text.DEFAULT_WORD_CHARS or is_back_space:
+                type_word = self.GetInputword()
                 if event.char in self.text.DEFAULT_WORD_CHARS:
-                    word += event.char
+                    word = type_word + event.char
                 else:
-                    word = word[0:-1]
+                    word = type_word[0:-1]
                 sel = self.GetInputSelection(word)
-                if sel >=0 :
+                #如果退格非asc字符,比如空格,换行符等,则关闭提示
+                if sel >=0 and (type_word or not is_back_space):
                     self._typedlen = len(word)
                     if len(self.listbox.curselection()) > 0:
                         self.listbox.selection_clear(0, self.listbox.size() - 1)

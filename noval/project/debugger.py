@@ -92,9 +92,10 @@ class CommonRunCommandUI(ttk.Frame):
     def GetExecutorClass(self):
         return Executor
 
-    def __del__(self):
+    def destroy(self):
         # See comment on PythonDebuggerUI.StopExecution
         self._executor.DoStopExecution()
+        ttk.Frame.destroy(self)
         
     def GetOutputview(self):
         return self._output

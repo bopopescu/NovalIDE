@@ -12,6 +12,7 @@ import noval.util.utils as utils
 import bz2
 from xml.dom.minidom import parseString
 import noval.consts as consts
+from noval.python.debugger.commandui import BaseDebuggerUI
 
 class StackFrameTab(ttk.Frame,watchs.CommonWatcher):
     """description of class"""
@@ -27,33 +28,32 @@ class StackFrameTab(ttk.Frame,watchs.CommonWatcher):
         self._framesChoiceCtrl.state(['readonly'])
         self._framesChoiceCtrl.pack(fill="x",side=tk.LEFT,expand=1)
         row.pack(fill="x")
-     #   self._framesChoiceCtrl.Bind(wx.EVT_LIST_ITEM_RIGHT_CLICK, self.OnListRightClick)
-      #  self.Bind(wx.EVT_CHOICE, self.ListItemSelected, self._framesChoiceCtrl)
+        self._framesChoiceCtrl.bind("<<ComboboxSelected>>",self.ListItemSelected)
         row = ttk.Frame(self)
         self.treeview = treeviewframe.TreeViewFrame(row, columns=["Value",'Hide'],displaycolumns=(0))
         self.tree = self.treeview.tree
         self.tree.heading("#0", text="Thing", anchor=tk.W)
         self.tree.heading("Value", text="Value", anchor=tk.W)
-            
         self.tree.column('#0',width=60,anchor='w')
-       # self.tree.column('1',width=70,anchor='w')
-        
         self.tree["show"] = ("headings", "tree")
         self.treeview.pack(fill="both",expand=1)
         row.pack(fill="both",expand=1)
         self._root = self.tree.insert("","end",text="Frame")
-        #tree.SetPyData(self._root, "root")
-        #tree.SetItemText(self._root, "", 1)
         self.tree.bind("<<TreeviewOpen>>", self.IntrospectCallback)
         self.tree.bind("<3>", self.OnRightClick, True)
         self.menu = None
         
+    def ListItemSelected(self, event):
+        self.PopulateTreeFromFrameMessage(self.frameValue.get())
+        self.OnSyncFrame()
 
     def OnRightClick(self, event):
-        if not self.tree.selection():
+        if not self.tree.selection() or not BaseDebuggerUI.DebuggerRunning():
             return
         #Refactor this...
         self._introspectItem = self.tree.selection()[0]
+        if self._introspectItem == self._root:
+            return
         self._parentChain = self.GetItemChain(self._introspectItem)
         watchOnly = len(self._parentChain) < 1
         if self.menu is None:
@@ -74,7 +74,7 @@ class StackFrameTab(ttk.Frame,watchs.CommonWatcher):
        
 
     def OnAddWatch(self):
-        self.AddWatch()
+        GetApp().GetDebugger()._debugger_ui.OnAddWatch()
             
     def OnAddToWatch(self):
         name = self.tree.item(self._introspectItem,"text")
@@ -112,6 +112,10 @@ class StackFrameTab(ttk.Frame,watchs.CommonWatcher):
         '''
             展开节点时实时获取节点的所有子节点的值
         '''
+        item = self.tree.selection()[0]
+        #根节点无法监视
+        if item == self._root:
+            return
         watchs.CommonWatcher.IntrospectCallback(self)
         
     def GetFrameNode(self):

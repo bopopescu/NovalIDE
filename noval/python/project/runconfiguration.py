@@ -207,7 +207,7 @@ class RunConfiguration():
         
         interpreter = interpretermanager.InterpreterManager().GetInterpreterByName(interpreter_configuration.InterpreterName)
         if interpreter is None:
-            raise RuntimeError(_("Interpreter \"%s\" is not exist") % interpreter_configuration.InterpreterName)
+            raise RuntimeError(_("Interpreter \"%s\" is not exist") % interpreter_configuration.InterpreterName)
             
         fileToRun = self.MainModuleFile.filePath
         initialArgs = arguments_configuration.GetArgs()
@@ -294,7 +294,7 @@ class ProjectConfiguration(BaseConfiguration):
             if run_configuration:
                 self._configuration_list.append(run_configuration)
             else:
-                utils.GetLogger().warn("run configuration name %s is not exist",name)
+                utils.get_logger().warn("run configuration name %s is not exist",name)
         return self._configuration_list
         
     def LoadConfiguration(self,name):
@@ -307,7 +307,7 @@ class ProjectConfiguration(BaseConfiguration):
         for run_configuration in file_configuration_list:
             if run_configuration.Name == configuration_name:
                 return run_configuration
-        utils.GetLogger().warn("run configuration name %s is not exist",name)
+        utils.get_logger().warn("run configuration name %s is not exist",name)
         return None
         
     def LoadReferenceProjects(self):

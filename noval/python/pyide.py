@@ -84,7 +84,7 @@ class PyIDEApplication(ide.IDEApplication):
         self.AddCommand(constants.ID_DEBUG_LAST,_("&Run"),_("&Debug Using Last Settings"),self.DebugLast,default_tester=True,default_command=True,add_separator=True)    
         
         self.AddCommand(constants.ID_TOGGLE_BREAKPOINT,_("&Run"),_("&Toggle Breakpoint"),self.ToogleBreakPoint,default_tester=True,default_command=True,image=self.GetImage('python/debugger/breakpoint.png'))
-        self.AddCommand(constants.ID_CLEAR_ALL_BREAKPOINTS,_("&Run"),_("&Clear All Breakpoints"),self.ClearAllBreakPoints,default_tester=True,default_command=True) 
+        self.AddCommand(constants.ID_CLEAR_ALL_BREAKPOINTS,_("&Run"),_("&Clear All Breakpoints"),self.ClearAllBreakPoints,default_tester=True,default_command=False) 
         #关闭软件启动图片
         self.CloseSplash()
         
@@ -336,6 +336,8 @@ class PyIDEApplication(ide.IDEApplication):
         return False
         
     def UpdateUI(self,command_id):
+        if command_id == constants.ID_CLEAR_ALL_BREAKPOINTS:
+            return 0 != len(self.MainFrame.GetView(consts.BREAKPOINTS_TAB_NAME).GetMasterBreakpointDict())
         current_project = self.MainFrame.GetProjectView(False).GetCurrentProject()
         current_interpreter = self.GetCurrentInterpreter()
         builtin_item_ids = [constants.ID_RUN,constants.ID_SET_EXCEPTION_BREAKPOINT,constants.ID_STEP_INTO,constants.ID_STEP_NEXT,constants.ID_RUN_LAST]

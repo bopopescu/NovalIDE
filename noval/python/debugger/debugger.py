@@ -234,7 +234,8 @@ class PythonDebugger(Debugger):
             self.CreateDebuggerMenuItem(run_menu,constants.ID_STEP_CONTINUE,_("&Continue"),self._debugger_ui.continue_bmp,self._debugger_ui.OnContinue,menu_index) 
             self.CreateDebuggerMenuItem(run_menu,constants.ID_STEP_OUT,_("&Step Out"),self._debugger_ui.stepOut_bmp,self._debugger_ui.OnStepOut,11)
             self.CreateDebuggerMenuItem(run_menu,constants.ID_QUICK_ADD_WATCH,_("&Quick add Watch"),self._debugger_ui.quick_watch_bmp,self._debugger_ui.OnQuickAddWatch,12)
-            self.CreateDebuggerMenuItem(run_menu,constants.ID_ADD_WATCH,_("&Add Watch"),self._debugger_ui.watch_bmp,self._debugger_ui.OnAddWatch,13)            
+            self.CreateDebuggerMenuItem(run_menu,constants.ID_ADD_WATCH,_("&Add Watch"),self._debugger_ui.watch_bmp,self._debugger_ui.OnAddWatch,13) 
+            ShowBreakdebugViews(True)           
         else:
             self.DeleteDebuggerMenuItem(run_menu,constants.ID_STEP_OUT)
             self.DeleteDebuggerMenuItem(run_menu,constants.ID_TERMINATE_DEBUGGER)
