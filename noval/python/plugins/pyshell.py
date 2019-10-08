@@ -194,7 +194,7 @@ class ShellText(PythonText):
         #如果tk版本大于8.6.6
         if strutils.compare_version(pyutils.get_tk_version_str(),("8.6.6")) > 0:
             self.tag_configure(
-                "io", lmargincolor=get_syntax_options_for_tag("TEXT")["background"]
+                "io", lmargincolor=syntax.SyntaxThemeManager().get_syntax_options_for_tag("TEXT")["background"]
             )
 
         self.tag_bind("hyperlink", "<ButtonRelease-1>", self._handle_hyperlink)
