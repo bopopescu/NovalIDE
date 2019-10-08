@@ -10,6 +10,7 @@
 # Licence:     GPL-3.0
 #-------------------------------------------------------------------------------
 import tkinter as tk
+from tkinter import ttk
 import noval.consts as consts
 from noval import _,GetApp
 import collections
@@ -314,7 +315,7 @@ class PopupMenu(tk.Menu):
         self._submenus = []
         
     def GetMenuData(self,id_,text,handler,img,accelerator,kind,variable,tester):
-        text = MenuBar.FormatMenuName(text)
+        text = MenubarMixin.FormatMenuName(text)
         menu_item = MenuItem(id_,text,accelerator,img,tester)
         kwargs = dict(label=text,command=handler)
         
@@ -381,14 +382,14 @@ class PopupMenu(tk.Menu):
         self.Append(item.id,item.label,handler=handler,img = image,accelerator=accelerator,tester=tester)
 
     def AppendMenu(self,id_, text,menu):
-        text = MenuBar.FormatMenuName(text)
+        text = MenubarMixin.FormatMenuName(text)
         self._submenus.append((id_,menu))
         menu_menu_item = MenuItem(id_,text,None,None,None)
         self._items.append(menu_menu_item)
         self.add_cascade(label= text, menu=menu)
         
     def InsertMenu(self,pos,id_, text,menu):
-        text = MenuBar.FormatMenuName(text)
+        text = MenubarMixin.FormatMenuName(text)
         self._submenus.append((id_,menu))
         menu_menu_item = MenuItem(id_,text,None,None,None)
         self._items.insert(pos,menu_menu_item)
@@ -636,9 +637,83 @@ class PopupMenu(tk.Menu):
                         self.entryconfigure(i, state=tk.DISABLED)
                     else:
                         self.entryconfigure(i, state=tk.NORMAL)
+                        
+
+class CustomMenubar(ttk.Frame):
+    '''
+        自定义菜单栏menubar,可以随ui的主题改变而改变,默认菜单栏不会随ui的主题颜色改变,默认是白色背景
+        这个可以随ui的主题改变而改变菜单栏的背景色
+    '''
+    def __init__(self, master):
+        ttk.Frame.__init__(self, master, style="CustomMenubar.TFrame")
+        self._opened_menu = None
+
+        ttk.Style().map(
+            "CustomMenubarLabel.TLabel",
+            background=[
+                ("!active", misc.lookup_style_option("Menubar", "background", "gray")),
+                (
+                    "active",
+                    misc.lookup_style_option("Menubar", "activebackground", "LightYellow"),
+                ),
+            ],
+            foreground=[
+                ("!active", misc.lookup_style_option("Menubar", "foreground", "black")),
+                ("active", misc.lookup_style_option("Menubar", "activeforeground", "black")),
+            ],
+        )
+
+    def add_cascade(self, label, menu):
+        label_widget = ttk.Label(
+            self,
+            style="CustomMenubarLabel.TLabel",
+            text=label,
+            padding=[6, 3, 6, 2],
+            font="TkDefaultFont",
+        )
+
+        if len(self._menus) == 0:
+            #菜单栏的第一项距离IDE左边框的左边距,要和工具栏的左边距保持一致
+            padx = (0, 0)
+        else:
+            padx = 0
+
+        label_widget.grid(row=0, column=len(self._menus), padx=padx)
+
+        def enter(event):
+            label_widget.state(("active",))
+
+            # Don't know how to open this menu when another menu is open
+            # another tk_popup just doesn't work unless old menu is closed by click or Esc
+            # https://stackoverflow.com/questions/38081470/is-there-a-way-to-know-if-tkinter-optionmenu-dropdown-is-active
+            # unpost doesn't work in Win and Mac: https://www.tcl.tk/man/tcl8.5/TkCmd/menu.htm#M62
+            # print("ENTER", menu, self._opened_menu)
+            if self._opened_menu is not None:
+                self._opened_menu.unpost()
+                click(event)
+
+        def leave(event):
+            label_widget.state(("!active",))
+
+        def click(event):
+            try:
+                # print("Before")
+                self._opened_menu = menu
+                menu.tk_popup(
+                    label_widget.winfo_rootx(),
+                    label_widget.winfo_rooty() + label_widget.winfo_height(),
+                )
+            finally:
+                # print("After")
+                self._opened_menu = None
+
+        label_widget.bind("<Enter>", enter, True)
+        label_widget.bind("<Leave>", leave, True)
+        label_widget.bind("<1>", click, True)
         
         
-class MenuBar(tk.Menu):
+
+class MenubarMixin:
     """Custom menubar to allow for easier access and updating
     of menu components.
     @todo: redo all of this
@@ -646,11 +721,12 @@ class MenuBar(tk.Menu):
     """
     keybinder = KeyBinder()
 
-    def __init__(self, master,style=0):
+    def __init__(self):
         if GetApp().GetDebug():
             #调试模式时检查快捷键是否有冲突
             self.keybinder.CheckKeybindsConflict()
-        tk.Menu.__init__(self,master)
+        #tkinter默认绑定了F10快捷键,需要先解绑F10才能重新绑定F10
+        GetApp().unbind_all("<F10>")
         self._menus = []
 
     def GetMenuByName(self,menu_name):
@@ -739,9 +815,6 @@ class MenuBar(tk.Menu):
         assert(self.FindMenu(menu))
         assert(self.GetMenuIndex(menu) == menu_index)
 
-
-                    
-
     def FindItemById(self,id):
         '''
             根据菜单id在菜单栏的所有菜单中查找对应的项
@@ -755,3 +828,21 @@ class MenuBar(tk.Menu):
     def GetMenuhandler(self,menu_name,menu_id):
         menu = self.GetMenu(menu_name)
         return menu.GetMenuhandler(menu_id)
+        
+
+
+class DefaultMenuBar(tk.Menu,MenubarMixin):
+    '''
+        默认菜单栏,不能随ui主题颜色改变更改背景色
+    '''
+    def __init__(self, master,**kwargs):
+        tk.Menu.__init__(self,master,**kwargs)
+        MenubarMixin.__init__(self)
+        
+class ThemeMenuBar(CustomMenubar,MenubarMixin):
+    '''
+        自定义菜单栏,能随ui主题颜色改变更改背景色
+    '''
+    def __init__(self, master):
+        CustomMenubar.__init__(self,master)
+        MenubarMixin.__init__(self)

@@ -37,13 +37,12 @@ class PyIDEApplication(ide.IDEApplication):
     def OnInit(self):
         if not ide.IDEApplication.OnInit(self):
             return False
-        import noval.python.interpreter.gerneralconfiguration as interpretergerneralconfiguration
-        import noval.python.interpreter.interpreterconfigruation as interpreterconfigruation
+
         #这里必须用相对导入,因为搜索路径已经添加了,如果使用长路径导入会导致IntellisenceManager的实例信息和其它地方的不一样
         import intellisence
         from noval.project.document import ProjectDocument
         import noval.python.debugger.debugger as pythondebugger
-        import noval.preference as preference
+        
         self._debugger_class = pythondebugger.PythonDebugger
         
         #pyc和pyo二进制文件类型禁止添加到项目中
@@ -68,10 +67,7 @@ class PyIDEApplication(ide.IDEApplication):
         insert_menu = edit_menu.GetMenu(constants.ID_INSERT)
         self.AddMenuCommand(constants.ID_INSERT_DECLARE_ENCODING,insert_menu,_("Insert Encoding Declare"),self.InsertEncodingDeclare,default_tester=True,default_command=True)
         
-        #添加Python语言仅有的首选项面板
-        preference.PreferenceManager().AddOptionsPanelClass(preference.INTERPRETER_OPTION_NAME,preference.GENERAL_ITEM_NAME,interpretergerneralconfiguration.InterpreterGeneralConfigurationPanel)
-        preference.PreferenceManager().AddOptionsPanelClass(preference.INTERPRETER_OPTION_NAME,preference.INTERPRETER_CONFIGURATIONS_ITEM_NAME,interpreterconfigruation.InterpreterConfigurationPanel)
-        
+
         self.AddCommand(constants.ID_START_WITHOUT_DEBUG,_("&Run"),_("&Start Without Debugging"),self.RunWithoutDebug,default_tester=True,default_command=True)
 
         self.AddCommand(constants.ID_SET_EXCEPTION_BREAKPOINT,_("&Run"),_("&Exceptions..."),self.SetExceptionBreakPoint,default_tester=True,default_command=True,add_separator=True)
@@ -122,7 +118,7 @@ class PyIDEApplication(ide.IDEApplication):
         self.GetDebugger().StepNext()
         
     def StepInto(self):
-        self.GetDebugger().StepNext()
+        self.GetDebugger().StepInto()
         
     def DebugLast(self):
         self.GetDebugger().DebugLast()
@@ -161,9 +157,19 @@ class PyIDEApplication(ide.IDEApplication):
         '''
             加载python默认插件
         '''
+        import noval.preference as preference
+        import noval.python.interpreter.gerneralconfiguration as interpretergerneralconfiguration
+        import noval.python.interpreter.interpreterconfigruation as interpreterconfigruation
         ide.IDEApplication.LoadDefaultPlugins(self)
+        
+        #添加Python语言仅有的首选项面板,在other面板之前
+        preference.PreferenceManager().AddOptionsPanelClass(preference.INTERPRETER_OPTION_NAME,preference.GENERAL_ITEM_NAME,interpretergerneralconfiguration.InterpreterGeneralConfigurationPanel)
+        preference.PreferenceManager().AddOptionsPanelClass(preference.INTERPRETER_OPTION_NAME,preference.INTERPRETER_CONFIGURATIONS_ITEM_NAME,interpreterconfigruation.InterpreterConfigurationPanel)
+        
         consts.DEFAULT_PLUGINS += ("noval.python.project.browser.ProjectViewLoader",)
         consts.DEFAULT_PLUGINS += ('noval.python.plugins.pyshell.PyshellViewLoader',)
+        #window面板在outline面板之前,故需在outline之前初始化
+        consts.DEFAULT_PLUGINS += ('noval.plugins.windowservice.WindowServiceLoader',)
         consts.DEFAULT_PLUGINS += ('noval.python.plugins.outline.PythonOutlineViewLoader',)
         consts.DEFAULT_PLUGINS += ('noval.python.project.viewer.DefaultProjectTemplateLoader',)
         consts.DEFAULT_PLUGINS += ('noval.python.plugins.unittest.UnittestLoader',)

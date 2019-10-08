@@ -150,6 +150,10 @@ class ModuleLoader(object):
     def MakeDefinitionScope(self,child):
         if child.get(self.TYPE_KEY) == config.NODE_MODULE_TYPE:
             child_module = self._manager.GetModule(child[self.FULL_NAME_KEY])
+            #某些测试模块,软件跳过分析,可能不存在,不宜作为错误处理
+            if child_module is None:
+                print ('module %s path %s is not exist'%(child[self.FULL_NAME_KEY],child[self.PATH_KEY]))
+                return []
             child_module._path = child[self.PATH_KEY]
             child_module.GetDoc()
             return [child_module.MakeModuleScope()]

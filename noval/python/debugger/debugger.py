@@ -20,6 +20,7 @@ import noval.python.debugger.watchs as watchs
 import pickle
 from noval.python.debugger.commandui import BaseDebuggerUI,ShowBreakdebugViews,RunCommandUI
 import noval.menu as tkmenu
+from noval.python.debugger.executor import PythonExecutor
 
 class PythonDebugger(Debugger):
     #----------------------------------------------------------------------------

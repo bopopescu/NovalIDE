@@ -389,7 +389,7 @@ class PythonCtrl(codeeditor.CodeCtrl):
     def SyncOutline(self):
         line_no = self.GetCurrentLine()
         #获取文本控件对应的视图需要取2次master
-        GetApp().MainFrame.GetOutlineView().SyncToPosition(self.master.master.GetView(),line_no)
+        GetApp().MainFrame.GetOutlineView(show=True).SyncToPosition(self.master.master.GetView(),line_no)
 
     def DebugRunScript(self):
         view = GetApp().GetDocumentManager().GetCurrentView()

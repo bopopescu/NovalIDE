@@ -25,6 +25,7 @@ import noval.python.parser.utils as parserutils
 import noval.constants as constants
 import noval.ttkwidgets.textframe as textframe
 import noval.util.compat as compat
+import noval.util.fileutils as fileutils
 
 class ManagePackagesDialog(ui_base.CommonModaldialog):
     
@@ -153,7 +154,7 @@ class ManagePackagesDialog(ui_base.CommonModaldialog):
                        )
         if not path:
             return
-        self.value_ctrl.SetValue(path)
+        self.value_var.set(fileutils.opj(path))
         
     def ExecCommandAndOutput(self,command,dlg):
         #shell must be True on linux

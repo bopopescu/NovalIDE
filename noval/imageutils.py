@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+from noval import GetApp
 import tkinter as tk
 import noval.util.appdirs as appdirs
 import os
@@ -92,15 +94,37 @@ def getJavaScriptFileIcon():
     
 #----------------------------------------------------------------------
 
-def load_image(tk_name,image_path):
+def load_image(tk_name,image_path,scaling_factor=None):
+    if scaling_factor is None:
+        scaling_factor = GetApp()._scaling_factor
     if not os.path.isabs(image_path):
         image_path = os.path.join(appdirs.get_app_image_location(), image_path)
     try:
-        img = tk.PhotoImage(tk_name, file=image_path)
+        #tk图片随ui缩放比例缩放
+        if scaling_factor >= 2.0:
+            img = tk.PhotoImage(file=image_path)
+            # can't use zoom method, because this doesn't allow name
+            tk_img = tk.PhotoImage(tk_name)
+            GetApp().tk.call(
+                tk_img,
+                "copy",
+                img.name,
+                "-zoom",
+                int(scaling_factor),
+                int(scaling_factor),
+            )
+        else:
+            tk_img = tk.PhotoImage(tk_name, file=image_path)
     except Exception as e:
         utils.get_logger().debug("tk open image %s fail,%s",image_path,e)
-        img = ImageTk.PhotoImage(Image.open(image_path))
-    return img
+        img = Image.open(image_path)
+        #pil图片随ui缩放比例缩放
+        if scaling_factor >= 2.0:
+            width = int(img.width*scaling_factor)
+            height = int(img.height*scaling_factor)
+            img = img.resize((width, height),Image.ANTIALIAS)
+        tk_img = ImageTk.PhotoImage(img)
+    return tk_img
 
 def getShellFileIcon():
     return load_icon("shell.png")

@@ -241,6 +241,9 @@ class FullScreenDialog(ui_base.CommonDialog):
     def CloseDialog(self,event=None):
         global _fullScreenDlg
         """Closes the L{AuiPaneNavigator} dialog"""
+        #全屏时是否隐藏菜单栏
+        if utils.profile_get_int("HideMenubarFullScreen", False):
+            GetApp().ShowMenubar()
         GetApp().ToggleFullScreen()
         GetApp().MainFrame.LoadPerspective(is_full_screen=True)
         self.destroy()
@@ -492,3 +495,11 @@ def get_default_eol():
     elif utils.is_linux():
         return consts.EOL_LF
     return consts.EOL_CR
+    
+
+
+class CommonOptionPanel(BaseConfigurationPanel):
+    def __init__(self,master):
+        BaseConfigurationPanel.__init__(self,master)
+        self.panel = ttk.Frame(self)
+        self.panel.pack(fill="both",expand=1,padx=consts.DEFAUT_CONTRL_PAD_X,pady=consts.DEFAUT_CONTRL_PAD_Y)

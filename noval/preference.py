@@ -9,7 +9,6 @@ import noval.ttkwidgets.treeviewframe as treeviewframe
 from noval.util import utils
 ENVIRONMENT_OPTION_NAME = "Environment"
 
-OTHER_OPTION_NAME = "Other"
 #option item names
 GENERAL_ITEM_NAME = "General"
 TEXT_ITEM_NAME = "Text"

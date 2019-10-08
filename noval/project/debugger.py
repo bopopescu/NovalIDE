@@ -58,8 +58,19 @@ class CommonRunCommandUI(ttk.Frame):
         self._output.pack(side=tk.LEFT,fill="both",expand=1)
         self._textCtrl = self._output.GetOutputCtrl()
         # Executor initialization
+        self._executor = None
         if self._run_parameter is not None:
             self.CreateExecutor()
+        self.EnableToolbar()
+        
+    def EnableToolbar(self):
+        if self._executor is None:
+            enable = False
+        else:
+            enable = True
+        self._tb.EnableTool(self.KILL_PROCESS_ID,enable=enable)
+        self._tb.EnableTool(self.TERMINATE_ALL_PROCESS_ID,enable=enable)
+        self._tb.EnableTool(self.RESTART_PROCESS_ID,enable=enable)
             
     def CreateToolbarButtons(self):
         

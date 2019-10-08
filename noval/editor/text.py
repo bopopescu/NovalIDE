@@ -1418,7 +1418,8 @@ class TextCtrl(ui_base.TweakableText):
     def GetTopLines(self,line_num):
         lines = []
         for i in range(line_num):
-            lines.append(self.GetLineText(i))
+            #行号从1开始
+            lines.append(self.GetLineText(i+1))
         return lines
         
     def GetSelectionText(self):

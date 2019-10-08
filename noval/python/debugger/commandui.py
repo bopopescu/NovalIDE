@@ -439,7 +439,10 @@ class BaseDebuggerUI(RunCommandUI):
         if not foundView:
             if _VERBOSE:
                 print ("filename=", filename)
-            doc = GetApp().GetDocumentManager().CreateDocument(filename, core.DOC_SILENT)[0]
+            docs = GetApp().GetDocumentManager().CreateDocument(filename, core.DOC_SILENT)
+            if not docs:
+                return
+            doc = docs[0]
             foundView = doc.GetFirstView()
 
         if foundView:

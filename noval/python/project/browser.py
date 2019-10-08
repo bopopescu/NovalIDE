@@ -82,8 +82,8 @@ class ProjectBrowser(BaseProjectbrowser):
     def BreakintoDebugger(self):
         self.GetView().BreakintoDebugger()
 
-    def GetPopupFileMenu(self):
-        menu = BaseProjectbrowser.GetPopupFileMenu(self)
+    def GetPopupFileMenu(self,item):
+        menu = BaseProjectbrowser.GetPopupFileMenu(self,item)
         tree_item = self.tree.GetSingleSelectItem()
         filePath = self.GetView()._GetItemFilePath(tree_item)
 ##        itemIDs = []

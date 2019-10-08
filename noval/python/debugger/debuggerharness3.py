@@ -24,6 +24,7 @@ from xmlrpc.server import SimpleXMLRPCServer
 import xmlrpc.client as xmlrpclib
 import queue as Queue
 import io as cStringIO
+import importlib
 
 
 if sys.platform.startswith("win"):
@@ -453,7 +454,7 @@ class DebuggerHarness(object):
         sys.stderr = output
         try:
             code = compile(command, '<string>', 'single')
-            exec (code) in frame.f_globals, frame.f_locals
+            exec(code,frame.f_locals,frame.f_globals)
             return output.getvalue()
             sys.stdout = out
             sys.stderr = err        
@@ -753,6 +754,11 @@ class DebuggerHarness(object):
         
         code = frame.f_code
         filename = code.co_filename
+        if str(filename) == "<frozen importlib._bootstrap>":
+            filename = importlib._bootstrap.__file__
+            
+        if str(filename) == "<frozen importlib._bootstrap_external>":
+            filename = importlib._bootstrap_external.__file__
         frameNode.setAttribute('file', str(filename))    
         frameNode.setAttribute('line', str(frame.f_lineno))
         message = self._adb.frame2message(frame)

@@ -12,7 +12,7 @@
 import tkinter as tk
 from tkinter import ttk
 import noval.misc as misc
-from noval.menu import MenuBar
+from noval.menu import MenubarMixin
 import noval.ui_base as ui_base
 import noval.consts as consts
 import noval.util.utils as utils
@@ -25,9 +25,8 @@ class ToolBar(ui_base.DockFrame):
       #  self.grid(column=0, row=0, sticky=tk.EW, padx=0, pady=(5, 0))
         self._orient = orient
         self._commands = []
-
-    def AddButton(self,command_id,image,command_label,handler,accelerator=None,tester=None,pos=-1):
         
+    def CreateSlave(self):
         slaves = self.grid_slaves(0, self.toolbar_group)
         if len(slaves) == 0:
             group_frame = ttk.Frame(self)
@@ -35,19 +34,24 @@ class ToolBar(ui_base.DockFrame):
             group_frame.grid(row=0, column=self.toolbar_group, padx=padx)
         else:
             group_frame = slaves[0]
+        return group_frame
 
+    def AddButton(self,command_id,image,command_label,handler,accelerator=None,tester=None,pos=-1,style="Toolbutton"):
+        group_frame = self.CreateSlave()
         button = ttk.Button(
             group_frame,
             command=handler,
             image=image,
-            style="Toolbutton",##设置样式为Toolbutton(工具栏按钮),如果该参数为空,则button样式为普通button,不是工具栏button,边框有凸起
+            style=style,##设置样式为Toolbutton(工具栏按钮),如果该参数为空,则button样式为普通button,不是工具栏button,边框有凸起
             state=tk.NORMAL,
             compound=None,
             pad=None,
         )
+        if style is None:
+            button.configure(text=command_label)
         self.SetControlPos(command_id,button,pos)
         button.tester = tester
-        tooltip_text = MenuBar.FormatMenuName(command_label)
+        tooltip_text = MenubarMixin.FormatMenuName(command_label)
         if accelerator:
             tooltip_text += " (" + accelerator + ")"
         misc.create_tooltip(button, tooltip_text)
@@ -71,16 +75,14 @@ class ToolBar(ui_base.DockFrame):
                         button["state"] = tk.NORMAL
         
     def AddCombox(self,pos=-1):
-        slaves = self.grid_slaves(0, self.toolbar_group)
-        group_frame = slaves[0]
+        group_frame = self.CreateSlave()
         combo = ttk.Combobox(group_frame)
         self.SetControlPos(-1,combo,pos)
         combo.state(['readonly'])
         return combo
 
     def AddLabel(self,text,pos=-1):
-        slaves = self.grid_slaves(0, self.toolbar_group)
-        group_frame = slaves[0]
+        group_frame = self.CreateSlave()
         label = ttk.Label(group_frame,text=text)
         self.SetControlPos(-1,label,pos)
 

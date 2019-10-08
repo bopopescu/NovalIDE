@@ -34,8 +34,9 @@ class ImageView(core.View):
         self._ctrl = None
 
     def OnCreate(self, doc, flags):
+        self.img = Image.open(doc.GetFilename())
         try:
-            self._bitmap = ImageTk.PhotoImage(Image.open(doc.GetFilename()))
+            self._bitmap = ImageTk.PhotoImage(self.img)
         except Exception as e:
             messagebox.showerror(_("Open Image File"),_("Error loading '%s'. %s") % (doc.GetPrintableName(), e))
             return False
@@ -43,8 +44,8 @@ class ImageView(core.View):
         frame = GetApp().CreateDocumentFrame(self, doc, flags)
         panel = ttk.Frame(frame)      
         panel.pack(fill="x")
-        label = tk.Label(panel, image=self._bitmap,compound='left',anchor=tk.NW)
-        label.pack(side=tk.LEFT)
+        self.label = tk.Label(panel, image=self._bitmap,compound='left',anchor=tk.NW)
+        self.label.pack(side=tk.LEFT)
         self.Activate()
         return True
 
@@ -84,6 +85,19 @@ class ImageView(core.View):
         '''
         pass
 
-    def ZoomView(self,delta = 0):
-        ''''''
-        ##TODO 待实现图片的放大缩小
+    def ZoomView(self,delta = 0):
+        '''
+            实现图片的放大缩小
+        '''
+        #当前大小
+        width = int(self.img.width)
+        height = int(self.img.height)
+        z_width = int(width*(1+delta/10))
+        z_height = int(height*(1+delta/10))
+        #缩放图片比例
+        self.img = self.img.resize((z_width, z_height),Image.ANTIALIAS)
+        self._bitmap = ImageTk.PhotoImage(self.img)
+        self.label.config(image=self._bitmap)
+        #重新调整label的长宽
+        self.label.config(width=z_width)
+        self.label.config(height=z_height)

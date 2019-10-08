@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:        logview.py
 # Purpose:
@@ -8,60 +9,77 @@
 # Copyright:   (c) wukan 2019
 # Licence:     <your licence>
 #-------------------------------------------------------------------------------
-from noval import GetApp,_
+from noval import GetApp,_,NewId
 import os
 import sys
 import logging
 #from noval.util.logger import app_debugLogger
-import noval.iface as iface
-import noval.plugin as plugin
-import noval.consts as consts
 import tkinter as tk
 from tkinter import ttk
 import noval.editor.text as texteditor
 import noval.util.utils as utils
+import noval.toolbar as toolbar
+import noval.ttkwidgets.textframe as textframe
 
 class LogCtrl(texteditor.TextCtrl):
-    def __init__(self, parent):
-        texteditor.TextCtrl.__init__(self, parent)
+    def __init__(self, parent,**kwargs):
+        texteditor.TextCtrl.__init__(self, parent,**kwargs)
 
     def SetViewDefaults(self):
         """ Needed to override default """
         pass
 
+    def ClearAll(self):
+        self.delete("1.0","end")
                     
 class LogView(ttk.Frame):
     #----------------------------------------------------------------------------
     # Overridden methods
     #----------------------------------------------------------------------------
+    ID_SETTINGS = NewId()
+    ID_CLEAR = NewId()
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
         self.textCtrl = None
-        self._loggers = [' ' * 30]
+        self._loggers = []
         self._CreateControl()
             
     def _CreateControl(self):
-        ttk.Label(self, text=_("Logger Name:"))
-        self.logCtrl = ttk.Combobox(self, values=self._loggers)
-      #  wx.EVT_CHOICE(self.logCtrl, self.logCtrl.GetId(), self.OnLogChoice)
-        ttk.Label(self, text=_("Logger Level:"))
-      ###  self.settingsButton = wx.Button(panel, -1, "Settings")
-        log_levels = ['',logging.getLevelName(logging.DEBUG),logging.getLevelName(logging.INFO),\
+        self._tb = toolbar.ToolBar(self,orient=tk.HORIZONTAL)
+        self._tb.pack(fill="x",expand=0)
+        self._tb.AddLabel(text=_("Logger Name:"))
+        
+        self.logCtrl = self._tb.AddCombox()
+        self.logCtrl['values'] = self._loggers
+        self.logmameVar = tk.StringVar()
+        self.logCtrl['textvariable'] = self.logmameVar
+        self.logCtrl.bind("<<ComboboxSelected>>",self.OnLogChoice)
+        
+        self._tb.AddLabel(text=_("Logger Level:"))
+        
+      #  self._tb.AddButton(self.ID_SETTINGS,None,_("Settings"),handler=self.OnSettingsClick,style=None)
+        log_levels = ['',logging.getLevelName(logging.INFO),\
                       logging.getLevelName(logging.WARN),logging.getLevelName(logging.ERROR),logging.getLevelName(logging.CRITICAL)]
-        self.loglevelCtrl = ttk.Combobox(self, values=log_levels)
-#        wx.EVT_CHOICE(self.loglevelCtrl, self.loglevelCtrl.GetId(), self.OnLogLevelChoice)
-        self.clearButton = ttk.Button(self, text=_("Clear"),command=self.ClearLines)
-        self.textCtrl = txtCtrl = LogCtrl(self)
+        self.loglevelCtrl = self._tb.AddCombox()
+        self.loglevelVar = tk.StringVar()
+        self.loglevelCtrl['textvariable'] = self.loglevelVar
+        self.loglevelCtrl['values'] = log_levels
+        self.loglevelCtrl.bind("<<ComboboxSelected>>",self.OnLogLevelChoice)
+        
+        self._tb.AddButton(self.ID_CLEAR,None,("Clear"),handler=self.ClearLines,style=None)
+        text_frame = textframe.TextFrame(self,text_class=LogCtrl,undo=False)
+        self.textCtrl = text_frame.text
         self.log_ctrl_handler = LogCtrlHandler(self)
+        #屏蔽debug日志,由于日志窗口不支持多线程写入,但是很多多线程中包含debug日志,故屏蔽debug日志
+        self.log_ctrl_handler.setLevel(logging.INFO)
+        
         #logging.getLogger() is root logger,add log ctrl handler to root logger
         #then other logger will output log to the log view
+        self.textCtrl.set_read_only(True)
+        text_frame.pack(fill="both",expand=1)
         logging.getLogger().addHandler(self.log_ctrl_handler)
-        txtCtrl.set_read_only(True)
-
-    def GetTextControl(self):
-        return self.textCtrl
       
-    def OnSettingsClick(self, event):  
+    def OnSettingsClick(self):  
         import LoggingConfigurationService
         dlg = LoggingConfigurationService.LoggingOptionsDialog(wx.GetApp().GetTopWindow())
         dlg.ShowModal()
@@ -110,17 +128,17 @@ class LogView(ttk.Frame):
 
     def OnLogChoice(self, event):
         ###wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
-        log = self.logCtrl.GetStringSelection()
-        if log.strip() == '':
+        logname = self.logmameVar.get()
+        if logname == '':
             self.log_ctrl_handler.ClearFilters()
         else:
-            filter = logging.Filter(log)
+            filter = logging.Filter(logname)
             self.log_ctrl_handler.addFilter(filter)
         ###wx.GetApp().GetTopWindow().SetCursor(wx.StockCursor(wx.CURSOR_DEFAULT))
             
     def OnLogLevelChoice(self,event):
-        log_level_name = self.loglevelCtrl.GetStringSelection()
-        if log_level_name.strip() == '':
+        log_level_name = self.loglevelVar.get()
+        if log_level_name == '':
             self.log_ctrl_handler.setLevel(logging.NOTSET)
         else:
             log_level = logging._checkLevel(log_level_name)
@@ -129,23 +147,23 @@ class LogView(ttk.Frame):
     # Service specific methods
     #----------------------------------------------------------------------------
 
-    def ClearLines(self, event):
-        self.GetTextControl().SetReadOnly(False)
-        self.GetTextControl().ClearAll()
-        self.GetTextControl().SetReadOnly(True)
+    def ClearLines(self):
+        self.textCtrl.set_read_only(False)
+        self.textCtrl.ClearAll()
+        self.textCtrl.set_read_only(True)
 
     def AddLine(self,text,log_level):
         #只读状态时无法写入数据需要先解除只读
-        self.GetTextControl().set_read_only(False)
+        self.textCtrl.set_read_only(False)
         #linux系统下windows换行符会显示乱码,故统一成linux换行符
         if utils.is_linux():
             line_text = text.strip()
         #"1.0"表示在文本最开头插入,end表示在文件末尾插入
-        self.GetTextControl().insert(tk.END, text)
+        self.textCtrl.insert(tk.END, text)
         if not text.endswith("\n"):
-            self.GetTextControl().insert(tk.END,"\n")
+            self.textCtrl.insert(tk.END,"\n")
         #写入数据完后必须恢复只读
-        self.GetTextControl().set_read_only(True)
+        self.textCtrl.set_read_only(True)
 
     #----------------------------------------------------------------------------
     # Callback Methods
@@ -153,7 +171,7 @@ class LogView(ttk.Frame):
     def AddLogger(self,name):
         if name not in self._loggers:
             self._loggers.append(name)
-          #  self.logCtrl.Append(name)
+        self.logCtrl['values'] = self._loggers
 
 class LogCtrlHandler(logging.Handler):
     
@@ -176,8 +194,4 @@ class LogCtrlHandler(logging.Handler):
     def addFilter(self, filter):
         self.ClearFilters()
         logging.Handler.addFilter(self,filter)
-
-class LogViewLoader(plugin.Plugin):
-    plugin.Implements(iface.CommonPluginI)
-    def Load(self):
-        GetApp().MainFrame.AddView("Logs",LogView, _("Logs"), "s",default_position_key=3)
+        

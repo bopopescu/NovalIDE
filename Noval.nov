@@ -631,7 +631,8 @@
   <noval:file filePath="./noval/python/debugger/executor.py" logicalFolder="noval/python/debugger"/>
   <noval:file filePath="./noval/python/debugger/commandui.py" logicalFolder="noval/python/debugger"/>
   <noval:file filePath="./noval/editor/format.py" logicalFolder="noval/editor"/>
-  <noval:file filePath="G:/work/project/Noval/noval/plugins/logview.py" logicalFolder="noval/plugins"/>
+  <noval:file filePath="./noval/plugins/windowservice.py" logicalFolder="noval/plugins"/>
+  <noval:file filePath="./noval/logview.py" logicalFolder="noval"/>
   <noval:_properties>
     <noval:page name="Resource" item="root" objclass="noval.project.resource.ResourcePanel"/>
     <noval:page name="Debug/Run" item="root" objclass="noval.python.project.pages.debugrun.DebugRunPanel"/>

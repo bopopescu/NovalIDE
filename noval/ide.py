@@ -38,7 +38,7 @@ import noval.ui_utils as ui_utils
 import traceback
 import noval.ttkwidgets.messagedialog as messagedialog
 import noval.util.fileutils as fileutils
-
+import noval.logview as logview
 #----------------------------------------------------------------------------
 # Classes
 #----------------------------------------------------------------------------
@@ -70,7 +70,7 @@ class IDEApplication(core.App):
         if not core.App.OnInit(self):
             return False
 
-        self.ShowSplash(self.GetIDESplashBitmap())
+     #   self.ShowSplash(self.GetIDESplashBitmap())
         #尽量在这里导入模块
         from noval.editor import text as texteditor
         import noval.colorfont as colorfont
@@ -92,6 +92,7 @@ class IDEApplication(core.App):
         self.project_document_class = projectdocument.ProjectDocument
         self.project_view_class = baseprojectviewer.ProjectView
         self._config = utils.Config(self.GetAppName())
+        self._init_scaling()
         self._init_theming()
         #设置窗体大小
         self.geometry(
@@ -238,9 +239,7 @@ class IDEApplication(core.App):
         '''
             默认插件在consts.DEFAULT_PLUGINS中指定
         '''
-        #if self.GetDebug():
-         #   consts.DEFAULT_PLUGINS += ('noval.plugins.logview.LogViewLoader',)
-            
+        pass
         
     def AppendDefaultCommand(self,command_id):
         self._default_command_ids.append(command_id)
@@ -370,8 +369,16 @@ class IDEApplication(core.App):
             self.locale.AddCatalog(name)
         
     def _InitMenu(self):
-        self._menu_bar = tkmenu.MenuBar(self)
-        self.config(menu=self._menu_bar)
+        self.option_add("*tearOff", tk.FALSE)
+        #是否加载自定义菜单栏,可以随ui主题更改背景色
+        #默认菜单栏不会
+        if utils.profile_get_int('USE_CUSTOM_MENUBAR',False):
+            self._menu_bar = tkmenu.ThemeMenuBar(self)
+            self._menu_bar.grid(row=0,column=0, sticky="nsew")
+        else:
+            self._menu_bar = tkmenu.DefaultMenuBar(self)
+            #设置IDE菜单栏
+            self.config(menu=self._menu_bar)
         self._menu_bar.GetFileMenu()
         self._menu_bar.GetEditMenu()
         self._menu_bar.GetViewMenu()
@@ -533,13 +540,16 @@ class IDEApplication(core.App):
             subprocess.Popen('gnome-terminal',shell=True,cwd=cwd)
         
     def GetImage(self,file_name):
-        return imageutils.load_image("",file_name)
+        return imageutils.load_image("",file_name,self._scaling_factor)
 
     def _InitMainFrame(self):
         import noval.frame as frame
         self.frame = frame.DocTabbedParentFrame(self,None, None, -1, self.GetAppName(),tk.NSEW)
         self.columnconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)
+        #首先加载日志窗口,日志窗口,其它插件才能写入日志到日志窗口中
+        if self.GetDebug():
+            self.MainFrame.AddView("Logs",logview.LogView, _("Logs"), "s",default_position_key=3)
         
     @misc.update_toolbar
     def OnOpen(self):
@@ -707,12 +717,12 @@ class IDEApplication(core.App):
             family=editor_font_family, size=editor_font_size
         )
         style = ttk.Style()
+        
         treeview_font_size = int(consts.DEFAULT_FONT_SIZE * 0.7 + 2)
-        rowheight = 20
+        rowheight = int(self.scale_base(16))-1
         tk_font.nametofont(consts.TREE_VIEW_FONT).configure(size=treeview_font_size)
         tk_font.nametofont(consts.TREE_VIEW_BOLD_FONT).configure(size=treeview_font_size)
         style.configure("Treeview", rowheight=rowheight)
-
        # if self._editor_notebook is not None:
         #    self._editor_notebook.update_appearance()
         
@@ -892,7 +902,7 @@ class IDEApplication(core.App):
 
     def _apply_ui_theme(self, name):
         self._current_theme_name = name
-        print (name,self._style.theme_names(),self._style.theme_use(),self._style.configure("TButton"))
+       # print (name,self._style.theme_names(),self._style.theme_use(),self._style.configure("TButton"))
         if name not in self._style.theme_names():
             self._register_ui_theme_as_tk_theme(name)
 
@@ -921,8 +931,9 @@ class IDEApplication(core.App):
         for menu_data in self.Menubar._menus:
             menu = menu_data[2]
             menu.configure(misc.get_style_configuration("Menu"))
-
-     #   self.update_fonts()
+       
+        #这里需要更新字体大小,否则界面放大的时候对Treeview高度的放大有影响
+        self.UpdateFonts()
         
     def get_usable_ui_theme_names(self):
         return sorted(
@@ -954,8 +965,25 @@ class IDEApplication(core.App):
     def ShowFullScreen(self):
         if not self.IsFullScreen:
             ui_utils.GetFullscreenDialog().Show()
+            #全屏时是否隐藏菜单栏
+            if utils.profile_get_int("HideMenubarFullScreen", False):
+                self.ShowMenubar(False)
         else:
             ui_utils.GetFullscreenDialog().CloseDialog()
+            
+            
+    def ShowMenubar(self,show=True):
+        if show:
+            if isinstance(self._menu_bar,tkmenu.ThemeMenuBar):
+                self._menu_bar.grid(row=0,column=0, sticky="nsew")
+            else:
+                self.config(menu=self._menu_bar)
+        else:
+            if isinstance(self._menu_bar,tkmenu.ThemeMenuBar):
+                self._menu_bar.grid_forget()
+            else:
+                self.config(menu='')
+                self.update()
             
     def GetDefaultTextDocumentType(self):
         '''
@@ -980,6 +1008,63 @@ class IDEApplication(core.App):
             返回项目实际的模板类,文档类,以及视图类
         '''
         return self.project_template_class,self.project_document_class,self.project_view_class
+        
+    def _init_scaling(self):
+        self._default_scaling_factor = self.tk.call("tk", "scaling")
+        if self._default_scaling_factor > 10:
+            # it may be infinity in eg. Fedora
+            self._default_scaling_factor = 1.33
+
+        scaling = utils.profile_get('UI_SCALING_FACTOR','default')
+        if scaling in ["default", "auto"]:  # auto was used in 2.2b3
+            self._scaling_factor = self._default_scaling_factor
+        else:
+            self._scaling_factor = float(scaling)
+
+        self.tk.call("tk", "scaling", self._scaling_factor)
+        
+        font_scaling_mode = 'default'
+        
+        if (utils.is_linux() 
+            and font_scaling_mode in ["default", "extra"]
+            and scaling not in ["default", "auto"]):
+            # update system fonts which are given in pixel sizes
+            for name in tk_font.names():
+                f = tk_font.nametofont(name)
+                orig_size = f.cget("size")
+                # According to do documentation, absolute values of negative font sizes 
+                # should be interpreted as pixel sizes (not affected by "tk scaling")
+                # and positive values are point sizes, which are supposed to scale automatically
+                # http://www.tcl.tk/man/tcl8.6/TkCmd/font.htm#M26
+                
+                # Unfortunately it seems that this cannot be relied on
+                # https://groups.google.com/forum/#!msg/comp.lang.tcl/ZpL6tq77M4M/GXImiV2INRQJ
+                
+                # My experiments show that manually changing negative font sizes 
+                # doesn't have any effect -- fonts keep their default size
+                # (Tested in Raspbian Stretch, Ubuntu 18.04 and Fedora 29)
+                # On the other hand positive sizes scale well (and they don't scale automatically)
+                
+                # convert pixel sizes to point_size
+                if orig_size < 0:
+                    orig_size = -orig_size / self._default_scaling_factor
+                # scale
+                scaled_size = round(orig_size
+                        * (self._scaling_factor / self._default_scaling_factor)) 
+                f.configure(size=scaled_size)
+                
+    def scale_base(self,value):
+        if isinstance(value, (int, float)):
+            # using int instead of round so that thin lines will stay
+            # one pixel even with scaling_factor 1.67
+            result = int(self._scaling_factor * value)
+            if result == 0 and value > 0:
+                # don't lose thin lines because of scaling
+                return 1
+            else:
+                return result
+        else:
+            raise NotImplementedError("Only numeric dimensions supported at the moment")
         
 class AppEvent(record.Record):
     def __init__(self, sequence, **kwargs):

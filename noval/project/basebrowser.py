@@ -18,7 +18,7 @@ from noval.python.parser.utils import py_cmp,py_sorted
 import noval.terminal as terminal
 import noval.project.property as projectproperty
 import time
-import noval.project.document as projectdocument
+import noval.project.document as projectdocument
 
 class EntryPopup(tk.Entry):
 
@@ -601,18 +601,19 @@ class BaseProjectbrowser(ttk.Frame):
         
     def on_secondary_click(self, event):
         items = self.tree.selection()
-        if items:
-            if self.GetView()._HasFilesSelected():
-                menu = self.GetPopupFileMenu()
+        if not items:
+            return
+        if self.GetView()._HasFilesSelected():
+            menu = self.GetPopupFileMenu(items[0])
+        else:
+            if not self.tree.parent(items[0]):
+                menu = self.GetPopupProjectMenu(items[0])
             else:
-                if not self.tree.parent(items[0]):
-                    menu = self.GetPopupProjectMenu()
-                else:
-                    menu = self.GetPopupFolderMenu()
+                menu = self.GetPopupFolderMenu(items[0])
         menu["postcommand"] = lambda: menu._update_menu()
         menu.tk_popup(event.x_root, event.y_root)
 
-    def GetPopupFileMenu(self):
+    def GetPopupFileMenu(self,item):
         menu = tkmenu.PopupMenu(self,**misc.get_style_configuration("Menu"))
         menu.Append(constants.ID_OPEN_SELECTION, _("&Open"),handler=lambda:self.ProcessEvent(constants.ID_OPEN_SELECTION))
         common_item_ids = [None,consts.ID_UNDO,consts.ID_REDO,consts.ID_CUT,consts.ID_COPY,consts.ID_PASTE,consts.ID_CLEAR,None,consts.ID_SELECTALL]
@@ -620,6 +621,7 @@ class BaseProjectbrowser(ttk.Frame):
         
         menu.Append(constants.ID_RENAME,_("&Rename"),handler=lambda:self.ProcessEvent(constants.ID_RENAME))
         menu.Append(constants.ID_REMOVE_FROM_PROJECT,_("Remove from Project"),handler=lambda:self.ProcessEvent(constants.ID_REMOVE_FROM_PROJECT))
+        GetApp().event_generate(constants.PROJECTVIEW_POPUP_FILE_MENU_EVT,menu=menu,item=item)
         self.AppendFileFoderCommonMenu(menu)
         return menu
         
@@ -630,7 +632,7 @@ class BaseProjectbrowser(ttk.Frame):
         menu.Append(constants.ID_OPEN_TERMINAL_PATH,_("Open Command Prompt here..."),handler=lambda:self.ProcessEvent(constants.ID_OPEN_TERMINAL_PATH))
         menu.Append(constants.ID_COPY_PATH,_("Copy Full Path"),handler=lambda:self.ProcessEvent(constants.ID_COPY_PATH))
         
-    def GetPopupFolderMenu(self):
+    def GetPopupFolderMenu(self,item):
         menu = tkmenu.PopupMenu(self,**misc.get_style_configuration("Menu"))
         menu["postcommand"] = lambda: menu._update_menu()
         common_item_ids = self.GetPopupFolderItemIds()
@@ -638,6 +640,7 @@ class BaseProjectbrowser(ttk.Frame):
         
         menu.Append(constants.ID_RENAME,_("&Rename"),handler=lambda:self.ProcessEvent(constants.ID_RENAME))
         menu.Append(constants.ID_REMOVE_FROM_PROJECT,_("Remove from Project"),handler=lambda:self.ProcessEvent(constants.ID_REMOVE_FROM_PROJECT))
+        GetApp().event_generate(constants.PROJECTVIEW_POPUP_FOLDER_MENU_EVT,menu=menu,item=item)
         self.AppendFileFoderCommonMenu(menu)
         return menu
         
@@ -647,7 +650,7 @@ class BaseProjectbrowser(ttk.Frame):
                                 
         return folder_item_ids
         
-    def GetPopupProjectMenu(self):
+    def GetPopupProjectMenu(self,item):
         menu = tkmenu.PopupMenu(self,**misc.get_style_configuration("Menu"))
         menu["postcommand"] = lambda: menu._update_menu()
         common_item_ids = self.GetPopupProjectItemIds()
@@ -656,6 +659,7 @@ class BaseProjectbrowser(ttk.Frame):
             menu.Append(constants.ID_RENAME,_("&Rename"),handler=lambda:self.ProcessEvent(constants.ID_RENAME))
             menu.Append(constants.ID_OPEN_TERMINAL_PATH,_("Open Command Prompt here..."),handler=lambda:self.ProcessEvent(constants.ID_OPEN_TERMINAL_PATH))
             menu.Append(constants.ID_COPY_PATH,_("Copy Full Path"),handler=lambda:self.ProcessEvent(constants.ID_COPY_PATH))
+        GetApp().event_generate(constants.PROJECTVIEW_POPUP_ROOT_MENU_EVT,menu=menu,item=item)
         return menu
         
     def GetPopupProjectItemIds(self):

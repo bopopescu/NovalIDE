@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:        constants.py
 # Purpose:
@@ -216,3 +217,8 @@ ID_NO                       = NewId()
 ID_YESTOALL                 = NewId()
 ID_NOTOALL                  = NewId()
 
+
+#项目视图右键菜单发送给插件的消息,插件接收消息在消息函数里面就可以添加自定义菜单项了
+PROJECTVIEW_POPUP_FOLDER_MENU_EVT = 'EvtPopupProjectFolderMenu'
+PROJECTVIEW_POPUP_FILE_MENU_EVT = 'EvtPopupProjectFileMenu'
+PROJECTVIEW_POPUP_ROOT_MENU_EVT = 'EvtPopupProjectRootMenu'

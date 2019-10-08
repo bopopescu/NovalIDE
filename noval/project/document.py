@@ -9,6 +9,7 @@ from noval.util import utils
 import noval.project.basemodel as projectlib
 import noval.util.fileutils as fileutils
 import noval.consts as consts
+import six
 
 PROJECT_KEY = "/NOV_Projects"
 
@@ -117,12 +118,14 @@ class ProjectDocument(core.Document):
         return "%s/{%s}/%s" % (PROJECT_KEY, self.GetModel().Id, lastPart)
         
     def GetFileKey(self,pj_file,lastPart=None):
-        if utils.is_py2():
-            str_ = unicode
-        else:
-            str_ = str
-        if isinstance(pj_file,str_):
+        filename = pj_file
+        if isinstance(pj_file,six.string_types[0]):
             pj_file = self.GetModel().FindFile(pj_file)
+        #文件已经不存在与项目中,返回项目的key路径
+        if pj_file is None:
+            utils.get_logger().error('file %s is not in project'%filename)
+            return "%s/{%s}" % (PROJECT_KEY, self.GetModel().Id)
+            
         if pj_file.logicalFolder is None:
             key_path = os.path.basename(pj_file.filePath)
         else:

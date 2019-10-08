@@ -40,7 +40,7 @@ class IntellisenceDataLoader(object):
 
         utils.get_logger().debug('load builtin data path:%s',builtin_data_path)
         if not os.path.exists(builtin_data_path):
-            utils.get_logger().error('builtin data path:%s is not exist',builtin_data_path)
+            utils.get_logger().debug('builtin data path:%s is not exist',builtin_data_path)
             return
         self.LoadIntellisenceDirData(builtin_data_path)
     
@@ -94,7 +94,7 @@ class IntellisenceDataLoader(object):
         utils.get_logger().debug('current interpreter builtin module name is:%s',interpreter.BuiltinModuleName)
         builtin_module_loader = self._manager.GetModule(interpreter.BuiltinModuleName)
         if builtin_module_loader is None:
-            utils.get_logger().error("could not find builtin module %s, builtin database is not success loaded",interpreter.BuiltinModuleName)
+            utils.get_logger().debug("could not find builtin module %s, builtin database is not success loaded",interpreter.BuiltinModuleName)
             return
         data = builtin_module_loader.LoadMembers()
         self._builtin_module = builtinmodule.BuiltinModule(builtin_module_loader.Name)

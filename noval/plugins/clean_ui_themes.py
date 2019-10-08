@@ -13,7 +13,9 @@ import noval.consts as consts
 import noval.iface as iface
 import noval.plugin as plugin
 import noval.util.utils as utils
-from noval.plugins.base_ui_themes import scale_base as scale
+
+def scale(value):
+    return GetApp().scale_base(value)
 
 
 def clean(

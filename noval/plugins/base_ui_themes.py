@@ -15,24 +15,9 @@ import noval.iface as iface
 import noval.plugin as plugin
 import noval.util.utils as utils
 
-def scale_base(value):
-    if isinstance(value, (int, float)):
-        # using int instead of round so that thin lines will stay
-        # one pixel even with scaling_factor 1.67
-        scaling_factor = 1.33
-        result = int(scaling_factor * value)
-        if result == 0 and value > 0:
-            # don't lose thin lines because of scaling
-            return 1
-        else:
-            return result
-    else:
-        raise NotImplementedError("Only numeric dimensions supported at the moment")
-        
-
 def scale(value):
     # dimensions in this module were designed with a 1.67 scale
-    return scale_base(value / 1.67)
+    return GetApp().scale_base(value / 1.67)
 
 
 def _treeview_settings():

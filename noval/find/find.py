@@ -50,8 +50,9 @@ class FindtextCombo(ttk.Combobox):
             #如果没有则从配置中查找存储的上次查找的文本
             if not findString:
                 findString = utils.profile_get(FIND_MATCHPATTERN, "")
-
-        self.find_entry_var = tk.StringVar(value=findString)
+        #去除搜索文本的换行符,运行文本末尾有空格
+        strip_find_text = findString.split('\n')[0].rstrip('\r')
+        self.find_entry_var = tk.StringVar(value=strip_find_text)
         ttk.Combobox.__init__(self,master,textvariable=self.find_entry_var,**kw)
         
     def save_match_patters(self):

@@ -11,6 +11,7 @@
 #-------------------------------------------------------------------------------
 from noval import GetApp,_
 import tkinter as tk
+from tkinter import ttk
 import noval.ui_base as ui_base
 import noval.iface as iface
 import noval.plugin as plugin
@@ -22,6 +23,8 @@ import noval.util.utils as utils
 import noval.menu as tkmenu
 import noval.constants as constants
 import noval.python.pyeditor as pyeditor
+import noval.preference as preference
+import noval.ui_utils as ui_utils
 
 class PythonOutlineView(ui_base.OutlineView):
     
@@ -38,7 +41,16 @@ class PythonOutlineView(ui_base.OutlineView):
         self.import_image = imageutils.load_image("","python/outline/import.png")
         self.from_import_image = imageutils.load_image("","python/outline/from_import.png")
         self.mainfunction_image = imageutils.load_image("","python/outline/mainfunction.gif")
-        self._display_item_flag = self.DISPLAY_ITEM_NAME|self.DISPLAY_ITEM_LINE
+        self._display_item_flag = self.DISPLAY_ITEM_NAME
+        #显示行号
+        if utils.profile_get_int("OutlineShowLineNumber", True):
+            self._display_item_flag |= self.DISPLAY_ITEM_LINE
+        #显示参数
+        if utils.profile_get_int("OutlineShowParameter", False):
+            self._display_item_flag |= self.DISPLAY_ITEM_FUNCTION_PARAMETER
+        #显示基类
+        if utils.profile_get_int("OutlineShowBaseClass", False):
+            self._display_item_flag |= self.DISPLAY_ITEM_CLASS_BASE
 
     def _update_frame_contents(self, event=None):
         editor = GetApp().MainFrame.GetNotebook().get_current_editor()
@@ -184,7 +196,49 @@ def OutlineSort(outline_sort_id):
         sort_order = ui_base.OutlineView.SORT_BY_TYPE
     elif outline_sort_id == constants.ID_SORT_BY_NAME:
         sort_order = ui_base.OutlineView.SORT_BY_NAME
-    GetApp().MainFrame.GetOutlineView().Sort(sort_order)
+    GetApp().MainFrame.GetView(consts.OUTLINE_VIEW_NAME).Sort(sort_order)
+    
+class OutlineOptionPanel(ui_utils.CommonOptionPanel):
+    """
+    """
+    def __init__(self, parent):
+        ui_utils.CommonOptionPanel.__init__(self, parent)
+        self._showLineNumberCheckVar = tk.IntVar(value=utils.profile_get_int("OutlineShowLineNumber", True))
+        showLineNumberCheckBox = ttk.Checkbutton(self.panel,text=_("Show Line Number"),variable=self._showLineNumberCheckVar)
+        showLineNumberCheckBox.pack(fill=tk.X)
+
+        self._showParameterCheckVar = tk.IntVar(value=utils.profile_get_int("OutlineShowParameter", False))
+        showParameterCheckBox = ttk.Checkbutton(self.panel,text=_("Show parameter of function"),variable=self._showParameterCheckVar)
+        showParameterCheckBox.pack(fill=tk.X)
+        
+        self._showClassBaseCheckVar = tk.IntVar(value=utils.profile_get_int("OutlineShowBaseClass", False))
+        showClassBaseCheckBox = ttk.Checkbutton(self.panel, text=_("Show base classes of class"),variable=self._showClassBaseCheckVar)
+        showClassBaseCheckBox.pack(fill=tk.X)
+
+    def OnOK(self, optionsDialog):
+  
+        utils.profile_set("OutlineShowLineNumber", self._showLineNumberCheckVar.get())
+        utils.profile_set("OutlineShowParameter", self._showParameterCheckVar.get())
+        utils.profile_set("OutlineShowBaseClass", self._showClassBaseCheckVar.get())
+        
+        display_item_flag = PythonOutlineView.DISPLAY_ITEM_NAME
+        if self._showLineNumberCheckVar.get():
+            display_item_flag |= PythonOutlineView.DISPLAY_ITEM_LINE
+            
+        if self._showParameterCheckVar.get():
+            display_item_flag |= PythonOutlineView.DISPLAY_ITEM_FUNCTION_PARAMETER
+            
+        if self._showClassBaseCheckVar.get():
+            display_item_flag |= PythonOutlineView.DISPLAY_ITEM_CLASS_BASE
+        
+        outline_view = GetApp().MainFrame.GetView(consts.OUTLINE_VIEW_NAME)
+        if display_item_flag != outline_view._display_item_flag:
+            outline_view._display_item_flag = display_item_flag
+            active_text_view = GetApp().GetDocumentManager().GetCurrentView()
+            if active_text_view != None and hasattr(active_text_view,"LoadOutLine"):
+                active_text_view.LoadOutLine(outline_view,True)
+        return True
+        
     
 class PythonOutlineViewLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)
@@ -196,7 +250,7 @@ class PythonOutlineViewLoader(plugin.Plugin):
         view_menu.InsertMenuAfter(constants.ID_ZOOM,constants.ID_OUTLINE_SORT,_("Outline Sort"),outline_menu)
 
         #设置Python文本视图在大纲中显示语法树
-        GetApp().MainFrame.GetOutlineView().AddViewTypeForBackgroundHandler(pyeditor.PythonView)
+        GetApp().MainFrame.GetView(consts.OUTLINE_VIEW_NAME).AddViewTypeForBackgroundHandler(pyeditor.PythonView)
         
         GetApp().AddMenuCommand(constants.ID_SORT_BY_NONE,outline_menu,_("Unsorted"),lambda:OutlineSort(constants.ID_SORT_BY_NONE),\
                                 default_command=True,default_tester=True,kind=consts.RADIO_MENU_ITEM_KIND,variable=self.outline_sort_var,value=ui_base.OutlineView.SORT_BY_NONE)
@@ -206,3 +260,5 @@ class PythonOutlineViewLoader(plugin.Plugin):
                                 default_command=True,default_tester=True,kind=consts.RADIO_MENU_ITEM_KIND,variable=self.outline_sort_var,value=ui_base.OutlineView.SORT_BY_TYPE)
         GetApp().AddMenuCommand(constants.ID_SORT_BY_NAME,outline_menu,_("Sort By Name(A-Z)"),lambda:OutlineSort(constants.ID_SORT_BY_NAME),\
                                 default_command=True,default_tester=True,kind=consts.RADIO_MENU_ITEM_KIND,variable=self.outline_sort_var,value=ui_base.OutlineView.SORT_BY_NAME)
+        #首选项显示面板                
+        preference.PreferenceManager().AddOptionsPanelClass("Misc","Outline",OutlineOptionPanel)

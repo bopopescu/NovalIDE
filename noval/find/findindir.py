@@ -101,7 +101,7 @@ class FindIndirService:
                 break
             #是否搜索隐藏目录
             if not find_dir_option.search_hidden and fileutils.is_file_path_hidden(root):
-                utils.get_logger().debug('search path %s is hidden',root)
+               # utils.get_logger().debug('search path %s is hidden',root)
                 continue
             for name in files:
                 #后缀文件名列表为空表示搜索所有后缀的文件
@@ -109,12 +109,12 @@ class FindIndirService:
                     file_ext = strutils.get_file_extension(name)
                     #查找时过滤文件后缀名
                     if file_ext not in find_dir_option.file_types:
-                        utils.get_logger().debug('search path %s/%s extension %s is filtered',root,name,file_ext)
+              #          utils.get_logger().debug('search path %s/%s extension %s is filtered',root,name,file_ext)
                         continue
                 filename = os.path.join(root, name)
                 #是否搜索隐藏文件
                 if not find_dir_option.search_hidden and fileutils.is_file_path_hidden(filename):
-                    utils.get_logger().debug('search file %s is hidden',filename)
+             #       utils.get_logger().debug('search file %s is hidden',filename)
                     break
                 list_files.append(filename)
                 self.total_find_filecount += 1
@@ -171,7 +171,7 @@ class FindIndirService:
         try:
             docFile=_open(filename)
         except IOError as e:
-            utils.get_logger().warn("Warning, unable to read file: '%s'.  %s",filename, str(e))
+            utils.get_logger().debug("Warning, unable to read file: '%s'.  %s",filename, str(e))
             return found_line
         needToDisplayFilename = True
         #遍历列表序号从1开始 
@@ -724,7 +724,7 @@ class FindInprojectDialog(FindInfileDialog):
         self.destroy()
 
 def ShowFindIndirDialog(master,editor):
-    if editor == None:
+    if editor == None or not hasattr(editor.GetView(),"GetCtrl"):
         findString = ''
     else:
         findString = editor.GetView().GetCtrl().GetSelectionText()
@@ -738,7 +738,7 @@ def ShowFindInfileDialog(master):
     dlg.ShowModal()
 
 def ShowFindInprojectDialog(master,editor):
-    if editor == None:
+    if editor == None or not hasattr(editor.GetView(),"GetCtrl"):
         findString = ''
     else:
         findString = editor.GetView().GetCtrl().GetSelectionText()
