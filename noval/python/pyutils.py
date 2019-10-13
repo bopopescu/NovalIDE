@@ -14,6 +14,7 @@ import noval.imageutils as imageutils
 import noval.util.strutils as strutils
 import noval.util.fileutils as fileutils
 from noval.project.basebrowser import ProjectTreeCtrl
+import noval.util.utils as utils
 
 def get_tk_version_str():
     tkVer = GetApp().call('info', 'patchlevel')
@@ -202,3 +203,13 @@ class DefinitionsDialog(ui_base.CommonModaldialog):
         definition = self.definitions[i]
         GetApp().GotoView(definition.Root.Module.Path,definition.Node.Line,load_outline=False)
         ui_base.CommonModaldialog._ok(self,event)
+        
+def create_python_process(python_exe,args,shell=False,env=None,universal_newlines=True):
+    '''
+        创建python进程
+    '''
+    utils.create_process(python_exe,args,shell,env,universal_newlines)
+
+def create_python_interpreter_process(interpreter,args):
+    python_exe = interpreter.Path
+    return create_python_process(python_exe, args)

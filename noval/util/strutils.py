@@ -252,3 +252,7 @@ def isInArgs(argname, argv):
         result = True        
     return result
     
+def path_startswith(child_name, dir_name):
+    normchild = os.path.normpath(os.path.normcase(child_name))
+    normdir = os.path.normpath(os.path.normcase(dir_name))
+    return normdir == normchild or normchild.startswith(normdir.rstrip(os.path.sep) + os.path.sep)

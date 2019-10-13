@@ -41,10 +41,44 @@ class NewPythonProjectWizard(NewProjectWizard):
         '''
         pass
         
-class PythonProjectNameLocationPage(ProjectNameLocationPage):
+
+class BasePythonProjectNameLocationPage(ProjectNameLocationPage):
+    def __init__(self,master,project_dir_option=True,**kwargs):
+        ProjectNameLocationPage.__init__(self,master,project_dir_option=project_dir_option,**kwargs)
+
+    def CreateNamePage(self,content_frame):
+        name_frame = ProjectNameLocationPage.CreateNamePage(self,content_frame)
+        self.interpreter_label = ttk.Label(name_frame, text=_("Interpreter:"))
+        self.interpreter_label.grid(column=0, row=2, sticky="nsew")
+        self.interpreter_entry_var = tk.StringVar()
+        self.interpreter_combo = ttk.Combobox(name_frame, textvariable=self.interpreter_entry_var)
+        names = interpretermanager.InterpreterManager().GetInterpreterNames()
+        self.interpreter_combo.grid(column=1, row=2, sticky="nsew",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
+        self.interpreter_combo.state(['readonly'])
+        self.interpreter_combo['values'] = names
+        if len(names) > 0:
+            self.interpreter_combo.current(0)
+            
+        link_label = linklabel.LinkLabel(name_frame,text=_("Configuration"),normal_color='royal blue',hover_color='blue',clicked_color='purple')
+        link_label.bind("<Button-1>", self.OpenInterpreterConfiguration)
+        link_label.grid(column=2, row=2, sticky="nsew",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
+        
+    def OpenInterpreterConfiguration(self,*args):
+        ui_common.ShowInterpreterConfigurationPage()
+        
+    def GetNewPojectConfiguration(self):
+        return PythonNewProjectConfiguration(self.name_var.get(),self.dir_entry_var.get(),\
+                                          self.interpreter_entry_var.get(),self.project_dir_chkvar.get(),-1)
+        
+        
+class PythonProjectNameLocationPage(BasePythonProjectNameLocationPage):
     def __init__(self,master,**kwargs):
-        ProjectNameLocationPage.__init__(self,master,add_bottom_page=False,**kwargs)
-        sizer_frame = ttk.Frame(self)
+        BasePythonProjectNameLocationPage.__init__(self,master,project_dir_option=False,**kwargs)
+        
+
+    def CreateContent(self,content_frame,**kwargs):
+        BasePythonProjectNameLocationPage.CreateContent(self,content_frame,**kwargs)
+        sizer_frame = ttk.Frame(content_frame)
         sizer_frame.grid(column=0, row=4, sticky="nsew")
         pythonpath_val = kwargs.get('pythonpath_pattern',PythonNewProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH)
         self.pythonpath_chkvar = tk.IntVar(value=pythonpath_val)
@@ -65,34 +99,7 @@ class PythonProjectNameLocationPage(ProjectNameLocationPage):
                         value=PythonNewProjectConfiguration.NONE_PATH_ADD_TO_PYTHONPATH
         )
         self.configure_no_path_radiobutton.pack(fill="x")
-
-        ProjectNameLocationPage.CreateBottomPage(self,chk_box_row=5,**kwargs)
-        
-        sizer_frame = ttk.Frame(self)
-        sizer_frame.grid(column=0, row=7, sticky="nsew")
-        separator = ttk.Separator(sizer_frame, orient = tk.HORIZONTAL)
-        separator.pack(side=tk.LEFT,fill="x",expand=1)
-
-    def CreateTopPage(self):
-        sizer_frame = ProjectNameLocationPage.CreateTopPage(self)
-        self.interpreter_label = ttk.Label(sizer_frame, text=_("Interpreter:"))
-        self.interpreter_label.grid(column=0, row=2, sticky="nsew")
-        self.interpreter_entry_var = tk.StringVar()
-        self.interpreter_combo = ttk.Combobox(sizer_frame, textvariable=self.interpreter_entry_var)
-        names = interpretermanager.InterpreterManager().GetInterpreterNames()
-        self.interpreter_combo.grid(column=1, row=2, sticky="nsew",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
-        self.interpreter_combo.state(['readonly'])
-        self.interpreter_combo['values'] = names
-        if len(names) > 0:
-            self.interpreter_combo.current(0)
-            
-        link_label = linklabel.LinkLabel(sizer_frame,text=_("Configuration"),normal_color='royal blue',hover_color='blue',clicked_color='purple')
-        link_label.bind("<Button-1>", self.OpenInterpreterConfiguration)
-        link_label.grid(column=2, row=2, sticky="nsew",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
-        
-
-    def OpenInterpreterConfiguration(self,*args):
-        ui_common.ShowInterpreterConfigurationPage()
+        ProjectNameLocationPage.CreateProjectDirPage(self,content_frame,chk_box_row=5,**kwargs)
         
     def Finish(self):
         if not ProjectNameLocationPage.Finish(self):

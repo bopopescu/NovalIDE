@@ -20,7 +20,7 @@ import noval.ttkwidgets.textframe as textframe
 import noval.python.pyutils as pyutils
 import noval.constants as constants
 import copy
-import noval.ui_utils as ut_utils
+import noval.ui_utils as ui_utils
       
 class BasePage(ui_utils.BaseConfigurationPanel):
     
@@ -220,7 +220,7 @@ class ArgumentsPage(BasePage):
 
     def GetArgumentsText(self):
         python_variable_manager = variablesutils.GetProjectVariableManager(self.ProjectDocument)
-        arguments_text = python_variable_manager.EvalulateValue(self.program_argument_textctrl.GetValue())
+        arguments_text = python_variable_manager.EvalulateValue(self.program_argument_textctrl.GetValue())
         return arguments_text
         
     def GetConfiguration(self):
@@ -242,7 +242,7 @@ class InterpreterConfigurationPage(BasePage):
         
         ttk.Label(self, text=_("PYTHONPATH that will be used in the run:")).pack(fill="x")
         self.list_var = tk.StringVar()
-        listbox_view = listboxframe.ListboxFrame(self,listbox_class=ut_utils.ThemedListbox,show_scrollbar=False,listvariable=self.list_var)
+        listbox_view = listboxframe.ListboxFrame(self,listbox_class=ui_utils.ThemedListbox,show_scrollbar=False,listvariable=self.list_var)
         self.listbox = listbox_view.listbox
         listbox_view.pack(fill="both",expand=1)
         #必须放在SetCurrentInterpreterName方法前面
@@ -503,6 +503,9 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
         utils.profile_set(key_path + "/RunConfigurationName","")
 
     def OnOK(self,optionsDialog):
+        '''
+            保存运行配置列表
+        '''
         #when is the property of project,check the startup file
         #folder item will not get startup file
         if self.select_project_file is None and not self.is_folder:
@@ -527,18 +530,19 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
                 new_configuration_names = []
                 for i, run_configuration in enumerate(self._configuration_list):
                     last_part = run_configuration.GetRootKeyPath().split("/")[-1]
+                    #项目运行配置名称是脚本名称加上文件的运行配置名称,中间以斜杆分割
                     new_configuration_names.append(last_part + "/" + self._configuration_list[i].Name)
-                    
                     file_configuration = runconfiguration.FileConfiguration(self.current_project_document,run_configuration.MainModuleFile)
                     file_configuration_sets = set(file_configuration.LoadConfigurationNames())
                     #use sets to avoid repeat add configuration_name
                     file_configuration_sets.add(self._configuration_list[i].Name)
                     file_configuration_list = list(file_configuration_sets)
                     pj_file_key = run_configuration.GetRootKeyPath()
-                    #update file configuration list
+                    #先保存脚本文件的运行配置列表
                     utils.profile_set(pj_file_key + "/ConfigurationList",file_configuration_list)
                     if selected_configuration_name == self._configuration_list[i].Name:
                         selected_configuration_name = last_part + "/" + selected_configuration_name
+                #再保存项目的运行配置列表
                 utils.profile_set(pj_key + "/ConfigurationList",new_configuration_names)
                 utils.profile_set(pj_key + "/RunConfigurationName",selected_configuration_name)
             else:
@@ -579,6 +583,9 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
         return False
         
     def NewRunConfiguration(self):
+        '''
+            新建运行配置
+        '''
         run_file = self.select_project_file
         if not run_file:
             run_file = self.GetStartupFile(False)
@@ -603,6 +610,9 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
                 self._configuration_list.append(dlg.run_configuration)
         
     def EditRunConfiguration(self,event=None):
+        '''
+            编辑运行配置
+        '''
         index = self.GetSelectIndex()
         if index == -1:
             return
@@ -616,7 +626,10 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
             if self.configuration_ListCtrl.item(select_item,"text") != dlg.run_configuration.Name:
                 self.configuration_ListCtrl.item(select_item,text=dlg.run_configuration.Name)
         
-    def RemoveConfiguration(self):
+    def RemoveConfiguration(self): 
+        '''
+            删除运行配置
+        '''
         selections = self.configuration_ListCtrl.selection()
         if not selections:
             return
@@ -638,6 +651,9 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
         return -1
         
     def CopyConfiguration(self):
+        '''
+            复制运行配置
+        '''
         index = self.GetSelectIndex()
         if -1 == index:
             return
@@ -665,6 +681,9 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
             self.copy_configuration_btn["state"] = "normal"
             
     def LoadConfigurations(self):
+        '''
+            加载运行配置列表
+        '''
         if self.select_project_file is not None:
             file_configuration = runconfiguration.FileConfiguration(self.current_project_document,self.select_project_file)
             self._configuration_list = file_configuration.LoadConfigurations()
@@ -674,6 +693,7 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
             self._configuration_list = project_configuration.LoadConfigurations()
             selected_configuration_name = project_configuration.GetRunConfigurationName()
             
+        #设置默认运行配置
         for configuration in self._configuration_list:
             item = self.configuration_ListCtrl.insert("","end",text=configuration.Name,image=self.run_config_img)
             if selected_configuration_name == configuration.Name:

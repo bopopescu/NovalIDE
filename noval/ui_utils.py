@@ -495,11 +495,43 @@ def get_default_eol():
     elif utils.is_linux():
         return consts.EOL_LF
     return consts.EOL_CR
-    
-
 
 class CommonOptionPanel(BaseConfigurationPanel):
     def __init__(self,master):
         BaseConfigurationPanel.__init__(self,master)
         self.panel = ttk.Frame(self)
         self.panel.pack(fill="both",expand=1,padx=consts.DEFAUT_CONTRL_PAD_X,pady=consts.DEFAUT_CONTRL_PAD_Y)
+        
+
+def get_busy_cursor():
+    if utils.is_windows():
+        return "wait"
+    elif utils.is_linux():
+        return "watch"
+    else:
+        return "spinning"
+
+class CommonAccountDialog(ui_base.CommonModaldialog):
+    '''
+        公用账号密码登录对话框
+    '''
+    def __init__(self,parent,title,label,ok_text=''):
+        ui_base.CommonModaldialog.__init__(self,parent)
+        self.title(title)
+        sizer_frame = ttk.Frame(self.main_frame)
+        sizer_frame.pack(fill="both")
+        ttk.Label(sizer_frame,text=label).grid(column=0, row=0, sticky="nsew",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),columnspan=2)
+
+        ttk.Label(sizer_frame,text=_('Username:')).grid(column=0, row=1, sticky="nsew",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        self.name_var = tk.StringVar()
+        name_entry = ttk.Entry(sizer_frame,textvariable=self.name_var)
+        name_entry.grid(column=1, row=1, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y,0),padx=(0,consts.DEFAUT_CONTRL_PAD_X))
+        
+        ttk.Label(sizer_frame,text=_('Password:')).grid(column=0, row=2, sticky="nsew",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        self.password_var = tk.StringVar()
+        #密码文本框
+        password_entry = ttk.Entry(sizer_frame,textvariable=self.password_var,show='*')
+        password_entry.grid(column=1, row=2, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y,0),padx=(0,consts.DEFAUT_CONTRL_PAD_X))
+        self.AddokcancelButton()
+        if ok_text:
+            self.ok_button.configure(text=ok_text,default="active")

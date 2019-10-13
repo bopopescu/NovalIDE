@@ -27,8 +27,6 @@ import noval.terminal as terminal
 import noval.ui_common as ui_common
 import noval.misc as misc
 
-ID_TURTLE_DEMO = NewId()
-
 class PyIDEApplication(ide.IDEApplication):
 
     def __init__(self):
@@ -49,18 +47,14 @@ class PyIDEApplication(ide.IDEApplication):
         ProjectDocument.BIN_FILE_EXTS = ProjectDocument.BIN_FILE_EXTS + ['pyc','pyo']
         self.interpreter_combo = self.MainFrame.GetToolBar().AddCombox()
         self.interpreter_combo.bind("<<ComboboxSelected>>",self.OnCombo)
-        
-
       
         if utils.is_windows():
             self.InsertCommand(consts.ID_FEEDBACK,constants.ID_OPEN_PYTHON_HELP,_("&Help"),_("&Python Help Document"),handler=self.OpenPythonHelpDocument,image=self.GetImage("pydoc.png"),pos="before")
             
-        if utils.is_py3_plus():
-            self.InsertCommand(consts.ID_ABOUT,ID_TURTLE_DEMO,_("&Help"),_("Turtle Demo"),handler=self.open_turtle_demo,pos="before")
-            
         self.AddCommand(constants.ID_GOTO_DEFINITION,_("&Edit"),_("Goto Definition"),self.GotoDefinition,default_tester=True,default_command=True)
         self.InsertCommand(consts.ID_FEEDBACK,constants.ID_GOTO_PYTHON_WEB,_("&Help"),_("&Python Website"),handler=self.GotoPythonWebsite,pos="before")
-        self.AddCommand(constants.ID_OPEN_INTERPRETER,_("&Tools"),_("&Interpreter"),self.OpenInterpreter,image=self.GetImage("python/interpreter.png"))
+        #解释器菜单插入在插件管理菜单之前
+        self.InsertCommand(consts.ID_PLUGIN,constants.ID_OPEN_INTERPRETER,_("&Tools"),_("&Interpreter"),self.OpenInterpreter,image=self.GetImage("python/interpreter.png"),pos="before")
         self.AddCommand(constants.ID_PREFERENCES,_("&Tools"),_("&Options..."),self.OnOptions,image=self.GetImage("prefer.png"),add_separator=True,\
                                         separator_location="top")
         edit_menu = self.Menubar.GetMenu(_("&Edit"))
@@ -89,23 +83,6 @@ class PyIDEApplication(ide.IDEApplication):
         self.intellisence_mananger = intellisence.IntellisenceManager()
         self.intellisence_mananger.generate_default_intellisence_data()
         return True
-        
-    def open_turtle_demo(self, event = None):
-        interpreter = self.GetCurrentInterpreter()
-        if interpreter is None:
-            return "break"
-        cmd = [interpreter.Path,
-               '-c',
-               'from turtledemo.__main__ import main; main()']
-        #隐藏命令行黑框
-        if utils.is_windows():
-            startupinfo = subprocess.STARTUPINFO()
-            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            startupinfo.wShowWindow = subprocess.SW_HIDE
-        else:
-            startupinfo = None
-        subprocess.Popen(cmd, shell=False,startupinfo=startupinfo)
-        return "break"
 
     def GetInterpreterManager(self):
         return interpretermanager.InterpreterManager()
@@ -177,6 +154,7 @@ class PyIDEApplication(ide.IDEApplication):
         consts.DEFAULT_PLUGINS += ('noval.python.debugger.breakpoints.BreakpointsViewLoader',)
         consts.DEFAULT_PLUGINS += ('noval.python.debugger.stacksframe.StackframeViewLoader',)
         consts.DEFAULT_PLUGINS += ('noval.python.debugger.inspectconsole.InspectConsoleViewLoader',)
+        consts.DEFAULT_PLUGINS += ('noval.python.plugins.pip_gui.PluginManagerGUI',)
         
     def CreateLexerTemplates(self):
         from noval.syntax import synglob

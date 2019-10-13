@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import messagebox
 import noval.constants as constants
 import noval.ttkwidgets.listboxframe as listboxframe
-import noval.ui_utils as ut_utils
+import noval.ui_utils as ui_utils
 import noval.util.utils as utils
 
 # TODO: adjust the window position in cases where it's too close to bottom or right edge - but make sure the current line is shown
@@ -17,7 +17,7 @@ class Completer(listboxframe.ListboxFrame):
         listboxframe.ListboxFrame.__init__(
             self,
             master=text,
-            listbox_class=ut_utils.ThemedListbox,
+            listbox_class=ui_utils.ThemedListbox,
             font="SmallEditorFont",
             activestyle="dotbox",
             exportselection=False,

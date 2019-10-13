@@ -1,4 +1,5 @@
-import os.path
+# -*- coding: utf-8 -*-
+import os
 import platform
 import shlex
 import noval.util.utils as utils
@@ -15,6 +16,9 @@ def run_in_terminal(cmd, cwd, env_overrides={}, keep_open=True, title=None,pause
         env = get_environment_with_overrides(env_overrides)
     else:
         env = env_overrides
+        #如果环境变量为空,使用系统默认的环境变量
+        if not env:
+            env = os.environ
             
     if platform.system() == "Windows":
         _run_in_terminal_in_windows(cmd, cwd, env, keep_open, title,pause)

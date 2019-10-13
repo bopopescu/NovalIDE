@@ -168,6 +168,7 @@ ID_OPEN_TERMINAL                = NewId()
 ID_UNITTEST                     = NewId()
 ID_OPEN_INTERPRETER             = NewId()
 ID_OPEN_BROWSER                 = NewId()
+ID_PLUGIN                       = NewId()
 ID_PREFERENCES                  = NewId()
     
     

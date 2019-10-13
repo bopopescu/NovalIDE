@@ -126,7 +126,11 @@ class InterpreterManager:
                 self.interpreters.append(interpreter)
 
     def LoadPythonInterpretersFromConfig(self):
+        '''
+            从配置文件或者注册表中读取python解释器信息
+        '''
         config = GetApp().GetConfig()
+        #windows从注册吧中读取
         if apputils.is_windows():
             data = config.Read(self.KEY_PREFIX)
             if not data:
@@ -156,6 +160,7 @@ class InterpreterManager:
                     self.SetDefaultInterpreter(interpreter)
                 data = {
                     'version': l['version'],
+                    'minor_version':l.get('minor_version',''),
                     #should convert tuple type to list
                     'builtins': list(l['builtins']),
                     #'path_list' is the old key name of sys_path_list,we should make compatible of old version
@@ -177,6 +182,7 @@ class InterpreterManager:
             if len(self.interpreters) > 1 or (len(self.interpreters) == 1 and not has_builtin_interpreter):
                 return True
         else:
+            #Linux从配置文件中读取
             prefix = self.KEY_PREFIX
             data = config.Read(prefix)
             if not data:
@@ -187,6 +193,7 @@ class InterpreterManager:
                 path = config.Read("%s/%s/Path" % (prefix,id))
                 is_default = config.ReadInt("%s/%s/Default" % (prefix,id))
                 version = config.Read("%s/%s/Version" % (prefix,id))
+                minor_version = config.Read("%s/%s/MinorVersion" % (prefix,id),"")
                 sys_paths = config.Read("%s/%s/SysPathList" % (prefix,id))
                 python_path_list = config.Read("%s/%s/PythonPathList" % (prefix,id),"")
                 builtins = config.Read("%s/%s/Builtins" % (prefix,id))
@@ -200,6 +207,7 @@ class InterpreterManager:
                     self.SetDefaultInterpreter(interpreter)
                 data = {
                     'version': version,
+                    'minor_version':minor_version,
                     'builtins': builtins.split(os.pathsep),
                     'sys_path_list': sys_paths.split(os.pathsep),
                     'python_path_list':python_path_list.split(os.pathsep)
@@ -217,17 +225,23 @@ class InterpreterManager:
             d = dict(id=interpreter.Id,name=interpreter.Name,version=interpreter.Version,path=interpreter.Path,\
                         default=interpreter.Default,sys_path_list=interpreter.SysPathList,python_path_list=interpreter.PythonPathList,\
                         builtins=interpreter.Builtins,help_path=interpreter.HelpPath,\
-                        environ=interpreter.Environ.environ,packages=interpreter.DumpPackages(),is_builtin=interpreter.IsBuiltIn)
+                        environ=interpreter.Environ.environ,packages=interpreter.DumpPackages(),is_builtin=interpreter.IsBuiltIn,
+                        minor_version=interpreter.MinorVersion)
             lst.append(d)
         return lst
 
     def SavePythonInterpretersConfig(self):
+        '''
+            保存解释器配置信息
+        '''
         config = GetApp().GetConfig()
+        #windows写入注册表
         if apputils.is_windows():
             dct = self.ConvertInterpretersToDictList()
             if dct == []:
                 return
             config.Write(self.KEY_PREFIX ,pickle.dumps(dct))
+        #Linux写入配置文件
         else:
             prefix = self.KEY_PREFIX
             id_list = [ str(kl.Id) for kl in self.interpreters ]
@@ -236,6 +250,7 @@ class InterpreterManager:
                 config.WriteInt("%s/%d/Id"%(prefix,kl.Id),kl.Id)
                 config.Write("%s/%d/Name"%(prefix,kl.Id),kl.Name)
                 config.Write("%s/%d/Version"%(prefix,kl.Id),kl.Version)
+                config.Write("%s/%d/MinorVersion"%(prefix,kl.Id),kl.MinorVersion)
                 config.Write("%s/%d/Path"%(prefix,kl.Id),kl.Path)
                 config.WriteInt("%s/%d/Default"%(prefix,kl.Id),kl.Default)
                 config.Write("%s/%d/SysPathList"%(prefix,kl.Id),os.pathsep.join(kl.SysPathList))
@@ -251,6 +266,9 @@ class InterpreterManager:
         self.interpreters.remove(interpreter)
 
     def SetDefaultInterpreter(self,interpreter):
+        '''
+            设置默认解释器
+        '''
         self.DefaultInterpreter = interpreter
         for kl in self.interpreters:
             if kl.Id == interpreter.Id:
@@ -294,6 +312,9 @@ class InterpreterManager:
         return False
 
     def SetCurrentInterpreter(self,interpreter):
+        '''
+            设置当前正在使用的解释器
+        '''
         self.CurrentInterpreter = interpreter
         if interpreter is None:
             return

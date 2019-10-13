@@ -234,11 +234,7 @@ class FileConfiguration(BaseConfiguration):
         
     def LoadConfigurationNames(self):
         file_key = self.GetRootKeyPath()
-        value = utils.profile_get(file_key + "/" + "ConfigurationList","[]")
-        try:
-            configuration_name_list = eval(value)
-        except Exception as e:
-            return []
+        configuration_name_list = utils.profile_get(file_key + "/" + "ConfigurationList",[])
         return configuration_name_list
         
     def LoadConfigurations(self):
@@ -305,6 +301,7 @@ class ProjectConfiguration(BaseConfiguration):
         file_configuration = FileConfiguration(self.ProjectDocument,main_module_file)
         file_configuration_list = file_configuration.LoadConfigurations()
         for run_configuration in file_configuration_list:
+            #项目运行配置名称必须在文件运行配置列表里面存在
             if run_configuration.Name == configuration_name:
                 return run_configuration
         utils.get_logger().warn("run configuration name %s is not exist",name)

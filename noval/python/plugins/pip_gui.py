@@ -1,0 +1,1351 @@
+# -*- coding: utf-8 -*-
+from noval import _,NewId,GetApp
+import json
+import logging
+import os
+import re
+import subprocess
+import sys
+import tkinter as tk
+import webbrowser
+from distutils.version import LooseVersion, StrictVersion
+from logging import exception
+from os import makedirs
+from tkinter import messagebox, ttk,filedialog
+from tkinter.messagebox import showerror
+import noval.ui_base as ui_base
+import noval.iface as iface
+import noval.plugin as plugin
+import noval.constants as constants
+import noval.util.utils as utils
+import noval.misc as misc
+import noval.ui_utils as ui_utils
+import noval.ui_common as ui_common
+import noval.consts as consts
+from dummy.userdb import UserDataDb
+import noval.util.fileutils as fileutils
+import noval.util.strutils as strutils
+import site
+import noval.python.interpreter.interpretermanager as interpretermanager
+import intellisence
+import pkg_resources
+import noval.python.pyutils as pyutils
+PIP_INSTALLER_URL = "https://bootstrap.pypa.io/get-pip.py"
+
+def normpath_with_actual_case(name):
+    """In Windows return the path with the case it is stored in the filesystem"""
+    assert os.path.isabs(name) or os.path.ismount(name), "Not abs nor mount: " + name
+    assert os.path.exists(name), "Not exists: " + name
+
+    if os.name == "nt":
+        name = os.path.realpath(name)
+
+        from ctypes import create_unicode_buffer, windll
+
+        buf = create_unicode_buffer(512)
+        windll.kernel32.GetShortPathNameW(name, buf, 512)  # @UndefinedVariable
+        windll.kernel32.GetLongPathNameW(buf.value, buf, 512)  # @UndefinedVariable
+        if len(buf.value):
+            result = buf.value
+        else:
+            result = name
+
+        assert isinstance(result, str)
+
+        if result[1] == ":":
+            # ensure drive letter is capital
+            return result[0].upper() + result[1:]
+        else:
+            return result
+    else:
+        return os.path.normpath(name)
+        
+
+def GetAllPackages(find_name=None):
+    '''
+        获取所有pypi包名称列表
+    '''
+    #包列表信息存储在用户数据目录下的pypi_packages.txt文件中
+    app_data_path = utils.get_user_data_path()
+    package_data_path = os.path.join(app_data_path,"cache","pypi_packages.txt")
+    names = []
+    with open(package_data_path) as f:
+        for line in f:
+            normal_name = line.strip()
+            if find_name is None or normal_name.lower().find(find_name) != -1:
+                names.append(normal_name)
+    return names
+    
+def GetAllPlugins(find_name=None):
+    '''
+        获取所有插件名称列表
+    '''
+    api_addr = '%s/member/get_plugins' % (UserDataDb.HOST_SERVER_ADDR)
+    data = utils.RequestData(api_addr,method='get')
+    if not data:
+        return[]
+    return data['names']
+
+class PipDialog(ui_base.CommonModaldialog):
+    def __init__(self, master,package_count):
+        self._state = "idle"  # possible values: "listing", "fetching", "idle"
+        self._process = None
+        self._active_distributions = {}
+        self.current_package_data = None
+        self.package_count = package_count
+
+        super().__init__(master)
+
+        main_frame = ttk.Frame(self)
+        main_frame.grid(sticky=tk.NSEW, ipadx=15, ipady=15)
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=1)
+
+        self.title(self._get_title())
+
+        self._create_widgets(main_frame,_("Find package from PyPI"),_("There is total %d packages on PyPI")%self.package_count)
+
+        self.search_box.focus_set()
+
+        self.bind("<Escape>", self._on_close, True)
+        self.protocol("WM_DELETE_WINDOW", self._on_close)
+#        self._show_instructions()
+
+        self._start_update_list()
+        
+    def CreateBottomLabel(self,parent,label_text):
+        pass
+
+    def _create_widgets(self, parent,button_text,label_text):
+
+        header_frame = ttk.Frame(parent)
+        header_frame.grid(row=1, column=0, sticky="nsew", padx=15, pady=(15, 0))
+        header_frame.columnconfigure(0, weight=1)
+        header_frame.rowconfigure(1, weight=1)
+
+        name_font = tk.font.nametofont("TkDefaultFont").copy()
+        name_font.configure(size=16)
+        self.search_box = ttk.Entry(header_frame)
+        self.search_box.grid(row=1, column=0, sticky="nsew")
+        self.search_box.bind("<Return>", self._on_search, False)
+
+        self.search_button = ttk.Button(
+            header_frame, text=button_text, command=self._on_search, width=25
+        )
+        self.search_button.grid(row=1, column=1, sticky="nse", padx=(10, 0))
+
+        main_pw = tk.PanedWindow(
+            parent,
+            orient=tk.HORIZONTAL,
+            background=misc.lookup_style_option("TPanedWindow", "background"),
+            sashwidth=15,
+        )
+        main_pw.grid(row=2, column=0, sticky="nsew", padx=15, pady=(15,consts.DEFAUT_CONTRL_PAD_Y))
+        parent.rowconfigure(2, weight=1)
+        parent.columnconfigure(0, weight=1)
+        self.CreateBottomLabel(parent,label_text)
+        listframe = ttk.Frame(main_pw, relief="flat", borderwidth=1)
+        listframe.rowconfigure(0, weight=1)
+        listframe.columnconfigure(0, weight=1)
+
+        self.listbox = ui_utils.ThemedListbox(
+            listframe,
+            activestyle="dotbox",
+            width=20,
+            height=20,
+            selectborderwidth=0,
+            relief="flat",
+            # highlightthickness=4,
+            # highlightbackground="red",
+            # highlightcolor="green",
+            borderwidth=0,
+        )
+        self.listbox.insert("end", " <INSTALL>")
+        self.listbox.bind("<<ListboxSelect>>", self._on_listbox_select, True)
+        self.listbox.grid(row=0, column=0, sticky="nsew")
+        list_scrollbar = ui_common.AutoScrollbar(
+            listframe, orient=tk.VERTICAL, style=None
+        )
+        list_scrollbar.grid(row=0, column=1, sticky="ns")
+        list_scrollbar["command"] = self.listbox.yview
+        self.listbox["yscrollcommand"] = list_scrollbar.set
+
+        info_frame = ttk.Frame(main_pw)
+        info_frame.columnconfigure(0, weight=1)
+        info_frame.rowconfigure(1, weight=1)
+
+        main_pw.add(listframe)
+        main_pw.add(info_frame)
+
+        self.name_label = ttk.Label(info_frame, text="", font=name_font)
+        self.name_label.grid(row=0, column=0, sticky="w", padx=5)
+
+        info_text_frame = ui_base.TextviewFrame(
+            info_frame,
+#            read_only=True,
+            horizontal_scrollbar=False,
+            background=misc.lookup_style_option("TFrame", "background"),
+            vertical_scrollbar_class=ui_common.AutoScrollbar,
+            vertical_scrollbar_style=None,
+            horizontal_scrollbar_style=None,
+            width=70,
+            height=10,
+            text_class = ui_base.TweakableText
+        )
+        info_text_frame.configure(borderwidth=0)
+        info_text_frame.grid(row=1, column=0, columnspan=4, sticky="nsew", pady=(0, 10))
+        self.info_text = info_text_frame.text
+        link_color = misc.lookup_style_option("Url.TLabel", "foreground", "red")
+        self.info_text.tag_configure("url", foreground=link_color, underline=True)
+        self.info_text.tag_bind("url", "<ButtonRelease-1>", self._handle_url_click)
+        self.info_text.tag_bind("url", "<Enter>", lambda e: self.info_text.config(cursor="hand2"))
+        self.info_text.tag_bind("url", "<Leave>", lambda e: self.info_text.config(cursor=""))
+        self.info_text.tag_configure("install_reqs", foreground=link_color, underline=True)
+        self.info_text.tag_bind(
+            "install_reqs", "<ButtonRelease-1>", self._handle_install_requirements_click
+        )
+        self.info_text.tag_bind(
+            "install_reqs", "<Enter>", lambda e: self.info_text.config(cursor="hand2")
+        )
+        self.info_text.tag_bind(
+            "install_reqs", "<Leave>", lambda e: self.info_text.config(cursor="")
+        )
+        self.info_text.tag_configure("install_file", foreground=link_color, underline=True)
+        self.info_text.tag_bind(
+            "install_file", "<ButtonRelease-1>", self._handle_install_file_click
+        )
+        self.info_text.tag_bind(
+            "install_file", "<Enter>", lambda e: self.info_text.config(cursor="hand2")
+        )
+        self.info_text.tag_bind(
+            "install_file", "<Leave>", lambda e: self.info_text.config(cursor="")
+        )
+
+        default_font = tk.font.nametofont("TkDefaultFont")
+        self.info_text.configure(font=default_font, wrap="word")
+
+        bold_font = default_font.copy()
+        # need to explicitly copy size, because Tk 8.6 on certain Ubuntus use bigger font in copies
+        bold_font.configure(weight="bold", size=default_font.cget("size"))
+        self.info_text.tag_configure("caption", font=bold_font)
+        self.info_text.tag_configure("bold", font=bold_font)
+
+        self.command_frame = ttk.Frame(info_frame)
+        self.command_frame.grid(row=2, column=0, sticky="w")
+
+        self.install_button = ttk.Button(
+            self.command_frame, text=_(" Upgrade "), command=self._on_click_install
+        )
+
+        self.install_button.grid(row=0, column=0, sticky="w", padx=0)
+
+        self.uninstall_button = ttk.Button(
+            self.command_frame,
+            text=_("Uninstall"),
+            command=lambda: self._perform_action("uninstall"),
+        )
+
+        self.uninstall_button.grid(row=0, column=1, sticky="w", padx=(5, 0))
+
+        self.advanced_button = ttk.Button(
+            self.command_frame,
+            text="...",
+            width=3,
+            command=lambda: self._perform_action("advanced"),
+        )
+
+        self.advanced_button.grid(row=0, column=2, sticky="w", padx=(5, 0))
+
+        self.close_button = ttk.Button(info_frame, text=_("Close"), command=self._on_close)
+        self.close_button.grid(row=2, column=3, sticky="e")
+
+    def _on_click_install(self):
+        self._perform_action("install")
+
+    def _set_state(self, state, force_normal_cursor=False):
+        self._state = state
+        widgets = [
+            self.listbox,
+            # self.search_box, # looks funny when disabled
+            self.search_button,
+            self.install_button,
+            self.advanced_button,
+            self.uninstall_button,
+        ]
+
+        if state == "idle":
+            self.config(cursor="")
+            for widget in widgets:
+                widget["state"] = tk.NORMAL
+        else:
+            if force_normal_cursor:
+                self.config(cursor="")
+            else:
+                self.config(cursor=ui_utils.get_busy_cursor())
+
+            for widget in widgets:
+                widget["state"] = tk.DISABLED
+
+    def _get_state(self):
+        return self._state
+
+    def _handle_outdated_or_missing_pip(self, error):
+        raise NotImplementedError()
+
+    def _install_pip(self):
+        self._clear()
+        self.info_text.direct_insert("end", _("Installing pip\n\n"), ("caption",))
+        self.info_text.direct_insert(
+            "end",
+            _(
+                "pip, a required module for managing packages is missing or too old.\n\n"
+                + "Downloading pip installer (about 1.5 MB), please wait ...\n"
+            ),
+        )
+        self.update()
+        self.update_idletasks()
+
+        installer_filename, _ = urlretrieve(PIP_INSTALLER_URL)
+
+        self.info_text.direct_insert("end", _("Installing pip, please wait ...\n"))
+        self.update()
+        self.update_idletasks()
+
+        proc, _ = self._create_python_process([installer_filename], stderr=subprocess.PIPE)
+        out, err = proc.communicate()
+        os.remove(installer_filename)
+
+        if err != "":
+            raise RuntimeError("Error while installing pip:\n" + err)
+
+        self.info_text.direct_insert("end", out + "\n")
+        self.update()
+        self.update_idletasks()
+
+        # update list
+        self._start_update_list()
+
+    def _provide_pip_install_instructions(self, error):
+        self._clear()
+        self.info_text.direct_insert("end", error)
+        self.info_text.direct_insert(
+            "end", _("You seem to have problems with pip\n\n"), ("caption",)
+        )
+        self.info_text.direct_insert(
+            "end",
+            _(
+                "pip, a required module for managing packages is missing or too old for Thonny.\n\n"
+                + "If your system package manager doesn't provide recent pip (9.0.0 or later), "
+                + "then you can install newest version by downloading "
+            ),
+        )
+        self.info_text.direct_insert("end", PIP_INSTALLER_URL, ("url",))
+        self.info_text.direct_insert(
+            "end",
+            _(" and running it with ")
+            + self._get_interpreter()
+            + _(" (probably needs admin privileges).\n\n"),
+        )
+
+        self.info_text.direct_insert("end", self._instructions_for_command_line_install())
+        self._set_state("disabled", True)
+
+    def _instructions_for_command_line_install(self):
+        return _(
+            "Alternatively, if you have an older pip installed, then you can install packages "
+            + "on the command line (Tools → Open system shell...)"
+        )
+
+    def _start_update_list(self, name_to_show=None):
+        raise NotImplementedError()
+        
+    def ShowNameList(self,names):
+        self.listbox.delete(1, "end")
+        for name in sorted(names):
+            self.listbox.insert("end", " " + name)
+            
+    def _update_list(self, name_to_show):
+        self.ShowNameList(self._active_distributions.keys())
+        if name_to_show is None:
+            self._show_instructions()
+        else:
+            self._start_show_package_info(name_to_show)
+
+    def _on_listbox_select(self, event):
+        self.listbox.focus_set()
+        selection = self.listbox.curselection()
+        if len(selection) == 1:
+            self.listbox.activate(selection[0])
+            if selection[0] == 0:  # special first item
+                self._show_instructions()
+            else:
+                self._start_show_package_info(self.listbox.get(selection[0]).strip())
+                
+    def search_by_name(self,name):
+        return []
+
+    def _on_search(self, event=None):
+        if self._get_state() != "idle":
+            # Search box is not made inactive for busy-states
+            return
+
+        #搜索名称为空时显示已经安装的包列表
+        if self.search_box.get().strip() == "":
+            self._start_update_list()
+            return
+            
+        #模糊搜索关键字
+        search_name = self.search_box.get().strip()
+        names = self.search_by_name(search_name)
+        #列表框显示搜索结果
+        self.ShowNameList(names)
+        if not names:
+            self._clear()
+            self.NotFoundPackage(search_name)
+            return
+        #显示第一个包名
+        self._start_show_package_info(names[0])
+
+    def _clear(self):
+        self.current_package_data = None
+        self.name_label.grid_remove()
+        self.command_frame.grid_remove()
+        self.info_text.direct_delete("1.0", "end")
+        
+    def _show_instructions(self):
+        '''
+            显示<INSTALL>提示信息
+        '''
+        
+    def start_fetching_package_info(self,name):
+        '''
+            从pypi服务器上查询pypi包信息
+        '''
+        _start_fetching_package_info(name, None, self._show_package_info)
+
+    def _start_show_package_info(self, name):
+        self.current_package_data = None
+        # Fetch info from PyPI
+        self._set_state("fetching")
+        # Follwing fetches info about latest version.
+        # This is OK even when we're looking an installed older version
+        # because new version may have more relevant and complete info.
+        self.info_text.direct_delete("1.0", "end")
+        self.name_label["text"] = ""
+        self.name_label.grid()
+        self.command_frame.grid()
+        #包是否已在本地安装,先显示安装信息
+        active_dist = self._get_active_dist(name)
+        if active_dist is not None:
+            #已安装包
+            self.name_label["text"] = active_dist["project_name"]
+            self.info_text.direct_insert("end", _("Installed version: "), ("caption",))
+            self.info_text.direct_insert("end", active_dist["version"] + "\n")
+            self.info_text.direct_insert("end", _("Installed to: "), ("caption",))
+            self.info_text.direct_insert(
+                "end", normpath_with_actual_case(active_dist["location"]), ("url",)
+            )
+            self.info_text.direct_insert("end", "\n\n")
+            self._select_list_item(name)
+        else:
+            #未安装包
+            self._select_list_item(0)
+            
+        #从服务器上查询包信息,其次显示包信息
+        self.start_fetching_package_info(name)
+
+        # update gui
+        if self._is_read_only_package(name):
+            self.install_button.grid_remove()
+            self.uninstall_button.grid_remove()
+            self.advanced_button.grid_remove()
+        else:
+            self.install_button.grid(row=0, column=0)
+            self.advanced_button.grid(row=0, column=2)
+
+            if active_dist is not None:
+                # existing package in target directory
+                self.install_button["text"] = _("Upgrade")
+                self.install_button["state"] = "disabled"
+                self.uninstall_button.grid(row=0, column=1)
+            else:
+                # new package
+                self.install_button["text"] = _("Install")
+                self.uninstall_button.grid_remove()
+                
+    def NotFoundPackage(self,name):
+        pass
+        
+    def write(self,s, tag=None):
+        if tag is None:
+            tags = ()
+        else:
+            tags = (tag,)
+        self.info_text.direct_insert("end", s, tags)
+        
+
+    def _get_latest_stable_version(self,version_strings):
+        '''
+            获取pypi包的最新稳定版本号
+        '''
+        versions = []
+        for s in version_strings:
+            if s.replace(".", "").isnumeric():  # Assuming stable versions have only dots and numbers
+                versions.append(
+                    LooseVersion(s)
+                )  # LooseVersion __str__ doesn't change the version string
+
+        if len(versions) == 0:
+            return None
+
+        return str(sorted(versions)[-1])
+
+    def _show_package_info(self, name, data, error_code=None):
+        self._set_state("idle")
+        self.current_package_data = data
+        def write_att(caption, value, value_tag=None):
+            self.write(caption + ": ", "caption")
+            self.write(value, value_tag)
+            self.write("\n")
+
+        if error_code is not None:
+            if error_code == 404:
+                self.NotFoundPackage(name)
+            else:
+                write(
+                    _("Could not find the package info from PyPI. Error code: ") + str(error_code)
+                )
+
+            return
+        info = data
+        self.name_label["text"] = info["name"]  # search name could have been a bit different
+        latest_stable_version = self._get_latest_stable_version(data["releases"])
+        if latest_stable_version is not None:
+            write_att(_("Latest stable version"), latest_stable_version)
+        else:
+            write_att(_("Latest version"), data["version"])
+        write_att(_("Summary"), info["summary"])
+        write_att(_("Author"), info["author"])
+        write_att(_("Homepage"), info["homepage"], "url")
+        if info.get("bugtrack_url", None):
+            write_att(_("Bugtracker"), info["bugtrack_url"], "url")
+        if info.get("docs_url", None):
+            write_att(_("Documentation"), info["docs_url"], "url")
+        if info.get("package_url", None):
+            write_att(_("PyPI page"), info["package_url"], "url")
+        if info.get("requires_dist", None):
+            # Available only when release is created by a binary wheel
+            # https://github.com/pypa/pypi-legacy/issues/622#issuecomment-305829257
+            write_att(_("Requires"), ", ".join(info["requires_dist"]))
+
+        if self._get_active_version(name) != latest_stable_version or not self._get_active_version(
+            name
+        ):
+            self.install_button["state"] = "normal"
+        else:
+            self.install_button["state"] = "disabled"
+
+    def _is_read_only_package(self, name):
+        dist = self._get_active_dist(name)
+        if dist is None:
+            return False
+        else:
+            return normpath_with_actual_case(dist["location"]) != self._get_target_directory()
+
+    def _normalize_name(self, name):
+        # looks like (in some cases?) pip list gives the name as it was used during install
+        # ie. the list may contain lowercase entry, when actual metadata has uppercase name
+        # Example: when you "pip install cx-freeze", then "pip list"
+        # really returns "cx-freeze" although correct name is "cx_Freeze"
+
+        # https://www.python.org/dev/peps/pep-0503/#id4
+        return re.sub(r"[-_.]+", "-", name).lower().strip()
+
+    def _select_list_item(self, name_or_index):
+        if isinstance(name_or_index, int):
+            index = name_or_index
+        else:
+            normalized_items = list(map(self._normalize_name, self.listbox.get(0, "end")))
+            try:
+                index = normalized_items.index(self._normalize_name(name_or_index))
+            except Exception:
+                exception(_("Can't find package name from the list: ") + name_or_index)
+                return
+
+        old_state = self.listbox["state"]
+        try:
+            self.listbox["state"] = "normal"
+            self.listbox.select_clear(0, "end")
+            self.listbox.select_set(index)
+            self.listbox.activate(index)
+            self.listbox.see(index)
+        finally:
+            self.listbox["state"] = old_state
+
+    def _perform_action(self, action):
+        assert self._get_state() == "idle"
+        assert self.current_package_data is not None
+        data = self.current_package_data
+        name = self.current_package_data["name"]
+        install_args = ["install", "--no-cache-dir"]
+        if self._use_user_install():
+            #pip install --user package_name
+            #会将Python程序包安装到$HOME/.local路径下,其中包含三个字文件夹:bin,lib和share
+            #只有非虚拟解释器时才能使用user参数安装包,虚拟解释器不能使用,会安装包到site-package目录下
+            install_args.append("--user")
+
+        if action == "install":
+            if not self._confirm_install(self.current_package_data):
+                return
+
+            args = install_args
+            if self._get_active_version(name) is not None:
+                args.append("--upgrade")
+
+            args.append(name)
+        elif action == "uninstall":
+            if name in ["pip", "setuptools"] and not messagebox.askyesno(
+                _("Really uninstall?"),
+                "Package '{}' is required for installing and uninstalling other packages.\n\n".format(
+                    name
+                )
+                + _("Are you sure you want to uninstall it?"),
+                parent=get_workbench(),
+            ):
+                return
+            args = ["uninstall", "-y", name]
+        elif action == "advanced":
+            details = _ask_installation_details(
+                self, data, _get_latest_stable_version(list(data["releases"].keys()))
+            )
+            if details is None:  # Cancel
+                return
+
+            version, package_data, upgrade_deps = details
+            if not self._confirm_install(package_data):
+                return
+
+            args = install_args
+            if upgrade_deps:
+                args.append("--upgrade")
+            args.append(name + "==" + version)
+        else:
+            raise RuntimeError("Unknown action")
+
+        proc, cmd = self._create_pip_process(args)
+        title = subprocess.list2cmdline(cmd)
+
+        # following call blocks
+        _show_subprocess_dialog(self, proc, title)
+        if action == "uninstall":
+            self._show_instructions()  # Make the old package go away as fast as possible
+        self._start_update_list(None if action == "uninstall" else name)
+
+    def _handle_install_file_click(self, event):
+        if self._get_state() != "idle":
+            return
+
+        filename = filedialog.askopenfilename(
+            master=self,
+            filetypes=[("Package", ".whl .zip .tar.gz"), ("all files", ".*")],
+          #  initialdir=get_workbench().get_local_cwd,
+        )
+        if filename:  # Note that missing filename may be "" or () depending on tkinter version
+            self._install_local_file(filename, False)
+
+    def _handle_install_requirements_click(self, event):
+        if self._get_state() != "idle":
+            return
+
+        filename = filedialog.askopenfilename(
+            master=self,
+            filetypes=[("requirements", ".txt"), ("all files", ".*")],
+           # initialdir=get_workbench().get_local_cwd,
+        )
+        if filename:  # Note that missing filename may be "" or () depending on tkinter version
+            self._install_local_file(filename, True)
+
+    def _handle_target_directory_click(self, event):
+        if self._get_target_directory():
+            open_path_in_system_file_manager(self._get_target_directory())
+
+    def _install_local_file(self, filename, is_requirements_file):
+        args = ["install"]
+        if self._use_user_install():
+            args.append("--user")
+        if is_requirements_file:
+            args.append("-r")
+        args.append(filename)
+
+        proc, cmd = self._create_pip_process(args)
+        # following call blocks
+        title = subprocess.list2cmdline(cmd)
+
+        _, out, _ = _show_subprocess_dialog(self, proc, title)
+
+        # Try to find out the name of the package we're installing
+        name = None
+
+        # output should include a line like this:
+        # Installing collected packages: pytz, six, python-dateutil, numpy, pandas
+        inst_lines = re.findall(
+            "^Installing collected packages:.*?$", out, re.MULTILINE | re.IGNORECASE
+        )  # @UndefinedVariable
+        if len(inst_lines) == 1:
+            # take last element
+            elements = re.split(",|:", inst_lines[0])
+            name = elements[-1].strip()
+
+        self._start_update_list(name)
+
+    def _handle_url_click(self, event):
+        '''
+            点击链接操作
+        '''
+        url = _extract_click_text(self.info_text, event, "url")
+        if url is not None:
+            #如果是http地址则打开web链接
+            if url.startswith("http:") or url.startswith("https:"):
+                webbrowser.open(url)
+            else:
+                #否则打开文件或文件夹
+                fileutils.safe_open_file_directory(url)
+
+    def _on_close(self, event=None):
+        self.destroy()
+
+    def _get_active_version(self, name):
+        dist = self._get_active_dist(name)
+        if dist is None:
+            return None
+        else:
+            return dist["version"]
+
+    def _get_active_dist(self, name):
+        normname = self._normalize_name(name)
+        for key in self._active_distributions:
+
+            if self._normalize_name(key) == normname:
+                return self._active_distributions[key]
+
+        return None
+
+    def _create_python_process(self, args, stderr):
+        raise NotImplementedError()
+
+    def _create_pip_process(self, args, stderr=subprocess.STDOUT):
+        if "--disable-pip-version-check" not in args:
+            args.append("--disable-pip-version-check")
+        return self._create_python_process(["-m", "pip"] + args, stderr=stderr)
+
+    def _should_install_to_site_packages(self):
+        raise NotImplementedError()
+
+    def _use_user_install(self):
+        #虚拟解释器必须安装到到site-package目录下,不能使用user参数安装
+        #非虚拟解释器将使用user参数安装
+        return not self._should_install_to_site_packages()
+
+    def _get_target_directory(self):
+        if self._use_user_install():
+            assert hasattr(site, "getusersitepackages")
+            os.makedirs(site.getusersitepackages(), exist_ok=True)
+            return normpath_with_actual_case(site.getusersitepackages())
+        else:
+            for d in sys.path:
+                if ("site-packages" in d or "dist-packages" in d) and path_startswith(
+                    d, sys.prefix
+                ):
+                    return normpath_with_actual_case(d)
+            return None
+
+    def _get_title(self):
+        return "Manage packages"
+
+    def _confirm_install(self, package_data):
+        return True
+
+    def _read_only(self):
+        if self._should_install_to_site_packages():
+            return False
+        else:
+            # readonly if not in a virtual environment
+            # and user site packages is disabled
+            return not site.ENABLE_USER_SITE
+            
+    def _targets_virtual_environment(self):
+        # https://stackoverflow.com/a/42580137/261181
+        return (
+            hasattr(sys, "base_prefix")
+            and sys.base_prefix != sys.prefix
+            or hasattr(sys, "real_prefix")
+            and getattr(sys, "real_prefix") != sys.prefix
+        )
+
+class PluginsPipDialog(PipDialog):
+    def __init__(self, master,package_count):
+        PipDialog.__init__(self, master,package_count)
+
+        # make sure directory exists, so user can put her plug-ins there
+#        d = self._get_target_directory()
+ #       makedirs(d, exist_ok=True) 
+
+    def _show_instructions(self):
+        '''
+            显示插件<INSTALL>提示信息
+        '''
+        self._clear()
+
+        self.info_text.direct_insert("end", _("Install from Server\n"), ("caption",))
+        self.info_text.direct_insert(
+            "end",
+            _(
+                "If you don't know where to get the plugin from, "
+                + "then most likely you'll want to search the plugin Package Index. "
+                + "Start by entering the name of the plugin in the search box above and pressing ENTER.\n\n"
+            ),
+        )
+
+        self.info_text.direct_insert("end", _("Install from local file\n"), ("caption",))
+        self.info_text.direct_insert("end", _("Click "))
+        self.info_text.direct_insert("end", _("here"), ("install_file",))
+        self.info_text.direct_insert(
+            "end",
+            _(
+                " to locate and install the plugin file (usually with .egg extension).\n\n"
+            ),
+        )
+
+        self.info_text.direct_insert("end", _("Upgrade or uninstall\n"), ("caption",))
+        self.info_text.direct_insert(
+            "end", _("Start by selecting the package from the left.\n\n")
+        )
+        #显示插件安装目录
+        if self._get_target_directory():
+            self.info_text.direct_insert("end", _("Target:  "), ("caption",))
+            self.info_text.direct_insert("end", _("User directory or Application directory\n"), ("caption",))
+
+            self.info_text.direct_insert(
+                "end",
+                _(
+                    "This dialog lists all available plugins,"
+                    + " but allows upgrading and uninstalling only plugins from "
+                ),
+            )
+            #插件有2个安装目录
+            target_directorys = self._get_target_directory()
+            #第一个是用户目录
+            self.info_text.direct_insert("end",target_directorys[0], ("url"))
+            #2个目录之间以逗号分隔
+            self.info_text.direct_insert("end", _(", "))
+            #第二个是软件安装目录
+            self.info_text.direct_insert("end",target_directorys[1], ("url"))
+            self.info_text.direct_insert(
+                "end",
+                _(
+                    ". New plugin will be also installed into this directory."
+                    + " Other locations must be managed by alternative means."
+                ),
+            )
+
+        self._select_list_item(0)
+        
+    def CreateBottomLabel(self,parent,label_text):
+        ttk.Label(parent, text=label_text).grid(row=3, column=0, sticky="nsew", padx=15, pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+        
+    def NotFoundPackage(self,name):
+        self.write(_("Could not find the plugin from Server."))
+        if not self._get_active_version(name):
+            # new package
+            self.write(_("\nPlease check your spelling!") + _("\nYou need to enter "))
+            self.write(_("exact plugin name"), "bold")
+            self.write("!")
+        
+    def search_by_name(self,name):
+        names = []
+        lower_name = name.lower()
+        names = GetAllPlugins(lower_name)
+        return names
+        
+    def _handle_install_file_click(self, event):
+        if self._get_state() != "idle":
+            return
+
+        filename = filedialog.askopenfilename(
+            master=self,
+            filetypes=[("Plugin", ".egg"), ("all files", ".*")],
+            #initialdir=get_workbench().get_local_cwd,
+        )
+        if filename:  # Note that missing filename may be "" or () depending on tkinter version
+            self._install_local_file(filename, False)
+
+    def _get_latest_stable_version(self,version_strings):
+        '''
+            获取插件的最新稳定版本号
+        '''
+        versions = []
+        #插件版本号列表存储的是字典数据和pypi包的版本号列表不一样
+        for s in version_strings:
+            versions.append(
+                LooseVersion(s['version'])
+            )  # LooseVersion __str__ doesn't change the version string
+
+        if len(versions) == 0:
+            return None
+
+        return str(sorted(versions)[-1])
+
+    def start_fetching_package_info(self,name):
+        '''
+            从novalide服务器上查询插件信息
+        '''
+        _start_fetching_plugin_info(name, None, self._show_package_info)
+
+    def _start_update_list(self, name_to_show=None):
+        '''
+            获取所有已安装插件,在插件对话框初始化时显示
+        '''
+        assert self._get_state() in [None, "idle"]
+        pdata = GetApp().GetPluginManager().GetPluginData()
+        self._active_distributions = {
+            plugin.GetName(): {
+                "project_name": plugin.GetName(),
+                "key": plugin.GetName(),
+                "location": plugin.GetDist().location,
+                "version": plugin.GetVersion(),
+                'enabled':plugin.IsEnabled()
+            }
+            for plugin in pdata  # pylint: disable=not-an-iterable
+        }
+        self._update_list(name_to_show)
+
+    def _conflicts_with_thonny_version(self, req_strings):
+        import pkg_resources
+
+        try:
+            conflicts = []
+            for req_string in req_strings:
+                req = pkg_resources.Requirement.parse(req_string)
+                if req.project_name == "thonny" and thonny.get_version() not in req:
+                    conflicts.append(req_string)
+
+            return conflicts
+        except Exception:
+            logging.exception("Problem computing conflicts")
+            return None
+
+    def _should_install_to_site_packages(self):
+        return self._targets_virtual_environment()
+
+    def _create_python_process(self, args, stderr):
+        proc = running.create_frontend_python_process(args, stderr=stderr)
+        return proc, proc.cmd
+
+    def _confirm_install(self, package_data):
+        '''
+            安装插件
+        '''
+        print(package_data,"+++++++++++++++") 
+        name = package_data["name"]
+       # reqs = package_data["info"].get("requires_dist", None)
+
+        other_version_text = (
+            "NB! There may be another version available "
+            + "which is compatible with current Thonny version. "
+            + "Click on '...' button to choose the version to install."
+        )
+
+        if name.lower().startswith("thonny-") and not reqs:
+            showerror(
+                "Thonny plugin without requirements",
+                "Looks like you are trying to install an outdated Thonny\n"
+                + "plug-in (it doesn't specify required Thonny version).\n\n"
+                + "If you still want it, then please install it from the command line."
+                + "\n\n"
+                + other_version_text,
+                parent=get_workbench(),
+            )
+            return False
+        elif reqs:
+            conflicts = self._conflicts_with_thonny_version(reqs)
+            if conflicts:
+                showerror(
+                    "Unsuitable requirements",
+                    "This package requires different Thonny version:\n\n  "
+                    + "\n  ".join(conflicts)
+                    + "\n\nIf you still want it, then please install it from the command line."
+                    + "\n\n"
+                    + other_version_text,
+                    parent=get_workbench(),
+                )
+                return False
+
+        return True
+
+    def _get_target_directory(self):
+        '''
+            获取插件安装目录
+        '''
+        return [utils.get_user_plugin_path(),utils.get_sys_plugin_path()]
+
+    def _create_widgets(self, parent,button_text,label_text):
+        bg = "#ffff99"
+        banner = tk.Label(parent, background=bg)
+        banner.grid(row=0, column=0, sticky="nsew")
+
+        banner_msg = (
+            "This dialog is for managing Noval plug-ins and their dependencies.\n"
+            + "If you want to install packages for your own programs then choose 'Tools → Manage packages...'\n"
+        )
+        banner_msg += (
+            "\n"
+            + "NB! You need to restart Noval after installing / upgrading / uninstalling a plug-in."
+        )
+
+        banner_text = tk.Label(banner, text=banner_msg, background=bg, justify="left")
+        banner_text.grid(pady=10, padx=10)
+
+        PipDialog._create_widgets(self, parent,_("Find plugin from Server"),_("There is total %d plugins on Server")%self.package_count)
+
+    def _get_title(self):
+        return "NovalIDE plug-ins"
+
+    def _handle_outdated_or_missing_pip(self, error):
+        return self._provide_pip_install_instructions(error)
+        
+class PyPiPipDialog(PipDialog):
+    def __init__(self, master,package_count):
+        PipDialog.__init__(self, master,package_count)
+
+        # make sure directory exists, so user can put her plug-ins there
+#        d = self._get_target_directory()
+ #       makedirs(d, exist_ok=True)
+ 
+    def _show_instructions(self):
+        '''
+            显示pypi<INSTALL>提示信息
+        '''
+        self._clear()
+        if self._read_only():
+            self.info_text.direct_insert("end", "Browse the packages\n", ("caption",))
+            self.info_text.direct_insert(
+                "end",
+                _(
+                    "With current interpreter you can only browse the packages here.\n"
+                    + "Use 'Tools → Open system shell...' for installing, upgrading or uninstalling.\n\n"
+                ),
+            )
+
+            if self._get_target_directory():
+                self.info_text.direct_insert("end", _("Packages' directory\n"), ("caption",))
+                self.info_text.direct_insert(
+                    "end", self._get_target_directory(), ("target_directory")
+                )
+        else:
+            self.info_text.direct_insert("end", _("Install from PyPI\n"), ("caption",))
+            self.info_text.direct_insert(
+                "end",
+                _(
+                    "If you don't know where to get the package from, "
+                    + "then most likely you'll want to search the Python Package Index. "
+                    + "Start by entering the name of the package in the search box above and pressing ENTER.\n\n"
+                ),
+            )
+
+            self.info_text.direct_insert("end", _("Install from requirements file\n"), ("caption",))
+            self.info_text.direct_insert("end", _("Click "))
+            self.info_text.direct_insert("end", _("here"), ("install_reqs",))
+            self.info_text.direct_insert(
+                "end",
+                _(" to locate requirements.txt file and install the packages specified in it.\n\n"),
+            )
+
+            self.info_text.direct_insert("end", _("Install from local file\n"), ("caption",))
+            self.info_text.direct_insert("end", _("Click "))
+            self.info_text.direct_insert("end", _("here"), ("install_file",))
+            self.info_text.direct_insert(
+                "end",
+                _(
+                    " to locate and install the package file (usually with .whl, .tar.gz or .zip extension).\n\n"
+                ),
+            )
+
+            self.info_text.direct_insert("end", _("Upgrade or uninstall\n"), ("caption",))
+            self.info_text.direct_insert(
+                "end", _("Start by selecting the package from the left.\n\n")
+            )
+            #显示pip包安装目录,在解释器的site-packages目录下
+            if self._get_target_directory():
+                self.info_text.direct_insert("end", _("Target:  "), ("caption",))
+                if self._should_install_to_site_packages():
+                    self.info_text.direct_insert("end", _("virtual environment\n"), ("caption",))
+                else:
+                    self.info_text.direct_insert("end", _("user site packages\n"), ("caption",))
+
+                self.info_text.direct_insert(
+                    "end",
+                    _(
+                        "This dialog lists all available packages,"
+                        + " but allows upgrading and uninstalling only packages from "
+                    ),
+                )
+                self.info_text.direct_insert("end", self._get_target_directory(), ("url"))
+                self.info_text.direct_insert(
+                    "end",
+                    _(
+                        ". New packages will be also installed into this directory."
+                        + " Other locations must be managed by alternative means."
+                    ),
+                )
+
+        self._select_list_item(0)
+        
+    def CreateBottomLabel(self,parent,label_text):
+        row = ttk.Frame(parent)
+        choices,index = interpretermanager.InterpreterManager().GetChoices()
+        self.interprterChoice = ttk.Combobox(row,values = choices,state="readonly")
+        if index != -1:
+            self.interprterChoice.current(index)
+        ttk.Label(row, text= _("Interpreter:")).pack(fill="x",side=tk.LEFT)
+        self.interprterChoice.pack(side=tk.LEFT)
+        self.interprterChoice.bind("<<ComboboxSelected>>",self.update_packages_list)
+        row.grid(row=3,column=0,sticky=tk.NSEW,padx=15)
+        ttk.Label(parent, text=label_text).grid(row=4, column=0, sticky="nsew", padx=15, pady=consts.DEFAUT_CONTRL_PAD_Y)
+        
+    def NotFoundPackage(self,name):
+        self.write(_("Could not find the package from PyPI."))
+        if not self._get_active_version(name):
+            # new package
+            self.write(_("\nPlease check your spelling!") + _("\nYou need to enter "))
+            self.write(_("exact package name"), "bold")
+            self.write("!")
+        
+    def search_by_name(self,name):
+        names = []
+        lower_name = name.lower()
+        names = GetAllPackages(lower_name)
+        return names
+        
+    def update_packages_list(self,event):
+        self._start_update_list()
+
+    def _start_update_list(self, name_to_show=None):
+        '''
+            获取解释器所有已安装pypi包,在pypi对话框初始化时显示
+        '''
+        assert self._get_state() in [None, "idle"]
+        interpreter = self._get_interpreter()
+        if interpreter is None:
+            return
+        #内建解释器直接执行
+        if interpreter.IsBuiltIn:
+            pkg_resources._initialize_master_working_set()
+            self._active_distributions = {
+                dist.key: {
+                    "project_name": dist.project_name,
+                    "key": dist.key,
+                    "location": dist.location,
+                    "version": dist.version,
+                }
+                for dist in pkg_resources.working_set  # pylint: disable=not-an-iterable
+            }
+        else:
+            #获取解释器存储数据的路径
+            interpreter_data_path = intellisence.IntellisenceManager().GetInterpreterDatabasePath(interpreter)
+            #保证路径存在而且路径已存在时不抛出异常
+            os.makedirs(interpreter_data_path,exist_ok=True)
+            packages_file = os.path.join(interpreter_data_path,"packages.txt")
+            if not os.path.exists(packages_file):
+                temp_data_path  = pkg_resources.resource_filename("pipmanager",'')
+                run_pkg_path = os.path.join(temp_data_path,"run_pkg.py")
+                #生成每个解释器的安装包列表
+                pyutils.create_python_interpreter_process(interpreter,run_pkg_path + " " + packages_file)
+            if not os.path.exists(packages_file):
+                self.ShowNameList([])
+                self._clear()
+                return 
+            with open(packages_file) as f:
+                #从包文件列表中加载所有包信息
+                self._active_distributions = json.load(f)
+
+        self._update_list(name_to_show)
+
+    def _conflicts_with_thonny_version(self, req_strings):
+        import pkg_resources
+
+        try:
+            conflicts = []
+            for req_string in req_strings:
+                req = pkg_resources.Requirement.parse(req_string)
+                if req.project_name == "thonny" and thonny.get_version() not in req:
+                    conflicts.append(req_string)
+
+            return conflicts
+        except Exception:
+            logging.exception("Problem computing conflicts")
+            return None
+
+    def _get_interpreter(self):
+        return interpretermanager.InterpreterManager().interpreters[self.interprterChoice.current()]
+
+    def _should_install_to_site_packages(self):
+        '''
+            虚拟解释器的包必须安装到site_packages目录下
+        '''
+        return self._targets_virtual_environment()
+        
+    def _use_user_install(self):
+        '''
+            内建解释器不能使用user参数安装包
+        '''
+        if self._get_interpreter() is None or self._get_interpreter().IsBuiltIn:
+            return False
+        return not self._should_install_to_site_packages()
+        
+    def _read_only(self):
+        if self._should_install_to_site_packages():
+            return False
+        else:
+            #如果是内建解释器,则不能安装任何包,是只读状态
+            if self._get_interpreter() is None or self._get_interpreter().IsBuiltIn:
+                return True
+            return False
+
+    def _targets_virtual_environment(self):
+        # https://stackoverflow.com/a/42580137/261181
+        #获取当前解释器是否虚拟解释器
+        return self._get_interpreter().IsVirtual()
+
+    def _create_python_process(self, args, stderr):
+        proc = running.create_frontend_python_process(args, stderr=stderr)
+        return proc, proc.cmd
+
+    def _confirm_install(self, package_data):
+        name = package_data["info"]["name"]
+        reqs = package_data["info"].get("requires_dist", None)
+
+        other_version_text = (
+            "NB! There may be another version available "
+            + "which is compatible with current Thonny version. "
+            + "Click on '...' button to choose the version to install."
+        )
+
+        if name.lower().startswith("thonny-") and not reqs:
+            showerror(
+                "Thonny plugin without requirements",
+                "Looks like you are trying to install an outdated Thonny\n"
+                + "plug-in (it doesn't specify required Thonny version).\n\n"
+                + "If you still want it, then please install it from the command line."
+                + "\n\n"
+                + other_version_text,
+                parent=get_workbench(),
+            )
+            return False
+        elif reqs:
+            conflicts = self._conflicts_with_thonny_version(reqs)
+            if conflicts:
+                showerror(
+                    "Unsuitable requirements",
+                    "This package requires different Thonny version:\n\n  "
+                    + "\n  ".join(conflicts)
+                    + "\n\nIf you still want it, then please install it from the command line."
+                    + "\n\n"
+                    + other_version_text,
+                    parent=get_workbench(),
+                )
+                return False
+
+        return True
+
+    def _get_target_directory(self):
+        if self._use_user_install():
+            #获取解释器的site-packages路径
+            site_packages_path = self._get_interpreter().GetPythonLibPath()
+            os.makedirs(site_packages_path, exist_ok=True)
+            return normpath_with_actual_case(site_packages_path)
+        else:
+            for d in sys.path:
+                if ("site-packages" in d or "dist-packages" in d) and strutils.path_startswith(
+                    d, sys.prefix
+                ):
+                    return normpath_with_actual_case(d)
+            return None
+
+    def _handle_outdated_or_missing_pip(self, error):
+        return self._provide_pip_install_instructions(error)
+
+def _show_subprocess_dialog(master, proc, title):
+    dlg = SubprocessDialog(master, proc, title)
+    ui_utils.show_dialog(dlg, master)
+    return dlg.returncode, dlg.stdout, dlg.stderr
+
+
+def _ask_installation_details(master, data, selected_version):
+    dlg = DetailsDialog(master, data, selected_version)
+    ui_utils.show_dialog(dlg, master)
+    return dlg.result
+
+
+def _start_fetching_package_info(name, version_str, completion_handler):
+    '''
+        从服务器上获取包信息,实际是从pypi上抓取的
+    '''
+    # Fetch info from novalide server
+    api_addr = '%s/member/get_package' % (UserDataDb.HOST_SERVER_ADDR)
+    def poll_fetch_complete():
+        data = utils.RequestData(api_addr,method='get',arg={'name':name})
+        if data:
+            completion_handler(name, data)
+        else:
+            #未能从服务器上找到包
+            completion_handler(name, {},error_code=404)
+
+    poll_fetch_complete()
+    
+
+def _start_fetching_plugin_info(name, version_str, completion_handler):
+    '''
+        从服务器上获取插件信息
+    '''
+    # Fetch info from novalide server
+    api_addr = '%s/member/get_plugin' % (UserDataDb.HOST_SERVER_ADDR)
+    def poll_fetch_complete():
+        data = utils.RequestData(api_addr,method='get',arg={'name':name})
+        if data:
+            completion_handler(name, data)
+        else:
+            #未能从服务器上找到插件
+            completion_handler(name, {},error_code=404)
+
+    poll_fetch_complete()
+
+
+def _extract_click_text(widget, event, tag):
+    # http://stackoverflow.com/a/33957256/261181
+    try:
+        index = widget.index("@%s,%s" % (event.x, event.y))
+        tag_indices = list(widget.tag_ranges(tag))
+        for start, end in zip(tag_indices[0::2], tag_indices[1::2]):
+            # check if the tag matches the mouse click index
+            if widget.compare(start, "<=", index) and widget.compare(index, "<", end):
+                return widget.get(start, end)
+    except Exception:
+        logging.exception("extracting click text")
+
+    return None
+
+class PluginManagerGUI(plugin.Plugin):
+    plugin.Implements(iface.MainWindowI)
+    def PlugIt(self, parent):
+        self.parent = parent
+        utils.get_logger().info("load default plugin gui plugin")
+        # Add Menu
+        menuBar = GetApp().Menubar
+        tools_menu = menuBar.GetToolsMenu()
+        mitem = tools_menu.InsertBefore(constants.ID_PREFERENCES,constants.ID_PLUGIN,_("Plugin Manager"), 
+                                  ("Plugin Manager GUI"),handler=self.ShowPluginManagerDlg,img=GetApp().GetImage("plugin.png"))
+        
+    def ShowPluginManagerDlg(self):
+        names = GetAllPlugins()
+        plugin_dlg = PluginsPipDialog(self.parent,package_count=len(names))
+        plugin_dlg.ShowModal()

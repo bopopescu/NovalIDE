@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:        appdirs.py
 # Purpose:
@@ -18,6 +19,9 @@ from noval import GetApp
 PLUGIN_DIR_NAME = "plugins"
 
 def _getSystemDir(kind):
+    '''
+        获取软件的工作目录,比如项目默认的存放路径等
+    '''
     if (kind == AG_LOGS_DIR):
         return os.path.join(getSystemDir(AG_SYSTEM_DIR) , "logs")
     elif (kind == AG_DEMOS_DIR):
@@ -88,14 +92,18 @@ def getSystemDir(kind=0):
 
 def get_user_data_path():
     if apputils.is_windows():
-        import ctypes.wintypes
-        CSIDL_APPDATA = 26
-        SHGFP_TYPE_CURRENT = 0
-        buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
-        ctypes.windll.shell32.SHGetFolderPathW(
-            0, CSIDL_APPDATA, 0, SHGFP_TYPE_CURRENT, buf
-        )
-        return os.path.join(buf.value, GetApp().GetAppName())
+        try:
+            import ctypes.wintypes
+            CSIDL_APPDATA = 26
+            SHGFP_TYPE_CURRENT = 0
+            buf = ctypes.create_unicode_buffer(ctypes.wintypes.MAX_PATH)
+            ctypes.windll.shell32.SHGetFolderPathW(
+                0, CSIDL_APPDATA, 0, SHGFP_TYPE_CURRENT, buf
+            )
+            return os.path.join(buf.value, GetApp().GetAppName())
+        except:
+            app_datapath = os.getenv('APPDATA')
+            return os.path.join(app_datapath, GetApp().GetAppName())
     else:
         # wxBug: on *nix, it wants to point to ~/.appname, but
         # so does wxConfig... For now, redirect this to ~/.appbuilder
@@ -126,3 +134,21 @@ def get_user_plugin_path():
 
 def get_sys_plugin_path():
     return os.path.join(get_app_path(),PLUGIN_DIR_NAME)
+    
+
+def get_home_dir():
+    '''
+        获取用户的主目录
+    '''
+    if apputils.is_windows():
+        try:
+            from win32com.shell import shell, shellcon
+            path = shell.SHGetFolderPath(0, shellcon.CSIDL_PROFILE, None, 0)
+        except:
+            homedrive = asString(os.getenv("HOMEDRIVE"))
+            homepath = os.getenv("HOMEPATH")
+            path = os.path.join(homedrive, homepath)
+        finally:
+            return path
+    else:
+        return os.path.expanduser("~")

@@ -766,6 +766,8 @@ class IDEApplication(core.App):
         UserDataDb().RecordEnd()
         self.SaveLayout()
         docposition.DocMgr.WriteBook()
+        #保存插件信息
+        self._pluginmgr.WritePluginConfig()
         core.App.Quit(self)
 
     @misc.update_toolbar
@@ -1051,6 +1053,9 @@ class IDEApplication(core.App):
                 # scale
                 scaled_size = round(orig_size
                         * (self._scaling_factor / self._default_scaling_factor)) 
+                #py2 round函数不会转换成整数,而是浮点数.py3会转换成整数
+                if utils.is_py2():
+                    scaled_size = int(scaled_size)
                 f.configure(size=scaled_size)
                 
     def scale_base(self,value):

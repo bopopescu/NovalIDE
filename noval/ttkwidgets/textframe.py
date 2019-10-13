@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import tkinter as tk
 from tkinter import ttk
 
@@ -11,6 +12,7 @@ class TextFrame(ttk.Frame):
         text_class = tk.Text,
         **kw
     ):
+        #设置文本框边界高度
         ttk.Frame.__init__(self, master, borderwidth=borderwidth, relief=relief)
         # http://wiki.tcl.tk/44444#pagetoc50f90d9a
         self.vert_scrollbar = ttk.Scrollbar(

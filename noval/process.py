@@ -150,7 +150,6 @@ import sys
 import threading
 import types
 import pprint
-import noval.util.apputils as sysutilslib
 import noval.util.utils as utils
 import noval.util.compat as compat
 
@@ -1489,7 +1488,7 @@ class ProcessOpen(Process):
                 sig = signal.SIGKILL
             try:
                 #should kill child process first
-                for pid in sysutilslib.get_child_pids(self._pid):
+                for pid in utils.get_child_pids(self._pid):
                     os.kill(pid,sig)
                 os.kill(self._pid, sig)
             except OSError as ex:

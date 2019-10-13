@@ -24,24 +24,30 @@ import noval.project.document as projectdocument
 #添加项目文件覆盖已有文件时默认处理方式
 DEFAULT_PROMPT_MESSAGE_ID = constants.ID_YES
 
-class ImportfilesPage(projectwizard.BitmapTitledWizardPage):
+class ImportfilesPage(projectwizard.BitmapTitledContainerWizardPage):
     def __init__(self,master,filters=[],rejects=[],is_wizard=True,folderPath=None):
         '''
             is_wizard表示该页面是否是新建项目向导时的页面
         '''
-        projectwizard.BitmapTitledWizardPage.__init__(self,master,_("Import codes from File System"),_("Local File System"),"python_logo.png")
-        self.can_finish = True
-        self.project_browser = GetApp().MainFrame.GetProjectView()
+        
         
         self.folderPath = folderPath
         self.dest_path = ''
         self._is_wizard = is_wizard
-        sizer_frame = ttk.Frame(self)
-        sizer_frame.grid(column=0, row=1, sticky="nsew")
-        separator = ttk.Separator(sizer_frame, orient = tk.HORIZONTAL)
-        separator.pack(side=tk.LEFT,fill="x",expand=1)
+        #文件类型过滤列表
+        self.filters = filters
+        self.rejects = rejects + projectdocument.ProjectDocument.BIN_FILE_EXTS
         
-        sizer_frame = ttk.Frame(self)
+        projectwizard.BitmapTitledContainerWizardPage.__init__(self,master,_("Import codes from File System"),_("Local File System"),"python_logo.png")
+        self.can_finish = True
+        self.project_browser = GetApp().MainFrame.GetProjectView()
+
+        
+    def CreateContent(self,content_frame,**kwargs):
+        sizer_frame = ttk.Frame(content_frame)
+        sizer_frame.grid(column=0, row=1, sticky="nsew")
+        
+        sizer_frame = ttk.Frame(content_frame)
         sizer_frame.grid(column=0, row=2, sticky="nsew")
         self.dir_label = ttk.Label(sizer_frame, text=_("Source Location:"))
         self.dir_label.grid(column=0, row=0, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
@@ -56,7 +62,7 @@ class ImportfilesPage(projectwizard.BitmapTitledWizardPage):
         sizer_frame.columnconfigure(1, weight=1)
         self.columnconfigure(0, weight=1)
         
-        sizer_frame = ttk.Frame(self)
+        sizer_frame = ttk.Frame(content_frame)
         sizer_frame.grid(column=0, row=3, sticky="nsew")
         self.rowconfigure(3, weight=1)
 
@@ -73,16 +79,15 @@ class ImportfilesPage(projectwizard.BitmapTitledWizardPage):
         sizer_frame.rowconfigure(0, weight=1)
         
 
-        sizer_frame = ttk.Frame(self)
+        sizer_frame = ttk.Frame(content_frame)
         sizer_frame.grid(column=0, row=4, sticky="nsew")
         
         self.file_filter_btn = ttk.Button(
             sizer_frame, text=_("File Filters"), command=self.SetFilters
         )
         self.file_filter_btn.grid(column=0, row=0, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
-        #文件类型过滤列表
-        self.filters = filters
-        self.rejects = rejects + projectdocument.ProjectDocument.BIN_FILE_EXTS
+
+        
         self.select_all_btn = ttk.Button(
             sizer_frame, text=_("Select All"), command=self.SelectAll
         )
@@ -95,13 +100,13 @@ class ImportfilesPage(projectwizard.BitmapTitledWizardPage):
         self._progress_row = 5
         #导入对话框页面添加一行控件
         if not self._is_wizard:
-            frame = ttk.Frame(self)
+            frame = ttk.Frame(content_frame)
             ttk.Label(frame, text=_('Dest Directory:')).pack(side=tk.LEFT,fill="x")
             self.dest_pathVar = tk.StringVar(value=self.dest_path)
             destDirCtrl = ttk.Entry(frame, textvariable=self.dest_pathVar,state=tk.DISABLED)
             destDirCtrl.pack(side=tk.LEFT,fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
             frame.grid(column=0, row=5, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-            sbox_frame = ttk.LabelFrame(self, text=_("Option"))
+            sbox_frame = ttk.LabelFrame(content_frame, text=_("Option"))
             self.overwrite_chkboxVar = tk.IntVar(value=False)
             ttk.Checkbutton(sbox_frame, variable=self.overwrite_chkboxVar,text = _("Overwrite existing files without warning")).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
             self.root_folder_chkboxVar = tk.IntVar(value=False)
@@ -365,7 +370,7 @@ class ImportfilesDialog(ui_base.CommonModaldialog):
         project_template = GetApp().GetDocumentManager().FindTemplateForTestPath(consts.PROJECT_EXTENSION)
         #rejects为项目禁止导入的文件类型列表
         self.import_page = ImportfilesPage(self.main_frame,is_wizard=False,folderPath=folderPath,rejects=project_template.GetDocumentType().BIN_FILE_EXTS)
-        self.import_page.pack(fill="both",expand=1,padx=consts.DEFAUT_CONTRL_PAD_X)
+        self.import_page.pack(fill="both",expand=1)
         #初始化目的地址
         self.import_page.InitDestpath()
         self.AddokcancelButton()
@@ -393,7 +398,7 @@ class FileFilterDialog(ui_base.CommonModaldialog):
         self.title(_("File Filters"))
         ttk.Label(self.main_frame, text=_("Please select file types to to allow added to project:")).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         
-        self.check_listbox_view =treeviewframe.TreeViewFrame(self.main_frame,treeview_class=checklistbox.CheckListbox,borderwidth=1,relief="solid")
+        self.check_listbox_view = treeviewframe.TreeViewFrame(self.main_frame,treeview_class=checklistbox.CheckListbox,borderwidth=1,relief="solid")
         self.check_listbox_view.pack(fill="both",expand=1,padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         self.listbox = self.check_listbox_view.tree
         ttk.Label(self.main_frame, text=_("Other File Extensions:(seperated by ';')")).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))

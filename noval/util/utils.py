@@ -2,7 +2,9 @@
 from noval.util.logger import *
 from noval.util.apputils import *
 from noval.util.appdirs import *
+from noval.util.urlutils import *
 from noval import GetApp
+import subprocess
     
 def profile_get(key,default_value=""):
     if is_py2():
@@ -280,3 +282,63 @@ def compute_run_time(func):
         get_logger().debug("%s elapse %.3f seconds" % (func.__name__,end-start))
 
     return wrapped_func
+    
+def GetCommandOutput(command,read_error=False):
+    '''
+        获取命令的输出信息,输出不能太长
+    '''
+    output = ''
+    try:
+        p = subprocess.Popen(command,shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        if read_error:
+            output = p.stderr.read()
+        else:
+            output = p.stdout.read()
+        #PY3输出类型为bytes,需要转换为str类型
+        if is_py3_plus():
+            output = str(output,encoding = get_default_encoding())
+    except Exception as e:
+        get_logger().error("get command %s output error:%s",command,e)
+        get_logger().exception("")
+    return output
+
+def call_process(cmd,args):
+    '''
+        简单调用进程
+    '''
+    if is_windows:
+        import win32api
+        win32api.ShellExecute(0,"open",cmd," " + args + " " +extension.commandPostArgs , '', 1)
+    else:
+        subprocess.call(cmd + ' ' + args,shell=True)
+        
+
+def create_process(command,args,shell=False,env=None,universal_newlines=True):
+    '''
+        创建普通进程
+    '''
+    #如果shell为True,表示命令是列表
+    if shell:
+        cmd = [command] + args
+    #否则是shell命令字符串
+    else:
+        cmd = command + " " + args
+    get_logger().info("run command is:%s",cmd)
+    if is_windows():
+        creationflags = subprocess.CREATE_NEW_PROCESS_GROUP
+        #隐藏命令行黑框
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        startupinfo.wShowWindow = subprocess.SW_HIDE
+    else:
+        startupinfo = None
+        creationflags = 0
+    subprocess.Popen(
+        cmd,
+        shell=shell,
+        env=env,
+        universal_newlines=universal_newlines,
+        startupinfo=startupinfo,
+        creationflags=creationflags,
+    )
+

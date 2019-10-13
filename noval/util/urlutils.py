@@ -1,5 +1,4 @@
 import requests
-import noval.util.utils as utils
 
 def RequestData(addr,arg={},method='get',timeout = None,to_json=True):
     '''
@@ -18,8 +17,5 @@ def RequestData(addr,arg={},method='get',timeout = None,to_json=True):
             return req.text
         return req.json()
     except Exception as e:
-        utils.get_logger().error('open %s error:%s' ,addr,e)
+        print('open %s error:%s'%(addr,e))
     return None
-    
-def open_url(url_path):
-    oass

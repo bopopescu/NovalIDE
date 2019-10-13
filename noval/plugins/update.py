@@ -124,7 +124,7 @@ def Install(app_path):
         path = os.path.dirname(sys.executable)
         pip_path = os.path.join(path,"pip")
         cmd = "%s  -c \"from distutils.sysconfig import get_python_lib; print get_python_lib()\"" % (sys.executable,)
-        python_lib_path = Interpreter.GetCommandOutput(cmd).strip()
+        python_lib_path = utils.GetCommandOutput(cmd).strip()
         user = getpass.getuser()
         should_root = not fileutils.is_writable(python_lib_path,user)
         if should_root:

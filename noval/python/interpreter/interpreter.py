@@ -11,7 +11,6 @@
 #-------------------------------------------------------------------------------
 from noval import GetApp
 import os
-import subprocess
 import locale
 import noval.util.apputils as apputils
 import noval.util.strutils as strutils
@@ -28,24 +27,7 @@ except:
 import py_compile
 import getpass
 import noval.util.fileutils as fileutils
-import noval.util.utils as utils
 from noval.executable import Executable,UNKNOWN_VERSION_NAME
-
-def GetCommandOutput(command,read_error=False):
-    output = ''
-    try:
-        p = subprocess.Popen(command,shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-        if read_error:
-            output = p.stderr.read()
-        else:
-            output = p.stdout.read()
-        #PY3输出类型为bytes,需要转换为str类型
-        if utils.is_py3_plus():
-            output = str(output,encoding = utils.get_default_encoding())
-    except Exception as e:
-        utils.get_logger().error("get command %s output error:%s",command,e)
-        utils.get_logger().exception("")
-    return output
     
 #this class should inherit from object class
 #otherwise the property definition will not valid
@@ -128,7 +110,10 @@ class BuiltinPythonInterpreter(Executable):
         self._is_default = False
         self._sys_path_list = sys.path
         self._python_path_list = []
+        #python完整版本号
         self._version = ".".join([str(sys.version_info.major),str(sys.version_info.minor),str(sys.version_info.micro)])
+        #python精简版本号,只包含major和minor
+        self._minor_version = ".".join([str(sys.version_info.major),str(sys.version_info.minor)])
         self._builtins = list(sys.builtin_module_names)
         self.Environ = PythonEnvironment()
         self._packages = {}
@@ -139,6 +124,10 @@ class BuiltinPythonInterpreter(Executable):
     @property
     def IsBuiltIn(self):
         return self._is_builtin
+        
+    @property
+    def MinorVersion(self):
+        return self._minor_version
         
     @property
     def Version(self):
@@ -203,6 +192,7 @@ class BuiltinPythonInterpreter(Executable):
         self._version = kwargs.get('version')
         if self._version == UNKNOWN_VERSION_NAME:
             return
+        self._minor_version = kwargs.get('minor_version','')
         self._builtins = kwargs.get('builtins')
         self._sys_path_list = kwargs.get('sys_path_list')
         python_path_list = kwargs.get('python_path_list')
@@ -265,6 +255,9 @@ class BuiltinPythonInterpreter(Executable):
     def GetExedirs(self):
         return [self.InstallPath,]
         
+    def IsVirtual(self):
+        return False
+        
 class PythonInterpreter(BuiltinPythonInterpreter):
     
     CONSOLE_EXECUTABLE_NAME = "python.exe"
@@ -287,17 +280,38 @@ class PythonInterpreter(BuiltinPythonInterpreter):
         self._is_analysing = False
         self._is_analysed = False
         self._is_loading_package = False
+        #python精简版本号,只包含major和minor
+        self._minor_version = ''
         if not is_valid_interpreter:
+            #获取python的完整版本号
             self.GetVersion()
+            #获取python的精简版本号
+            self.GetMinorVersion()
         if not is_valid_interpreter and self._is_valid_interpreter:
             self.GetSysPathList()
             self.GetBuiltins()
             
+    def IsVirtual(self):
+        '''
+            是否虚拟解释器
+        '''
+        pdir = os.path.dirname(self.Path)
+        return (
+            os.path.exists(os.path.join(pdir, "activate"))
+            or os.path.exists(os.path.join(pdir, "activate.bat"))
+        )
+            
+    def GetMinorVersion(self):
+        if not self._minor_version:
+            cmd ="\"%s\" -c \"import sys;print(str(sys.version_info.major) + '.' +  str(sys.version_info.minor))\"" % self.Path
+            output = utils.GetCommandOutput(cmd)
+            self._minor_version = output.strip()
+            
     def GetVersion(self):
-        output = GetCommandOutput("%s -V" % strutils.emphasis_path(self.Path),True).strip().lower()
+        output = utils.GetCommandOutput("%s -V" % strutils.emphasis_path(self.Path),True).strip().lower()
         version_flag = "python "
         if output.find(version_flag) == -1:
-            output = GetCommandOutput("%s -V" % strutils.emphasis_path(self.Path),False).strip().lower()
+            output = utils.GetCommandOutput("%s -V" % strutils.emphasis_path(self.Path),False).strip().lower()
             if output.find(version_flag) == -1:
                 utils.get_logger().error("get version stdout output is *****%s****",output)
                 return
@@ -341,7 +355,7 @@ class PythonInterpreter(BuiltinPythonInterpreter):
         if utils.is_py2():
             sys_encoding = locale.getdefaultlocale()[1]
             check_cmd = check_cmd.encode(sys_encoding)
-        output = GetCommandOutput(check_cmd,True).strip()
+        output = utils.GetCommandOutput(check_cmd,True).strip()
         if 0 == len(output):
             return True,-1,''
         lower_output = output.lower()
@@ -397,7 +411,7 @@ class PythonInterpreter(BuiltinPythonInterpreter):
             utils.get_logger().warn("interpreter path %s could not get python version" % self.Path)
             self._is_valid_interpreter = False
             return
-        output = GetCommandOutput(run_cmd).strip()
+        output = utils.GetCommandOutput(run_cmd).strip()
         lst = eval(output)
         self._sys_path_list = lst
         
@@ -408,7 +422,7 @@ class PythonInterpreter(BuiltinPythonInterpreter):
             run_cmd ="%s -c \"import sys;print sys.builtin_module_names\"" % (strutils.emphasis_path(self.Path))
         elif self.IsV3():
             run_cmd ="%s -c \"import sys;print (sys.builtin_module_names)\"" % (strutils.emphasis_path(self.Path))
-        output = GetCommandOutput(run_cmd).strip()
+        output = utils.GetCommandOutput(run_cmd).strip()
         lst = eval(output)
         #should convert tuple type to list
         self._builtins = list(lst)
@@ -420,7 +434,7 @@ class PythonInterpreter(BuiltinPythonInterpreter):
         elif self.IsV3():
             cmd = "%s  -c \"from distutils.sysconfig import get_python_lib; print (get_python_lib())\"" % \
                         (strutils.emphasis_path(self.Path),)
-        python_lib_path = GetCommandOutput(cmd).strip()
+        python_lib_path = utils.GetCommandOutput(cmd).strip()
         return python_lib_path
         
     def IsPythonlibWritable(self):
@@ -485,7 +499,7 @@ class PythonInterpreter(BuiltinPythonInterpreter):
         pip_path = self.GetPipPath()
         if pip_path is not None:
             command = "%s list" % strutils.emphasis_path(pip_path)
-            output = GetCommandOutput(command)
+            output = utils.GetCommandOutput(command)
             for line in output.split('\n'):
                 if line.strip() == "":
                     continue
@@ -516,7 +530,7 @@ class PythonInterpreter(BuiltinPythonInterpreter):
 
     def GetInstallPackage(self,package_name):
         command = "%s show %s" % (strutils.emphasis_path(self.GetPipPath()),package_name)
-        output = GetCommandOutput(command)
+        output = utils.GetCommandOutput(command)
         if output.strip() == "":
             return None
         name = package_name

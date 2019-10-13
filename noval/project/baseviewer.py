@@ -83,28 +83,20 @@ def AddProjectMapping(doc, projectDoc=None, hint=None):
 
 
 
-class ProjectNameLocationPage(projectwizard.BitmapTitledWizardPage):
-    def __init__(self,master,add_bottom_page=True,**kwargs):
-        projectwizard.BitmapTitledWizardPage.__init__(self,master,_("Enter the name and location for the project"),_("Name and Location"),"python_logo.png")
+class ProjectNameLocationPage(projectwizard.BitmapTitledContainerWizardPage):
+    def __init__(self,master,**kwargs):
+        projectwizard.BitmapTitledContainerWizardPage.__init__(self,master,_("Enter the name and location for the project"),_("Name and Location"),"python_logo.png",**kwargs)
         self.can_finish = kwargs.get('can_finish',True)
         self.allowOverwriteOnPrompt = False
-        sizer_frame = ttk.Frame(self)
-        sizer_frame.grid(column=0, row=1, sticky="nsew")
-        separator = ttk.Separator(sizer_frame, orient = tk.HORIZONTAL)
-        separator.pack(side=tk.LEFT,fill="x",expand=1)
-        
-        sizer_frame = ttk.Frame(self)
-        sizer_frame.grid(column=0, row=2, sticky="nsew")
+            
+    def CreateContent(self,content_frame,**kwargs):
+        sizer_frame = ttk.Frame(content_frame)
+        sizer_frame.grid(column=0, row=0, sticky="nsew")
         info_label = ttk.Label(sizer_frame, text=_("Enter the name and location for the project."))
         info_label.pack(side=tk.LEFT,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y, consts.DEFAUT_CONTRL_PAD_Y))
-
-        self.CreateTopPage()
-        
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(2, weight=1)
-
-        if add_bottom_page:
-            self.CreateBottomPage(**kwargs)
+        self.CreateNamePage(content_frame)
+        if kwargs.get('project_dir_option',False):
+            self.CreateProjectDirPage(content_frame,**kwargs)
             
     def GetChoiceDirs(self,choiceDirs):
         choiceDirs.append(self.dir_entry_var.get())
@@ -141,10 +133,10 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledWizardPage):
         if appdirs.getSystemDir() not in choiceDirs:
             choiceDirs.append(appdirs.getSystemDir()) 
             
-    def CreateTopPage(self):
+    def CreateNamePage(self,content_frame):
         
-        sizer_frame = ttk.Frame(self)
-        sizer_frame.grid(column=0, row=3, sticky="nsew")
+        sizer_frame = ttk.Frame(content_frame)
+        sizer_frame.grid(column=0, row=1, sticky="nsew")
         self.name_label = ttk.Label(sizer_frame, text=_("Name:"))
         self.name_label.grid(column=0, row=0, sticky="nsew")
         self.name_var = tk.StringVar()
@@ -163,22 +155,20 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledWizardPage):
             sizer_frame, text=_("Browse..."), command=self.BrowsePath
         )
         self.browser_button.grid(column=2, row=1, sticky="nsew",padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
-        
-        self.rowconfigure(3, weight=1)
         return sizer_frame
         
-    def CreateBottomPage(self,chk_box_row=4,**kwargs):
+    def CreateProjectDirPage(self,content_frame,chk_box_row=2,**kwargs):
         
-        sizer_frame = ttk.Frame(self)
+        sizer_frame = ttk.Frame(content_frame)
         sizer_frame.grid(column=0, row=chk_box_row, sticky="nsew")
         #默认创建项目目录
-        self.project_dir_chkvar = tk.IntVar(value=kwargs.get('create_project_dir',True))
+        self.project_dir_chkvar = tk.IntVar(value=kwargs.get('project_dir_checked',True))
         self.create_project_dir_checkbutton = ttk.Checkbutton(
             sizer_frame, text=_("Create Project Directory"), variable=self.project_dir_chkvar
         )
-        self.create_project_dir_checkbutton.pack(side=tk.LEFT,fill="x")
+        self.create_project_dir_checkbutton.pack(side=tk.LEFT,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
 
-        sizer_frame = ttk.Frame(self)
+        sizer_frame = ttk.Frame(content_frame)
         sizer_frame.grid(column=0, row=chk_box_row+1, sticky="nsew")
 
         self.infotext_label_var = tk.StringVar()
@@ -187,9 +177,6 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledWizardPage):
             sizer_frame, textvariable=self.infotext_label_var, foreground="red"
         )
         self.infotext_label.pack(side=tk.LEFT,fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X,0))
-
-        self.rowconfigure(chk_box_row, weight=1)
-        self.rowconfigure(chk_box_row+1, weight=1)
         
     def BrowsePath(self):
         path = filedialog.askdirectory()
@@ -310,7 +297,7 @@ class NewProjectWizard(projectwizard.BaseWizard):
         page = projectwizard.BitmapTitledWizardPage(wizard, _("New Project Wizard"),_("Welcom to new project wizard"),"python_logo.png")    
         # init and place tree
         sizer_frame = ttk.Frame(page)
-        sizer_frame.grid(column=0, row=1, sticky="nsew")
+        sizer_frame.grid(column=0, row=1, sticky="nsew",padx=consts.DEFAUT_CONTRL_PAD_X)
         #设置path列存储模板路径,并隐藏改列 
         treeview = treeviewframe.TreeViewFrame(sizer_frame,show_scrollbar=False,borderwidth=1,relief="solid")
         self.tree = treeview.tree
@@ -431,6 +418,9 @@ class NewProjectWizard(projectwizard.BaseWizard):
             update_ui(False)
         else:
             pages = self.template_pages[path]
+            if not pages:
+                update_ui(False)
+                return
             #单独设置起始页的下一个页面为第一个页面
             pages[0].SetPrev(self._project_template_page)
             self._project_template_page.SetNext(pages[0])
@@ -452,8 +442,7 @@ class ProjectTemplate(core.DocTemplate):
                 doc.GetModel()._projectDir = os.path.dirname(path)
             return doc
         else:
-            wiz = wizard_cls(GetApp()
-.GetTopWindow())
+            wiz = wizard_cls(GetApp().GetTopWindow())
             wiz.RunWizard(wiz._project_template_page)
             return None  # never return the doc, otherwise docview will think it is a new file and rename it
 
@@ -1242,10 +1231,10 @@ class ProjectView(misc.AlarmEventView):
         )
         if not paths:
             return
-        newPaths = []
+        newPaths = []
         #必须先格式化所有路径
         for path in paths:
-            newPaths.append(fileutils.opj(path))
+            newPaths.append(fileutils.opj(path))
         folderPath = None
         item = self._treeCtrl.GetSingleSelectItem()
         if item:

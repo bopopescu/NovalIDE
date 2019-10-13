@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #-------------------------------------------------------------------------------
 # Name:        plugin.py
 # Purpose:
@@ -18,6 +19,10 @@ import noval.util.utils as utils
 import noval.consts as consts
 import six
 import pkg_resources
+try:
+    from ConfigParser import ConfigParser
+except:
+    from configparser import ConfigParser
 #--------------------------------------------------------------------------#
 # Globals
 ENTRYPOINT = 'Noval.plugins'
@@ -59,7 +64,9 @@ class ExtensionPoint(property):
 
         """
         component = GetApp().GetPluginManager()
+        #加载所有插件,包括启用和禁止加载的插件
         extensions = PluginMeta._registry.get(self.interface, [])
+        #过滤掉被禁止的插件
         return filter(None, [component[cls] for cls in extensions])
 
 #-----------------------------------------------------------------------------#
@@ -384,6 +391,7 @@ class PluginManager(object):
            needing to restart the editor.
 
     """
+    CFG_PLUGIN_SECTION = 'Plugins'
     def __init__(self):
         """Initializes a PluginManager object.
         @postcondition: Plugin manager and plugins are initialized
@@ -392,6 +400,8 @@ class PluginManager(object):
         object.__init__(self)
         self.LOG = utils.get_logger("noval.plugin.manager")
         self.RemoveUninstalled()
+        #插件配置文件对象
+        self.cfg = None
 
         self._config = self.LoadPluginConfig() # Enabled/Disabled Plugins
         self._pi_path = list(set([utils.get_user_plugin_path(), 
@@ -427,14 +437,17 @@ class PluginManager(object):
 
         """
         nspace = cls.__module__ + "." + cls.__name__
-        #if nspace in ed_glob.DEFAULT_PLUGINS:
-         #   self._enabled[cls] = True
-
+        #默认插件默认启用
+        if nspace in consts.DEFAULT_PLUGINS:
+            self._enabled[cls] = True
+        
+        #新插件默认禁止
         if cls not in self._enabled:
             self._enabled[cls] = False # If its a new plugin disable by default
 
-      #  if not self._enabled[cls]:
-       #     return None
+        #禁止的插件不会被加载
+        if not self._enabled[cls]:
+            return None
 
 #        plugin = self._plugins.get(cls)
         plugin = None
@@ -511,7 +524,7 @@ class PluginManager(object):
         """
         self.EnablePlugin(plugin, False)
 
-    def EnablePlugin(self, plugin, enable=True):
+    def EnablePlugin(self, plugin_name, enable=True):
         """Enables a named plugin.
         @param plugin: plugin to enable/disable (case insensitive)
         @param enable: should plugin be enabled or disabled
@@ -521,13 +534,13 @@ class PluginManager(object):
 
         """
         for name in self._config:
-            if name.lower() == plugin.lower():
+            if name.lower() == plugin_name.lower():
                 plugin = name
                 break
 
-        self._config[plugin] = enable
+        self._config[plugin_name] = enable
         for cls in self._enabled:
-            if cls.__module__ == plugin:
+            if cls.__module__ == plugin_name:
                 self._enabled[cls] = enable
         
     def GetConfig(self):
@@ -624,7 +637,8 @@ class PluginManager(object):
                         cls = entry_point.load()
                         self._loaded.append(name)
                     else:
-                        self.LOG("[pluginmgr][info] Skip reloading: %s" % name)
+                        #一些插件由于版本号不同重复加载了,重复只加载一次
+                        self.LOG.info("[pluginmgr][info] Skip reloading: %s" % name)
                         continue
                 except Exception as e:
                     self.LOG.error("[pluginmgr][err] Couldn't Load %s: %s" % (name, e))
@@ -685,28 +699,17 @@ class PluginManager(object):
 
         """
         config = dict()
-        app_data_path = utils.get_user_data_path()
+        plugin_config_path = self.GetPlugincfgPath()
         try:
-            plugin_config_path = os.path.join(app_data_path,PLUGIN_CONFIG)
-            with open(plugin_config_path) as reader:
-                if reader == -1:
-                    self.LOG("[pluginmgr][err] Failed to read plugin config file")
-                    return config
-
-                reading = True
-                for line in reader.readlines():
-                    data = line.strip()
-                    if len(data) and data[0] == u"#":
-                        continue
-
-                    data = data.split(u"=")
-                    if len(data) == 2:
-                        config[data[0].strip()] = data[1].strip().lower() == u"true"
-                    else:
-                        continue
-        except IOError as e:
+            self.cfg = ConfigParser()
+            self.cfg.read(plugin_config_path)
+            options = self.cfg.options(self.CFG_PLUGIN_SECTION)
+            for option in options:
+                config[option] = bool(self.cfg.getint(self.CFG_PLUGIN_SECTION,option))
+        except:
             self.LOG.info("Failed to read plugin config file %s " % plugin_config_path)
-
+            self.cfg = None
+        self.LOG.info("load plugin config file %s success" % plugin_config_path)
         return config
 
     def RefreshConfig(self):
@@ -800,15 +803,26 @@ class PluginManager(object):
         @postcondition: the configuration data is saved to disk
 
         """
-        writer = util.GetFileWriter(os.path.join(ed_glob.CONFIG['CONFIG_DIR'],
-                                                 PLUGIN_CONFIG))
-        if writer == -1:
-            self.LOG("[pluginmgr][err] Failed to write plugin config")
+        if self.cfg is None:
+            self.LOG.error("[pluginmgr][err] Failed to write plugin config")
             return
-
-        writer.write("# Editra %s Plugin Config\n#\n" % ed_glob.VERSION)
+       # writer.write("# Editra %s Plugin Config\n#\n" % ed_glob.VERSION)
+       #writer.write("\n# EOF\n")
         for item in self._config:
-            writer.write("%s=%s\n" % (item, str(self._config[item])))
-        writer.write("\n# EOF\n")
-        writer.close()
+            self.cfg.set(self.CFG_PLUGIN_SECTION,item,str(int(self._config[item])))
+            
+        plugin_config_path = self.GetPlugincfgPath()
+        with open(plugin_config_path,"w") as f:
+            self.cfg.write(f)
         return
+        
+    def GetPlugincfgPath(self):
+        '''
+            插件配置文件路径,在C:\\Users\\Administrator\\AppData\\Roaming\\NovalIDE目录下
+        '''
+        app_data_path = utils.get_user_data_path()
+        plugin_config_path = os.path.join(app_data_path,PLUGIN_CONFIG)
+        return plugin_config_path
+        
+    def GetPluginData(self):
+        return self._pdata.values()

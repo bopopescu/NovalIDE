@@ -157,7 +157,7 @@ class WindowsOptionPanel(ui_utils.CommonOptionPanel):
             textvariable=self._scaleVar,
             state="readonly",
             height=15,
-            values=scalings,
+            values=tuple(scalings),
         )
         combobox.pack(fill=tk.X,side=tk.LEFT)
         row.pack(fill=tk.X)
