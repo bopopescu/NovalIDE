@@ -134,14 +134,21 @@ TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates'),)
 
 
 MONGODBS = {
+    #存储用户数据
     'members': {
         'name': 'members',
         'host': '127.0.0.1',
         'port': 27017,
     },
-    
+    #存储pypi包
     'pypi': {
         'name': 'pypi',
+        'host': '127.0.0.1',
+        'port': 27017,
+    },
+    #存储插件
+    'plugins': {
+        'name': 'plugins',
         'host': '127.0.0.1',
         'port': 27017,
     },

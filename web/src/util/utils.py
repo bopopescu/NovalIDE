@@ -9,9 +9,10 @@ from bson import ObjectId
 from mongoengine.queryset import QuerySet
 from django.conf import settings
 import logging
+from errors import *
 
 logger = logging.getLogger('logsite')
-OK = 0
+
 
 def get_milliseconds_from_datetime(d):
     """
@@ -40,7 +41,7 @@ def get_milliseconds_from_datetime(d):
     
     return calendar.timegm(temp.utctimetuple()) * 1000 + (temp.microsecond / 1000)
 
-def json_response(code=OK, message='status ok',host=None, **kwargs):
+def json_response(code=OK, message='',host=None, **kwargs):
     """生成JSON格式的HTTP响应结果。
     
     :param code: int，结果码，0为成功，其余为失败。0-9999用于公共错误，业务错误使用10000或以上。
@@ -49,7 +50,8 @@ def json_response(code=OK, message='status ok',host=None, **kwargs):
     
     :returns: str, JSON字符串
     """
-
+    if not message:
+        message = GetCodeMessage(code)
     d = {
         "code": code,
         "message": message

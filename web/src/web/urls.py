@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """web URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
@@ -20,16 +21,32 @@ from django.conf import settings
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    #获取用户信息
     url(r'^member/getuser', member.views.get_member),
+    #创建用户
     url(r'^member/createuser', member.views.register_member),
+    #纪录用户使用数据
     url(r'^member/share_data', member.views.share_member_data),
+    #获取软件版本信息
     url(r'^member/get_update', member.views.get_update_info),
+    #下载软件
     url(r'^member/download_app', member.views.new_app_download),
     url(r'^member/login', member.views.login),
     url(r'^member/get_mail', member.views.get_mail),
-    url(r'^member/get_packages', member.views.get_packages),
-    url(r'^member/get_package_data', member.views.get_package_info),
+    #获取所有pypi包
+    url(r'^member/get_pypi_packages', member.views.get_pypi_packages),
+    #获取包信息
+    url(r'^member/get_package', member.views.get_package_info),
+    #获取所有插件
+    url(r'^member/get_plugins', member.views.get_plugin_packages),
+    #获取插件信息
+    url(r'^member/get_plugin', member.views.get_plugin_info),
+    #发布插件
+    url(r'^member/publish', member.views.publish_plugin),
+    #检查客户端软件是否需要强制更新
+    url(r'^member/check_force_update', member.views.check_force_update),
     #set static media file path url pattern,should start with /media
+    #静态资源
     url(r"^media/(?P<path>.*)$", "django.views.static.serve", {"document_root": settings.MEDIA_ROOT,}),
     url(r'^', include('home.urls')),
 ]

@@ -3,14 +3,15 @@ from __future__ import unicode_literals
 import os
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
-from member.models import Member,MemberData,DownloadData,PyPackage
+from member.models import *
 from django.conf import settings
 import logging
-from datetime import datetime
+import datetime
 from django.views.decorators.csrf import csrf_exempt
 from django.http import StreamingHttpResponse
 import ConfigParser
 from util.utils import *
+from util.errors import *
 import sys
 
 logger = logging.getLogger('logsite')
@@ -31,7 +32,7 @@ def register_member(request):
         'sn':sn,
         'os_bit':os_bit,
         'os_name':os_name,
-        'user_name':user_name,
+        'user_name':user_name,
         'app_version':request.REQUEST.get('app_version')
     }
     member = Member(**kwargs).save()
@@ -168,11 +169,11 @@ def get_mail(request):
         return json_response(sender = sender,user=user,password=password,smtpserver=smtpserver,port=port)
 
 @require_http_methods(['GET'])
-def get_packages(request):
+def get_pypi_packages(request):
     names = []
     name = request.REQUEST.get('name',None)
-    for pkg in PyPackage.objects():
-        if name is None or pkg.name.lower().find(name.lower()) != -1:
+    for pkg in PyPIPackage.objects():
+        if name is None or pkg.lower_name.find(name.lower()) != -1:
             names.append(pkg.name)
     return json_response(names=names)
    
@@ -180,6 +181,85 @@ def get_packages(request):
 def get_package_info(request):
     names = []
     name = request.REQUEST.get('name')
-    pkg = PyPackage.objects(name=name).first()
+    pkg = PyPIPackage.objects(name=name).first()
     ret_data = dict(pkg.to_mongo())
+    return json_response(**ret_data)
+    
+@require_http_methods(['GET'])
+def get_plugin_info(request):
+    names = []
+    name = request.REQUEST.get('name')
+    pkg = PluginPackage.objects(name=name).first()
+    #更新插件查看次数
+    pkg.view_amount += 1
+    ret_data = dict(pkg.to_mongo())
+    return json_response(**ret_data)
+
+@require_http_methods(['GET'])
+def get_plugin_packages(request):
+    names = []
+    name = request.REQUEST.get('name',None)
+    for pkg in PluginPackage.objects():
+        if name is None or pkg.lower_name.find(name.lower()) != -1:
+            names.append(pkg.name)
+    return json_response(names=names)
+    
+@require_http_methods(['POST'])
+def publish_plugin(request):
+    names = []
+    name = request.REQUEST.get('name')
+    lower_name = name.lower()
+    plugin_pkgs = PluginPackage.objects(lower_name=lower_name)
+    #插件版本文件存在时是否强制替换
+    force_update = int(request.REQUEST.get('force_update'))
+    version = request.REQUEST.get('version')
+    author = request.REQUEST.get('author')
+    author_mail = request.REQUEST.get('author_mail')
+    homepage = request.REQUEST.get('homepage')
+    summary = request.REQUEST.get('summary')
+    egg_name =  request.REQUEST.get('egg_name')
+    member_id = request.REQUEST.get('member_id')
+    if plugin_pkgs.count() == 0:
+      #  version_dir = os.path.dirname(settings.BASE_DIR)
+       # plugin_base_path = os.path.join(version_dir,"version")
+        #插件新插件
+        data = {
+            'name':name,
+            'lower_name':name.lower(),
+            'version':version,
+            'author':author,
+            'author_mail':author_mail,
+            'homepage':homepage,
+            'releases':[{'version':version,'filename':egg_name}],
+            'summary':summary,
+            #存储egg名称即可
+            'path':egg_name,
+            'member_id':member_id
+        }
+        logger.info("insert plugin name %s success",name)
+        PluginPackage(**data).save()
+    else:
+        #更新已有插件信息
+        assert(plugin_pkgs.count() == 1)
+        plugin_pkg = plugin_pkgs.first()
+        #是否是新版本,是新版本则添加到历史版本列表当中
+        if version != plugin_pkg.version:
+            plugin_pkg.version = version
+            plugin_pkg.releases.append({'version':version,'filename':egg_name})
+        #替换用户是否强制替换版本文件
+        elif not force_update:
+            return json_response(code=PLUGIN_EGG_FILE_EXISTS)
+        plugin_pkg.author = author
+        plugin_pkg.author_mail = author_mail
+        plugin_pkg.homepage = homepage
+        plugin_pkg.summary = summary
+        plugin_pkg.updated_at = datetime.datetime.utcnow()
+        plugin_pkg.save()
+    return json_response()
+        
+@require_http_methods(['GET'])
+def check_force_update(request):
+    app_version = request.REQUEST.get('app_version')
+    logger.info("app version is %s,+++++++++++++++++",app_version)
+    ret_data = {'force_update':True}
     return json_response(**ret_data)
