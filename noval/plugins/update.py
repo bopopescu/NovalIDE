@@ -1,80 +1,103 @@
 # -*- coding: utf-8 -*-
 from noval import GetApp,_
-import threading
-import noval.util.appdirs as appdirs
-import noval.python.parser.utils as dirutils
 import os
 import noval.util.utils as utils
 import noval.util.apputils as apputils
 import time
 from dummy.userdb import UserDataDb
-import noval.ui_base as ui_base
 from tkinter import messagebox
 import noval.util.urlutils as urlutils
 import sys
-import requests
 import noval.iface as iface
 import noval.plugin as plugin
 import noval.constants as constants
 import noval.consts as consts
+import noval.util.downutils as downutils
+import noval.python.parser.utils as parserutils
+import threading
+import shutil
 
-class DownloadProgressDialog(ui_base.GenericProgressDialog):
-    
-    def __init__(self,parent,file_sie,file_name):
-        welcome_msg = _("Please wait a minute for Downloading")
-        ui_base.GenericProgressDialog.__init__(self,parent,_("Downloading %s") % file_name,info=welcome_msg,maximum = file_sie)
-
-class FileDownloader(object):
-    
-    def __init__(self,file_length,file_name,req,call_back=None):
-        self._file_size = file_length
-        self._file_name = file_name
-        self._req = req
-        self._call_back = call_back
-    
-    def StartDownloadApp(self):
-        
-        def DownloadCallBack():
-            download_progress_dlg.keep_going = False
-            download_progress_dlg.destroy()
-            if self._call_back is not None and not download_progress_dlg.is_cancel:
-                GetApp().MainFrame.after(300,self._call_back,download_file_path)
-            
-        download_progress_dlg = DownloadProgressDialog(GetApp().GetTopWindow(),int(self._file_size),self._file_name)
-        download_tmp_path = os.path.join(appdirs.get_user_data_path(),"download")
-        if not os.path.exists(download_tmp_path):
-            dirutils.MakeDirs(download_tmp_path)
-        download_file_path = os.path.join(download_tmp_path,self._file_name)
+def check_plugins(ignore_error = False):
+    '''
+        检查插件更新信息
+    '''
+    def pop_error(data):
+        if data is None:
+            if not ignore_error:
+                messagebox.showerror(GetApp().GetAppName(),_("could not connect to server"))
+                
+    def after_update_download(egg_path):
+        '''
+            插件更新下载后回调函数
+        '''
+        plugin_path = os.path.dirname(dist.location)
+        #删除已经存在的旧版本否则会和新版本混在一起,有可能加载的是老版本
         try:
-            self.DownloadFile(download_file_path,download_progress_dlg,callback=DownloadCallBack,err_callback=download_progress_dlg.destroy)
+            os.remove(dist.location)
+            utils.get_logger().info("remove plugin %s old version %s file %s success",plugin_name,plugin_version,dist.location)
+            dest_egg_path = os.path.join(plugin_path,plugin_data['path'])
+            if os.path.exists(dest_egg_path):
+                logger.error("plugin %s version %s dist egg path is exist when update it",plugin_name,plugin_data['version'],dest_egg_path)
+                os.remove(dest_egg_path)
         except:
+            messagebox.showerror(GetApp().GetAppName(),_("Remove faile:%s fail") % dist.location)
             return
-        download_progress_dlg.ShowModal()
-
-    def DownloadFile(self,download_file_path,progress_ui,callback,err_callback=None):
-        t = threading.Thread(target=self.DownloadFileContent,args=(download_file_path,self._req,progress_ui,callback,err_callback))
-        t.start()
+        #将下载的插件文件移至插件目录下
+        shutil.move(egg_path,plugin_path)
+        #执行插件的安装操作,需要在插件里面执行
+        GetApp().GetPluginManager().LoadPluginByName(plugin_name)
+        messagebox.showinfo(GetApp().GetAppName(),_("Update plugin '%s' success") % plugin_name)
         
-    def DownloadFileContent(self,download_file_path,req,progress_ui,callback,err_callback=None):
-        f = open(download_file_path, "wb")
-        try:
-            ammount = 0
-            for chunk in req.iter_content(chunk_size=512):
-                if chunk:
-                    if progress_ui.is_cancel:
-                        break
-                    f.write(chunk)
-                    ammount += len(chunk)
-                    progress_ui.SetValue(ammount)
-        except Exception as e:
-            messagebox.showerror("",_("Download fail:%s") % e)
-            if err_callback:
-                err_callback()
-            f.close()
+    user_id = UserDataDb().GetUserId()
+    check_plugin_update = utils.profile_get_int("CheckPluginUpdate", True)
+    for plugin_class,dist in GetApp().GetPluginManager().GetPluginDistros().items():
+        plugin_version = dist.version
+        plugin_name = dist.key
+        api_addr = '%s/member/get_plugin' % (UserDataDb.HOST_SERVER_ADDR)
+        plugin_data = utils.RequestData(api_addr,method='get',arg={'name':plugin_name})
+        if not plugin_data:
+            pop_error(plugin_data)
             return
-        f.close()
-        callback()
-
+        elif 'id' not in plugin_data:
+            logger.warn("could not find plugin %s on server",plugin_name)
+            continue
+        plugin_name = plugin_data['name']
+        plugin_id = plugin_data['id']
+        free = int(plugin_data['free'])
+        if GetApp().GetDebug():
+            log = utils.get_logger().debug
+        else:
+            log = utils.get_logger().info
+        log("plugin %s version is %s latest verison is %s",plugin_name,plugin_version,plugin_data['version'])
+        #插件是否免费
+        if not free:
+            #查询用户是否付款
+            api_addr = '%s/member/get_payment' % (UserDataDb.HOST_SERVER_ADDR)
+            data = urlutils.RequestData(api_addr,arg = {'member_id':user_id,'plugin_id':plugin_id})
+            if not data:
+                pop_error(data)
+                return
+            payed = int(data['payed'])
+            #如果服务器插件收费而且用户未付费,强制检查更新
+            if not payed:
+                check_plugin_update = True
+            price = plugin_data.get('price',None)
+            #用户没有付款而且插件存在价格,弹出付款二维码
+            if not payed and price:
+                #这里弹出付款二维码
+                pass
+        #比较安装插件版本和服务器上的插件版本是否一致
+        if check_plugin_update  and parserutils.CompareCommonVersion(plugin_data['version'],plugin_version):
+            ret = messagebox.askyesno(_("Plugin Update Available"),_("Plugin '%s' latest version '%s' is available,do you want to download and update it?")%(plugin_name,plugin_data['version']))
+            if ret:
+                new_version = plugin_data['version']
+                download_url = '%s/member/download_plugin' % (UserDataDb.HOST_SERVER_ADDR)
+                payload = dict(app_version = apputils.get_app_version(),\
+                    lang = GetApp().locale.GetLanguageCanonicalName(),os_name=sys.platform,plugin_id=plugin_id)
+                #下载插件文件
+                downutils.download_file(download_url,call_back=after_update_download,**payload)
+            #插件更新太多,每次只提示一个更新即可
+            break
 
 def CheckAppUpdate(ignore_error = False):
     api_addr = '%s/member/get_update' % (UserDataDb.HOST_SERVER_ADDR)
@@ -97,25 +120,12 @@ def CheckAppUpdate(ignore_error = False):
             new_version = data['new_version']
             download_url = '%s/member/download_app' % (UserDataDb.HOST_SERVER_ADDR)
             payload = dict(new_version = new_version,lang = lang,os_name=sys.platform)
-            user_id = UserDataDb().GetUserId()
-            if user_id:
-                payload.update({'member_id':user_id})
-            req = requests.get(download_url,params=payload, stream=True)
-            if 'Content-Length' not in req.headers:
-                data = req.json()
-                if data['code'] != 0:
-                    messagebox.showerror(GetApp().GetAppName(),data['message'])
-            else:
-                file_length = req.headers['Content-Length']
-                content_disposition = req.headers['Content-Disposition']
-                file_name = content_disposition[content_disposition.find(";") + 1:].replace("filename=","").replace("\"","")
-                file_downloader = FileDownloader(file_length,file_name,req,Install)
-                file_downloader.StartDownloadApp()
+            #下载程序文件
+            downutils.download_file(download_url,call_back=Install,**payload)
     #other error
     else:
         if not ignore_error:
             messagebox.showerror(GetApp().GetAppName(),data['message'])
-            
 
 def Install(app_path):
     if utils.is_windows():
@@ -156,9 +166,17 @@ class UpdateLoader(plugin.Plugin):
         #是否需要强制更新
         force_update = CheckForceupdate()
         GetApp().InsertCommand(constants.ID_GOTO_OFFICIAL_WEB,constants.ID_CHECK_UPDATE,_("&Help"),_("&Check for Updates"),\
-                    handler=lambda:self.CheckUpdate(ignore_error=False),pos="before")
+                    handler=lambda:self.CheckUpdate(ignore_error=False,check_plugin_update=False),pos="before")
         if utils.profile_get_int(consts.CHECK_UPDATE_ATSTARTUP_KEY, True) or force_update:
-            GetApp().after(1000,self.CheckUpdate)
+            self.CheckUpdateAfter()
+            
+    @utils.call_after
+    def CheckUpdateAfter(self,ignore_error=True,check_plugin_update=True):
+        #tkinter不支持多线程,要想试用多线程必须设置函数或方法为after模式
+        t = threading.Thread(target=self.CheckUpdate,args=(ignore_error,check_plugin_update))
+        t.start()
 
-    def CheckUpdate(self,ignore_error=True):
+    def CheckUpdate(self,ignore_error=True,check_plugin_update=True):
         CheckAppUpdate(ignore_error)
+        if check_plugin_update:
+            check_plugins(ignore_error)

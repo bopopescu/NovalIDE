@@ -3,7 +3,7 @@ from setuptools import find_packages
 
 setup(name='PyPI',
         version='1.0',
-        description='''use pyinstaller tool to convert to python project to windows exe''',
+        description='''a simple pypi tool to enable user convenient for package install to local or publish to pypi server''',
         author='wukan',
         author_email='wekay102200@sohu.com',
         url='http://www.novalide.com',
@@ -11,7 +11,7 @@ setup(name='PyPI',
         packages=find_packages(),
         install_requires=[],
         zip_safe=False,
-        package_data={'pypi': ['package_template.tar.bz2','package_tool_template.tar.bz2']},
+        package_data={'pypi': ['package_template.tar.bz2','package_tool_template.tar.bz2','locale/zh_CN/LC_MESSAGES/pypi.mo']},
         classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',

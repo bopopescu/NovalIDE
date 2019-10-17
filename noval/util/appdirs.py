@@ -135,7 +135,11 @@ def get_user_plugin_path():
 def get_sys_plugin_path():
     return os.path.join(get_app_path(),PLUGIN_DIR_NAME)
     
-
+def get_cache_path():
+    user_data_path = get_user_data_path()
+    cache_path = os.path.join(user_data_path,"cache")
+    return cache_path
+    
 def get_home_dir():
     '''
         获取用户的主目录

@@ -164,6 +164,21 @@ class Plugin(six.with_metaclass(PluginMeta, object)):
         """
         pass
 
+    def UninstallHook(self):
+        ''''''
+
+    def EnableHook(self):
+        ''''''
+        
+    def DisableHook(self):
+        ''''''
+        
+    def GetFree(self):
+        return True
+        
+    def GetPrice(self):
+        ''''''
+        
     def IsInstalled(self):
         """Return whether the plugins L{InstallHook} method has been called
         or not already.
@@ -392,7 +407,7 @@ class PluginManager(object):
 
     """
     CFG_PLUGIN_SECTION = 'Plugins'
-    def __init__(self):
+    def __init__(self,pip_path=None):
         """Initializes a PluginManager object.
         @postcondition: Plugin manager and plugins are initialized
 
@@ -404,8 +419,11 @@ class PluginManager(object):
         self.cfg = None
 
         self._config = self.LoadPluginConfig() # Enabled/Disabled Plugins
-        self._pi_path = list(set([utils.get_user_plugin_path(), 
+        if not pip_path:
+            self._pi_path = list(set([utils.get_user_plugin_path(), 
                                   utils.get_sys_plugin_path()]))
+        else:
+            self._pi_path = [pip_path]
         sys.path.extend(self._pi_path)
         self._env = self.CreateEnvironment(self._pi_path)
 
@@ -584,6 +602,15 @@ class PluginManager(object):
             plugins[pdata.GetClass()] = pdata.GetInstance()
         return plugins
 
+    def FindPluginByegg(self,egg_path):
+        '''
+            从egg文件路径查找是否加载插件
+        '''
+        for pdata in self._pdata.values():
+            dist =  pdata.GetDist()
+            if strutils.normpath_with_actual_case(egg_path) == strutils.normpath_with_actual_case(dist.location):
+                return pdata
+        return None
     def GetPluginDistro(self, pname):
         """Get the distrobution object for a given plugin name
         @param pname: plugin name
@@ -602,7 +629,7 @@ class PluginManager(object):
 
         """
         distros = dict()
-        for name, pdata in self._pdata:
+        for name, pdata in self._pdata.items():
             distros[name] = pdata.GetDist()
         return distros
 
@@ -623,12 +650,11 @@ class PluginManager(object):
         for name in pkg_env:
             self.LOG.info("Found plugin: %s" % name)
             if name.lower() in tmploaded:
-                self.LOG("[pluginmgr][info] %s is already loaded" % name)
+                self.LOG.info("[pluginmgr][info] %s is already loaded" % name)
                 continue
 
             egg = pkg_env[name][0]  # egg is of type Distribution
             egg.activate()
-            editra_version = parserutils.CalcVersionValue(utils.get_app_version())
             for name in egg.get_entry_map(ENTRYPOINT):
                 try:
                     # Only load a given entrypoint once
@@ -649,8 +675,10 @@ class PluginManager(object):
                         if cls not in self._pdata:
                             self.LOG.info("Creating Instance of %s" % name)
                             instance = cls(self)
-                            minv = parserutils.CalcVersionValue(instance.GetMinVersion())
-                            if minv <= editra_version:
+                            minv = instance.GetMinVersion()
+                            #检查插件要求的软件版本号是否小于等于当前版本号
+                            #如果版本号为空,则说明对软件版本号没有限制
+                            if not minv or not parserutils.CompareCommonVersion(minv,utils.get_app_version()):
                                 mod = instance.__module__
                                 desc = getattr(mod, '__doc__', _("No Description Available"))
                                 auth = getattr(mod, '__author__', _("Unknown"))
@@ -689,7 +717,11 @@ class PluginManager(object):
         @todo: Implement this method
 
         """
-        raise NotImplementedError
+        self.ReInit()
+        for pdata in self._pdata.values():
+            if name.lower() == pdata.GetName().lower():
+                plugin_instance = pdata.GetInstance()
+                plugin_instance.InstallHook()
         
     def LoadPluginConfig(self):
         """Loads the plugin config file for the current user if
@@ -708,7 +740,6 @@ class PluginManager(object):
                 config[option] = bool(self.cfg.getint(self.CFG_PLUGIN_SECTION,option))
         except:
             self.LOG.info("Failed to read plugin config file %s " % plugin_config_path)
-            self.cfg = None
         self.LOG.info("load plugin config file %s success" % plugin_config_path)
         return config
 
@@ -771,7 +802,7 @@ class PluginManager(object):
                     plist.remove(path)
                 continue
             else:
-                self.LOG("[pluginmgr][info] Uninstalled: %s" % path)
+                self.LOG.info("[pluginmgr][info] Uninstalled: %s" % path)
                 plist.remove(path)
         utils.profile_set('UNINSTALL_PLUGINS', plist)
 
@@ -780,7 +811,30 @@ class PluginManager(object):
         @todo: implement this method
 
         """
-        raise NotImplementedError
+        for pdata in self._pdata.values():
+            if name.lower() == pdata.GetName().lower():
+                plugin_instance = pdata.GetInstance()
+                plugin_instance.UninstallHook()
+                
+    def EnablePluginByName(self, name):
+        """Unloads a named plugin.
+        @todo: implement this method
+
+        """
+        for pdata in self._pdata.values():
+            if name.lower() == pdata.GetName().lower():
+                plugin_instance = pdata.GetInstance()
+                plugin_instance.EnableHook()
+                
+    def DisablePluginByName(self, name):
+        """Unloads a named plugin.
+        @todo: implement this method
+
+        """
+        for pdata in self._pdata.values():
+            if name.lower() == pdata.GetName().lower():
+                plugin_instance = pdata.GetInstance()
+                plugin_instance.DisableHook()
         
     def UpdateConfig(self):
         """Updates the in memory config data to recognize
@@ -804,17 +858,22 @@ class PluginManager(object):
 
         """
         if self.cfg is None:
-            self.LOG.error("[pluginmgr][err] Failed to write plugin config")
             return
        # writer.write("# Editra %s Plugin Config\n#\n" % ed_glob.VERSION)
        #writer.write("\n# EOF\n")
+       #在初始化配置文件为空的时候,必须要先添加段才能写入数据
+        if not self.cfg.has_section(self.CFG_PLUGIN_SECTION):
+            self.cfg.add_section(self.CFG_PLUGIN_SECTION)
+            
         for item in self._config:
             self.cfg.set(self.CFG_PLUGIN_SECTION,item,str(int(self._config[item])))
             
         plugin_config_path = self.GetPlugincfgPath()
-        with open(plugin_config_path,"w") as f:
-            self.cfg.write(f)
-        return
+        try:
+            with open(plugin_config_path,"w") as f:
+                self.cfg.write(f)
+        except:
+            self.LOG.error("[pluginmgr][err] Failed to write plugin config")
         
     def GetPlugincfgPath(self):
         '''

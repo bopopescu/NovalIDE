@@ -4,7 +4,7 @@ from setuptools import find_packages
 
 setup(name='PyTurtleDemo',
         version='1.0',
-        description='''this is a demo of tutle in python3.5 or later''',
+        description='''this is a demo of Turtle graphics in python3.5 or later,you can view in &Hep menu after install it''',
         author='wukan',
         author_email='kan.wu@genetalks.com',
         url='',

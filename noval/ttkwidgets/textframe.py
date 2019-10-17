@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import tkinter as tk
 from tkinter import ttk
+import noval.ui_base as ui_base
 
 class TextFrame(ttk.Frame):
     def __init__(
@@ -15,7 +16,7 @@ class TextFrame(ttk.Frame):
         #设置文本框边界高度
         ttk.Frame.__init__(self, master, borderwidth=borderwidth, relief=relief)
         # http://wiki.tcl.tk/44444#pagetoc50f90d9a
-        self.vert_scrollbar = ttk.Scrollbar(
+        self.vert_scrollbar = ui_base.SafeScrollbar(
             self, orient=tk.VERTICAL, style=None
         )
         if show_scrollbar:

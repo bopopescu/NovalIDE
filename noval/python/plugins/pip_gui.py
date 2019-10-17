@@ -30,44 +30,26 @@ import noval.python.interpreter.interpretermanager as interpretermanager
 import intellisence
 import pkg_resources
 import noval.python.pyutils as pyutils
+import noval.util.downutils as downutils
+import shutil
+import noval.python.parser.utils as parserutils
+import noval.python.interpreter.pythonpackages as pythonpackages
+import noval.plugins.update as updateutils
+import noval.editor.text as texteditor
+import threading
+
+#找回pip工具的url地址
 PIP_INSTALLER_URL = "https://bootstrap.pypa.io/get-pip.py"
-
-def normpath_with_actual_case(name):
-    """In Windows return the path with the case it is stored in the filesystem"""
-    assert os.path.isabs(name) or os.path.ismount(name), "Not abs nor mount: " + name
-    assert os.path.exists(name), "Not exists: " + name
-
-    if os.name == "nt":
-        name = os.path.realpath(name)
-
-        from ctypes import create_unicode_buffer, windll
-
-        buf = create_unicode_buffer(512)
-        windll.kernel32.GetShortPathNameW(name, buf, 512)  # @UndefinedVariable
-        windll.kernel32.GetLongPathNameW(buf.value, buf, 512)  # @UndefinedVariable
-        if len(buf.value):
-            result = buf.value
-        else:
-            result = name
-
-        assert isinstance(result, str)
-
-        if result[1] == ":":
-            # ensure drive letter is capital
-            return result[0].upper() + result[1:]
-        else:
-            return result
-    else:
-        return os.path.normpath(name)
-        
 
 def GetAllPackages(find_name=None):
     '''
         获取所有pypi包名称列表
     '''
     #包列表信息存储在用户数据目录下的pypi_packages.txt文件中
-    app_data_path = utils.get_user_data_path()
-    package_data_path = os.path.join(app_data_path,"cache","pypi_packages.txt")
+    cache_path = utils.get_cache_path()
+    package_data_path = os.path.join(cache_path,"pypi_packages.txt")
+    if not os.path.exists(package_data_path):
+        return []
     names = []
     with open(package_data_path) as f:
         for line in f:
@@ -76,25 +58,30 @@ def GetAllPackages(find_name=None):
                 names.append(normal_name)
     return names
     
-def GetAllPlugins(find_name=None):
+def GetAllPlugins(find_name=None,message=None):
     '''
         获取所有插件名称列表
     '''
     api_addr = '%s/member/get_plugins' % (UserDataDb.HOST_SERVER_ADDR)
-    data = utils.RequestData(api_addr,method='get')
+    data = utils.RequestData(api_addr,method='get',arg={'name':find_name})
     if not data:
-        return[]
+        if message:
+            message['msg'] = _("can't fetch plugin from Server")
+        return []
+        
+    if message:
+        message['msg'] = _("There is total %d plugins on Server")%len(data['names'])
     return data['names']
 
 class PipDialog(ui_base.CommonModaldialog):
-    def __init__(self, master,package_count):
+    def __init__(self, master,package_count,message=None):
         self._state = "idle"  # possible values: "listing", "fetching", "idle"
         self._process = None
         self._active_distributions = {}
-        self.current_package_data = None
+        #当前选中的包的信息
+        self.current_package_data = {}
         self.package_count = package_count
-
-        super().__init__(master)
+        ui_base.CommonModaldialog.__init__(self,master)
 
         main_frame = ttk.Frame(self)
         main_frame.grid(sticky=tk.NSEW, ipadx=15, ipady=15)
@@ -102,13 +89,15 @@ class PipDialog(ui_base.CommonModaldialog):
         self.columnconfigure(0, weight=1)
 
         self.title(self._get_title())
-
-        self._create_widgets(main_frame,_("Find package from PyPI"),_("There is total %d packages on PyPI")%self.package_count)
+        if package_count > 0:
+           total_package_msg =  _("There is total %d packages on PyPI")%self.package_count
+        else:
+            total_package_msg = message
+        self._create_widgets(main_frame,_("Installed Packages:"),_("Find package from PyPI"),total_package_msg,_("input the package name to search..."))
 
         self.search_box.focus_set()
 
-        self.bind("<Escape>", self._on_close, True)
-        self.protocol("WM_DELETE_WINDOW", self._on_close)
+        self.bind("<Escape>", self._cancel, True)
 #        self._show_instructions()
 
         self._start_update_list()
@@ -116,7 +105,7 @@ class PipDialog(ui_base.CommonModaldialog):
     def CreateBottomLabel(self,parent,label_text):
         pass
 
-    def _create_widgets(self, parent,button_text,label_text):
+    def _create_widgets(self,parent,install_label_text,button_text,label_text,tip_text):
 
         header_frame = ttk.Frame(parent)
         header_frame.grid(row=1, column=0, sticky="nsew", padx=15, pady=(15, 0))
@@ -126,6 +115,7 @@ class PipDialog(ui_base.CommonModaldialog):
         name_font = tk.font.nametofont("TkDefaultFont").copy()
         name_font.configure(size=16)
         self.search_box = ttk.Entry(header_frame)
+        misc.create_tooltip(self.search_box,tip_text)
         self.search_box.grid(row=1, column=0, sticky="nsew")
         self.search_box.bind("<Return>", self._on_search, False)
 
@@ -144,10 +134,15 @@ class PipDialog(ui_base.CommonModaldialog):
         parent.rowconfigure(2, weight=1)
         parent.columnconfigure(0, weight=1)
         self.CreateBottomLabel(parent,label_text)
+        
         listframe = ttk.Frame(main_pw, relief="flat", borderwidth=1)
-        listframe.rowconfigure(0, weight=1)
-        listframe.columnconfigure(0, weight=1)
-
+        listframe.rowconfigure(1, weight=1)
+        listframe.columnconfigure(1, weight=1)
+        #显示安装包标签
+        self.installled_var = tk.StringVar(value=install_label_text)
+        self.install_label_text = install_label_text
+        installled_label = ttk.Label(listframe, textvariable=self.installled_var)
+        installled_label.grid(row=0, column=0, sticky="w")
         self.listbox = ui_utils.ThemedListbox(
             listframe,
             activestyle="dotbox",
@@ -162,11 +157,11 @@ class PipDialog(ui_base.CommonModaldialog):
         )
         self.listbox.insert("end", " <INSTALL>")
         self.listbox.bind("<<ListboxSelect>>", self._on_listbox_select, True)
-        self.listbox.grid(row=0, column=0, sticky="nsew")
+        self.listbox.grid(row=1, column=0, sticky="nsew")
         list_scrollbar = ui_common.AutoScrollbar(
             listframe, orient=tk.VERTICAL, style=None
         )
-        list_scrollbar.grid(row=0, column=1, sticky="ns")
+        list_scrollbar.grid(row=1, column=1, sticky="ns")
         list_scrollbar["command"] = self.listbox.yview
         self.listbox["yscrollcommand"] = list_scrollbar.set
 
@@ -180,9 +175,10 @@ class PipDialog(ui_base.CommonModaldialog):
         self.name_label = ttk.Label(info_frame, text="", font=name_font)
         self.name_label.grid(row=0, column=0, sticky="w", padx=5)
 
+        #用文本控件显示包详细信息,并且设置为只读
         info_text_frame = ui_base.TextviewFrame(
             info_frame,
-#            read_only=True,
+            read_only=True,
             horizontal_scrollbar=False,
             background=misc.lookup_style_option("TFrame", "background"),
             vertical_scrollbar_class=ui_common.AutoScrollbar,
@@ -190,7 +186,7 @@ class PipDialog(ui_base.CommonModaldialog):
             horizontal_scrollbar_style=None,
             width=70,
             height=10,
-            text_class = ui_base.TweakableText
+            text_class = texteditor.TextCtrl
         )
         info_text_frame.configure(borderwidth=0)
         info_text_frame.grid(row=1, column=0, columnspan=4, sticky="nsew", pady=(0, 10))
@@ -246,18 +242,12 @@ class PipDialog(ui_base.CommonModaldialog):
         )
 
         self.uninstall_button.grid(row=0, column=1, sticky="w", padx=(5, 0))
-
-        self.advanced_button = ttk.Button(
-            self.command_frame,
-            text="...",
-            width=3,
-            command=lambda: self._perform_action("advanced"),
-        )
-
-        self.advanced_button.grid(row=0, column=2, sticky="w", padx=(5, 0))
-
-        self.close_button = ttk.Button(info_frame, text=_("Close"), command=self._on_close)
+        self.create_advance_button()
+        self.close_button = ttk.Button(info_frame, text=_("Close"), command=self._cancel)
         self.close_button.grid(row=2, column=3, sticky="e")
+        
+    def create_advance_button(self):
+        ''''''
 
     def _on_click_install(self):
         self._perform_action("install")
@@ -334,7 +324,7 @@ class PipDialog(ui_base.CommonModaldialog):
         self.info_text.direct_insert(
             "end",
             _(
-                "pip, a required module for managing packages is missing or too old for Thonny.\n\n"
+                "pip, a required module for managing packages is missing or too old for Noval.\n\n"
                 + "If your system package manager doesn't provide recent pip (9.0.0 or later), "
                 + "then you can install newest version by downloading "
             ),
@@ -343,7 +333,7 @@ class PipDialog(ui_base.CommonModaldialog):
         self.info_text.direct_insert(
             "end",
             _(" and running it with ")
-            + self._get_interpreter()
+            + self._get_interpreter().Name
             + _(" (probably needs admin privileges).\n\n"),
         )
 
@@ -353,11 +343,11 @@ class PipDialog(ui_base.CommonModaldialog):
     def _instructions_for_command_line_install(self):
         return _(
             "Alternatively, if you have an older pip installed, then you can install packages "
-            + "on the command line (Tools → Open system shell...)"
+            + "on the command line (Tools → Open terminator...)"
         )
 
-    def _start_update_list(self, name_to_show=None):
-        raise NotImplementedError()
+    def _start_update_list(self, name_to_show=None,refresh=False):
+        self.installled_var.set(self.install_label_text)
         
     def ShowNameList(self,names):
         self.listbox.delete(1, "end")
@@ -407,7 +397,7 @@ class PipDialog(ui_base.CommonModaldialog):
         self._start_show_package_info(names[0])
 
     def _clear(self):
-        self.current_package_data = None
+        self.current_package_data = {}
         self.name_label.grid_remove()
         self.command_frame.grid_remove()
         self.info_text.direct_delete("1.0", "end")
@@ -424,7 +414,7 @@ class PipDialog(ui_base.CommonModaldialog):
         _start_fetching_package_info(name, None, self._show_package_info)
 
     def _start_show_package_info(self, name):
-        self.current_package_data = None
+        self.current_package_data = {}
         # Fetch info from PyPI
         self._set_state("fetching")
         # Follwing fetches info about latest version.
@@ -437,21 +427,30 @@ class PipDialog(ui_base.CommonModaldialog):
         #包是否已在本地安装,先显示安装信息
         active_dist = self._get_active_dist(name)
         if active_dist is not None:
+            #获取包的安装信息
+            self.current_package_data['name'] = active_dist["project_name"]
+            self.current_package_data['version'] = active_dist["version"]
             #已安装包
             self.name_label["text"] = active_dist["project_name"]
             self.info_text.direct_insert("end", _("Installed version: "), ("caption",))
             self.info_text.direct_insert("end", active_dist["version"] + "\n")
             self.info_text.direct_insert("end", _("Installed to: "), ("caption",))
-            self.info_text.direct_insert(
-                "end", normpath_with_actual_case(active_dist["location"]), ("url",)
-            )
+            dist_location = active_dist["location"]
+            if not os.path.exists(dist_location):
+                self.info_text.direct_insert(
+                    "end", _('path is not exist...')
+                )
+            else:
+                self.info_text.direct_insert(
+                    "end", strutils.normpath_with_actual_case(dist_location), ("url",)
+                )
             self.info_text.direct_insert("end", "\n\n")
             self._select_list_item(name)
         else:
             #未安装包
             self._select_list_item(0)
             
-        #从服务器上查询包信息,其次显示包信息
+        #从服务器上查询包信息,其次显示包信息,如果能查询到则覆盖包的安装信息
         self.start_fetching_package_info(name)
 
         # update gui
@@ -502,7 +501,12 @@ class PipDialog(ui_base.CommonModaldialog):
 
     def _show_package_info(self, name, data, error_code=None):
         self._set_state("idle")
-        self.current_package_data = data
+        #从服务器上查询到数据才能覆盖初始的安装信息
+        if data:
+            self.current_package_data = data
+        #如果未找到则设定为404错误
+        else:
+            error_code = 404
         def write_att(caption, value, value_tag=None):
             self.write(caption + ": ", "caption")
             self.write(value, value_tag)
@@ -550,7 +554,10 @@ class PipDialog(ui_base.CommonModaldialog):
         if dist is None:
             return False
         else:
-            return normpath_with_actual_case(dist["location"]) != self._get_target_directory()
+            target_dir = self._get_target_directory()
+            if not os.path.exists(dist["location"]) or target_dir is None:
+                return True
+            return strutils.caseInsensitiveCompare(strutils.normpath_with_actual_case(dist["location"]),target_dir)
 
     def _normalize_name(self, name):
         # looks like (in some cases?) pip list gives the name as it was used during install
@@ -581,66 +588,45 @@ class PipDialog(ui_base.CommonModaldialog):
             self.listbox.see(index)
         finally:
             self.listbox["state"] = old_state
+            
+    def _perform_install(self,package_data):
+        '''
+            安装
+        '''
+        self._start_update_list(package_data['name'],refresh=True)
+        
+    def _perform_uninstall(self,package_data):
+        '''
+            卸载
+        '''
+        self._show_instructions()
+        #卸载后重新加载并刷新包列表
+        self._start_update_list(None,refresh=True)
+        
+    def _perform_advanced(self,package_data):
+        '''
+            其它操作
+        '''
+        self._start_update_list(package_data['name'])
 
     def _perform_action(self, action):
         assert self._get_state() == "idle"
-        assert self.current_package_data is not None
+        assert self.current_package_data
         data = self.current_package_data
         name = self.current_package_data["name"]
-        install_args = ["install", "--no-cache-dir"]
-        if self._use_user_install():
-            #pip install --user package_name
-            #会将Python程序包安装到$HOME/.local路径下,其中包含三个字文件夹:bin,lib和share
-            #只有非虚拟解释器时才能使用user参数安装包,虚拟解释器不能使用,会安装包到site-package目录下
-            install_args.append("--user")
-
         if action == "install":
             if not self._confirm_install(self.current_package_data):
                 return
+            self._perform_install(self.current_package_data)
 
-            args = install_args
-            if self._get_active_version(name) is not None:
-                args.append("--upgrade")
-
-            args.append(name)
         elif action == "uninstall":
-            if name in ["pip", "setuptools"] and not messagebox.askyesno(
-                _("Really uninstall?"),
-                "Package '{}' is required for installing and uninstalling other packages.\n\n".format(
-                    name
-                )
-                + _("Are you sure you want to uninstall it?"),
-                parent=get_workbench(),
-            ):
-                return
-            args = ["uninstall", "-y", name]
+            self._perform_uninstall(self.current_package_data)
+            
         elif action == "advanced":
-            details = _ask_installation_details(
-                self, data, _get_latest_stable_version(list(data["releases"].keys()))
-            )
-            if details is None:  # Cancel
-                return
-
-            version, package_data, upgrade_deps = details
-            if not self._confirm_install(package_data):
-                return
-
-            args = install_args
-            if upgrade_deps:
-                args.append("--upgrade")
-            args.append(name + "==" + version)
+            self._perform_advanced(self.current_package_data)
         else:
             raise RuntimeError("Unknown action")
-
-        proc, cmd = self._create_pip_process(args)
-        title = subprocess.list2cmdline(cmd)
-
-        # following call blocks
-        _show_subprocess_dialog(self, proc, title)
-        if action == "uninstall":
-            self._show_instructions()  # Make the old package go away as fast as possible
-        self._start_update_list(None if action == "uninstall" else name)
-
+            
     def _handle_install_file_click(self, event):
         if self._get_state() != "idle":
             return
@@ -670,33 +656,7 @@ class PipDialog(ui_base.CommonModaldialog):
             open_path_in_system_file_manager(self._get_target_directory())
 
     def _install_local_file(self, filename, is_requirements_file):
-        args = ["install"]
-        if self._use_user_install():
-            args.append("--user")
-        if is_requirements_file:
-            args.append("-r")
-        args.append(filename)
-
-        proc, cmd = self._create_pip_process(args)
-        # following call blocks
-        title = subprocess.list2cmdline(cmd)
-
-        _, out, _ = _show_subprocess_dialog(self, proc, title)
-
-        # Try to find out the name of the package we're installing
-        name = None
-
-        # output should include a line like this:
-        # Installing collected packages: pytz, six, python-dateutil, numpy, pandas
-        inst_lines = re.findall(
-            "^Installing collected packages:.*?$", out, re.MULTILINE | re.IGNORECASE
-        )  # @UndefinedVariable
-        if len(inst_lines) == 1:
-            # take last element
-            elements = re.split(",|:", inst_lines[0])
-            name = elements[-1].strip()
-
-        self._start_update_list(name)
+        self._start_update_list(None)
 
     def _handle_url_click(self, event):
         '''
@@ -710,9 +670,6 @@ class PipDialog(ui_base.CommonModaldialog):
             else:
                 #否则打开文件或文件夹
                 fileutils.safe_open_file_directory(url)
-
-    def _on_close(self, event=None):
-        self.destroy()
 
     def _get_active_version(self, name):
         dist = self._get_active_dist(name)
@@ -730,14 +687,6 @@ class PipDialog(ui_base.CommonModaldialog):
 
         return None
 
-    def _create_python_process(self, args, stderr):
-        raise NotImplementedError()
-
-    def _create_pip_process(self, args, stderr=subprocess.STDOUT):
-        if "--disable-pip-version-check" not in args:
-            args.append("--disable-pip-version-check")
-        return self._create_python_process(["-m", "pip"] + args, stderr=stderr)
-
     def _should_install_to_site_packages(self):
         raise NotImplementedError()
 
@@ -750,13 +699,13 @@ class PipDialog(ui_base.CommonModaldialog):
         if self._use_user_install():
             assert hasattr(site, "getusersitepackages")
             os.makedirs(site.getusersitepackages(), exist_ok=True)
-            return normpath_with_actual_case(site.getusersitepackages())
+            return strutils.normpath_with_actual_case(site.getusersitepackages())
         else:
             for d in sys.path:
                 if ("site-packages" in d or "dist-packages" in d) and path_startswith(
                     d, sys.prefix
                 ):
-                    return normpath_with_actual_case(d)
+                    return strutils.normpath_with_actual_case(d)
             return None
 
     def _get_title(self):
@@ -783,12 +732,18 @@ class PipDialog(ui_base.CommonModaldialog):
         )
 
 class PluginsPipDialog(PipDialog):
-    def __init__(self, master,package_count):
-        PipDialog.__init__(self, master,package_count)
-
+    def __init__(self, master,package_count,message):
+        self._install_plugins = {}
+        self._uninstall_plugins = set()
+        PipDialog.__init__(self, master,package_count,message['msg'])
+        #插件配置是否改变,如果改变关闭对话框时提示用户需要重启软件才能生效
+        self._plugin_configuration_changed = False
         # make sure directory exists, so user can put her plug-ins there
 #        d = self._get_target_directory()
  #       makedirs(d, exist_ok=True) 
+
+    def _is_read_only_package(self, name):
+        return False
 
     def _show_instructions(self):
         '''
@@ -865,6 +820,7 @@ class PluginsPipDialog(PipDialog):
         names = []
         lower_name = name.lower()
         names = GetAllPlugins(lower_name)
+        self.installled_var.set(_("Searched Plugins:"))
         return names
         
     def _handle_install_file_click(self, event):
@@ -901,11 +857,12 @@ class PluginsPipDialog(PipDialog):
         '''
         _start_fetching_plugin_info(name, None, self._show_package_info)
 
-    def _start_update_list(self, name_to_show=None):
+    def _start_update_list(self, name_to_show=None,refresh=False):
         '''
             获取所有已安装插件,在插件对话框初始化时显示
         '''
         assert self._get_state() in [None, "idle"]
+        PipDialog._start_update_list(self,name_to_show)
         pdata = GetApp().GetPluginManager().GetPluginData()
         self._active_distributions = {
             plugin.GetName(): {
@@ -915,72 +872,146 @@ class PluginsPipDialog(PipDialog):
                 "version": plugin.GetVersion(),
                 'enabled':plugin.IsEnabled()
             }
-            for plugin in pdata  # pylint: disable=not-an-iterable
+            for plugin in pdata  if plugin.GetName() not in self._uninstall_plugins# pylint: disable=not-an-iterable
         }
+        #手动安装的插件
+        self._active_distributions.update(self._install_plugins)
         self._update_list(name_to_show)
 
-    def _conflicts_with_thonny_version(self, req_strings):
-        import pkg_resources
-
-        try:
-            conflicts = []
-            for req_string in req_strings:
-                req = pkg_resources.Requirement.parse(req_string)
-                if req.project_name == "thonny" and thonny.get_version() not in req:
-                    conflicts.append(req_string)
-
-            return conflicts
-        except Exception:
-            logging.exception("Problem computing conflicts")
-            return None
+    def _conflicts_with_application_version(self, plugin_data):
+        '''
+            检查插件要求的软件版本是否小于等于当前版本,如果不是则需要提示用户更新软件版本
+        '''
+        app_version = utils.get_app_version()
+        #检查插件要求的软件版本是否大于当前版本,如果是则提示用户是否更新软件
+        if parserutils.CompareCommonVersion(plugin_data['app_version'],app_version):
+            ret = messagebox.askyesno(GetApp().GetAppName(),_("Plugin '%s' requires application version at least '%s',Do you want to update your application?"%(plugin_data['name'],plugin_data['app_version'])),parent=self)
+            if ret == False:
+                return False
+            #更新软件,如果用户执行更新安装,则程序会退出,不会执行下面的语句
+            updateutils.CheckAppUpdate()
+        #再检查一次
+        return not parserutils.CompareCommonVersion(plugin_data['app_version'],app_version)
 
     def _should_install_to_site_packages(self):
         return self._targets_virtual_environment()
+        
+    def GetInstallPluginPath(self,plugin_name,user_directory=True):
+        '''
+            先检查插件是否安装,如果已安装则安装到插件安装的目录
+            否则获取插件安装目录,有2种目录供选择,一种是用户数据目录,一种是软件安装目录
+        '''
+        dist = GetApp().GetPluginManager().GetPluginDistro(plugin_name)
+        #如果插件未安装则选择2种插件目录中的一种
+        if not dist:
+            if not user_directory:
+                #软件安装目录
+                plugin_path = utils.get_sys_plugin_path()
+            else:
+                #用户数据目录
+                plugin_path =  utils.get_user_plugin_path()
+        else:
+            plugin_path = os.path.dirname(dist.location)
+        utils.get_logger().info("plugin %s install path is %s",plugin_name,plugin_path)
+        #确保插件目录存在
+        parserutils.MakeDirs(plugin_path)
+        return plugin_path
+        
+    def InstallEgg(self,name,egg_path,version):
+        plugin_path = self.GetInstallPluginPath(name)
+        #将下载的插件文件移至插件目录下
+        shutil.move(egg_path,plugin_path)
+        #启用插件
+        GetApp().GetPluginManager().EnablePlugin(name)
+        #执行插件的安装操作,需要在插件里面执行
+        GetApp().GetPluginManager().LoadPluginByName(name)
+        #将插件安装信息通知到界面
+        self._install_plugins[name] = {
+            "project_name": name,
+            "key": name,
+            "location": os.path.join(plugin_path,os.path.basename(egg_path)),
+            "version": version,
+            'enabled':True
+        }
+        self.install_button['state'] = tk.DISABLED
+        self._plugin_configuration_changed = True
 
-    def _create_python_process(self, args, stderr):
-        proc = running.create_frontend_python_process(args, stderr=stderr)
-        return proc, proc.cmd
-
-    def _confirm_install(self, package_data):
+    def _perform_install(self,package_data):
         '''
             安装插件
         '''
-        print(package_data,"+++++++++++++++") 
+        def after_download(egg_path):
+            '''
+                插件下载后回调函数
+            '''
+            self.InstallEgg(name,egg_path,package_data['version'])
+            PipDialog._perform_install(self,package_data)
+            messagebox.showinfo(GetApp().GetAppName(),_("Install plugin '%s' success") % name)
+            
         name = package_data["name"]
-       # reqs = package_data["info"].get("requires_dist", None)
+        lang = GetApp().locale.GetLanguageCanonicalName()
+        app_version = utils.get_app_version()
+        download_url = '%s/member/download_plugin' % (UserDataDb.HOST_SERVER_ADDR)
+        payload = dict(new_version = package_data['version'],app_version = app_version,\
+                    lang = lang,os_name=sys.platform,plugin_id=package_data['id'])
+        #下载插件文件
+        downutils.download_file(download_url,call_back=after_download,**payload)
+        
+    def GetInstallEggPath(self,name):
+        """Get the path of the plugin
+        @return: string
+        """
+        return self._active_distributions[name]['location']
+        
+    def _perform_uninstall(self,package_data):
+        '''
+            卸载插件
+        '''
+        plist = utils.profile_get('UNINSTALL_PLUGINS',[])
+        plist.append(self.GetInstallEggPath(package_data['name']))
+        utils.profile_set('UNINSTALL_PLUGINS', plist)
+        self._plugin_configuration_changed = True
+        self.uninstall_button['state'] = tk.DISABLED
+        #通知界面删除卸载包
+        self._uninstall_plugins.add(package_data['name'])
+        PipDialog._perform_uninstall(self,package_data)
+        #执行插件的卸载操作,需要在插件里面执行
+        GetApp().GetPluginManager().UnloadPluginByName(package_data['name'])
+        messagebox.showinfo(GetApp().GetAppName(),_("Uninstall success"))
+        
+    def _perform_advanced(self,package_data):
+        '''
+            这里执行启动和禁止插件操作
+        '''
+        self._plugin_configuration_changed = True
+        if self.advanced_button["text"] == _("Enabled"):
+            self.advanced_button["text"] = _("Disabled")
+            GetApp().GetPluginManager().EnablePlugin(package_data['name'],enable=True)
+            GetApp().GetPluginManager().EnablePluginByName(package_data['name'])
+        else:
+            self.advanced_button["text"] = _("Enabled")
+            GetApp().GetPluginManager().EnablePlugin(package_data['name'],enable=False)
+            GetApp().GetPluginManager().DisablePluginByName(package_data['name'])
 
-        other_version_text = (
-            "NB! There may be another version available "
-            + "which is compatible with current Thonny version. "
-            + "Click on '...' button to choose the version to install."
-        )
-
-        if name.lower().startswith("thonny-") and not reqs:
-            showerror(
-                "Thonny plugin without requirements",
-                "Looks like you are trying to install an outdated Thonny\n"
-                + "plug-in (it doesn't specify required Thonny version).\n\n"
-                + "If you still want it, then please install it from the command line."
-                + "\n\n"
-                + other_version_text,
-                parent=get_workbench(),
-            )
-            return False
-        elif reqs:
-            conflicts = self._conflicts_with_thonny_version(reqs)
-            if conflicts:
-                showerror(
-                    "Unsuitable requirements",
-                    "This package requires different Thonny version:\n\n  "
-                    + "\n  ".join(conflicts)
-                    + "\n\nIf you still want it, then please install it from the command line."
-                    + "\n\n"
-                    + other_version_text,
-                    parent=get_workbench(),
-                )
+    def _confirm_install(self, package_data):
+        '''
+            确认是否安装插件
+        '''
+        plugin_path = self.GetInstallPluginPath(package_data['name'])
+        dest_egg_path =  os.path.join(plugin_path,package_data['path'])
+        #是否替换现有插件文件
+        if os.path.exists(dest_egg_path):
+            ret = messagebox.askyesno(_("Move File"),_("Plugin file is already exist,Do you want to overwrite it?"),parent=self)
+            if ret == False:
                 return False
-
-        return True
+            #删除已经存在的插件文件
+            try:
+                os.remove(dest_egg_path)
+            except:
+                messagebox.showerror(GetApp().GetAppName(),_("Remove faile:%s fail") % dest_egg_path)
+                return False
+        #检查软件的版本是否是插件要求的最低版本
+        return self._conflicts_with_application_version(package_data)
 
     def _get_target_directory(self):
         '''
@@ -988,14 +1019,14 @@ class PluginsPipDialog(PipDialog):
         '''
         return [utils.get_user_plugin_path(),utils.get_sys_plugin_path()]
 
-    def _create_widgets(self, parent,button_text,label_text):
+    def _create_widgets(self, parent,install_label_text,button_text,label_text,tip_text):
         bg = "#ffff99"
         banner = tk.Label(parent, background=bg)
         banner.grid(row=0, column=0, sticky="nsew")
 
         banner_msg = (
-            "This dialog is for managing Noval plug-ins and their dependencies.\n"
-            + "If you want to install packages for your own programs then choose 'Tools → Manage packages...'\n"
+            _("This dialog is for managing Noval plug-ins and their dependencies.\n")
+            + _("If you want to install packages for your own programs please install PipManager plugin and then choose 'Tools → Manage packages...'\n")
         )
         banner_msg += (
             "\n"
@@ -1004,19 +1035,52 @@ class PluginsPipDialog(PipDialog):
 
         banner_text = tk.Label(banner, text=banner_msg, background=bg, justify="left")
         banner_text.grid(pady=10, padx=10)
-
-        PipDialog._create_widgets(self, parent,_("Find plugin from Server"),_("There is total %d plugins on Server")%self.package_count)
+        PipDialog._create_widgets(self, parent,_("Installed Plugins:"),_("Find plugin from Server"),label_text,_("input the plugin name to search..."))
 
     def _get_title(self):
-        return "NovalIDE plug-ins"
-
-    def _handle_outdated_or_missing_pip(self, error):
-        return self._provide_pip_install_instructions(error)
+        return _("NovalIDE plug-ins")
+        
+    def create_advance_button(self):
+        self.advanced_button = ttk.Button(
+            self.command_frame,
+            text=_("Enabled"),
+            command=lambda: self._perform_action("advanced"),
+        )
+        self.advanced_button.grid(row=0, column=2, sticky="w", padx=(5, 0))
+        
+    def _cancel(self,event=None):
+        '''
+            关闭对话框时检查插件配置是否更改,如果更提示用户需要重启软件
+        '''
+        if self._plugin_configuration_changed:
+            messagebox.showwarning(_("Plugin Configuration Changed"),_("You must restart NovalIDE before your changes will take full affect."),parent=self)
+        PipDialog._cancel(self,event)
+        
+    def _install_local_file(self, filename, is_requirements_file):
+        '''
+            从本地安装插件
+            filename:本地插件路径
+        '''
+        pip_path = os.path.dirname(filename)
+        file_plugin_manager = plugin.PluginManager(pip_path=pip_path)
+        plugin_data = file_plugin_manager.FindPluginByegg(filename)
+        if plugin_data is None:
+            messagebox.showerror(GetApp().GetAppName(),_("invalid plugin"),parent=self)
+            return
+        plugin_name = plugin_data.GetName()
+        if not self._confirm_install({'name':plugin_name,'path':os.path.basename(filename),'app_version':plugin_data.Instance.GetMinVersion()}):
+            return
+        self.InstallEgg(plugin_name,filename,plugin_data.GetVersion())
+        self._start_update_list(plugin_name)
+        messagebox.showinfo(GetApp().GetAppName(),_("Install plugin '%s' success") % plugin_name)
         
 class PyPiPipDialog(PipDialog):
-    def __init__(self, master,package_count):
-        PipDialog.__init__(self, master,package_count)
-
+    
+    #搜索包显示的最多结果数
+    MAX_RESULTS_COUNT = 100
+    def __init__(self, master,package_count,message):
+        #message表示正在获取pypi包过程的信息
+        PipDialog.__init__(self, master,package_count,message['msg'])
         # make sure directory exists, so user can put her plug-ins there
 #        d = self._get_target_directory()
  #       makedirs(d, exist_ok=True)
@@ -1025,6 +1089,8 @@ class PyPiPipDialog(PipDialog):
         '''
             显示pypi<INSTALL>提示信息
         '''
+        if self._get_state() == "disabled":
+            return
         self._clear()
         if self._read_only():
             self.info_text.direct_insert("end", "Browse the packages\n", ("caption",))
@@ -1032,7 +1098,7 @@ class PyPiPipDialog(PipDialog):
                 "end",
                 _(
                     "With current interpreter you can only browse the packages here.\n"
-                    + "Use 'Tools → Open system shell...' for installing, upgrading or uninstalling.\n\n"
+                    + "Use 'Tools → Plugin Manager' for installing, upgrading or uninstalling.\n\n"
                 ),
             )
 
@@ -1109,8 +1175,16 @@ class PyPiPipDialog(PipDialog):
         ttk.Label(row, text= _("Interpreter:")).pack(fill="x",side=tk.LEFT)
         self.interprterChoice.pack(side=tk.LEFT)
         self.interprterChoice.bind("<<ComboboxSelected>>",self.update_packages_list)
+        #图片对象必须保持住
+        self.img = GetApp().GetImage("refresh.png")
+        btn = ttk.Button(row, image=self.img,state=tk.NORMAL,style="Toolbutton",command=self.RefreshPackages)
+        btn.pack(fill="x",side=tk.LEFT,padx=consts.DEFAUT_HALF_CONTRL_PAD_X)
+        misc.create_tooltip(btn, _("refresh"))
         row.grid(row=3,column=0,sticky=tk.NSEW,padx=15)
         ttk.Label(parent, text=label_text).grid(row=4, column=0, sticky="nsew", padx=15, pady=consts.DEFAUT_CONTRL_PAD_Y)
+        
+    def RefreshPackages(self):
+        self._start_update_list(None,refresh=True)
         
     def NotFoundPackage(self,name):
         self.write(_("Could not find the package from PyPI."))
@@ -1124,16 +1198,23 @@ class PyPiPipDialog(PipDialog):
         names = []
         lower_name = name.lower()
         names = GetAllPackages(lower_name)
+        self.installled_var.set(_("Searched Packages:"))
+        #结果数不能显示太多,如果超过最大数将削减至最多数
+        if self.MAX_RESULTS_COUNT < len(names):
+            messagebox.showwarning(_("Warning"),_("The resuls count is tool much!trim to %d")%self.MAX_RESULTS_COUNT,parent=self)
+            names = names[0:self.MAX_RESULTS_COUNT]
         return names
         
     def update_packages_list(self,event):
+        self._set_state('idle')
         self._start_update_list()
 
-    def _start_update_list(self, name_to_show=None):
+    def _start_update_list(self, name_to_show=None,refresh=False):
         '''
             获取解释器所有已安装pypi包,在pypi对话框初始化时显示
         '''
         assert self._get_state() in [None, "idle"]
+        PipDialog._start_update_list(self,name_to_show)
         interpreter = self._get_interpreter()
         if interpreter is None:
             return
@@ -1155,20 +1236,32 @@ class PyPiPipDialog(PipDialog):
             #保证路径存在而且路径已存在时不抛出异常
             os.makedirs(interpreter_data_path,exist_ok=True)
             packages_file = os.path.join(interpreter_data_path,"packages.txt")
+            #重新加载解释器已安装包
+            if refresh:
+                try:
+                    os.remove(packages_file)
+                except:
+                    pass
             if not os.path.exists(packages_file):
                 temp_data_path  = pkg_resources.resource_filename("pipmanager",'')
                 run_pkg_path = os.path.join(temp_data_path,"run_pkg.py")
                 #生成每个解释器的安装包列表
-                pyutils.create_python_interpreter_process(interpreter,run_pkg_path + " " + packages_file)
+                p = pyutils.create_python_interpreter_process(interpreter,run_pkg_path + " " + packages_file)
+                p.wait()
             if not os.path.exists(packages_file):
                 self.ShowNameList([])
                 self._clear()
-                return 
-            with open(packages_file) as f:
-                #从包文件列表中加载所有包信息
-                self._active_distributions = json.load(f)
-
+                utils.get_logger().error("could not get interpreter %s packages",interpreter.Name)
+                self._active_distributions = {}
+            else:
+                with open(packages_file) as f:
+                    #从包文件列表中加载所有包信息
+                    self._active_distributions = json.load(f)
         self._update_list(name_to_show)
+        #解释器缺失pip工具
+        if not interpreter.IsBuiltIn and interpreter.GetPipPath() is None:
+            self._handle_outdated_or_missing_pip(_("NB!\n"))
+            utils.get_logger().error("interpreter %s miss pp tool",interpreter.Name)
 
     def _conflicts_with_thonny_version(self, req_strings):
         import pkg_resources
@@ -1214,13 +1307,63 @@ class PyPiPipDialog(PipDialog):
     def _targets_virtual_environment(self):
         # https://stackoverflow.com/a/42580137/261181
         #获取当前解释器是否虚拟解释器
-        return self._get_interpreter().IsVirtual()
+        return self._get_interpreter().IsVirtual()        
 
-    def _create_python_process(self, args, stderr):
-        proc = running.create_frontend_python_process(args, stderr=stderr)
-        return proc, proc.cmd
+    def _install_local_file(self, filename, is_requirements_file):
+        '''
+            从本地安装包
+            filename:本地包路径或者requirements文件路径
+            is_requirements_file：表示是否通过requirements文本文件安装
+        '''
+        args = []
+        if self._use_user_install():
+            #利用--user参数即pip install --user package_name
+            #这样会将Python程序包安装到$HOME/.local路径下,其中包含三个字文件夹:bin,lib和share
+            args.append("--user")
+        if is_requirements_file:
+            args.append("-r")
+        args.append(filename)
+
+        install_args = " ".join(args)
+        dlg = pythonpackages.InstallPackagesDialog(self,self._get_interpreter(),with_requirements=is_requirements_file,install_args=install_args,install_local=True,autorun=True)
+        status = dlg.ShowModal()
+        if status == constants.ID_CANCEL:
+            return
+        package_name = None
+        self._start_update_list(package_name)
+
+    def _perform_install(self,package_data):
+        '''
+            安装包
+        '''
+        name = package_data['name']
+        dlg = pythonpackages.InstallPackagesDialog(self,self._get_interpreter(),pkg_name=name,install_args=name,autorun=True)
+        status = dlg.ShowModal()
+        if status == constants.ID_CANCEL:
+            return
+        PipDialog._perform_install(self,package_data)
+        
+    def _perform_uninstall(self,package_data):
+        '''
+            卸载包
+        '''
+        name = package_data['name']
+        #pip和setuptools是用来管理其它包的如果卸载会影响安装卸载包
+        if name in ["pip", "setuptools"] and not messagebox.askyesno(
+                _("Really uninstall?"),
+                _("Package '{}' is required for installing and uninstalling other packages.\n\n").format(
+                    name
+                )
+                + _("Are you sure you want to uninstall it?"),
+                parent=self,
+            ):
+            return
+        dlg = pythonpackages.UninstallPackagesDialog(self,self._get_interpreter(),pkg_name=name,uninstall_args=name,autorun=True)
+        status = dlg.ShowModal()
+        PipDialog._perform_uninstall(self,package_data)
 
     def _confirm_install(self, package_data):
+        return True
         name = package_data["info"]["name"]
         reqs = package_data["info"].get("requires_dist", None)
 
@@ -1262,22 +1405,46 @@ class PyPiPipDialog(PipDialog):
             #获取解释器的site-packages路径
             site_packages_path = self._get_interpreter().GetPythonLibPath()
             os.makedirs(site_packages_path, exist_ok=True)
-            return normpath_with_actual_case(site_packages_path)
+            return strutils.normpath_with_actual_case(site_packages_path)
         else:
             for d in sys.path:
                 if ("site-packages" in d or "dist-packages" in d) and strutils.path_startswith(
                     d, sys.prefix
                 ):
-                    return normpath_with_actual_case(d)
+                    return strutils.normpath_with_actual_case(d)
             return None
 
     def _handle_outdated_or_missing_pip(self, error):
         return self._provide_pip_install_instructions(error)
+        
+    def create_advance_button(self):
+        self.advanced_button = ttk.Button(
+            self.command_frame,
+            text="...",
+            width=3,
+            command=lambda: self._perform_action("advanced"),
+        )
+        self.advanced_button.grid(row=0, column=2, sticky="w", padx=(5, 0))
+        
+    def _perform_advanced(self,package_data):
+        '''
+            其它操作
+        '''
+        details = _ask_installation_details(
+            self, data, _get_latest_stable_version(list(data["releases"].keys()))
+        )
+        if details is None:  # Cancel
+            return
 
-def _show_subprocess_dialog(master, proc, title):
-    dlg = SubprocessDialog(master, proc, title)
-    ui_utils.show_dialog(dlg, master)
-    return dlg.returncode, dlg.stdout, dlg.stderr
+        version, package_data, upgrade_deps = details
+        if not self._confirm_install(package_data):
+            return
+
+        args = install_args
+        if upgrade_deps:
+            args.append("--upgrade")
+        args.append(name + "==" + version)
+        PipDialog._perform_advanced(self,package_data)
 
 
 def _ask_installation_details(master, data, selected_version):
@@ -1294,6 +1461,9 @@ def _start_fetching_package_info(name, version_str, completion_handler):
     api_addr = '%s/member/get_package' % (UserDataDb.HOST_SERVER_ADDR)
     def poll_fetch_complete():
         data = utils.RequestData(api_addr,method='get',arg={'name':name})
+        #去掉非数据字段
+        data.pop('message')
+        data.pop('code')
         if data:
             completion_handler(name, data)
         else:
@@ -1311,6 +1481,9 @@ def _start_fetching_plugin_info(name, version_str, completion_handler):
     api_addr = '%s/member/get_plugin' % (UserDataDb.HOST_SERVER_ADDR)
     def poll_fetch_complete():
         data = utils.RequestData(api_addr,method='get',arg={'name':name})
+        #去掉非数据字段
+        data.pop('message')
+        data.pop('code')
         if data:
             completion_handler(name, data)
         else:
@@ -1344,8 +1517,15 @@ class PluginManagerGUI(plugin.Plugin):
         tools_menu = menuBar.GetToolsMenu()
         mitem = tools_menu.InsertBefore(constants.ID_PREFERENCES,constants.ID_PLUGIN,_("Plugin Manager"), 
                                   ("Plugin Manager GUI"),handler=self.ShowPluginManagerDlg,img=GetApp().GetImage("plugin.png"))
+        self.message = {'msg':_("fetching plugin from server...")}
+        self.GetPlugins()
         
     def ShowPluginManagerDlg(self):
-        names = GetAllPlugins()
-        plugin_dlg = PluginsPipDialog(self.parent,package_count=len(names))
+        plugin_dlg = PluginsPipDialog(self.parent,package_count=0,message=self.message)
         plugin_dlg.ShowModal()
+        
+    def GetPlugins(self):
+        t = threading.Thread(target=GetAllPlugins,args=(None,self.message))
+        #daemon表示后台线程,即程序不用等待子线程才退出
+        t.daemon = True
+        t.start()

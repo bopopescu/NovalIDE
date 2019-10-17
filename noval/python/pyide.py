@@ -245,6 +245,7 @@ class PyIDEApplication(ide.IDEApplication):
     def OpenInterpreter(self):
         interpreter = self.GetCurrentInterpreter()
         if interpreter is None:
+            messagebox.showinfo(self.GetAppName(),_("No interpreter..."))
             return
         try:
             if utils.is_windows():
@@ -270,7 +271,8 @@ class PyIDEApplication(ide.IDEApplication):
             
         interpreter = self.GetCurrentInterpreter()
         if interpreter is None:
-            target_executable = None
+            ide.IDEApplication.OpenTerminator(self,filename)
+            return
         else:
             target_executable = interpreter.Path
         

@@ -208,7 +208,7 @@ def create_python_process(python_exe,args,shell=False,env=None,universal_newline
     '''
         创建python进程
     '''
-    utils.create_process(python_exe,args,shell,env,universal_newlines)
+    return utils.create_process(python_exe,args,shell,env,universal_newlines)
 
 def create_python_interpreter_process(interpreter,args):
     python_exe = interpreter.Path

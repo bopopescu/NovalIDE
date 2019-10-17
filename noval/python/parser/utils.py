@@ -133,7 +133,21 @@ def CalcVersionValue(ver_str="0.0.0"):
     micro = float(ver_lvl[2]) / 1000
     return float(major) + float(minor) + micro
     
-def CompareDatabaseVersion(new_version,old_version):
+def CompareCommonVersion(new_version,old_version):
+    '''
+        比较通用版本号大小,如果新版本号大于旧版本号返回1,否则返回0,返回0才正常,返回1需要更新
+    '''
+    def format_version(version_str):
+        '''
+            标准化版本字符串,至少包含3个点.如果是类似x.x的版本则转换为x.x.0之类的
+        '''
+        if len(version_str.split('.')) == 2:
+            version_str += ".0"
+        return version_str
+    assert(type(new_version)==str)
+    assert(type(old_version)==str)
+    new_version = format_version(new_version)
+    old_version = format_version(old_version)
     if CalcVersionValue(new_version) <= CalcVersionValue(old_version):
         return 0
     return 1

@@ -218,7 +218,7 @@ class PyinstallerProjectNameLocationPage(PythonProjectNameLocationPage):
     def GetProjectTemplate(self):
         return PyinstallerProjectTemplate.CreateProjectTemplate()
 
-class PyinstallerDubugrunConfigurationPage(projectwizard.BitmapTitledWizardPage):
+class PyinstallerDubugrunConfigurationPage(projectwizard.BitmapTitledContainerWizardPage):
     """Creates the calculators interface
     @todo: Dissable << and >> when floating values are present
     @todo: When integer values overflow display convert to scientific notation
@@ -227,23 +227,21 @@ class PyinstallerDubugrunConfigurationPage(projectwizard.BitmapTitledWizardPage)
     """
     def __init__(self, parent):
         """Initialiases the calculators main interface"""
-        projectwizard.BitmapTitledWizardPage.__init__(self, parent,("Set the Configuration of Pyinstaller project"),_("Set General Debug/Run Options"),"python_logo.png")
+        projectwizard.BitmapTitledContainerWizardPage.__init__(self, parent,("Pyinstaller Project Wizard"),_("Pyinstaller Application Information\nPlease Set Base Information of Application"),"python_logo.png")
         self.can_finish = True
-        sizer_frame = ttk.Frame(self)
+        
+    def CreateContent(self,content_frame,**kwargs):
+        sizer_frame = ttk.Frame(content_frame)
         sizer_frame.grid(column=0, row=1, sticky="nsew")
-
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(1, weight=1)
-
         row = ttk.Frame(sizer_frame)
-        ttk.Label(row,text=_('Target name:')).pack(fill="x",side=tk.LEFT)
+        ttk.Label(row,text=_('Application Target name:')).pack(fill="x",side=tk.LEFT)
         self.target_name_var = tk.StringVar()
         target_entry = ttk.Entry(row,textvariable=self.target_name_var)
         target_entry.pack(fill="x",side=tk.LEFT,expand=1)
         row.pack(fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
 
         row = ttk.Frame(sizer_frame)
-        ttk.Label(row, text=_('Icon path:')).pack(side=tk.LEFT)
+        ttk.Label(row, text=_('Application Icon path:')).pack(side=tk.LEFT)
         self.icon_path_var = tk.StringVar()
         icon_path_entry = ttk.Entry(row,textvariable=self.icon_path_var)
         

@@ -28,17 +28,17 @@ import os
 import noval.python.interpreter.interpretermanager as interpretermanager
 import shutil
 import noval.python.parser.utils as dirutils
-import noval.project.variables as variablesutils
 import noval.terminal as terminal
 import noval.ui_utils as ui_utils
 import noval.python.pyutils as pyutils
 from dummy.userdb import UserDataDb
+import noval.python.interpreter.pythonpackages as pythonpackages
 # Local imports
 #-----------------------------------------------------------------------------#
 
 # Try and add this plugins message catalogs to the app
 
-#wx.GetApp().AddMessageCatalog('calculator', __name__)
+
 #-----------------------------------------------------------------------------#
 
 pypyrc_template = '''[distutils]
@@ -69,6 +69,7 @@ class PyPi(plugin.Plugin):
             ProjectTemplateManager().AddProjectTemplate("Python/PyPI",_("Noval Plugin"),[pypi.PypiProjectNameLocationPage,pypi.NovalPluginInformationPage]) 
         GetApp().bind(constants.PROJECTVIEW_POPUP_FILE_MENU_EVT, self.AppenFileMenu,True)
         self.project_browser = GetApp().MainFrame.GetView(consts.PROJECT_VIEW_NAME)
+        GetApp().AddMessageCatalog('pypi', __name__)
 
     def AppenFileMenu(self, event):
          menu = event.get('menu')
@@ -96,15 +97,22 @@ class PyPi(plugin.Plugin):
         dist_path = os.path.join(project_path,'dist')
         return dist_path
         
-    def GetInstallPluginPath(self):
-        project_variable_manager = variablesutils.GetProjectVariableManager()
-        d = project_variable_manager.GetGlobalVariables()
-        install_path = d["InstallPath"]
-        plugin_path = os.path.join(install_path,"plugins")
+    def GetInstallPluginPath(self,plugin_name):
+        dist = GetApp().GetPluginManager().GetPluginDistro(plugin_name)
+        #如果插件未安装则选择2种插件目录中的一种
+        if not dist:
+            #软件安装目录
+            plugin_path = utils.get_sys_plugin_path()
+        else:
+            plugin_path = os.path.dirname(dist.location)
+        utils.get_logger().info("plugin %s install path is %s",plugin_name,plugin_path)
         dirutils.MakeDirs(plugin_path)
         return plugin_path
         
     def PublishToServer(self):
+        '''
+            发布并上传插件到web服务器
+        '''
         def get_key_value(line,key,flag,data):
             if line.find(flag) != -1:
                 data[key] = line.replace(flag,"").strip()
@@ -113,15 +121,40 @@ class PyPi(plugin.Plugin):
         project_path = self.GetProjectPath()
         args1 = "%s egg_info --egg-base %s" % (startup_file.filePath,project_path)
         pyutils.create_python_interpreter_process(interpreter,args1)
-        egg_path,plugin_name = self.GetEgg()
+        egg_path,plugin_name,version = self.GetEgg()
         if not os.path.exists(egg_path):
-            messagebox.showerror(GetApp().GetAppName(),_("egg file %s is not exist")%egg_path,parent=self.parent)
+            messagebox.showerror(_('Pulish to Server'),_("egg file %s is not exist")%egg_path,parent=self.parent)
             return
         pkg_file_path = os.path.join(project_path,"%s.egg-info/PKG-INFO"%(plugin_name))
         if not os.path.exists(pkg_file_path):
-            messagebox.showerror(GetApp().GetAppName(),_("pkg file %s is not exist")%pkg_file_path,parent=self.parent)
+            messagebox.showerror(_('Pulish to Server'),_("pkg file %s is not exist")%pkg_file_path,parent=self.parent)
             return
+            
         data = {}
+        dist_path = self.GetDistPath()
+        #获取插件源数据信息,必须先实例化插件
+        dist_env = GetApp().GetPluginManager().CreateEnvironment([dist_path])
+        for name in dist_env:
+            egg = dist_env[name][0]  # egg is of type Distribution
+            assert(egg.project_name == plugin_name)
+            if egg.version != version:
+                continue
+            egg.activate()
+            for name in egg.get_entry_map(plugin.ENTRYPOINT):
+                entry_point = egg.get_entry_info(plugin.ENTRYPOINT, name)
+                cls = entry_point.load()
+                #实例化插件对象
+                instance = cls(GetApp().GetPluginManager())
+                free = instance.GetFree()
+                assert(type(free) == bool)
+                data['free'] = int(free)
+                price = None
+                if not free:
+                    price = instance.GetPrice()
+                    assert(type(price) == int or type(price) == float)
+                data['price'] = price
+                data['app_version'] = instance.GetMinVersion()
+        
         with open(pkg_file_path) as f:
             for line in f:
                 line = line.strip()
@@ -141,20 +174,29 @@ class PyPi(plugin.Plugin):
             user_id = UserDataDb().GetUserId()
         data['member_id'] = user_id
         data['egg_name'] = os.path.basename(egg_path)
-        ret = utils.RequestData(api_addr,method='post',arg=data)
+        ret = utils.upload_file(api_addr,file=egg_path,arg=data)
+        if not ret:
+            utils.get_logger().error('upload plugin %s fail',data['name'])
+            messagebox.showerror(_('Publish to Server'),_("Publish fail"),parent=self.parent)
+            return
+        utils.get_logger().debug('ret is %s',ret)
         #已有版本已经存在,提示用户是否强制替换
         if ret['code'] == 1:
-            result = messagebox.askyesno(GetApp().GetAppName(),ret['message'].format(version=data['version']),parent=self.parent)
+            result = messagebox.askyesno(_('Publish to Server'),ret['message'].format(version=data['version'],name=data['name']),parent=self.parent)
             if result == False:
                 return
             #强制更新版本
             data['force_update'] = 1
-            ret = utils.RequestData(api_addr,method='post',arg=data)
+            ret = utils.upload_file(api_addr,file=egg_path,arg=data)
+            if not ret:
+                utils.get_logger().error('upload plugin %s fail',data['name'])
+                messagebox.showerror(_('Publish to Server'),_("Publish fail"),parent=self.parent)
+                return
     
         if ret['code'] == 0:
-            messagebox.showinfo(GetApp().GetAppName(),_("Publish success"),parent=self.parent)
+            messagebox.showinfo(_('Publish to Server'),_("Publish success"),parent=self.parent)
         else:
-            messagebox.showerror(GetApp().GetAppName(),_("Publish fail"),parent=self.parent)
+            messagebox.showerror(_('Publish to Server'),_("Publish fail"),parent=self.parent)
             
     def GetEgg(self):
         dist_path = self.GetDistPath()
@@ -169,18 +211,21 @@ class PyPi(plugin.Plugin):
             interpretermanager.InterpreterManager().SavePythonInterpretersConfig()
         egg_path = "%s/%s-py%s.egg"%(dist_path,fullname,interpreter.MinorVersion)
         plugin_name = fullname.split("-")[0]
-        return egg_path,plugin_name
+        version = fullname.split("-")[1]
+        return egg_path,plugin_name,version
         
     def PublishToInstallPath(self):
-        egg_path,plugin_name = self.GetEgg()
-        plugin_path = self.GetInstallPluginPath()
+        '''
+            发布插件到本地
+        '''
+        egg_path,plugin_name,_v = self.GetEgg()
         if not os.path.exists(egg_path):
-            messagebox.showerror(GetApp().GetAppName(),_("egg file %s is not exist")%egg_path,parent=self.parent)
+            messagebox.showerror(_('Publish to local'),_("egg file %s is not exist")%egg_path,parent=self.parent)
         else:
-            plugin_path = self.GetInstallPluginPath()
+            plugin_path = self.GetInstallPluginPath(plugin_name)
             shutil.copy(egg_path,plugin_path)
             GetApp().GetPluginManager().EnablePlugin(plugin_name)
-            messagebox.showinfo(GetApp().GetAppName(),_("Publish success"),parent=self.parent)
+            messagebox.showinfo(_('Publish to local'),_("Publish success"),parent=self.parent)
             
     def GetProjectDocInterpreter(self):
         doc = self.project_browser.GetView().GetDocument()
@@ -198,6 +243,9 @@ class PyPi(plugin.Plugin):
         return os.path.dirname(doc.GetFilename())
 
     def PublishToSitePackages(self):
+        '''
+            发布pypi包到本地解释器
+        '''
         view = self.project_browser.GetView()
         dist_path = self.GetDistPath()
         filePath = view.GetSelectedFile()
@@ -207,6 +255,9 @@ class PyPi(plugin.Plugin):
         terminal.run_in_terminal(command,self.GetProjectPath(),keep_open=False,pause=True,title="abc",overwrite_env=False)
 
     def PublishToPypi(self):
+        '''
+            发布pypi包到pypi服务器
+        '''
         ret = messagebox.askyesno(GetApp().GetAppName(),_("Are you sure to publish to PyPI?"),parent=self.parent)
         if ret == False:
             return
@@ -232,8 +283,11 @@ class PyPi(plugin.Plugin):
         pypirc_filepath = os.path.join(home_path,".pypirc")
         utils.get_logger().info("pypirc path is %s",pypirc_filepath)
         if not interpreter.GetInstallPackage("twine"):
-            messagebox.showinfo(GetApp().GetAppName(),_("interpreter %s need to install package \"twine\"")%interpreter_info.name,parent=self.parent)
-            return
+            messagebox.showinfo(GetApp().GetAppName(),_("interpreter %s need to install package \"twine\"")%interpreter.Name,parent=self.parent)
+            dlg = pythonpackages.InstallPackagesDialog(self.parent,interpreter,pkg_name='twine',install_args='twine',autorun=True)
+            status = dlg.ShowModal()
+            if status == constants.ID_CANCEL:
+                return
         if not os.path.exists(pypirc_filepath):
             account_dlg = PypiAccountDialog(self.parent)
             if constants.ID_OK == account_dlg.ShowModal():

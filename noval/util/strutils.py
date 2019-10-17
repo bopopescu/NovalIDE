@@ -253,6 +253,32 @@ def isInArgs(argname, argv):
     return result
     
 def path_startswith(child_name, dir_name):
+    '''
+        判断路径是否包含另外一个路径
+    '''
     normchild = os.path.normpath(os.path.normcase(child_name))
     normdir = os.path.normpath(os.path.normcase(dir_name))
     return normdir == normchild or normchild.startswith(normdir.rstrip(os.path.sep) + os.path.sep)
+
+def normpath_with_actual_case(name):
+    """In Windows return the path with the case it is stored in the filesystem"""
+    assert os.path.isabs(name) or os.path.ismount(name), "Not abs nor mount: " + name
+    assert os.path.exists(name), "Not exists: " + name
+    if os.name == "nt":
+        name = os.path.realpath(name)
+        from ctypes import create_unicode_buffer, windll
+        buf = create_unicode_buffer(512)
+        windll.kernel32.GetShortPathNameW(name, buf, 512)  # @UndefinedVariable
+        windll.kernel32.GetLongPathNameW(buf.value, buf, 512)  # @UndefinedVariable
+        if len(buf.value):
+            result = buf.value
+        else:
+            result = name
+        assert isinstance(result, str)
+        if result[1] == ":":
+            # ensure drive letter is capital
+            return result[0].upper() + result[1:]
+        else:
+            return result
+    else:
+        return os.path.normpath(name)

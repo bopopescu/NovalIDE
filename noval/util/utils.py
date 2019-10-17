@@ -333,7 +333,7 @@ def create_process(command,args,shell=False,env=None,universal_newlines=True):
     else:
         startupinfo = None
         creationflags = 0
-    subprocess.Popen(
+    p = subprocess.Popen(
         cmd,
         shell=shell,
         env=env,
@@ -341,4 +341,5 @@ def create_process(command,args,shell=False,env=None,universal_newlines=True):
         startupinfo=startupinfo,
         creationflags=creationflags,
     )
+    return p
 

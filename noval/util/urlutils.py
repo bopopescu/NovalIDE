@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import requests
 
 def RequestData(addr,arg={},method='get',timeout = None,to_json=True):
@@ -19,3 +20,21 @@ def RequestData(addr,arg={},method='get',timeout = None,to_json=True):
     except Exception as e:
         print('open %s error:%s'%(addr,e))
     return None
+    
+def upload_file(addr,file,arg={},timeout = None):
+    '''
+        上传文件
+        addr:上传url地址
+        file:上传本地文件路径
+        arg:url参数
+    '''
+    params = {}
+    files = {
+      "file" : open(file, "rb")
+    }
+    try:
+        req = requests.post(addr,data = arg,files=files,**params)
+    except:
+        print ('upload file %s error'%file)
+        return None
+    return req.json()

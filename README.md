@@ -111,7 +111,7 @@ cd Noval
 
 - **Ubuntu**
 
-- sudo apt-get install python-tk(python2)
+- sudo apt-get install python-tk(python2)(一般linux服务器已经安装tkinter,如果没有安装则需要执行一次)
 - sudo apt-get install python3-tk(python3)
 
 - **Centos**
@@ -121,9 +121,7 @@ cd Noval
 - **安装步骤**
 
 ```
-运行解压命令:tar -xvf NovalIDE.tar.gz解压安装包:NovalIDE.tar.gz
-cd NovalIDE-x.x.x
-运行sudo python setup.py install
+运行sudo python pip install novalide
 最后输入命令NovalIDE来运行IDE。
 ```
 

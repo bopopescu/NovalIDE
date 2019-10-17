@@ -203,6 +203,8 @@ class IDEApplication(core.App):
         self.bind("<FocusIn>", self._on_focus_in, True)
         return True
         
+    #统计插件加载时间
+    @utils.compute_run_time
     def InitPlugins(self):
         self.LoadDefaultPlugins()
         self.MainFrame.InitPlugins()
@@ -509,7 +511,7 @@ class IDEApplication(core.App):
 
         self.AddCommand(constants.ID_RUN,_("&Run"),_("&Start Running"),self.Run,image="toolbar/run.png",include_in_toolbar=True,default_tester=True,default_command=True)
         self.AddCommand(constants.ID_DEBUG,_("&Run"),_("&Start Debugging"),self.Debug,image="toolbar/debug.png",include_in_toolbar=True,default_tester=True,default_command=True)
-        self.AddCommand(constants.ID_OPEN_TERMINAL,_("&Tools"),_("&Terminator"),self.OpenTerminator,image="cmd.png")
+        self.AddCommand(constants.ID_OPEN_TERMINAL,_("&Tools"),_("&Open terminator..."),self.OpenTerminator,image="cmd.png")
         self.AddCommand(constants.ID_GOTO_OFFICIAL_WEB,_("&Help"),_("&Visit NovalIDE Website"),self.GotoWebsite)
         self.AddCommand(constants.ID_FEEDBACK,_("&Help"), _("Feedback"),self.Feedback)
         

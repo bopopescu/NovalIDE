@@ -94,7 +94,7 @@ def NeedRenewDatabase(database_location,new_database_version):
     if not os.path.exists(os.path.join(database_location,config.DATABASE_FILE)):
         return True
     old_database_version = LoadDatabaseVersion(database_location)
-    if 0 == utils.CompareDatabaseVersion(new_database_version,old_database_version):
+    if 0 == utils.CompareCommonVersion(new_database_version,old_database_version):
         return False
     return True
 

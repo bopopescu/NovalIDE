@@ -101,7 +101,7 @@ class UserDataDb(BaseDb):
     def NeedUpdateDatabaseFile(self,db_ver_file):
         if not os.path.exists(db_ver_file):
             return True
-        if parserutils.CompareDatabaseVersion(self.DB_VERSION,self.GetDbVersion(db_ver_file)):
+        if parserutils.CompareCommonVersion(self.DB_VERSION,self.GetDbVersion(db_ver_file)):
             utils.get_logger().info("the database version is updated......")
             return True
         return False
@@ -152,7 +152,7 @@ class UserDataDb(BaseDb):
                     'sn':sn,
                     'os_bit':result[3],
                     'os_name':result[5],
-                    'user_name':result[2],
+                    'user_name':result[2],
                     'app_version':apputils.get_app_version()
                 }
                 data = urlutils.RequestData(api_addr,arg = args,method='post')

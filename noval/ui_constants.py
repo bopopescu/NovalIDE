@@ -28,3 +28,6 @@ _('Russia')
 
 _("Empty Project")
 _("New Project From Existing Code")
+
+_('Misc')
+_('Appearance')

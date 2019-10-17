@@ -1,6 +1,8 @@
+# -*- coding: utf-8 -*-
 import noval.plugin as plugin
 import noval.iface as iface
 import noval.util.utils as utils
+import time
 
 class MainWindowAddOn(plugin.Plugin):
     """Plugin that Extends the L{MainWindowI}"""
@@ -12,7 +14,12 @@ class MainWindowAddOn(plugin.Plugin):
         """
         for observer in self.observers:
             try:
+                #计算插件初始化时间
+                start = time.clock()
                 observer.PlugIt(window)
+                end = time.clock()
+                elapse = end - start
+                utils.get_logger().info("init plugin %s elapse time %.3f seconds" % (observer.__class__.__name__,end-start))
             except Exception as e:
                 utils.get_logger().exception("MainWindowAddOn.Init plugin %s: %s" , observer.__class__,e)
 

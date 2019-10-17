@@ -535,3 +535,14 @@ class CommonAccountDialog(ui_base.CommonModaldialog):
         self.AddokcancelButton()
         if ok_text:
             self.ok_button.configure(text=ok_text,default="active")
+
+def capture_tclerror(func):
+    '''
+        捕获多线程操作时界面关闭仍向界面写数据的tk异常
+    '''
+    def _wrapper(*args, **kwargs):
+        try:
+            func(*args,**kwargs)
+        except tk.TclError as e:
+            print('warning:tkinter object is not accessable when run function %s'%func.__name__)
+    return _wrapper

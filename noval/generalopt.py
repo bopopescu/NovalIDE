@@ -100,7 +100,11 @@ class GeneralOptionPanel(ui_utils.BaseConfigurationPanel):
         #self._showTipsCheckBox.SetValue(config.ReadInt("ShowTipAtStartup", True))
         self.checkupdate_var = tk.IntVar(value=utils.profile_get_int(consts.CHECK_UPDATE_ATSTARTUP_KEY, True))
         chkUpdateCheckBox = ttk.Checkbutton(self, text=_("Check update at start up"),variable=self.checkupdate_var)
-        chkUpdateCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y))
+        chkUpdateCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        
+        self.check_plugin_update_var = tk.IntVar(value=utils.profile_get_int("CheckPluginUpdate", True))
+        chkplugin_UpdateCheckBox = ttk.Checkbutton(self, text=_("Check plugin update at start up"),variable=self.check_plugin_update_var)
+        chkplugin_UpdateCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
 
         row = ttk.Frame(self)
         self.lang_list = GetLangList()
@@ -182,6 +186,7 @@ class GeneralOptionPanel(ui_utils.BaseConfigurationPanel):
         utils.profile_set(consts.MRU_LENGTH_KEY,self.mru_var.get())
         utils.profile_set(consts.ENABLE_MRU_KEY,self.enablemru_var.get())
         utils.profile_set("RedirectTkException",self.redirect_output_var.get())
+        utils.profile_set("CheckPluginUpdate",self.check_plugin_update_var.get())
         return True
 
     def GetIcon(self):

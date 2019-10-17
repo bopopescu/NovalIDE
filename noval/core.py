@@ -260,7 +260,8 @@ class App(tk.Tk):
 
         return True
         
-
+    #统计程序启动时间
+    @utils.compute_run_time
     def _BootstrapApp(self):
         if not self.OnInit():
             self.destroy()

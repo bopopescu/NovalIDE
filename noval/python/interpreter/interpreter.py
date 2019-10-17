@@ -530,6 +530,7 @@ class PythonInterpreter(BuiltinPythonInterpreter):
 
     def GetInstallPackage(self,package_name):
         command = "%s show %s" % (strutils.emphasis_path(self.GetPipPath()),package_name)
+        utils.get_logger().info("pip show command is %s",command)
         output = utils.GetCommandOutput(command)
         if output.strip() == "":
             return None

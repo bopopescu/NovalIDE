@@ -165,6 +165,12 @@ class WindowsOptionPanel(ui_utils.CommonOptionPanel):
         clear_window_layout_btn.pack(anchor=tk.W,pady=consts.DEFAUT_HALF_CONTRL_PAD_Y)
         
     def OnOK(self, optionsDialog):
+        if utils.profile_get('UI_SCALING_FACTOR','') != self._scaleVar.get():
+            messagebox.showinfo(GetApp().GetAppName(),_("Scale changes will not appear until the application is restarted."),parent=self)
+            
+        if utils.profile_get_int('USE_CUSTOM_MENUBAR',0) != self._useCustommenubarCheckVar.get():
+            messagebox.showinfo(GetApp().GetAppName(),_("Menubar changes will not appear until the application is restarted."),parent=self)
+            
         utils.profile_set("LoadLastPerspective", self._loadLayoutCheckVar.get())
         utils.profile_set("HideMenubarFullScreen", self._hideMenubarCheckVar.get())
         utils.profile_set("USE_CUSTOM_MENUBAR", self._useCustommenubarCheckVar.get())

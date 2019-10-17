@@ -18,6 +18,7 @@ from tkinter import font as tkfont
 import noval.consts as consts
 from noval.python.parser.utils import py_cmp,py_sorted
 import noval.imageutils as imageutils
+import noval.ttkwidgets.listboxframe as listboxframe
 
 class ClosableNotebook(ttk.Notebook):
     def __init__(self, master, style="ButtonNotebook.TNotebook", **kw):
@@ -700,7 +701,7 @@ class SafeScrollbar(ttk.Scrollbar):
         try:
             ttk.Scrollbar.set(self, first, last)
         except Exception:
-            utils.get_logger().exception('scrollbar set error:')
+            pass
             
 class OutlineView(ttk.Frame):
     #不排序
@@ -989,7 +990,7 @@ class CommonModaldialog(CommonDialog):
         self.cancel_button.bind("<Return>", self._cancel, True)
 
 class SingleChoiceDialog(CommonModaldialog):
-    def __init__(self, master,title,label,choices = [],selection=-1):
+    def __init__(self, master,title,label,choices = [],selection=-1,show_scrollbar=False):
         CommonModaldialog.__init__(self, master, takefocus=1)
         self.title(title)
         #禁止对话框改变大小
@@ -998,15 +999,18 @@ class SingleChoiceDialog(CommonModaldialog):
         label_ctrl.pack(expand=1, fill="x",padx = consts.DEFAUT_CONTRL_PAD_X,pady = consts.DEFAUT_CONTRL_PAD_Y)
         
         v = tk.StringVar()
-        #设置listbox的高度最小为5个文本的大小,超过则以实际解释器数量为准
-        self.listbox = tk.Listbox(self.main_frame,listvariable=v,height=max(len(choices),5))
+        #设置listbox的高度最小为5个文本,最多为10个的大小
+        #如果数量过得时可以设置滚动条,默认不显示滚动条
+      #  self.listbox = tk.Listbox(self.main_frame,listvariable=v,height=max(min(len(choices),10),5))
+        listview = listboxframe.ListboxFrame(self.main_frame,show_scrollbar=show_scrollbar,listvariable=v,height=max(min(len(choices),10),5))
+        self.listbox = listview.listbox
         #listbox双击事件,设置双击等价于点击ok按钮
         self.listbox.bind('<Double-Button-1>',self._ok)
         v.set(tuple(choices))
         if selection == -1:
             selection = 0
         self.listbox.selection_set(selection)
-        self.listbox.pack(expand=1, fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
+        listview.pack(expand=1, fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
         
         separator = ttk.Separator (self.main_frame, orient = tk.HORIZONTAL)
         separator.pack(expand=1, fill="x",padx=consts.DEFAUT_CONTRL_PAD_X,pady = (consts.DEFAUT_CONTRL_PAD_Y,0))
