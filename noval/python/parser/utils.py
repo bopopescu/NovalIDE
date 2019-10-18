@@ -144,8 +144,6 @@ def CompareCommonVersion(new_version,old_version):
         if len(version_str.split('.')) == 2:
             version_str += ".0"
         return version_str
-    assert(type(new_version)==str)
-    assert(type(old_version)==str)
     new_version = format_version(new_version)
     old_version = format_version(old_version)
     if CalcVersionValue(new_version) <= CalcVersionValue(old_version):

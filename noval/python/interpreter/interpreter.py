@@ -25,7 +25,6 @@ except:
     import io as cStringIO
 
 import py_compile
-import getpass
 import noval.util.fileutils as fileutils
 from noval.executable import Executable,UNKNOWN_VERSION_NAME
     
@@ -258,6 +257,9 @@ class BuiltinPythonInterpreter(Executable):
     def IsVirtual(self):
         return False
         
+    def GetPythonLibPath(self):
+        return None
+        
 class PythonInterpreter(BuiltinPythonInterpreter):
     
     CONSOLE_EXECUTABLE_NAME = "python.exe"
@@ -428,6 +430,9 @@ class PythonInterpreter(BuiltinPythonInterpreter):
         self._builtins = list(lst)
         
     def GetPythonLibPath(self):
+        '''
+            获取解释器全局安装安装时的路径
+        '''
         if self.IsV2():
             cmd = "%s  -c \"from distutils.sysconfig import get_python_lib; print get_python_lib()\"" % \
                         (strutils.emphasis_path(self.Path),)
@@ -437,10 +442,13 @@ class PythonInterpreter(BuiltinPythonInterpreter):
         python_lib_path = utils.GetCommandOutput(cmd).strip()
         return python_lib_path
         
-    def IsPythonlibWritable(self):
-        python_lib_path = self.GetPythonLibPath()
-        user = getpass.getuser()
-        return fileutils.is_writable(python_lib_path,user)
+    def GetUserLibPath(self):
+        '''
+            获取解释器安装包时--user参数时的HOME路径
+        '''
+        command = "%s -c \"import site;print(site.getusersitepackages())\"" %(strutils.emphasis_path(self.Path))
+        user_lib_path = utils.GetCommandOutput(command).strip()
+        return user_lib_path
         
     @property
     def Analysing(self):
@@ -538,36 +546,27 @@ class PythonInterpreter(BuiltinPythonInterpreter):
         version = 'Unknown'
         name_flag = 'Name:'
         ver_flag = 'Version:'
+        location = None
         for line in output.splitlines():
             if line.find(name_flag) != -1:
                 name = line.replace(name_flag,"").strip()
             elif line.find(ver_flag) != -1:
                 version = line.replace(ver_flag,"").strip()
-        python_package = PythonPackage(**{'Name':name,'Version':version})
+            #获取包安装路径,在linux用来判断卸载包时是否需要root权限
+            elif line.find('Location:') != -1:
+                location = line.replace('Location:',"").strip()
+        python_package = PythonPackage(**{'Name':name,'Version':version,'Location':location})
         return python_package
 
     def DumpPackages(self):
         packages = {}
         for name in self._packages:
             package = self._packages[name]
-            attrs = dir(package)
-            dct = {}
-            for attr in attrs:
-                if attr == '__module__' or attr == "__init__" or attr == "__doc__":
-                    continue
-                dct[attr] = getattr(package,attr)
+            dct = {
+                'Name':package.Name,
+                'Version':package.Version
+            }
             packages[name] = dct
-        return packages
-        
-    def LoadPackagesFromDict(self,package_dct):
-        packages = {}
-        for package_name in package_dct:
-            dct = package_dct[package_name]
-            #to git the old packages structure
-            if isinstance(dct,basestring):
-                dct = {'Name':package_name,'Version':dct}
-            python_package = PythonPackage(**dct)
-            packages[package_name] = python_package
         return packages
         
     def GetExedirs(self):

@@ -27,6 +27,7 @@ import noval.syntax.lang as lang
 import noval.syntax.syntax as syntax
 global fileutilsLogger
 from tkinter import messagebox
+import getpass
 fileutilsLogger = logging.getLogger("activegrid.util.fileutils")
 _Checker = txtutils.FileTypeChecker()
 
@@ -574,12 +575,14 @@ def RemoveDir(dir_path):
     
 
 if apputils.is_windows():
-    def is_writable(path, user):
+    def is_writable(path, user=None):
         return True
 else:
     import pwd
     import stat
-    def is_writable(path, user):
+    def is_writable(path, user=None):
+        if not user:
+            user = getpass.getuser()
         user_info = pwd.getpwnam(user)
         uid = user_info.pw_uid
         gid = user_info.pw_gid

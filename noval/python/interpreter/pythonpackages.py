@@ -75,7 +75,7 @@ class PackageActionChoiceDialog(ui_base.CommonModaldialog):
         self.AddokcancelButton()
 
 class CommonManagePackagesDialog(ui_base.CommonModaldialog):
-    def __init__(self,parent,title,interpreter,interpreters,pkg_name,pkg_args='',autorun=False,with_requirements=False,call_back=None):
+    def __init__(self,parent,title,interpreter,interpreters,pkg_name,pkg_args='',autorun=False,call_back=None):
         ui_base.CommonModaldialog.__init__(self,parent)
         self.title(title)
         #包安装的解释器
@@ -88,8 +88,6 @@ class CommonManagePackagesDialog(ui_base.CommonModaldialog):
         self.pkg_args = pkg_args
         #是否自动运行
         self.autorun = autorun
-        #是否使用requirements.txt
-        self.with_requirements = with_requirements
         #执行完成后的回调函数
         self.end_callback = call_back
         
@@ -100,7 +98,7 @@ class CommonManagePackagesDialog(ui_base.CommonModaldialog):
         self.interpreter_name_var =  tk.StringVar(value=self.interpreter.Name)
         self._interpreterCombo = ttk.Combobox(row,values=names,textvariable=self.interpreter_name_var,state="readonly")
         self._interpreterCombo.pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0),fill="x",expand=1,padx=(consts.DEFAUT_CONTRL_PAD_X,0))
-        row.grid(row=row_no,column=0,padx=consts.DEFAUT_CONTRL_PAD_X,sticky=tk.EW,)
+        row.grid(row=row_no,column=0,padx=consts.DEFAUT_CONTRL_PAD_X,sticky=tk.EW)
         row_no += 1   
         
         label_1 = ttk.Label(self.main_frame, text=pkg_args_label)
@@ -136,6 +134,7 @@ class CommonManagePackagesDialog(ui_base.CommonModaldialog):
         self.bottom_frame.grid(row=row_no,column=0,sticky=tk.NSEW)
 
         self.columnconfigure(0, weight=1)
+        self.main_frame.columnconfigure(0, weight=1)
         self.ShowHideDetails()
 
     def ShowHideDetails(self):
@@ -157,7 +156,11 @@ class CommonManagePackagesDialog(ui_base.CommonModaldialog):
                        )
         if not path:
             return
-        self.value_var.set(fileutils.opj(path))
+        self.GetInterpreter()
+        self.SetRequirementsArgs(path)
+        
+    def SetRequirementsArgs(self,path):
+        ''''''
 
     def AddokcancelButton(self):
         button_frame = ttk.Frame(self.bottom_frame)
@@ -190,13 +193,16 @@ class CommonManagePackagesDialog(ui_base.CommonModaldialog):
         for interpreter in self.interpreters:
             names.append(interpreter.Name)
         return names
+
+    def GetInterpreter(self):
+        sel = self._interpreterCombo.current()
+        self.interpreter = self.interpreters[sel]
         
     def _ok(self,event=None):
         if self.args_var.get().strip() == "":
             messagebox.showinfo(GetApp().GetAppName(),_("package name is empty"))
             return False
-        sel = self._interpreterCombo.current()
-        self.interpreter = self.interpreters[sel]
+        self.GetInterpreter()
         if self.interpreter.IsBuiltIn or self.interpreter.GetPipPath() is None:
             messagebox.showerror(GetApp().GetAppName(),_("Could not find pip on the path"))
             return False
@@ -241,9 +247,8 @@ class InstallPackagesDialog(CommonManagePackagesDialog):
     ]
     
     BEST_PIP_SOURCE = None
-    def __init__(self,parent,interpreter,interpreters=interpretermanager.InterpreterManager().interpreters,pkg_name='',install_args='',autorun=False,\
-                 with_requirements=False,install_update=False,install_local=False,call_back=None):
-        CommonManagePackagesDialog.__init__(self,parent,_("Install Package"),interpreter,interpreters,pkg_name,install_args,autorun,with_requirements,call_back)
+    def __init__(self,parent,interpreter,interpreters=interpretermanager.InterpreterManager().interpreters,pkg_name='',install_args='',autorun=False,install_update=False,call_back=None):
+        CommonManagePackagesDialog.__init__(self,parent,_("Install Package"),interpreter,interpreters,pkg_name,install_args,autorun,call_back)
         self.SOURCE_NAME_LIST = [
             _('Default Source'),
             _('Tsinghua'),
@@ -255,8 +260,6 @@ class InstallPackagesDialog(CommonManagePackagesDialog):
         ]
         #是否更新安装
         self.install_update = install_update
-        #是从本地安装
-        self.install_local = install_local
         row = ttk.Frame(self.main_frame)
         ttk.Label(row,text=_("We will use the pip source:")).pack(side=tk.LEFT,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         self._pipSourceCombo = ttk.Combobox(row, values=self.SOURCE_NAME_LIST,state="readonly")
@@ -283,15 +286,15 @@ class InstallPackagesDialog(CommonManagePackagesDialog):
             self.auto_run()
 
     def InstallPackage(self,interpreter):
-        should_root = False
-        if not sysutils.is_windows():
-            should_root = not interpreter.IsPythonlibWritable()
         install_args = self.args_var.get().strip()
-
-        if not sysutils.is_windows() and should_root:
-            command = "pkexec " + strutils.emphasis_path(interpreter.GetPipPath()) + " install %s" % (install_args)
-        else:
-            command = strutils.emphasis_path(interpreter.GetPipPath()) + " install %s" % (install_args)
+        command = strutils.emphasis_path(interpreter.GetPipPath()) + " install %s" % (install_args)
+        #linux系统下安装包可能需要root权限
+        if not sysutils.is_windows():
+            #如果参数里面包含--user则包安装在$HOME目录下,无需root权限
+            root = False if '--user ' in install_args else True
+            if root:
+                #这里是提示root权限
+                command = "pkexec " + command
             
         if self.SOURCE_NAME_LIST[self._pipSourceCombo.current()] != self.SOURCE_NAME_LIST[0]:
             command += " -i " + self.SOURCE_LIST[self._pipSourceCombo.current()]
@@ -339,7 +342,7 @@ class InstallPackagesDialog(CommonManagePackagesDialog):
     def SelectPipSource(self,pip_source_url=None):
         index = -1
         values = list(self._pipSourceCombo['values'])
-        #删除原来的最优化选项
+        #删除原来的最优源选项
         for i,value in enumerate(values):
             if value.find(_("The Best Source")) != -1:
                 values.remove(value)
@@ -394,15 +397,15 @@ class InstallPackagesDialog(CommonManagePackagesDialog):
             if self.end_callback:
                 self.end_callback(python_package,self.interpreter) 
             if self.install_update:
-                messagebox.showinfo(GetApp().GetAppName(),_("Update Success"))
+                messagebox.showinfo(GetApp().GetAppName(),_("Update Success"),parent=self)
             else:
-                messagebox.showinfo(GetApp().GetAppName(),_("Install Success"))
+                messagebox.showinfo(GetApp().GetAppName(),_("Install Success"),parent=self)
             self.destroy()
         else:
             if self.install_update:
-                messagebox.showerror(GetApp().GetAppName(),_("Update Fail"))
+                messagebox.showerror(GetApp().GetAppName(),_("Update Fail"),parent=self)
             else:
-                messagebox.showerror(GetApp().GetAppName(),_("Install Fail"))
+                messagebox.showerror(GetApp().GetAppName(),_("Install Fail"),parent=self)
             self.EnableButton()
             
     def run(self):
@@ -456,12 +459,21 @@ class InstallPackagesDialog(CommonManagePackagesDialog):
                     return False
                     
         self.run()
+        
+    def SetRequirementsArgs(self,path):
+        '''
+            设置通过requirements文件安装批量包的参数
+        '''
+        args = "-r "
+        #如果不是虚拟解释器,通过user参数安装
+        if not self.interpreter.IsVirtual():
+            args = "--user " + args
+        self.args_var.set(args + fileutils.opj(path))
                                       
 class UninstallPackagesDialog(CommonManagePackagesDialog):    
     def __init__(self,parent,interpreter,interpreters=interpretermanager.InterpreterManager().interpreters,pkg_name='',uninstall_args='',\
-                        autorun=False,with_requirements=False,call_back=None):
-        CommonManagePackagesDialog.__init__(self,parent,_("Uninstall Package"),\
-                        interpreter,interpreters,pkg_name,uninstall_args,autorun,with_requirements,call_back)
+                        autorun=False,call_back=None):
+        CommonManagePackagesDialog.__init__(self,parent,_("Uninstall Package"),interpreter,interpreters,pkg_name,uninstall_args,autorun,call_back)
         self.CreateWidgets(0,_("We will uninstall it in the interpreter:"),\
                           _("Type the name of package or args to uninstall:"), _("To uninstall more packages,please specific the path of requirements.txt"))
         self.auto_run()
@@ -475,27 +487,35 @@ class UninstallPackagesDialog(CommonManagePackagesDialog):
                 python_package = self.interpreter.GetInstallPackage(pkg_name)
                 uninstall_suc = False if python_package else True
             else:
-                self.interpreter.LoadPackages(self.GetParent(),True)
+                self.interpreter.LoadPackages(self.master,True)
                 uninstall_suc = True
         if uninstall_suc:
             #只有卸载成功才执行回调函数
             if self.end_callback:
                 self.end_callback(pkg_name,self.interpreter)
-            messagebox.showinfo(GetApp().GetAppName(),_("Uninstall Success"))
+            messagebox.showinfo(GetApp().GetAppName(),_("Uninstall Success"),parent=self)
             self.destroy()
         else:
-            messagebox.showerror(GetApp().GetAppName(),_("Uninstall Fail"))
+            messagebox.showerror(GetApp().GetAppName(),_("Uninstall Fail"),parent=self)
             self.EnableButton()
         
     def UninstallPackage(self,interpreter):
-        should_root = False
-        if not sysutils.is_windows():
-            should_root = not interpreter.IsPythonlibWritable()
         uninstall_args = self.args_var.get().strip()
-        if not sysutils.is_windows() and should_root:
-            command = "pkexec " + strutils.emphasis_path(interpreter.GetPipPath()) + " uninstall -y %s" % (uninstall_args)
-        else:
-            command = strutils.emphasis_path(interpreter.GetPipPath()) + " uninstall -y %s" % (uninstall_args)
+        command = strutils.emphasis_path(interpreter.GetPipPath()) + " uninstall -y %s" % (uninstall_args)
+        pkg_name = self.GetPackageName()
+        python_package = self.interpreter.GetInstallPackage(pkg_name)
+        #linux系统卸载包可能需要root权限
+        if not sysutils.is_windows():
+            root = False
+            if python_package:
+                pkg_location = python_package.Location
+                if pkg_location is not None:
+                    #判断包安装目录是否有当前用户写的权限,如果有则不需要root,否则需要root
+                    root = not fileutils.is_writable(pkg_location)
+            if root:
+                #这里是提示root权限
+                command = "pkexec " + command
+            
         utils.get_logger().info("uninstall command is %s",command)
         self.AppendText(command + os.linesep)
         self.call_back = self.AppendText
@@ -509,6 +529,13 @@ class UninstallPackagesDialog(CommonManagePackagesDialog):
         if not CommonManagePackagesDialog._ok(self):
             return False
         self.run()
+
+    def SetRequirementsArgs(self,path):
+        '''
+            设置通过requirements文件安装卸载包的参数
+        '''
+        args = "-r "
+        self.args_var.set(args + fileutils.opj(path))
             
 class PackagePanel(ttk.Frame):
     def __init__(self,parent):

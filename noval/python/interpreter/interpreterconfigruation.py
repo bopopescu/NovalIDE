@@ -17,7 +17,6 @@ import noval.outputthread as outputthread
 import subprocess
 import noval.util.which as whichpath
 import noval.util.strutils as strutils
-import getpass
 import noval.util.fileutils as fileutils
 import noval.util.utils as utils
 import noval.ui_base as ui_base
@@ -331,35 +330,31 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
         return virtualenv_path
         
     def IsLocationWritable(self,location):
-        user = getpass.getuser()
+        '''
+            判断虚拟解释器安装路径是否有写的权限
+        '''
         path = location
         while not os.path.exists(path):
             path = os.path.dirname(path)
-        return fileutils.is_writable(path,user)
+        return fileutils.is_writable(path)
         
     def CreatePythonVirtualEnv(self,name,location,include_site_packages,interpreter,progress_dlg):
         progress_dlg.call_back = progress_dlg.AppendMsg
         #如果没有安装virtualenv工具,需要先安装后,安装后需要使用这个工具来创建python虚拟环境
         if not 'virtualenv' in interpreter.Packages:
             progress_dlg.msg = "install virtualenv package..."
-            should_root = False
-            #linux环境下检查安装是否需要root权限
-            if not sysutils.is_windows():
-                should_root = not interpreter.IsPythonlibWritable(interpreter)
-            #如果需要root权限,则需要使用pkexec工具来提示用户需要提升权限
-            if not sysutils.is_windows() and should_root:
-                command = "pkexec " + strutils.emphasis_path(interpreter.GetPipPath()) + " install virtualenv"
-            else:
-                command = strutils.emphasis_path(interpreter.GetPipPath()) + " install virtualenv"
+            command = strutils.emphasis_path(interpreter.GetPipPath()) + " install --user virtualenv"
             if not progress_dlg.KeepGoing:
                 utils.get_logger().warning('user stop install virtualenv tool')
                 return
             self.ExecCommandAndOutput(command,progress_dlg)
-        should_root = not self.IsLocationWritable(location)
-        if not sysutils.is_windows() and should_root:
-            command = "pkexec " + strutils.emphasis_path(self.GetVirtualEnvPath(interpreter)) + " " + strutils.emphasis_path(location)
-        else:
-            command = strutils.emphasis_path(self.GetVirtualEnvPath(interpreter)) + " " + strutils.emphasis_path(location)
+        #开始使用virtualenv工具创建虚拟解释器环境
+        command = strutils.emphasis_path(self.GetVirtualEnvPath(interpreter)) + " " + strutils.emphasis_path(location)
+        if not sysutils.is_windows():
+            root = not self.IsLocationWritable(location)
+            if root:
+                command = "pkexec " + command
+            
         if include_site_packages:
             command += " --system-site-packages"
             

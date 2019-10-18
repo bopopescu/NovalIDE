@@ -56,15 +56,21 @@ class InterpreterManager:
         self.SetCurrentInterpreter(self.DefaultInterpreter)
         #when load interpreter first,save the interpreter info to config
         self.SavePythonInterpretersConfig()
-
-    def ChooseDefaultInterpreter(self):
+        
+    def ShowChooseInterpreterDlg(self,parent=None):
         choices = []
         for interpreter in self.interpreters:
             choices.append(interpreter.Name)
-        result = GetSingleChoiceIndex(None , _("Choose Interpreter"),_("Please Choose Default Interpreter:"),choices,default_selection=0)
+        result = GetSingleChoiceIndex(parent , _("Choose Interpreter"),_("Please Choose Default Interpreter:"),choices,default_selection=0)
         if result != -1:
             name = choices[result]
             interpreter = self.GetInterpreterByName(name)
+            return interpreter
+        return None
+
+    def ChooseDefaultInterpreter(self):
+        interpreter = self.ShowChooseInterpreterDlg()
+        if interpreter:
             self.SetDefaultInterpreter(interpreter)
         else:
             messagebox.showwarning(_("Choose Interpreter"),_("No default interpreter selected, application may not run normal!"))

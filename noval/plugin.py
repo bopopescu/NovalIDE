@@ -260,7 +260,7 @@ class PluginData(object):
         """Class Reference"""
         return self.GetClass()
 
-    def Enable(self, enable=True):
+    def Enable(self, enabled=True):
         """Enable the plugin
         @param enable: bool
 
@@ -407,7 +407,7 @@ class PluginManager(object):
 
     """
     CFG_PLUGIN_SECTION = 'Plugins'
-    def __init__(self,pip_path=None):
+    def __init__(self,pi_path=None):
         """Initializes a PluginManager object.
         @postcondition: Plugin manager and plugins are initialized
 
@@ -417,13 +417,15 @@ class PluginManager(object):
         self.RemoveUninstalled()
         #插件配置文件对象
         self.cfg = None
-
+        #插件加载路径列表
+        self._pi_path = []
         self._config = self.LoadPluginConfig() # Enabled/Disabled Plugins
-        if not pip_path:
-            self._pi_path = list(set([utils.get_user_plugin_path(), 
-                                  utils.get_sys_plugin_path()]))
+        if not pi_path:
+            #加载默认插件路径,分别是用户路径以及应用程序路径
+            #必须保证插件路径存在,如果不存在是不能加载到python资源环境中
+            self.LoadDefaultPluginPath()
         else:
-            self._pi_path = [pip_path]
+            self.AppendPath(pi_path)
         sys.path.extend(self._pi_path)
         self._env = self.CreateEnvironment(self._pi_path)
 
@@ -438,6 +440,15 @@ class PluginManager(object):
 
         # Enable/Disable plugins based on config data
         self.UpdateConfig()
+        
+    def LoadDefaultPluginPath(self):
+        '''
+            加载默认插件路径
+        '''
+        #加载用户路径
+        self.AppendPath(utils.get_user_plugin_path())
+        #加载应用程序路径
+        self.AppendPath(utils.get_sys_plugin_path())
 
     def __contains__(self, cobj):
         """Returns True if a plugin is currently loaded and being
@@ -553,7 +564,7 @@ class PluginManager(object):
         """
         for name in self._config:
             if name.lower() == plugin_name.lower():
-                plugin = name
+                plugin_name = name
                 break
 
         self._config[plugin_name] = enable
@@ -608,9 +619,10 @@ class PluginManager(object):
         '''
         for pdata in self._pdata.values():
             dist =  pdata.GetDist()
-            if strutils.normpath_with_actual_case(egg_path) == strutils.normpath_with_actual_case(dist.location):
+            if not strutils.caseInsensitiveCompare(strutils.normpath_with_actual_case(egg_path),strutils.normpath_with_actual_case(dist.location)):
                 return pdata
         return None
+        
     def GetPluginDistro(self, pname):
         """Get the distrobution object for a given plugin name
         @param pname: plugin name
@@ -689,6 +701,8 @@ class PluginManager(object):
                                 pdata.SetDist(egg)
                                 pdata.SetInstance(instance)
                                 pdata.SetClass(cls)
+                                if name.lower() in self._config:
+                                    pdata.Enable(self._config[name.lower()])
                                 self._pdata[cls] = pdata
                                 self.LOG.info("[pluginmgr][info] Cached Plugin: %s" % egg.project_name)
                             else:
@@ -717,6 +731,7 @@ class PluginManager(object):
         @todo: Implement this method
 
         """
+        #安装插件后加载插件时必须重新初始化
         self.ReInit()
         for pdata in self._pdata.values():
             if name.lower() == pdata.GetName().lower():
@@ -738,9 +753,9 @@ class PluginManager(object):
             options = self.cfg.options(self.CFG_PLUGIN_SECTION)
             for option in options:
                 config[option] = bool(self.cfg.getint(self.CFG_PLUGIN_SECTION,option))
+            self.LOG.info("load plugin config file %s success" % plugin_config_path)
         except:
             self.LOG.info("Failed to read plugin config file %s " % plugin_config_path)
-        self.LOG.info("load plugin config file %s success" % plugin_config_path)
         return config
 
     def RefreshConfig(self):
@@ -776,6 +791,8 @@ class PluginManager(object):
                         that may have occured.
 
         """
+        #重新初始化时重新加载默认插件路径
+        self.LoadDefaultPluginPath()
         self.RefreshEnvironment()
         self.InitPlugins(self.GetEnvironment())
         self.RefreshConfig()

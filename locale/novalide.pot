@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2019-10-16 19:08+ÖÐ¹ú±ê×¼Ê±¼ä\n"
+"POT-Creation-Date: 2019-10-18 08:39+ÖÐ¹ú±ê×¼Ê±¼ä\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -44,7 +44,7 @@ msgid "fonts and colors configuration has already been modified outside,Do you w
 msgstr ""
 
 #: G:\work\project\Noval\noval\colorfont.py:176
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:585
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:580
 msgid "Save configuration"
 msgstr ""
 
@@ -53,9 +53,9 @@ msgstr ""
 #: G:\work\project\Noval\noval\core.py:1853
 #: G:\work\project\Noval\noval\project\variables.py:195
 #: G:\work\project\Noval\noval\python\interpreter\environment.py:89
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:449
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:451
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1204
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:444
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:446
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1250
 #: G:\work\project\Noval\noval\ui_utils.py:421
 msgid "Warning"
 msgstr ""
@@ -183,7 +183,7 @@ msgstr ""
 #: G:\work\project\Noval\noval\editor\notebook.py:227
 #: G:\work\project\Noval\noval\plugins\fileview.py:305
 #: G:\work\project\Noval\noval\project\basebrowser.py:631
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:250
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:249
 msgid "Open Path in Explorer"
 msgstr ""
 
@@ -192,12 +192,12 @@ msgid "Open Path in Terminator"
 msgstr ""
 
 #: G:\work\project\Noval\noval\editor\notebook.py:231
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:246
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:245
 msgid "Copy Path"
 msgstr ""
 
 #: G:\work\project\Noval\noval\editor\notebook.py:233
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:244
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:243
 msgid "Copy Name"
 msgstr ""
 
@@ -398,7 +398,7 @@ msgstr ""
 #: G:\work\project\Noval\noval\editor\notebook.py:528
 #: G:\work\project\Noval\noval\ide.py:135
 #: G:\work\project\Noval\noval\project\baseviewer.py:1275
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:164
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:163
 #: G:\work\project\Noval\noval\util\strutils.py:176
 msgid "All Files"
 msgstr ""
@@ -588,8 +588,8 @@ msgstr ""
 #: G:\work\project\Noval\noval\project\baseviewer.py:1260
 #: G:\work\project\Noval\noval\project\importfiles.py:59
 #: G:\work\project\Noval\noval\python\debugger\commandproperty.py:63
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:148
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:114
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:147
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:112
 #: G:\work\project\Noval\noval\python\project\pages\debugrun.py:67
 msgid "Browse..."
 msgstr ""
@@ -893,11 +893,11 @@ msgstr ""
 msgid "&Project"
 msgstr ""
 
-#: G:\work\project\Noval\noval\plugin.py:683
+#: G:\work\project\Noval\noval\plugin.py:695
 msgid "No Description Available"
 msgstr ""
 
-#: G:\work\project\Noval\noval\plugin.py:684
+#: G:\work\project\Noval\noval\plugin.py:696
 msgid "Unknown"
 msgstr ""
 
@@ -948,13 +948,13 @@ msgstr ""
 #: G:\work\project\Noval\noval\plugins\fileview.py:391
 #: G:\work\project\Noval\noval\project\baseviewer.py:239
 #: G:\work\project\Noval\noval\project\output.py:148
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:177
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:181
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:184
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:300
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:417
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:497
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:673
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:176
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:180
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:183
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:299
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:412
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:492
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:700
 #: G:\work\project\Noval\noval\python\interpreter\pythonpath.py:40
 #: G:\work\project\Noval\noval\python\plugins\unittest.py:76
 #: G:\work\project\Noval\noval\python\project\pages\debugrun.py:172
@@ -962,7 +962,7 @@ msgstr ""
 #: G:\work\project\Noval\noval\python\project\pages\debugrun.py:297
 #: G:\work\project\Noval\noval\python\project\pages\debugrun.py:480
 #: G:\work\project\Noval\noval\python\project\rundocument.py:46
-#: G:\work\project\Noval\noval\util\fileutils.py:625
+#: G:\work\project\Noval\noval\util\fileutils.py:628
 msgid "Error"
 msgstr ""
 
@@ -988,7 +988,7 @@ msgid "could not connect to server"
 msgstr ""
 
 #: G:\work\project\Noval\noval\plugins\update.py:43
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1011
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1045
 msgid "Remove faile:%s fail"
 msgstr ""
 
@@ -1168,15 +1168,15 @@ msgid "Enter the name and location for the project."
 msgstr ""
 
 #: G:\work\project\Noval\noval\project\baseviewer.py:140
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:75
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:152
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:74
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:151
 #: G:\work\project\Noval\noval\python\project\pages\debugrun.py:347
 msgid "Name:"
 msgstr ""
 
 #: G:\work\project\Noval\noval\project\baseviewer.py:147
 #: G:\work\project\Noval\noval\project\resource.py:49
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:79
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:78
 msgid "Location:"
 msgstr ""
 
@@ -1339,7 +1339,7 @@ msgstr ""
 
 #: G:\work\project\Noval\noval\project\baseviewer.py:1481
 #: G:\work\project\Noval\noval\project\document.py:412
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1004
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1038
 msgid "Move File"
 msgstr ""
 
@@ -1748,7 +1748,7 @@ msgid "Folder"
 msgstr ""
 
 #: G:\work\project\Noval\noval\project\resource.py:43
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:140
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:139
 msgid "Path:"
 msgstr ""
 
@@ -2271,7 +2271,7 @@ msgid "Intellisence database location"
 msgstr ""
 
 #: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:69
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1175
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1221
 #: G:\work\project\Noval\noval\python\project\pages\debugrun.py:235
 #: G:\work\project\Noval\noval\python\project\pages\pythoninterpreter.py:19
 #: G:\work\project\Noval\noval\python\project\viewer.py:51
@@ -2294,190 +2294,190 @@ msgstr ""
 msgid "Clear data"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\interpreter.py:54
+#: G:\work\project\Noval\noval\python\interpreter\interpreter.py:53
 msgid "Environment variable contains invalid character"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:52
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:281
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:51
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:280
 msgid "New Virtual Env"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:53
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:52
 msgid "Please wait a minute for end New Virtual Env"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:83
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:82
 msgid "set the location of virtual env"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:90
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:89
 msgid "Base Interpreter:"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:93
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:92
 msgid "Inherited system site-packages from base interpreter"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:118
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:117
 msgid "Choose the location of Virtual Env"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:127
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:126
 msgid "name cann't be empty"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:130
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:129
 msgid "location cann't be empty"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:144
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:143
 msgid "set the location of python.exe or pythonw.exe"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:146
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:145
 msgid "set the location of python interpreter"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:156
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:155
 msgid "set the name of python interpreter"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:162
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:161
 msgid "Executable"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:168
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:167
 msgid "Select Executable Path"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:177
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:176
 msgid "Interpreter Name is empty"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:181
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:180
 msgid "Interpreter Path is empty"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:184
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:183
 msgid "Interpreter Path is not exist"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:191
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:190
 msgid "Python interpreters(eg.:such as python.exe, pythonw.exe). Double or right click to rename."
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:207
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:206
 msgid "Add"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:209
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:248
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:208
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:247
 #: G:\work\project\Noval\noval\python\project\pages\debugrun.py:435
 msgid "Remove"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:211
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:210
 msgid "Smart Analyse"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:213
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:212
 msgid "Set Default"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:228
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:227
 msgid "Package"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:230
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:229
 msgid "Search Path"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:232
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:231
 msgid "Builtin Modules"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:234
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:233
 msgid "Environment Variable"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:245
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:244
 msgid "Copy Version"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:247
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:246
 msgid "Modify Name"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:249
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:248
 msgid "New VirtualEnv"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:394
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:389
 msgid "Modify Interpreter Name"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:410
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:405
 msgid "Add Interpreter"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:449
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:444
 msgid "Default Interpreter cannot be remove"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:451
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:446
 msgid "Interpreter remove action cannot be recover,Do you want to continue remove this interpreter?"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:550
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:545
 msgid "Environment Variable Error"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:585
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:580
 msgid "Interpreter configuration has already been modified outside,Do you want to save?"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:593
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:588
 msgid "Interpreter Smart Analyse"
 msgstr ""
 
 #:
-#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:594
+#: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:589
 msgid "Please wait a minute for end analysing"
 msgstr ""
 
@@ -2502,19 +2502,19 @@ msgid "Please Choose Default Interpreter:"
 msgstr ""
 
 #: G:\work\project\Noval\noval\python\interpreter\interpretermanager.py:64
-#: G:\work\project\Noval\noval\python\interpreter\interpretermanager.py:70
+#: G:\work\project\Noval\noval\python\interpreter\interpretermanager.py:76
 msgid "Choose Interpreter"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\interpretermanager.py:70
+#: G:\work\project\Noval\noval\python\interpreter\interpretermanager.py:76
 msgid "No default interpreter selected, application may not run normal!"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\interpretermanager.py:350
+#: G:\work\project\Noval\noval\python\interpreter\interpretermanager.py:356
 msgid "%s is not a valid interpreter path"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\interpretermanager.py:353
+#: G:\work\project\Noval\noval\python\interpreter\interpretermanager.py:359
 msgid "interpreter have already exist"
 msgstr ""
 
@@ -2538,172 +2538,172 @@ msgstr ""
 msgid "Update to specified version"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:132
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:143
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:130
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:142
 msgid "Show Details"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:148
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:147
 msgid "Hide Details"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:152
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:151
 #: G:\work\project\Noval\noval\syntax\lexer\_txt.py:65
 msgid "Text File"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:153
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:152
 msgid "Choose requirements.txt"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:196
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:203
 msgid "package name is empty"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:201
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:207
 msgid "Could not find pip on the path"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:246
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:251
 msgid "Install Package"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:248
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:253
 msgid "Default Source"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:249
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:254
 msgid "Tsinghua"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:250
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:255
 msgid "Aliyun"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:251
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:256
 msgid "USTC"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:252
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:257
 msgid "HUST"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:253
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:258
 msgid "SDUT"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:254
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:259
 msgid "Douban"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:261
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:264
 msgid "We will use the pip source:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:265
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:372
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:268
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:375
 msgid "Check the best source"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:268
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:271
 msgid "We will download and install it in the interpreter:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:269
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:272
 msgid ""
 "To install the specific version,type \"xxx==1.0.1\"\n"
 "To install more packages,please specific the path of requirements.txt"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:269
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:272
 msgid "Type the name of package or args to install:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:313
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:316
 msgid ""
 "Checking the best pip source...\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:327
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:330
 msgid ""
 "Could not get the best pip source...\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:332
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:335
 msgid ""
 "the best pip source is %s\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:344
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:352
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:347
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:355
 msgid "The Best Source"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:374
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:377
 msgid "Checking the best source"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:397
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:400
 msgid "Update Success"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:399
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:402
 msgid "Install Success"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:403
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:406
 msgid "Update Fail"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:405
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:408
 msgid "Install Fail"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:445
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:448
 msgid "Choose the specified version"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:445
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:448
 msgid "Please choose the specified version to install:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:463
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:476
 msgid "Uninstall Package"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:465
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:477
 msgid "We will uninstall it in the interpreter:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:466
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:478
 msgid "To uninstall more packages,please specific the path of requirements.txt"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:466
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:478
 msgid "Type the name of package or args to uninstall:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:484
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:496
 msgid "Uninstall Success"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:487
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:499
 msgid "Uninstall Fail"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:524
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:551
 msgid "Install with pip"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:526
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:553
 msgid "Uninstall with pip"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:528
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:555
 msgid "Freeze"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:603
+#: G:\work\project\Noval\noval\python\interpreter\pythonpackages.py:630
 msgid "Loading Package List....."
 msgstr ""
 
@@ -2875,42 +2875,42 @@ msgstr ""
 msgid "Uninstall"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:287
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:288
 msgid ""
 "Installing pip\n"
 "\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:300
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:301
 msgid ""
 "Installing pip, please wait ...\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:322
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:323
 msgid ""
 "You seem to have problems with pip\n"
 "\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:335
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:336
 msgid " and running it with "
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:337
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:338
 msgid ""
 " (probably needs admin privileges).\n"
 "\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:435
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:437
 msgid "Installed version: "
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:437
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:439
 msgid "Installed to: "
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:441
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:443
 msgid "path is not exist..."
 msgstr ""
 
@@ -2918,278 +2918,289 @@ msgstr ""
 msgid "Upgrade"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:472
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:476
 msgid "Install"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:520
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:525
 msgid "Could not find the package info from PyPI. Error code: "
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:528
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:533
 msgid "Latest stable version"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:530
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:535
 msgid "Latest version"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:531
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:536
 msgid "Summary"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:532
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:537
 msgid "Author"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:533
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:538
 msgid "Homepage"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:535
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:540
 msgid "Bugtracker"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:537
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:542
 msgid "Documentation"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:539
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:544
 msgid "PyPI page"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:543
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:548
 msgid "Requires"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:579
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:584
 msgid "Can't find package name from the list: "
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:754
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:714
+msgid "Manage packages"
+msgstr ""
+
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:753
 msgid ""
 "Install from Server\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:764
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1129
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:763
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1175
 msgid ""
 "Install from local file\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:765
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1122
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1130
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:764
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1168
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1176
 msgid "Click "
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:766
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1123
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1131
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:765
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1169
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1177
 msgid "here"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:769
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:768
 msgid ""
 " to locate and install the plugin file (usually with .egg extension).\n"
 "\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:774
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1139
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:773
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1185
 msgid ""
 "Upgrade or uninstall\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:776
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1141
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:775
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1187
 msgid ""
 "Start by selecting the package from the left.\n"
 "\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:780
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1145
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:779
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1191
 msgid "Target:  "
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:781
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:780
 msgid ""
 "User directory or Application directory\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:795
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:794
 msgid ", "
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:812
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:811
 msgid "Could not find the plugin from Server."
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:815
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1193
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:814
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1239
 msgid ""
 "\n"
 "Please check your spelling!"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:815
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1193
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:814
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1239
 msgid ""
 "\n"
 "You need to enter "
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:816
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:815
 msgid "exact plugin name"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:823
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:822
 msgid "Searched Plugins:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:949
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1075
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:969
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1109
 msgid "Install plugin '%s' success"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:980
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1000
 msgid "Uninstall success"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:987
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:992
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1046
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1007
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1080
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1117
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1121
 msgid "Enabled"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:988
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1008
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1117
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1119
 msgid "Disabled"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1004
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1038
 msgid "Plugin file is already exist,Do you want to overwrite it?"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1028
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1062
 msgid ""
 "This dialog is for managing Noval plug-ins and their dependencies.\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1029
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1063
 msgid ""
 "If you want to install packages for your own programs please install PipManager plugin and then choose 'Tools â†’ Manage packages...'\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1038
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1072
 msgid "Find plugin from Server"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1038
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1072
 msgid "Installed Plugins:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1038
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1072
 msgid "input the plugin name to search..."
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1041
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1075
 msgid "NovalIDE plug-ins"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1056
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1090
 msgid "Plugin Configuration Changed"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1056
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1090
 msgid "You must restart NovalIDE before your changes will take full affect."
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1068
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1102
 msgid "invalid plugin"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1106
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1117
+msgid "State"
+msgstr ""
+
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1152
 msgid ""
 "Packages' directory\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1111
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1157
 msgid ""
 "Install from PyPI\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1121
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1167
 msgid ""
 "Install from requirements file\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1126
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1172
 msgid ""
 " to locate requirements.txt file and install the packages specified in it.\n"
 "\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1134
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1180
 msgid ""
 " to locate and install the package file (usually with .whl, .tar.gz or .zip extension).\n"
 "\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1147
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1193
 msgid ""
 "virtual environment\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1149
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1195
 msgid ""
 "user site packages\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1182
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1228
 msgid "refresh"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1190
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1236
 msgid "Could not find the package from PyPI."
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1194
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1240
 msgid "exact package name"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1201
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1247
 msgid "Searched Packages:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1204
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1250
 msgid "The resuls count is tool much!trim to %d"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1263
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1309
 msgid ""
 "NB!\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1353
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1405
 msgid "Really uninstall?"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1354
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1406
 msgid ""
 "Package '{}' is required for installing and uninstalling other packages.\n"
 "\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1357
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1409
 msgid "Are you sure you want to uninstall it?"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1518
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1560
 msgid "Plugin Manager"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1520
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1562
 msgid "fetching plugin from server..."
 msgstr ""
 
@@ -3584,14 +3595,6 @@ msgstr ""
 msgid "Multiple Definitions"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\syntax\lexer\_dap.py:32
-msgid "Cloudwms Dap File"
-msgstr ""
-
-#: G:\work\project\Noval\noval\python\syntax\lexer\_dap.py:47
-msgid "Dap Editor"
-msgstr ""
-
 #: G:\work\project\Noval\noval\python\syntax\lexer\_python.py:114
 msgid "Python Script"
 msgstr ""
@@ -3805,7 +3808,7 @@ msgstr ""
 msgid "Download fail:%s"
 msgstr ""
 
-#: G:\work\project\Noval\noval\util\fileutils.py:316
+#: G:\work\project\Noval\noval\util\fileutils.py:317
 msgid "No files to zip, nothing to do!"
 msgstr ""
 

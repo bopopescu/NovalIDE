@@ -204,10 +204,13 @@ class DefinitionsDialog(ui_base.CommonModaldialog):
         GetApp().GotoView(definition.Root.Module.Path,definition.Node.Line,load_outline=False)
         ui_base.CommonModaldialog._ok(self,event)
         
-def create_python_process(python_exe,args,shell=False,env=None,universal_newlines=True):
+def create_python_process(python_exe,args,shell=True,env=None,universal_newlines=True):
     '''
         创建python进程
     '''
+    #TODO: linux只能以列表方式执行命令,故必须设置shell为False
+    if shell and utils.is_linux():
+        shell = False
     return utils.create_process(python_exe,args,shell,env,universal_newlines)
 
 def create_python_interpreter_process(interpreter,args):

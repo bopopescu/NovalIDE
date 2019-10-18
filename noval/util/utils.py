@@ -313,12 +313,14 @@ def call_process(cmd,args):
         subprocess.call(cmd + ' ' + args,shell=True)
         
 
-def create_process(command,args,shell=False,env=None,universal_newlines=True):
+def create_process(command,args,shell=True,env=None,universal_newlines=True):
     '''
         创建普通进程
     '''
-    #如果shell为True,表示命令是列表
-    if shell:
+    #如果shell为False,表示命令是列表,subprocess.Popen只接受数组变量作为命令
+    if not shell:
+        if isinstance(args,str):
+            args = args.split(' ')
         cmd = [command] + args
     #否则是shell命令字符串
     else:

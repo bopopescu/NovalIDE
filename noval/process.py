@@ -152,6 +152,7 @@ import types
 import pprint
 import noval.util.utils as utils
 import noval.util.compat as compat
+import six
 
 if sys.platform.startswith("win"):
     import msvcrt
@@ -911,7 +912,7 @@ class Process:
 
         #XXX Perhaps we should *always* prefix with '/bin/sh -c'? There is a
         #    disparity btwn how this works on Linux and Windows.
-        if isinstance(self._cmd, types.StringTypes):
+        if isinstance(self._cmd, six.string_types[0]):
             # This is easier than trying to reproduce shell interpretation to
             # separate the arguments.
             cmd = ['/bin/sh', '-c', self._cmd]
