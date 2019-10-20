@@ -251,19 +251,19 @@ class {PluginName}Plugin(plugin.Plugin):
         pass
 
     def UninstallHook(self):
-        """""""
+        ''''''
 
     def EnableHook(self):
-        """""""
+        ''''''
         
     def DisableHook(self):
-        """""""
+        ''''''
         
     def GetFree(self):
         return True
         
     def GetPrice(self):
-        """"""
+        ''''''
     '''
     
     def __init__(self, parent):
