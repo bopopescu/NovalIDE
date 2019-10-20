@@ -35,7 +35,7 @@ class PypiProjectNameLocationPage(BasePythonProjectNameLocationPage):
         self.can_finish = False
 
 class PypiPackageInformationPage(projectwizard.BitmapTitledContainerWizardPage):
-    """Creates the calculators interface
+    """Creates the pypi interface
     @todo: Dissable << and >> when floating values are present
     @todo: When integer values overflow display convert to scientific notation
     @todo: Keybindings to numpad and enter key
@@ -228,7 +228,7 @@ import noval.constants as constants
 
 
 class {PluginName}Plugin(plugin.Plugin):
-    """Simple Programmer's Calculator"""
+    """plugin description here..."""
     plugin.Implements(iface.MainWindowI)
     def PlugIt(self, parent):
         """Hook the calculator into the menu and bind the event"""

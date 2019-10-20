@@ -111,6 +111,9 @@ def download_file(download_url,call_back=None,**payload):
         payload:url参数
     '''
     user_id = UserDataDb().GetUserId()
+    if not user_id:
+        UserDataDb().GetUser()
+        user_id = UserDataDb().GetUserId()
     if user_id:
         payload.update({'member_id':user_id})
 #    payload['timeout'] = 10

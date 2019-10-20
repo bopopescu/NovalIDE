@@ -3,7 +3,7 @@ from setuptools import find_packages
 
 setup(name='PyPI',
         version='1.0',
-        description='''a simple tool to enable user publish to local site-packages or pypi server via new pypi project''',
+        description='''a simple tool to enable user publish package to local site-packages or pypi server conveniently via new pypi project''',
         author='wukan',
         author_email='wekay102200@sohu.com',
         url='http://www.novalide.com',

@@ -204,15 +204,98 @@ class DefinitionsDialog(ui_base.CommonModaldialog):
         GetApp().GotoView(definition.Root.Module.Path,definition.Node.Line,load_outline=False)
         ui_base.CommonModaldialog._ok(self,event)
         
-def create_python_process(python_exe,args,shell=True,env=None,universal_newlines=True):
+
+def get_environment_overrides_for_python_subprocess(target_executable,is_venv=False):
+    """Take care of not not confusing different interpreter 
+    with variables meant for bundled interpreter"""
+
+    # At the moment I'm tweaking the environment only if current
+    # exe is bundled for Thonny.
+    # In remaining cases it is user's responsibility to avoid
+    # calling Thonny with environment which may be confusing for
+    # different Pythons called in a subprocess.
+
+    this_executable = sys.executable.replace("pythonw.exe", "python.exe")
+    target_executable = target_executable.replace("pythonw.exe", "python.exe")
+
+    interpreter_specific_keys = [
+        "TCL_LIBRARY",
+        "TK_LIBRARY",
+        "LD_LIBRARY_PATH",
+        "DYLD_LIBRARY_PATH",
+        "SSL_CERT_DIR",
+        "SSL_CERT_FILE",
+        "PYTHONHOME",
+        "PYTHONPATH",
+        "PYTHONNOUSERSITE",
+        "PYTHONUSERBASE",
+    ]
+
+    result = {}
+
+    if os.path.samefile(
+        target_executable, this_executable
+    ) or is_venv:
+        # bring out some important variables so that they can
+        # be explicitly set in macOS Terminal
+        # (If they are set then it's most likely because current exe is in Thonny bundle)
+        for key in interpreter_specific_keys:
+            if key in os.environ:
+                result[key] = os.environ[key]
+
+        # never pass some variables to different interpreter
+        # (even if it's venv or symlink to current one)
+        if not strutils.is_same_path(target_executable, this_executable):
+            for key in ["PYTHONPATH", "PYTHONHOME", "PYTHONNOUSERSITE", "PYTHONUSERBASE"]:
+                if key in os.environ:
+                    result[key] = None
+    else:
+        # interpreters are not related
+        # interpreter specific keys most likely would confuse other interpreter
+        for key in interpreter_specific_keys:
+            if key in os.environ:
+                result[key] = None
+
+    # some keys should be never passed
+    for key in [
+        "PYTHONSTARTUP",
+        "PYTHONBREAKPOINT",
+        "PYTHONDEBUG",
+        "PYTHONNOUSERSITE",
+        "PYTHONASYNCIODEBUG",
+    ]:
+        if key in os.environ:
+            result[key] = None
+
+    # venv may not find (correct) Tk without assistance (eg. in Ubuntu)
+    if is_venv:
+        try:
+            if "TCL_LIBRARY" not in os.environ or "TK_LIBRARY" not in os.environ:
+                result["TCL_LIBRARY"] = get_workbench().tk.exprstring("$tcl_library")
+                result["TK_LIBRARY"] = get_workbench().tk.exprstring("$tk_library")
+        except Exception:
+            logging.exception("Can't compute Tcl/Tk library location")
+
+    return result
+    
+        
+def get_environment_for_python_subprocess(target_executable,is_venv):
+    overrides = get_environment_overrides_for_python_subprocess(target_executable,is_venv)
+    return ui_utils.get_environment_with_overrides(overrides)
+        
+def create_python_process(python_exe,args,shell=True,is_venv=False):
     '''
         创建python进程
     '''
     #TODO: linux只能以列表方式执行命令,故必须设置shell为False
     if shell and utils.is_linux():
         shell = False
-    return utils.create_process(python_exe,args,shell,env,universal_newlines)
+        
+    env = get_environment_for_python_subprocess(python_exe,is_venv)
+    env["PYTHONIOENCODING"] = "utf-8"
+    env["PYTHONUNBUFFERED"] = "1"
+    return utils.create_process(python_exe,args,shell,env,cwd=os.path.dirname(python_exe))
 
 def create_python_interpreter_process(interpreter,args):
     python_exe = interpreter.Path
-    return create_python_process(python_exe, args)
+    return create_python_process(python_exe, args,is_venv=interpreter.IsVirtual())

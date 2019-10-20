@@ -36,7 +36,7 @@ import noval.python.parser.utils as parserutils
 import noval.python.interpreter.pythonpackages as pythonpackages
 import noval.plugins.update as updateutils
 import noval.editor.text as texteditor
-import threading
+import noval.util.urlutils as urlutils
 
 #找回pip工具的url地址
 PIP_INSTALLER_URL = "https://bootstrap.pypa.io/get-pip.py"
@@ -58,20 +58,30 @@ def GetAllPackages(find_name=None):
                 names.append(normal_name)
     return names
     
-def GetAllPlugins(find_name=None,message=None):
+def GetAllPlugins(find_name=None,message=None,plugin_dlg=None,aync=False):
     '''
-        获取所有插件名称列表
+        异步或同步请求获取所有插件名称列表
     '''
-    api_addr = '%s/member/get_plugins' % (UserDataDb.HOST_SERVER_ADDR)
-    data = utils.RequestData(api_addr,method='get',arg={'name':find_name})
-    if not data:
+    def end(data):
+        if message:
+            message['msg'] = _("There is total %d plugins on Server")%len(data['names'])
+            if plugin_dlg:
+                plugin_dlg.label_var.set(message['msg'])
+        
+    def error(data):
         if message:
             message['msg'] = _("can't fetch plugin from Server")
-        return []
+            if plugin_dlg:
+                plugin_dlg.label_var.set(message['msg'])
         
-    if message:
-        message['msg'] = _("There is total %d plugins on Server")%len(data['names'])
-    return data['names']
+    api_addr = '%s/member/get_plugins' % (UserDataDb.HOST_SERVER_ADDR)
+    if aync:
+        urlutils.fetch_url_future(api_addr,method='get',arg={'name':find_name},callback=end,error_callback=error)
+    else:
+        data = utils.RequestData(api_addr,method='get',arg={'name':find_name})
+        if data:
+            return data['names']
+        return []
 
 class PipDialog(ui_base.CommonModaldialog):
     def __init__(self, master,package_count,message=None):
@@ -791,7 +801,7 @@ class PluginsPipDialog(PipDialog):
             #第一个是用户目录
             self.info_text.direct_insert("end",target_directorys[0], ("url"))
             #2个目录之间以逗号分隔
-            self.info_text.direct_insert("end", _(", "))
+            self.info_text.direct_insert("end", ", ")
             #第二个是软件安装目录
             self.info_text.direct_insert("end",target_directorys[1], ("url"))
             self.info_text.direct_insert(
@@ -805,10 +815,11 @@ class PluginsPipDialog(PipDialog):
         self._select_list_item(0)
         
     def CreateBottomLabel(self,parent,label_text):
-        ttk.Label(parent, text=label_text).grid(row=3, column=0, sticky="nsew", padx=15, pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+        self.label_var = tk.StringVar(value=label_text)
+        ttk.Label(parent, textvariable=self.label_var).grid(row=3, column=0, sticky="nsew", padx=15, pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
         
     def NotFoundPackage(self,name):
-        self.write(_("Could not find the plugin from Server."))
+        self.write(_("Could not find the plugin from Server.\n"))
         if not self._get_active_version(name):
             # new package
             self.write(_("\nPlease check your spelling!") + _("\nYou need to enter "))
@@ -1110,9 +1121,10 @@ class PluginsPipDialog(PipDialog):
         
     def _show_package_info(self, name, data, error_code=None):
         PipDialog._show_package_info(self,name,data,error_code)
+        plugin_name = data['name'] if data else name
         #未安装的插件不显示启用按钮
-        if data['name'] in self._active_distributions:
-            enabled = self._active_distributions[data['name']]['enabled']
+        if plugin_name in self._active_distributions:
+            enabled = self._active_distributions[plugin_name]['enabled']
             #加载安装插件的状态信息
             self.write_att(_("State"), _('Enabled') if enabled else _("Disabled"))
             if enabled:
@@ -1227,7 +1239,8 @@ class PyPiPipDialog(PipDialog):
         btn.pack(fill="x",side=tk.LEFT,padx=consts.DEFAUT_HALF_CONTRL_PAD_X)
         misc.create_tooltip(btn, _("refresh"))
         row.grid(row=3,column=0,sticky=tk.NSEW,padx=15)
-        ttk.Label(parent, text=label_text).grid(row=4, column=0, sticky="nsew", padx=15, pady=consts.DEFAUT_CONTRL_PAD_Y)
+        self.label_var = tk.StringVar(value=label_text)
+        ttk.Label(parent, textvariable=self.label_var).grid(row=4, column=0, sticky="nsew", padx=15, pady=consts.DEFAUT_CONTRL_PAD_Y)
         
     def RefreshPackages(self):
         self._start_update_list(None,refresh=True)
@@ -1511,7 +1524,7 @@ def _start_fetching_package_info(name, version_str, completion_handler):
         else:
             #未能从服务器上找到包
             completion_handler(name, {},error_code=404)
-
+    #这里最好不要异步获取,否则在频繁点击左侧列表项时会因为多线程导致界面信息混乱
     poll_fetch_complete()
     
 
@@ -1532,6 +1545,7 @@ def _start_fetching_plugin_info(name, version_str, completion_handler):
             #未能从服务器上找到插件
             completion_handler(name, {},error_code=404)
 
+    #这里最好不要异步获取,否则在频繁点击左侧列表项时会因为多线程导致界面信息混乱
     poll_fetch_complete()
 
 
@@ -1560,14 +1574,17 @@ class PluginManagerGUI(plugin.Plugin):
         mitem = tools_menu.InsertBefore(constants.ID_PREFERENCES,constants.ID_PLUGIN,_("Plugin Manager"), 
                                   ("Plugin Manager GUI"),handler=self.ShowPluginManagerDlg,img=GetApp().GetImage("plugin.png"))
         self.message = {'msg':_("fetching plugin from server...")}
+        self.plugin_dlg = None
         self.GetPlugins()
         
     def ShowPluginManagerDlg(self):
-        plugin_dlg = PluginsPipDialog(self.parent,package_count=0,message=self.message)
-        plugin_dlg.ShowModal()
+        self.plugin_dlg = PluginsPipDialog(self.parent,package_count=0,message=self.message)
+        self.plugin_dlg.ShowModal()
+        self.plugin_dlg = None
         
     def GetPlugins(self):
-        t = threading.Thread(target=GetAllPlugins,args=(None,self.message))
+        GetAllPlugins(None,self.message,self.plugin_dlg,aync=True)
+   #     t = threading.Thread(target=GetAllPlugins,args=(None,self.message))
         #daemon表示后台线程,即程序不用等待子线程才退出
-        t.daemon = True
-        t.start()
+    #    t.daemon = True
+     #   t.start()

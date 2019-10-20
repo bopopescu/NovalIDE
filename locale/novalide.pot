@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2019-10-18 08:39+ÖÐ¹ú±ê×¼Ê±¼ä\n"
+"POT-Creation-Date: 2019-10-20 16:10+ÖÐ¹ú±ê×¼Ê±¼ä\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -55,7 +55,7 @@ msgstr ""
 #: G:\work\project\Noval\noval\python\interpreter\environment.py:89
 #: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:444
 #: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:446
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1250
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1263
 #: G:\work\project\Noval\noval\ui_utils.py:421
 msgid "Warning"
 msgstr ""
@@ -846,7 +846,7 @@ msgstr ""
 #: G:\work\project\Noval\noval\ide.py:516
 #: G:\work\project\Noval\noval\menu.py:776
 #: G:\work\project\Noval\noval\plugins\about.py:113
-#: G:\work\project\Noval\noval\plugins\update.py:168
+#: G:\work\project\Noval\noval\plugins\update.py:167
 #: G:\work\project\Noval\noval\python\pyide.py:52
 #: G:\work\project\Noval\noval\python\pyide.py:55
 msgid "&Help"
@@ -983,12 +983,12 @@ msgid "Print"
 msgstr ""
 
 #: G:\work\project\Noval\noval\plugins\update.py:27
-#: G:\work\project\Noval\noval\plugins\update.py:110
+#: G:\work\project\Noval\noval\plugins\update.py:109
 msgid "could not connect to server"
 msgstr ""
 
 #: G:\work\project\Noval\noval\plugins\update.py:43
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1045
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1056
 msgid "Remove faile:%s fail"
 msgstr ""
 
@@ -996,19 +996,19 @@ msgstr ""
 msgid "Update plugin '%s' success"
 msgstr ""
 
-#: G:\work\project\Noval\noval\plugins\update.py:91
+#: G:\work\project\Noval\noval\plugins\update.py:90
 msgid "Plugin '%s' latest version '%s' is available,do you want to download and update it?"
 msgstr ""
 
-#: G:\work\project\Noval\noval\plugins\update.py:91
+#: G:\work\project\Noval\noval\plugins\update.py:90
 msgid "Plugin Update Available"
 msgstr ""
 
-#: G:\work\project\Noval\noval\plugins\update.py:118
+#: G:\work\project\Noval\noval\plugins\update.py:117
 msgid "Update Available"
 msgstr ""
 
-#: G:\work\project\Noval\noval\plugins\update.py:168
+#: G:\work\project\Noval\noval\plugins\update.py:167
 msgid "&Check for Updates"
 msgstr ""
 
@@ -1339,7 +1339,7 @@ msgstr ""
 
 #: G:\work\project\Noval\noval\project\baseviewer.py:1481
 #: G:\work\project\Noval\noval\project\document.py:412
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1038
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1049
 msgid "Move File"
 msgstr ""
 
@@ -2052,7 +2052,7 @@ msgid "Could not connect to break server!"
 msgstr ""
 
 #: G:\work\project\Noval\noval\python\debugger\debugger.py:111
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:246
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:256
 msgid "Close"
 msgstr ""
 
@@ -2271,7 +2271,7 @@ msgid "Intellisence database location"
 msgstr ""
 
 #: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:69
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1221
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1233
 #: G:\work\project\Noval\noval\python\project\pages\debugrun.py:235
 #: G:\work\project\Noval\noval\python\project\pages\pythoninterpreter.py:19
 #: G:\work\project\Noval\noval\python\project\viewer.py:51
@@ -2843,364 +2843,361 @@ msgstr ""
 msgid "Sort By Name(A-Z)"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:69
-msgid "can't fetch plugin from Server"
-msgstr ""
-
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:73
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:67
 msgid "There is total %d plugins on Server"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:93
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:73
+msgid "can't fetch plugin from Server"
+msgstr ""
+
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:103
 msgid "There is total %d packages on PyPI"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:96
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:106
 msgid "Find package from PyPI"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:96
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:106
 msgid "Installed Packages:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:96
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:106
 msgid "input the package name to search..."
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:233
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:243
 msgid " Upgrade "
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:240
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:250
 msgid "Uninstall"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:288
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:298
 msgid ""
 "Installing pip\n"
 "\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:301
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:311
 msgid ""
 "Installing pip, please wait ...\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:323
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:333
 msgid ""
 "You seem to have problems with pip\n"
 "\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:336
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:346
 msgid " and running it with "
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:338
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:348
 msgid ""
 " (probably needs admin privileges).\n"
 "\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:437
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:447
 msgid "Installed version: "
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:439
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:449
 msgid "Installed to: "
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:443
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:453
 msgid "path is not exist..."
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:467
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:477
 msgid "Upgrade"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:476
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:486
 msgid "Install"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:525
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:535
 msgid "Could not find the package info from PyPI. Error code: "
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:533
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:543
 msgid "Latest stable version"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:535
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:545
 msgid "Latest version"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:536
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:546
 msgid "Summary"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:537
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:547
 msgid "Author"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:538
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:548
 msgid "Homepage"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:540
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:550
 msgid "Bugtracker"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:542
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:552
 msgid "Documentation"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:544
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:554
 msgid "PyPI page"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:548
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:558
 msgid "Requires"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:584
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:594
 msgid "Can't find package name from the list: "
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:714
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:724
 msgid "Manage packages"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:753
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:763
 msgid ""
 "Install from Server\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:763
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1175
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:773
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1187
 msgid ""
 "Install from local file\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:764
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1168
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1176
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:774
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1180
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1188
 msgid "Click "
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:765
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1169
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1177
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:775
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1181
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1189
 msgid "here"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:768
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:778
 msgid ""
 " to locate and install the plugin file (usually with .egg extension).\n"
 "\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:773
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1185
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:783
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1197
 msgid ""
 "Upgrade or uninstall\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:775
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1187
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:785
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1199
 msgid ""
 "Start by selecting the package from the left.\n"
 "\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:779
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1191
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:789
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1203
 msgid "Target:  "
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:780
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:790
 msgid ""
 "User directory or Application directory\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:794
-msgid ", "
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:822
+msgid ""
+"Could not find the plugin from Server.\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:811
-msgid "Could not find the plugin from Server."
-msgstr ""
-
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:814
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1239
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:825
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1252
 msgid ""
 "\n"
 "Please check your spelling!"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:814
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1239
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:825
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1252
 msgid ""
 "\n"
 "You need to enter "
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:815
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:826
 msgid "exact plugin name"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:822
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:833
 msgid "Searched Plugins:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:969
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1109
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:980
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1120
 msgid "Install plugin '%s' success"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1000
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1011
 msgid "Uninstall success"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1007
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1080
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1117
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1121
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1018
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1091
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1129
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1133
 msgid "Enabled"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1008
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1117
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1119
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1019
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1129
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1131
 msgid "Disabled"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1038
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1049
 msgid "Plugin file is already exist,Do you want to overwrite it?"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1062
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1073
 msgid ""
 "This dialog is for managing Noval plug-ins and their dependencies.\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1063
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1074
 msgid ""
 "If you want to install packages for your own programs please install PipManager plugin and then choose 'Tools â†’ Manage packages...'\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1072
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1083
 msgid "Find plugin from Server"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1072
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1083
 msgid "Installed Plugins:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1072
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1083
 msgid "input the plugin name to search..."
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1075
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1086
 msgid "NovalIDE plug-ins"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1090
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1101
 msgid "Plugin Configuration Changed"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1090
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1101
 msgid "You must restart NovalIDE before your changes will take full affect."
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1102
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1113
 msgid "invalid plugin"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1117
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1129
 msgid "State"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1152
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1164
 msgid ""
 "Packages' directory\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1157
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1169
 msgid ""
 "Install from PyPI\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1167
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1179
 msgid ""
 "Install from requirements file\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1172
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1184
 msgid ""
 " to locate requirements.txt file and install the packages specified in it.\n"
 "\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1180
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1192
 msgid ""
 " to locate and install the package file (usually with .whl, .tar.gz or .zip extension).\n"
 "\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1193
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1205
 msgid ""
 "virtual environment\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1195
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1207
 msgid ""
-"user site packages\n"
-msgstr ""
-
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1228
-msgid "refresh"
-msgstr ""
-
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1236
-msgid "Could not find the package from PyPI."
+"user site-packages\n"
 msgstr ""
 
 #: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1240
+msgid "refresh"
+msgstr ""
+
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1249
+msgid "Could not find the package from PyPI."
+msgstr ""
+
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1253
 msgid "exact package name"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1247
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1260
 msgid "Searched Packages:"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1250
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1263
 msgid "The resuls count is tool much!trim to %d"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1309
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1322
 msgid ""
 "NB!\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1405
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1418
 msgid "Really uninstall?"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1406
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1419
 msgid ""
 "Package '{}' is required for installing and uninstalling other packages.\n"
 "\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1409
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1422
 msgid "Are you sure you want to uninstall it?"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1560
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1574
 msgid "Plugin Manager"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1562
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1576
 msgid "fetching plugin from server..."
 msgstr ""
 

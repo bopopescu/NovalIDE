@@ -313,7 +313,7 @@ def call_process(cmd,args):
         subprocess.call(cmd + ' ' + args,shell=True)
         
 
-def create_process(command,args,shell=True,env=None,universal_newlines=True):
+def create_process(command,args,shell=True,env=None,universal_newlines=True,cwd=None):
     '''
         创建普通进程
     '''
@@ -339,6 +339,7 @@ def create_process(command,args,shell=True,env=None,universal_newlines=True):
         cmd,
         shell=shell,
         env=env,
+        cwd=cwd,
         universal_newlines=universal_newlines,
         startupinfo=startupinfo,
         creationflags=creationflags,

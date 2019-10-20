@@ -55,7 +55,7 @@ class PypiAccountDialog(ui_utils.CommonAccountDialog):
         ui_utils.CommonAccountDialog.__init__(self,parent,_("PyPI Account"),_("Please input PyPI account:"))
 
 class PyPi(plugin.Plugin):
-    """Simple Programmer's Calculator"""
+    """Simple pypi package tool"""
     plugin.Implements(iface.MainWindowI)
     ID_PUBLISH_SERVER = NewId()
     ID_PUBLISH_LOCAL = NewId()
@@ -141,7 +141,7 @@ class PyPi(plugin.Plugin):
             if egg.version != version or egg.project_name != plugin_name:
                 continue
             if egg.py_version != "3.6":
-                messagebox.showerror(_('Pulish to Server'),_("plugin %s python version is %s but required python version is 3.6")%(plugin_name,egg.py_version),parent=self.parent)
+                messagebox.showerror(_('Pulish to Server'),_("plugin '%s' python version is %s but required python version is 3.6")%(plugin_name,egg.py_version),parent=self.parent)
                 return
             egg.activate()
             for name in egg.get_entry_map(plugin.ENTRYPOINT):

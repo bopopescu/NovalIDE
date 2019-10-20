@@ -59,7 +59,6 @@ def check_plugins(ignore_error = False):
             pop_error(plugin_data)
             return
         elif 'id' not in plugin_data:
-            logger.warn("could not find plugin %s on server",plugin_name)
             continue
         plugin_name = plugin_data['name']
         plugin_id = plugin_data['id']
@@ -174,6 +173,7 @@ class UpdateLoader(plugin.Plugin):
     def CheckUpdateAfter(self,ignore_error=True,check_plugin_update=True):
         #tkinter不支持多线程,要想试用多线程必须设置函数或方法为after模式
         t = threading.Thread(target=self.CheckUpdate,args=(ignore_error,check_plugin_update))
+        t.daemon = True
         t.start()
 
     def CheckUpdate(self,ignore_error=True,check_plugin_update=True):
