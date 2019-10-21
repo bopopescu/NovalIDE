@@ -13,6 +13,7 @@ import ConfigParser
 from util.utils import *
 from util.errors import *
 import sys
+import pymongo
 
 logger = logging.getLogger('logsite')
 
@@ -91,14 +92,11 @@ def get_update_info(request):
             else:
                 msg = "this lastest version '%s' is available,do you want to download and update it?" % version
             return json_response(code=1,message=msg,new_version=version)
-            
-@require_http_methods(['GET'])
-def new_app_download(request):
-    ip_addr = request.META['REMOTE_ADDR']
-    language = request.REQUEST.get('lang')
-    new_version  = request.REQUEST.get('new_version',None)
-    os_name = request.REQUEST.get('os_name')
-    member_id = request.REQUEST.get('member_id',None)
+
+def download_file(request,file_path):
+    '''
+        下载文件公用函数
+    '''
     def file_iterator(file_name, chunk_size=512):
         with open(file_name) as f:
             while True:
@@ -107,6 +105,24 @@ def new_app_download(request):
                     yield c
                 else:
                     break
+    
+    response = StreamingHttpResponse(file_iterator(file_path))
+    response['Content-Type'] = 'application/octet-stream'
+    response['Content-Length'] = os.path.getsize(file_path)
+    file_name = os.path.basename(file_path)
+    response['Content-Disposition'] = 'attachment;filename="{0}"'.format(file_name)
+    return response
+                            
+@require_http_methods(['GET'])
+def download_app(request):
+    '''
+        下载软件
+    '''
+    ip_addr = request.META['REMOTE_ADDR']
+    language = request.REQUEST.get('lang')
+    new_version  = request.REQUEST.get('new_version',None)
+    os_name = request.REQUEST.get('os_name')
+    member_id = request.REQUEST.get('member_id',None)
     if new_version is not None:
         if os_name.lower().find('win32') != -1:
             version_file_name = "NovalIDE_Setup_%s.exe" % new_version
@@ -122,9 +138,9 @@ def new_app_download(request):
     is_zh = True if language.strip().lower().find("cn") != -1 else False
     if not os.path.exists(version_file_path):
         if is_zh:
-            msg = "版本文件不存在"
+            msg = "程序文件不存在"
         else:
-            msg = "version file is not exist"
+            msg = "application file is not exist"
         return json_response(code=1,message=msg)
         
     kwargs = {
@@ -136,10 +152,63 @@ def new_app_download(request):
     if member_id is not None:
         kwargs.update({'user_id':member_id})
     DownloadData(**kwargs).save()
-    response = StreamingHttpResponse(file_iterator(version_file_path))
-    response['Content-Type'] = 'application/octet-stream'
-    response['Content-Length'] = os.path.getsize(version_file_path)
-    response['Content-Disposition'] = 'attachment;filename="{0}"'.format(version_file_name)
+    response = download_file(request,version_file_path)
+    return response
+    
+@require_http_methods(['GET'])
+def download_plugin(request):
+    '''
+        下载插件
+    '''
+    ip_addr = request.META['REMOTE_ADDR']
+    language = request.REQUEST.get('lang')
+    app_version  = request.REQUEST.get('app_version',None)
+    new_version  = request.REQUEST.get('new_version',None)
+    os_name = request.REQUEST.get('os_name')
+    member_id = request.REQUEST.get('member_id',None)
+    plugin_id = request.REQUEST.get('plugin_id',None)
+    plugin_pkg = PluginPackage.objects(id=plugin_id).first()
+    egg_name = None
+    if new_version is not None:
+        for release in plugin_pkg.releases:
+            if release['version'] == new_version:
+                egg_name = release['filename']
+    else:
+        egg_name = plugin_pkg.path
+        new_version = plugin_pkg.version
+        
+    if not egg_name:
+        return json_response(code=PLUGIN_VERSION_NOT_FOUND,message=GetCodeMessage(PLUGIN_VERSION_NOT_FOUND).format(version=new_version,name=plugin_pkg.name))
+    version_dir = os.path.dirname(settings.BASE_DIR)
+    plugin_base_path = os.path.join(version_dir,"version")
+    egg_file_path = os.path.join(plugin_base_path,plugin_pkg.name,egg_name)
+    is_zh = True if language.strip().lower().find("cn") != -1 else False
+    if not os.path.exists(egg_file_path):
+        if is_zh:
+            msg = "插件文件不存在"
+        else:
+            msg = "plugin file is not exist"
+        logger.error("plugin %s file %s is not exist",plugin_id,egg_file_path)
+        return json_response(code=PLUGIN_EGG_FILE_NOT_FOUND,message=msg)
+    kwargs = {
+        'os_name':os_name,
+        'ip_addr':ip_addr,
+        'plugin_id':plugin_id,
+        'app_version':app_version,
+        'plugin_version':new_version
+    }
+    if new_version is not None:
+        kwargs.update({'is_update':True})
+    if member_id is not None:
+        kwargs.update({'member_id':member_id})
+    try:
+        PluginDownloadData(**kwargs).save()
+        #更新插件下载次数
+        down_amount = plugin_pkg.down_amount + 1
+        plugin_pkg.update(**{'set__down_amount':down_amount})
+    except pymongo.errors.DuplicateKeyError:
+        pass
+    response = download_file(request,egg_file_path)
     return response
     
 @require_http_methods(['GET'])
@@ -176,23 +245,35 @@ def get_pypi_packages(request):
         if name is None or pkg.lower_name.find(name.lower()) != -1:
             names.append(pkg.name)
     return json_response(names=names)
+    
+
+@require_http_methods(['GET'])
+def get_pypi_package_count(request):
+    return json_response(count=PyPIPackage.objects().count())
    
 @require_http_methods(['GET'])
 def get_package_info(request):
     names = []
     name = request.REQUEST.get('name')
-    pkg = PyPIPackage.objects(name=name).first()
-    ret_data = dict(pkg.to_mongo())
+    pkg = PyPIPackage.objects(lower_name=name.lower()).first()
+    if not pkg:
+        ret_data = {}
+    else:
+        ret_data = dict(pkg.to_mongo())
     return json_response(**ret_data)
     
 @require_http_methods(['GET'])
 def get_plugin_info(request):
     names = []
     name = request.REQUEST.get('name')
-    pkg = PluginPackage.objects(name=name).first()
-    #更新插件查看次数
-    pkg.view_amount += 1
-    ret_data = dict(pkg.to_mongo())
+    plugin_pkg = PluginPackage.objects(lower_name=name.lower()).first()
+    if not plugin_pkg:
+        ret_data = {}
+    else:
+        #更新插件查看次数
+        view_amount = plugin_pkg.view_amount + 1
+        plugin_pkg.update(**{'set__view_amount':view_amount})
+        ret_data = dict(plugin_pkg.to_mongo())
     return json_response(**ret_data)
 
 @require_http_methods(['GET'])
@@ -206,6 +287,19 @@ def get_plugin_packages(request):
     
 @require_http_methods(['POST'])
 def publish_plugin(request):
+    '''
+       发布并上传插件
+    '''
+    def upload_file(file_path):
+        '''
+           上传文件到服务器本地路径
+        '''
+        #获取上传文件流
+        egg_file = request.FILES.get("file", None)
+        with open(file_path, 'wb+') as f:
+            #分块写入文件
+            for chunk in egg_file.chunks():
+                f.write(chunk)        
     names = []
     name = request.REQUEST.get('name')
     lower_name = name.lower()
@@ -219,9 +313,18 @@ def publish_plugin(request):
     summary = request.REQUEST.get('summary')
     egg_name =  request.REQUEST.get('egg_name')
     member_id = request.REQUEST.get('member_id')
+    version_dir = os.path.dirname(settings.BASE_DIR)
+    free = bool(request.REQUEST.get('free'))
+    price = request.REQUEST.get('price')
+    app_version = request.REQUEST.get('app_version')
+    plugin_base_path = os.path.join(version_dir,"version")
+    egg_path = os.path.join(plugin_base_path,name) 
+    if not os.path.exists(egg_path):
+        os.makedirs(egg_path)
+    egg_file_path = os.path.join(egg_path,egg_name)
     if plugin_pkgs.count() == 0:
-      #  version_dir = os.path.dirname(settings.BASE_DIR)
-       # plugin_base_path = os.path.join(version_dir,"version")
+        #新插件先上传文件,成功后再写入插件信息
+        upload_file(egg_file_path)
         #插件新插件
         data = {
             'name':name,
@@ -234,9 +337,13 @@ def publish_plugin(request):
             'summary':summary,
             #存储egg名称即可
             'path':egg_name,
-            'member_id':member_id
+            'member_id':member_id,
+            'free':free,
+            'price':price,
+            'app_version':app_version
         }
         logger.info("insert plugin name %s success",name)
+        #保存插件信息
         PluginPackage(**data).save()
     else:
         #更新已有插件信息
@@ -249,17 +356,57 @@ def publish_plugin(request):
         #替换用户是否强制替换版本文件
         elif not force_update:
             return json_response(code=PLUGIN_EGG_FILE_EXISTS)
+        #上传插件文件
+        upload_file(egg_file_path)
         plugin_pkg.author = author
         plugin_pkg.author_mail = author_mail
         plugin_pkg.homepage = homepage
         plugin_pkg.summary = summary
+        plugin_pkg.free = free
+        plugin_pkg.app_version = app_version
+        plugin_pkg.price = price
         plugin_pkg.updated_at = datetime.datetime.utcnow()
+        #更新插件信息
         plugin_pkg.save()
     return json_response()
         
 @require_http_methods(['GET'])
 def check_force_update(request):
     app_version = request.REQUEST.get('app_version')
-    logger.info("app version is %s,+++++++++++++++++",app_version)
-    ret_data = {'force_update':True}
+    ret_data = {'force_update':False}
     return json_response(**ret_data)
+    
+@require_http_methods(['GET'])
+def get_member_payment(request):
+    '''
+        查询用户是否付款
+    '''
+    member_id = request.REQUEST.get('member_id',None)
+    plugin_id = request.REQUEST.get('plugin_id',None)
+    payment = Payments.objects(member_id=member_id,plugin_id=plugin_id).first()
+    plugin_pkg = PluginPackage.objects(id=plugin_id).first()
+    if not plugin_pkg:
+        logger.error("plugin id %s is not exist",plugin_id)
+    data = {}
+    if not payment:
+        data['payed'] = False
+        price = plugin_pkg.price
+        if price:
+            data['price'] = price
+        else:
+            logger.error('plugin id %s set charged,but no set price',plugin_id)
+    else:
+        data['payed'] = True
+    return json_response(**data)
+
+@require_http_methods(['POST'])
+def payment(request):
+    '''
+        存储用户付款记录
+    '''
+    plugin_version = request.REQUEST.get('plugin_version',None)
+    member_id = request.REQUEST.get('member_id')
+    plugin_id = request.REQUEST.get('plugin_id')
+    Payments(member_id=member_id,plugin_id=plugin_id,plugin_version=plugin_version).Save()
+    return json_response()
+    
