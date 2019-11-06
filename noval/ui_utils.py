@@ -285,6 +285,8 @@ class BaseConfigurationPanel(ttk.Frame):
     
     def __init__(self,master,**kw):
         ttk.Frame.__init__(self,master,**kw)
+        #某些情况下配置界面是禁止的
+        self._is_disabled = False
         self._configuration_changed = False
         
     def OnOK(self,optionsDialog):
@@ -302,6 +304,24 @@ class BaseConfigurationPanel(ttk.Frame):
         
     def Validate(self):
         return True
+        
+    def IsDisabled(self):
+        return self._is_disabled
+
+    def DisableUI(self,parent):
+        self._is_disabled = True
+        for child in parent.winfo_children():
+            #这里禁止其子控件
+            if isinstance(child,ttk.Frame) or isinstance(child,ttk.Labelframe):
+                self.DisableUI(child)
+            #label控件不禁止,Scrollbar和Treeview没有state属性
+            elif isinstance(child,ttk.Label) or isinstance(child,ttk.Scrollbar) or isinstance(child,ttk.Treeview):
+                continue
+            #entry控件设置为只读状态
+            elif isinstance(child,ttk.Entry):
+                child['state'] = "readonly"
+            else:
+                child['state'] = tk.DISABLED
         
 def check_chardet_version():
     import chardet

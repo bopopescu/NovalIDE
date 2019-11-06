@@ -165,13 +165,15 @@ class CommonRunCommandUI(ttk.Frame):
         if event.get('interface') != self:
             utils.get_logger().debug('run view interface receive other stdout msg,ignore it')
             return
-        self._textCtrl.AppendText(event.get('source'),event.get('value'))
+        #程序终止或完成时把输出框设置为只读
+        self._textCtrl.AppendText(event.get('source'),event.get('value'),self._stopped)
 
     def AppendErrorText(self, event):
         if event.get('interface') != self:
             utils.get_logger().debug('run view interface receive other stderr msg,ignore it')
             return
-        self._textCtrl.AppendErrorText(event.get('source'),event.get('value'))
+        #程序终止或完成时把输出框设置为只读
+        self._textCtrl.AppendErrorText(event.get('source'),event.get('value'),self._stopped)
 
     def StopAndRemoveUI(self):
         '''
@@ -336,6 +338,9 @@ class OutputRunCommandUI(CommonRunCommandUI):
                 self.combo['values'] = (source,)
             else:
                 self.combo['values'] = self.combo['values'] + (source,)
+                
+    def ShutdownAllRunners(self):
+        self.StopExecution()
         
 #----------------------------------------------------------------------
 

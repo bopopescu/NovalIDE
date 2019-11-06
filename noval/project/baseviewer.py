@@ -50,7 +50,9 @@ except ImportError:
     import tkinter.simpledialog as tkSimpleDialog
 import noval.ui_common as ui_common
 import six
-    
+import noval.syntax.syntax as syntax
+import noval.project.variables as variablesutils
+import stat
 #----------------------------------------------------------------------------
 # Constants
 #----------------------------------------------------------------------------
@@ -81,13 +83,13 @@ def AddProjectMapping(doc, projectDoc=None, hint=None):
     if hasattr(doc, "GetModel"):
         project_view.AddProjectMapping(doc.GetModel(), projectDoc)
 
-
-
 class ProjectNameLocationPage(projectwizard.BitmapTitledContainerWizardPage):
     def __init__(self,master,**kwargs):
+        self.is_empty_project = kwargs.get('is_empty_project',False)
         projectwizard.BitmapTitledContainerWizardPage.__init__(self,master,_("Enter the name and location for the project"),_("Name and Location"),"python_logo.png",**kwargs)
         self.can_finish = kwargs.get('can_finish',True)
         self.allowOverwriteOnPrompt = False
+        self.new_project_doc = None
             
     def CreateContent(self,content_frame,**kwargs):
         sizer_frame = ttk.Frame(content_frame)
@@ -95,8 +97,7 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledContainerWizardPage):
         info_label = ttk.Label(sizer_frame, text=_("Enter the name and location for the project."))
         info_label.pack(side=tk.LEFT,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y, consts.DEFAUT_CONTRL_PAD_Y))
         self.CreateNamePage(content_frame)
-        if kwargs.get('project_dir_option',False):
-            self.CreateProjectDirPage(content_frame,**kwargs)
+        self.CreateBottomFrame(content_frame,**kwargs)
             
     def GetChoiceDirs(self,choiceDirs):
         choiceDirs.append(self.dir_entry_var.get())
@@ -113,8 +114,7 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledContainerWizardPage):
         for projectDoc in GetApp().MainFrame.GetProjectView().GetOpenProjects():
             if projectDoc == curProjectDoc:
                 continue
-            homeDir = os.path.dirname(projectDoc.GetAppDocMgr().homeDir
-)
+            homeDir = os.path.dirname(projectDoc.GetAppDocMgr().homeDir)
             if homeDir and (homeDir not in projectDirs):
                 projectDirs.append(homeDir)
         for projectDir in projectDirs:
@@ -157,10 +157,25 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledContainerWizardPage):
         self.browser_button.grid(column=2, row=1, sticky="nsew",padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
         return sizer_frame
         
-    def CreateProjectDirPage(self,content_frame,chk_box_row=2,**kwargs):
-        
+    def CreateBottomFrame(self,content_frame,chk_box_row=2,**kwargs):
         sizer_frame = ttk.Frame(content_frame)
-        sizer_frame.grid(column=0, row=chk_box_row, sticky="nsew")
+        sizer_frame.grid(column=0, row=chk_box_row, sticky="nsew")        
+        if not self.is_empty_project:
+            #项目启动文件设置
+            sbox = ttk.LabelFrame(sizer_frame, text=_("Startup"))
+            ttk.Label(sbox, text=_('Path:')).pack(side=tk.LEFT,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+            self.startup_path_var = tk.StringVar(value=kwargs.get('startup_path',''))
+            self.startup_path_entry = ttk.Entry(sbox,textvariable=self.startup_path_var)
+            self.startup_path_entry.pack(side=tk.LEFT,fill="x",expand=1,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+            misc.create_tooltip(self.startup_path_entry,_('Set the startup script of project which the project know how to launch(eg: ${ProjectDir}/xxx.%s)')%syntax.SyntaxThemeManager().GetLexer(GetApp().GetDefaultLangId()).GetDefaultExt())
+            self.startup_btn = ttk.Button(sbox, text= _("Browse..."),command=self.SetStartuppath)
+            self.startup_btn.pack(side=tk.LEFT,padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+            #某些项目启动文件是固定的,不允许更改
+            if not kwargs.get('enable_set_startup',True):
+                self.startup_path_entry['state'] = "readonly"
+                self.startup_btn['state'] = tk.DISABLED
+                
+            sbox.pack(fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         #默认创建项目目录
         self.project_dir_chkvar = tk.IntVar(value=kwargs.get('project_dir_checked',True))
         self.create_project_dir_checkbutton = ttk.Checkbutton(
@@ -184,6 +199,18 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledContainerWizardPage):
             #必须转换一下路径为系统标准路径格式
             path = fileutils.opj(path)
             self.dir_entry_var.set(path)
+            
+    def SetStartuppath(self):
+        default_ext = syntax.SyntaxThemeManager().GetLexer(GetApp().GetDefaultLangId()).GetDefaultExt()
+        image_docTemplate = GetApp().GetDocumentManager().FindTemplateForPath("test.%s"%default_ext)
+        descr = strutils.get_template_filter(image_docTemplate)
+        path = filedialog.askopenfilename(
+                master=self,
+                filetypes=[descr]
+        )
+        if not path:
+            return
+        self.startup_path_var.set(fileutils.opj(path))
         
     def Validate(self):
         self.infotext_label_var.set("")
@@ -210,13 +237,23 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledContainerWizardPage):
 
         dirName = self.dir_entry_var.get().strip()
         if dirName == "":
-            self.infotext_label_var.set(_("No directory.  Please provide a directory."))            
+            self.infotext_label_var.set(_("No directory.  Please provide a directory."))
             return False
         if os.sep == "\\" and dirName.find("/") != -1:
             self.infotext_label_var.set(_("Wrong delimiter '/' found in directory path.  Use '%s' as delimiter.") % os.sep)            
             return False
+            
+        if not self.is_empty_project and self.startup_path_var.get().strip() == "":
+            self.infotext_label_var.set(_("Startup script path could not be empty"))
+            return False
         
         return True
+        
+    def GetStartupfile(self):
+        return variablesutils.VariablesManager(self.new_project_doc).EvalulateValue(self.startup_path_var.get().strip())
+        
+    def CheckStartup(self):
+        ''''''
         
     def GetProjectLocation(self):
         projName = self.name_var.get().strip()
@@ -264,16 +301,16 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledContainerWizardPage):
         self._new_project_configuration = self.GetNewPojectConfiguration()
         utils.profile_set(PROJECT_DIRECTORY_KEY, self._new_project_configuration.Location)
         template = self.GetProjectTemplate()
-        doc = template.CreateDocument(fullProjectPath, flags = core.DOC_NEW)
+        self.new_project_doc = template.CreateDocument(fullProjectPath, flags = core.DOC_NEW)
         #set project name
-        doc.GetModel().Name = self._new_project_configuration.Name
-        doc.GetModel().Id = str(uuid.uuid1()).upper()
-        doc.GetModel().SetInterpreter(self._new_project_configuration.Interpreter)
-        if not doc.OnSaveDocument(fullProjectPath):
+        self.new_project_doc.GetModel().Name = self._new_project_configuration.Name
+        self.new_project_doc.GetModel().Id = str(uuid.uuid1()).upper()
+        self.new_project_doc.GetModel().SetInterpreter(self._new_project_configuration.Interpreter)
+        if not self.new_project_doc.OnSaveDocument(fullProjectPath):
             return False
         #强制显示项目视图
         view = GetApp().MainFrame.GetProjectView(show=True).GetView()
-        view.AddProjectToView(doc)
+        view.AddProjectToView(self.new_project_doc)
         return True
 
     def GetProjectTemplate(self):
@@ -863,20 +900,11 @@ class ProjectView(misc.AlarmEventView):
             
     def CleanProject(self):
         project_doc = self.GetDocument()
-        path = os.path.dirname(project_doc.GetFilename())
-        #
         GetApp().configure(cursor="circle")
-        for root,path,files in os.walk(path):
-            for filename in files:
-                fullpath = os.path.join(root,filename)
-                ext = strutils.get_file_extension(fullpath)
-                #清理项目的二进制文件
-                if ext in project_doc.BIN_FILE_EXTS:
-                    GetApp().GetTopWindow().PushStatusText(_("Cleaning \"%s\".") % fullpath)
-                    fileutils.safe_remove(fullpath)
+        project_doc.CleanProject()
         GetApp().GetTopWindow().PushStatusText(_("Clean Completed."))
         GetApp().configure(cursor="")
-        
+
     def ArchiveProject(self):
         GetApp().configure(cursor="circle")
         doc = self.GetDocument()
@@ -1059,7 +1087,7 @@ class ProjectView(misc.AlarmEventView):
                         
                     fileItem = self._treeCtrl.AppendItem(item, os.path.basename(file.filePath), file)
                     startupFile = document.GetModel().RunInfo.StartupFile
-                    #设置项目启动
+                    #设置项目启动文件
                     if startupFile and document.GetModel().fullPath(startupFile) == file.filePath:
                         self._bold_item = fileItem
                         self._treeCtrl.SetItemBold(fileItem)
@@ -1625,6 +1653,27 @@ class ProjectView(misc.AlarmEventView):
             
     def DeleteProject(self, noPrompt=False, closeFiles=True, delFiles=True):
         
+        def delete_dir(dirPath):
+            try:
+                #删除空文件夹
+                os.removedirs(dirPath)
+            except Exception as e:
+                try:
+                    #如果不为空文件夹,则递归删除文件夹及其内容
+                    shutil.rmtree(dirPath)
+                except Exception as e:
+                    messagebox.showerror(_("Delete Project"),"Could not delete empty directory '%s'.\n%s" % (dirPath, e),
+                              parent=self.GetFrame())
+                              
+        def delete_file(filePath):
+            try:
+                #删除只读文件之前需要设置文件可写
+                os.chmod(filePath, stat.S_IWRITE)
+                os.remove(filePath)
+            except Exception as e:
+                messagebox.showerror(_("Delete Project"),"Could not delete file '%s'.\n%s" % (filePath, e),
+                              parent=self.GetFrame())
+
         class DeleteProjectDialog(ui_base.CommonModaldialog):
         
             def __init__(self, parent, doc):
@@ -1641,6 +1690,12 @@ class ProjectView(misc.AlarmEventView):
                 closeDeletedCtrl = ttk.Checkbutton(self.main_frame,text=_("Close open files belonging to project"),variable=self._closeDeletedChkVar)
                 closeDeletedCtrl.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
                 misc.create_tooltip(closeDeletedCtrl,_("Closes open editors for files belonging to project"))
+                
+                self._delallFilesChkVar = tk.IntVar(value=False)
+                delallFilesCtrl = ttk.Checkbutton(self.main_frame,text=_("Delete all files in project directory"),variable=self._delallFilesChkVar)
+                delallFilesCtrl.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
+                misc.create_tooltip(delallFilesCtrl,_("Deletes files from disk not belonging to project"))
+                
                 self.AddokcancelButton()
 
         doc = self.GetDocument()
@@ -1648,6 +1703,7 @@ class ProjectView(misc.AlarmEventView):
             dlg = DeleteProjectDialog(self.GetFrame(), doc)
             status = dlg.ShowModal()
             delFiles = dlg._delFilesChkVar.get()
+            delallFiles = dlg._delallFilesChkVar.get()
             closeFiles = dlg._closeDeletedChkVar.get()
             if status == constants.ID_CANCEL:
                 return
@@ -1683,17 +1739,10 @@ class ProjectView(misc.AlarmEventView):
             dirPaths = []
             for filePath in filesInProject:
                 if os.path.isfile(filePath):
-                    try:
-                        dirPath = os.path.dirname(filePath)
-                        if dirPath not in dirPaths:
-                            dirPaths.append(dirPath)
-                            
-                        os.remove(filePath)
-                    except:
-                        wx.MessageBox("Could not delete file '%s'.\n%s" % (filePath, sys.exc_value),
-                                      _("Delete Project"),
-                                      wx.OK | wx.ICON_ERROR,
-                                      self.GetFrame())
+                    dirPath = os.path.dirname(filePath)
+                    if dirPath not in dirPaths:
+                        dirPaths.append(dirPath)
+                    delete_file(filePath)
                                       
         filePath = doc.GetFilename()
         
@@ -1716,11 +1765,9 @@ class ProjectView(misc.AlarmEventView):
         if os.path.isfile(filePath):
             try:
                 os.remove(filePath)
-            except:
-                wx.MessageBox("Could not delete project file '%s'.\n%s" % (filePath, sys.exc_value),
-                              _("Delete Prjoect"),
-                              wx.OK | wx.ICON_EXCLAMATION,
-                              self.GetFrame())
+            except Exception as e:
+                messagebox.showerror(_("Delete Project"),"Could not delete project file '%s'.\n%s" % (filePath, e),
+                              parent=self.GetFrame())
             
         # remove empty directories from file system
         if delFiles:
@@ -1731,14 +1778,16 @@ class ProjectView(misc.AlarmEventView):
                 if os.path.isdir(dirPath):
                     files = os.listdir(dirPath)
                     if not files:
-                        try:
-                            os.rmdir(dirPath)
-                        except:
-                            wx.MessageBox("Could not delete empty directory '%s'.\n%s" % (dirPath, sys.exc_value),
-                                          _("Delete Project"),
-                                          wx.OK | wx.ICON_EXCLAMATION,
-                                          self.GetFrame())
-        
+                        delete_dir(dirPath)
+        if delallFiles:
+            for root,dirs,files in os.walk(doc.GetPath()):
+                for filename in files:
+                    filePath = os.path.join(root,filename)
+                    delete_file(filePath)
+                for dir_name in dirs:
+                    dirPath = os.path.join(root,dir_name)
+                    delete_dir(dirPath)
+                delete_dir(root)
 
     def OnKeyPressed(self, event):
         key = event.GetKeyCode()
@@ -2062,6 +2111,12 @@ class ProjectOptionsPanel(ui_utils.BaseConfigurationPanel):
         self.loadFolderState_chkvar = tk.IntVar(value=utils.profile_get_int("LoadFolderState", True))
         loadFolderStateCheckBox = ttk.Checkbutton(self, text=_("Load folder state when open project"),variable=self.loadFolderState_chkvar)
         loadFolderStateCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
+        
+
+        self.promptDeprecated_chkvar = tk.IntVar(value=utils.profile_get_int("PromptProjectAnalyzerDeprecated", True))
+        promptDeprecatedCheckBox = ttk.Checkbutton(self, text=_("Prompt warning when project analyzer version is deprecated"),variable=self.promptDeprecated_chkvar)
+        promptDeprecatedCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
+        
 ##        if not ACTIVEGRID_BASE_IDE:
 ##            self._projShowWelcomeCheckBox = wx.CheckBox(self, -1, _("Show Welcome Dialog"))
 ##            self._projShowWelcomeCheckBox.SetValue(config.ReadInt("RunWelcomeDialog2", True))
@@ -2091,6 +2146,7 @@ class ProjectOptionsPanel(ui_utils.BaseConfigurationPanel):
         utils.profile_set(consts.PROJECT_DOCS_SAVED_KEY, self.projectsavedoc_chkvar.get())
         utils.profile_set("PromptSaveProjectFile", self.promptSavedoc_chkvar.get())
         utils.profile_set("LoadFolderState", self.loadFolderState_chkvar.get())
+        utils.profile_set("PromptProjectAnalyzerDeprecated", self.promptDeprecated_chkvar.get())
        # if not ACTIVEGRID_BASE_IDE:
          #   config.WriteInt("RunWelcomeDialog2", self._projShowWelcomeCheckBox.GetValue())
           #  config.Write(APP_LAST_LANGUAGE, self._langCtrl.GetStringSelection())

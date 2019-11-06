@@ -30,6 +30,7 @@ PROJECT_VERSION_050730 = '10'
 PROJECT_VERSION_050826 = '11'
 
 PROJECT_VERSION_190719 = '12'
+PROJECT_VERSION_191025 = '13'
 
 #----------------------------------------------------------------------------
 # Classes
@@ -38,7 +39,8 @@ PROJECT_VERSION_190719 = '12'
 class BaseProject(object):
 
     __xmlname__ = "project"
-    __xmlexclude__ = ('fileName', '_projectDir', '_getDocCallback', '_cacheEnabled','_startupfile')
+    #_properties是12版本出现的元素,后面的版本去掉这个元素了
+    __xmlexclude__ = ('fileName', '_projectDir', '_getDocCallback', '_cacheEnabled','_startupfile','_properties')
     __xmlattributes__ = ("_homeDir", "version","name","id")
     __xmlrename__ = { "_homeDir":"homeDir", "_appInfo":"appInfo" }
     __xmlflattensequence__ = { "_files":("file",) }
@@ -47,7 +49,7 @@ class BaseProject(object):
 
     def __init__(self):
         self.__xmlnamespaces__ = { PROJECT_NAMESPACE_URL : xmlutils.AG_NS_URL }
-        self.version = PROJECT_VERSION_190719
+        self.version = PROJECT_VERSION_191025
         self._files = []
         self._projectDir = None  # default for homeDir, set on load
         self._homeDir = None         # user set homeDir for use in calculating relative path
@@ -55,11 +57,7 @@ class BaseProject(object):
         self.name = ''
         self.id = ''
         self._startupfile = None
-        self._properties = ProjectProperty(self)
         self._runinfo = RunInfo(self)
-
-    def GetPropertiPages(self):
-        return self._properties._pages
 
     @property
     def RunInfo(self):
@@ -537,45 +535,14 @@ class ProjectFile(object):
         pyFilename = self.name + suffix
         return self._GetDoc().GetAppDocMgr().fullPath(pyFilename)
 
-
-
-class ProjectProperty(object):
-    __xmlexclude__ = ('_parentProj',)
-    __xmlname__ = "property"
-    __xmlflattensequence__ = { "_pages":("page",) }
-    __xmlattributes__ = []
-    __xmldefaultnamespace__ = xmlutils.AG_NS_URL
-    
-    def __init__(self,parent=None):
-        self._parentProj = parent
-        self._pages = []
-        
-    def AddPage(self,name,item,objclass):
-        page = PropertyPage(name,item,objclass,self)
-        self._pages.append(page)
-
-
-class PropertyPage(object):
-    __xmlexclude__ = ('_parentProj',)
-    __xmlname__ = "page"
-    __xmlattributes__ = ["name",'item','objclass']
-    __xmldefaultnamespace__ = xmlutils.AG_NS_URL
-    
-    def __init__(self,name=None,item=None,objclass=None,parent=None):
-        self._parentProj = parent
-        self.name = name
-        self.item = item
-        self.objclass = objclass
-
 class RunInfo(object):
-
-    __xmlexclude__ = ('_parentProj',)
+    #RunConfig是12版本出现的元素,后面的版本去掉这个元素了
+    __xmlexclude__ = ('_parentProj','RunConfig')
     __xmlname__ = "runInfo"
     __xmldefaultnamespace__ = xmlutils.AG_NS_URL
     
     def __init__(self,parent=None):
         self._parentProj = parent
-        self.RunConfig = None
         self.StartupFile = None
         self.DocumentTemplate = None
     

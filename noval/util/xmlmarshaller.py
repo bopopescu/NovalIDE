@@ -242,7 +242,7 @@ class GenericXMLObject(object):
             else:
                 self.__xmlname__ = xmlName[i+1:]
                 prefix = xmlName[:i]
-                if nsMap.has_key(prefix):
+                if prefix in nsMap:
                     self.__xmldefaultnamespace__ = str(nsMap[prefix])
         if attrs != None:
             for attrname, attr in attrs.items():
@@ -275,7 +275,7 @@ class GenericXMLObject(object):
             for childname, child in children:
                 childstr = str(childname)
                 if childstr in childList:
-                    if not flattenList.has_key(childstr):
+                    if not childstr in flattenList:
                         flattenList[childstr] = (childstr,)
                 else:
                     childList.append(childstr)

@@ -299,3 +299,28 @@ def create_python_process(python_exe,args,shell=True,is_venv=False):
 def create_python_interpreter_process(interpreter,args):
     python_exe = interpreter.Path
     return create_python_process(python_exe, args,is_venv=interpreter.IsVirtual())
+    
+
+class PythonBaseConfigurationPanel(ui_utils.BaseConfigurationPanel):
+    
+    def __init__(self,master,current_project,**kw):
+        self.current_project_document = current_project
+        ui_utils.BaseConfigurationPanel.__init__(self,master,**kw)
+        
+    def DisableNoPythonfile(self,item):
+        '''
+            非python文件时某些配置面板是不可选的
+        '''
+        if item is None:
+            return
+        else:
+            project_view = self.current_project_document.GetFirstView()
+            self.select_project_file = project_view._GetItemFile(item)
+            if not fileutils.is_python_file(self.select_project_file):
+                self.DisableUI(self)
+                
+    def GetItemFile(self,item):
+        filePath = self.current_project_document.GetFirstView()._GetItemFile(item)
+        return self.current_project_document.GetModel().FindFile(filePath)
+            
+        

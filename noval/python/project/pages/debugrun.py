@@ -389,13 +389,11 @@ class RunConfigurationDialog(ui_base.CommonModaldialog):
     def GetMainModuleFile(self):
         return self.startup_panel.MainModuleFile
 
-class DebugRunPanel(ui_utils.BaseConfigurationPanel):
+class DebugRunPanel(pyutils.PythonBaseConfigurationPanel):
     """description of class"""
     def __init__(self,parent,item,current_project):
-        ui_utils.BaseConfigurationPanel.__init__(self,parent)
-
+        pyutils.PythonBaseConfigurationPanel.__init__(self,parent,current_project)
         self._configuration_list = []
-        self.current_project_document = current_project
         project_view = self.current_project_document.GetFirstView()
         self.select_project_file = None
         self.is_folder = False
@@ -449,13 +447,11 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
             isWindowsApplicationCheckBox.pack(fill="x")
             end.pack(fill="x")
 
-        #should use Layout ,could not use Fit method
         #disable all buttons when file is not python file or is folder
-        if not self.IsPythonFile() or self.is_folder:
-            self.edit_configuration_btn['state'] = tk.DISABLED
-            self.remove_configuration_btn['state'] = tk.DISABLED
-            self.new_configuration_btn['state'] = tk.DISABLED
-            self.copy_configuration_btn['state'] = tk.DISABLED
+        if self.is_folder:
+            self.DisableUI(self)
+        elif self.select_project_file is not None:
+            self.DisableNoPythonfile(item)
         self.UpdateUI()
         #folder or package folder has no run configurations
         if not self.is_folder:
@@ -463,12 +459,6 @@ class DebugRunPanel(ui_utils.BaseConfigurationPanel):
 
     def GetProjectName(self):
         return os.path.basename(self.current_project_document.GetFilename())
-        
-    def IsPythonFile(self):
-        if self.select_project_file is not None and \
-                    not fileutils.is_python_file(self.select_project_file):
-            return False
-        return True
         
     def GetStartupFile(self,prompt_error=True):
         try:

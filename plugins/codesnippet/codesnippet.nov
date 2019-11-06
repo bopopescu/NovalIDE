@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<noval:project xmlns:noval="http://www.novalide.com/noval.xsd" version="12" name="codesnippet" id="350C04E8-F290-11E9-AD88-7020840AE5A0">
+  <noval:file filePath="./codesnippet/__init__.py" logicalFolder="codesnippet"/>
+  <noval:file filePath="./setup.py"/>
+  <noval:_properties>
+    <noval:page name="Resource" item="root" objclass="noval.project.resource.ResourcePanel"/>
+    <noval:page name="Debug/Run" item="root" objclass="noval.python.project.pages.debugrun.DebugRunPanel"/>
+    <noval:page name="PythonPath" item="root" objclass="noval.python.project.pages.pythonpath.PythonPathPanel"/>
+    <noval:page name="Interpreter" item="root" objclass="noval.python.project.pages.pythoninterpreter.PythonInterpreterPanel"/>
+    <noval:page name="Project References" item="root" objclass="noval.python.project.pages.projectreferrence.ProjectReferrencePanel"/>
+    <noval:page name="Resource" item="file" objclass="noval.project.resource.ResourcePanel"/>
+    <noval:page name="Debug/Run" item="file" objclass="noval.python.project.pages.debugrun.DebugRunPanel"/>
+    <noval:page name="Resource" item="folder" objclass="noval.project.resource.ResourcePanel"/>
+    <noval:page name="Debug/Run" item="folder" objclass="noval.python.project.pages.debugrun.DebugRunPanel"/>
+  </noval:_properties>
+  <noval:_runinfo>
+    <noval:DocumentTemplate>noval.python.project.viewer.PythonProjectTemplate</noval:DocumentTemplate>
+    <noval:RunConfig>noval.python.project.runconfig.PythonRunconfig</noval:RunConfig>
+    <noval:StartupFile>setup.py</noval:StartupFile>
+  </noval:_runinfo>
+  <noval:interpreter name="3.6" version="3.6.4" path="C:\Users\wukan\AppData\Local\Programs\Python\Python36\python.exe"/>
+</noval:project>

@@ -25,7 +25,6 @@ import noval.util.fileutils as fileutils
 import pypi.pypi as pypi
 import noval.python.project.runconfiguration as runconfiguration
 import os
-import noval.python.interpreter.interpretermanager as interpretermanager
 import shutil
 import noval.python.parser.utils as dirutils
 import noval.terminal as terminal
@@ -33,6 +32,7 @@ import noval.ui_utils as ui_utils
 import noval.python.pyutils as pyutils
 from dummy.userdb import UserDataDb
 import noval.python.interpreter.pythonpackages as pythonpackages
+import noval.menu as tkmenu
 # Local imports
 #-----------------------------------------------------------------------------#
 
@@ -63,13 +63,54 @@ class PyPi(plugin.Plugin):
         self.parent = parent
         """Hook the calculator into the menu and bind the event"""
         utils.get_logger().info("Installing PyPi plugin")
-        ProjectTemplateManager().AddProjectTemplate("Python/PyPI",_("PyPI Package"),[pypi.PypiProjectNameLocationPage,pypi.PypiPackageInformationPage,pypi.PypiOptionPage]) 
-        ProjectTemplateManager().AddProjectTemplate("Python/PyPI",_("PyPI Package Tool"),[pypi.PypiProjectNameLocationPage,pypi.PypiPackageToolInformationPage,pypi.PypiOptionPage])
+        ProjectTemplateManager().AddProjectTemplate("Python/PyPI",_("PyPI Package"),[(pypi.PypiProjectNameLocationPage,{'startup_path':'${ProjectDir}/setup.py','enable_set_startup':False}),pypi.PypiPackageInformationPage,pypi.PypiOptionPage]) 
+        ProjectTemplateManager().AddProjectTemplate("Python/PyPI",_("PyPI Package Tool"),[(pypi.PypiProjectNameLocationPage,{'startup_path':'${ProjectDir}/setup.py','enable_set_startup':False}),pypi.PypiPackageToolInformationPage,pypi.PypiOptionPage])
         if GetApp().GetDebug(): 
-            ProjectTemplateManager().AddProjectTemplate("Python/PyPI",_("Noval Plugin"),[pypi.PypiProjectNameLocationPage,pypi.NovalPluginInformationPage]) 
+            ProjectTemplateManager().AddProjectTemplate("Python/PyPI",_("Noval Plugin"),[(pypi.PypiProjectNameLocationPage,{'startup_path':'${ProjectDir}/setup.py','enable_set_startup':False}),pypi.NovalPluginInformationPage]) 
         GetApp().bind(constants.PROJECTVIEW_POPUP_FILE_MENU_EVT, self.AppenFileMenu,True)
         self.project_browser = GetApp().MainFrame.GetView(consts.PROJECT_VIEW_NAME)
         GetApp().AddMessageCatalog('pypi', __name__)
+        GetApp().bind(constants.PROJECTVIEW_POPUP_ROOT_MENU_EVT, self.AppenRootMenu,True)
+        
+    def AppenRootMenu(self, event):
+        menu = event.get('menu')
+        if self.GetProjectDocument().__class__.__name__ != "PyPIProjectDocument":
+            submenu = menu.GetMenuByname(_("Convert to"))
+            if not submenu:
+                menu.add_separator()
+                submenu = tkmenu.PopupMenu()
+                menu.AppendMenu(NewId(),_("Convert to"),submenu)
+            submenu.Append(NewId(),_("PyPI Project"),handler=lambda:self.Convertto(False)) 
+            
+        elif self.GetProjectDocument().__class__.__name__ != "NovalPluginProjectDocument":
+            submenu = menu.GetMenuByname(_("Convert to"))
+            if not submenu:
+                menu.add_separator()
+                submenu = tkmenu.PopupMenu()
+                menu.AppendMenu(NewId(),_("Convert to"),submenu)
+            submenu.Append(NewId(),_("Noval Plugin Project"),handler=lambda:self.Convertto(True)) 
+        else:
+            pass
+
+    def Convertto(self,is_plugin=False):
+        project_doc = self.GetProjectDocument()
+        if not is_plugin:
+            project_doc.GetModel()._runinfo.DocumentTemplate = "pypi.pypi.PyPIProjectTemplate"
+        else:
+            project_doc.GetModel()._runinfo.DocumentTemplate = "pypi.pypi.NovalPluginProjectTemplate"
+        project_doc.Modify(True)
+        project_doc.Save()
+        assert(project_doc.NeedConvertto(project_doc.GetModel()))
+        project_doc.ConvertTo(project_doc.GetModel(),project_doc.GetFilename())
+        self.GetProjectFrame().GetView().SetDocument(project_doc)
+        self.GetProjectFrame().CloseProject()
+            
+    def GetProjectDocument(self):
+        project_browser = self.GetProjectFrame()
+        return project_browser.GetView().GetDocument()
+        
+    def GetProjectFrame(self):
+        return GetApp().MainFrame.GetView(consts.PROJECT_VIEW_NAME)
 
     def AppenFileMenu(self, event):
          menu = event.get('menu')
@@ -80,29 +121,22 @@ class PyPi(plugin.Plugin):
             item_file = view.GetDocument().GetModel().FindFile(filePath)
             file_configuration = runconfiguration.FileConfiguration(view.GetDocument(),item_file)
             file_configuration_list = file_configuration.LoadConfigurationNames()
-            utils.get_logger().info("%s======================",file_configuration_list)
             if file_configuration_list:
-                if file_configuration_list[0] == 'bdist_egg':
+                if file_configuration_list[0] == 'bdist_novalplugin_egg':
                     menu.add_separator()
                     menu.Append(self.ID_PUBLISH_LOCAL,_("&Publish to Application Install Path"),handler=self.PublishToInstallPath)
                     menu.Append(self.ID_PUBLISH_SERVER,_("&Publish to Web Server"),handler=self.PublishToServer)
-                elif file_configuration_list[0] == 'sdist':
+                elif file_configuration_list[0] in ['sdist','bdist_egg','bdist_wheel']:
                     menu.add_separator()
                     menu.Append(self.ID_PUBLISH_LOCAL,_("&Publish to Local site-packages"),handler=self.PublishToSitePackages)
                     menu.Append(self.ID_PUBLISH_SERVER,_("&Publish to PyPI Server"),handler=self.PublishToPypi)
-                    
-    def GetDistPath(self):
-        view = self.project_browser.GetView()
-        project_path  = os.path.dirname(view.GetDocument().GetFilename())
-        dist_path = os.path.join(project_path,'dist')
-        return dist_path
         
     def GetInstallPluginPath(self,plugin_name):
         dist = GetApp().GetPluginManager().GetPluginDistro(plugin_name)
         #如果插件未安装则选择2种插件目录中的一种
         if not dist:
             #软件安装目录
-            plugin_path = utils.get_sys_plugin_path()
+            plugin_path = utils.profile_get("PluginInstallPath", utils.get_sys_plugin_path())
         else:
             plugin_path = os.path.dirname(dist.location)
         utils.get_logger().info("plugin %s install path is %s",plugin_name,plugin_path)
@@ -116,14 +150,14 @@ class PyPi(plugin.Plugin):
         def get_key_value(line,key,flag,data):
             if line.find(flag) != -1:
                 data[key] = line.replace(flag,"").strip()
-        interpreter = self.GetProjectDocInterpreter()
+        interpreter = self.GetProjectDocument().GetProjectDocInterpreter()
         if not interpreter:
             return
-        startup_file = self.GetProjectStartupFile()
+        startup_file = self.GetProjectDocument().GetProjectStartupFile()
         project_path = self.GetProjectPath()
         args1 = "%s egg_info --egg-base %s" % (startup_file.filePath,project_path)
         pyutils.create_python_interpreter_process(interpreter,args1)
-        egg_path,plugin_name,version = self.GetEgg()
+        egg_path,plugin_name,version = self.GetProjectDocument().GetEgg()
         if not os.path.exists(egg_path):
             messagebox.showerror(_('Pulish to Server'),_("egg file %s is not exist")%egg_path,parent=self.parent)
             return
@@ -133,7 +167,7 @@ class PyPi(plugin.Plugin):
             return
             
         data = {}
-        dist_path = self.GetDistPath()
+        dist_path = self.GetProjectDocument().GetDistPath()
         #获取插件源数据信息,必须先实例化插件
         dist_env = GetApp().GetPluginManager().CreateEnvironment([dist_path])
         for name in dist_env:
@@ -201,51 +235,26 @@ class PyPi(plugin.Plugin):
             messagebox.showinfo(_('Publish to Server'),_("Publish success"),parent=self.parent)
         else:
             messagebox.showerror(_('Publish to Server'),_("Publish fail"),parent=self.parent)
-            
-    def GetEgg(self):
-        dist_path = self.GetDistPath()
-        startup_file = self.GetProjectStartupFile()
-        interpreter = self.GetProjectDocInterpreter()
-        if not interpreter:
-            return
-        cmd = "%s %s --help --fullname"%(interpreter.Path,startup_file.filePath)
-        output = utils.GetCommandOutput(cmd)
-        fullname = output.strip()
-        utils.get_logger().info("interpreter %s minorversion is %s--------------",interpreter.Name,interpreter.MinorVersion)
-        if not interpreter.MinorVersion:
-            interpreter.GetMinorVersion()
-            interpretermanager.InterpreterManager().SavePythonInterpretersConfig()
-        egg_path = "%s/%s-py%s.egg"%(dist_path,fullname,interpreter.MinorVersion)
-        plugin_name = fullname.split("-")[0]
-        version = fullname.split("-")[1]
-        return egg_path,plugin_name,version
         
     def PublishToInstallPath(self):
         '''
             发布插件到本地
         '''
-        egg_path,plugin_name,_v = self.GetEgg()
+        egg_path,plugin_name,_v = self.GetProjectDocument().GetEgg()
+        if egg_path is None:
+            return
         if not os.path.exists(egg_path):
             messagebox.showerror(_('Publish to local'),_("egg file %s is not exist")%egg_path,parent=self.parent)
         else:
             plugin_path = self.GetInstallPluginPath(plugin_name)
-            shutil.copy(egg_path,plugin_path)
+            try:
+                shutil.copy(egg_path,plugin_path)
+            except Exception as e:
+                utils.get_logger().error("%s",e)
+                messagebox.showerror(_('Publish to local'),_("Publish fail:%s")%e,parent=self.parent)
+                return
             GetApp().GetPluginManager().EnablePlugin(plugin_name)
             messagebox.showinfo(_('Publish to local'),_("Publish success"),parent=self.parent)
-            
-    def GetProjectDocInterpreter(self):
-        doc = self.project_browser.GetView().GetDocument()
-        interpreter_info = doc.GetModel().interpreter
-        interpreter = interpretermanager.InterpreterManager().GetInterpreterByName(interpreter_info.name)
-        if interpreter is None:
-            messagebox.showwarning(_('Interpreter not exist'),_("project interpreter %s is not exist,please choose one interpreter")%interpreter_info.name,parent=self.parent)
-            interpreter = interpretermanager.InterpreterManager().ShowChooseInterpreterDlg(self.parent)
-        return interpreter
-        
-    def GetProjectStartupFile(self):
-        doc = self.project_browser.GetView().GetDocument()
-        startup_file = doc.GetModel().StartupFile
-        return startup_file
         
     def GetProjectPath(self):
         doc = self.project_browser.GetView().GetDocument()
@@ -256,9 +265,9 @@ class PyPi(plugin.Plugin):
             发布pypi包到本地解释器
         '''
         view = self.project_browser.GetView()
-        dist_path = self.GetDistPath()
+        dist_path = self.GetProjectDocument().GetDistPath()
         filePath = view.GetSelectedFile()
-        interpreter = self.GetProjectDocInterpreter()
+        interpreter = self.GetProjectDocument().GetProjectDocInterpreter()
         command = "%s %s install"%(interpreter.Path,filePath)
         utils.get_logger().info("start run setup install command: %s in terminal",command)
         terminal.run_in_terminal(command,self.GetProjectPath(),keep_open=False,pause=True,title="abc",overwrite_env=False)
@@ -271,9 +280,9 @@ class PyPi(plugin.Plugin):
         if ret == False:
             return
         view = self.project_browser.GetView()
-        dist_path = self.GetDistPath()
+        dist_path = self.GetProjectDocument().GetDistPath()
         filePath = view.GetSelectedFile()
-        interpreter = self.GetProjectDocInterpreter()
+        interpreter = self.GetProjectDocument().GetProjectDocInterpreter()
         if not interpreter:
             return
         cmd = "%s %s --help --fullname"%(interpreter.Path,filePath)
@@ -315,3 +324,6 @@ class PyPi(plugin.Plugin):
             command = "twine upload %s"%(upload_path)
         utils.get_logger().info("start run twine upload command: %s in terminal",command)
         terminal.run_in_terminal(command,self.GetProjectPath(),keep_open=False,pause=True,title="abc",overwrite_env=False)
+        
+    def GetMinVersion(self):
+        return '1.1.9'

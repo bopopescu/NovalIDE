@@ -3,7 +3,7 @@ import os
 
 class NewProjectConfiguration:
     PROJECT_ADD_SRC_PATH = 1
-    DEFAULT_PROJECT_SRC_PATH = 'Src'
+    DEFAULT_PROJECT_SRC_PATH = 'src'
     def __init__(self,name,location,is_project_dir_created):
         self._name = name
         self._location = location
@@ -36,6 +36,10 @@ class BaseRunconfig():
     @property
     def Arg(self):
         return self._arg
+        
+    @Arg.setter
+    def Arg(self,arg):
+        self._arg = arg
         
     @property
     def Environment(self):

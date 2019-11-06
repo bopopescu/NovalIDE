@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<noval:project xmlns:noval="http://www.novalide.com/noval.xsd" version="13" name="TurtleDemo" id="DD7C1E88-EB3B-11E9-8EC4-005056C00008">
+<noval:project xmlns:noval="http://www.novalide.com/noval.xsd" version="13" name="pyinstaller_plugin" id="2E489724-D483-11E9-A143-005056C00008">
   <noval:file filePath="./setup.py"/>
-  <noval:file filePath="./pyturtledemo/__init__.py" logicalFolder="pyturtledemo"/>
+  <noval:file filePath="./pyinstaller/__init__.py" logicalFolder="pyinstaller"/>
+  <noval:file filePath="./pyinstaller/pyinstall.py" logicalFolder="pyinstaller"/>
   <noval:_runinfo>
     <noval:DocumentTemplate>pypi.pypi.NovalPluginProjectTemplate</noval:DocumentTemplate>
     <noval:StartupFile>setup.py</noval:StartupFile>

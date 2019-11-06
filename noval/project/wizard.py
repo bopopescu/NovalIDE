@@ -179,6 +179,9 @@ class TitledWizardPage(ttk.Frame):
         
     def Validate(self):
         return True
+
+    def Finish(self):
+        return True
         
     def CanFinish(self):
         return self.can_finish

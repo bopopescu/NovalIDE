@@ -68,6 +68,9 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         return "break"
       
     def OnChar(self, event):
+        #按方向键时执行默认操作,否则会屏蔽这些键
+        if event.keysym in ["Up", "KP_Up","Down", "KP_Down"]:
+            return None
         c = event.char
         self.AddInputTags(c)
         #纪录输入的字符
@@ -151,13 +154,16 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         pass
 
     def AppendText(self,source,text,last_readonly=False):
+        '''
+            输出文本时输出框不要设置为readonly,在最后一次输出,即程序完成或者退出时才执行readonly
+        '''
         self.set_read_only(False)
         self.AddText(text)
         self.ScrolltoEnd()
         #rember last position
         self.InputStartPos = self.GetCurrentPos()
         if last_readonly:
-            self.SetReadOnly(True)
+            self.set_read_only(True)
         self.AppendLogs(source,text)
 
     def SetTraceLog(self,trace_log):
@@ -176,11 +182,16 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         self.insert(tk.END, txt)
 
     def AppendErrorText(self, source,text,last_readonly=False):
+        '''
+            输出文本时输出框不要设置为readonly,在最后一次输出,即程序完成或者退出时才执行readonly
+        '''
         self.set_read_only(False)
         tags = ("io",'stderr')
         texteditor.TextCtrl.intercept_insert(self, "insert", text, tags)
+        self.ScrolltoEnd()
+        self.InputStartPos = self.GetCurrentPos()
         if last_readonly:
-            self.SetReadOnly(True)
+            self.set_read_only(True)
         self.AppendLogs(source,text)
 
     def OnModify(self,event):

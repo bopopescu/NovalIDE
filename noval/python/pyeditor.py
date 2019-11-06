@@ -311,6 +311,9 @@ class PythonCtrl(codeeditor.CodeCtrl):
         self.tag_bind("motion", "<Motion>", self.OnDwellStart)
         
     def OnDwellStart(self,event):
+        #是否启用智能提示以及是否鼠标悬停显示文档提示
+        if not utils.profile_get_int("UseSmartTips", True) or not utils.profile_get_int("ShowDocumentTips", True):
+            return
         mouse_index = self.index("@%d,%d" % (event.x, event.y))
         pos = self.get_line_col(mouse_index)
         line,col = pos
@@ -616,6 +619,8 @@ class PythonCtrl(codeeditor.CodeCtrl):
         return False,''
                 
     def OnChar(self,event):
+        if not utils.profile_get_int("UseSmartTips", True):
+            return
         keycode = event.keycode
         pos = self.GetCurrentPos()
         pos = pos[0],pos[1]-1
@@ -792,7 +797,8 @@ class PythonCtrl(codeeditor.CodeCtrl):
         '''
             回车键自动缩进文本
         '''
-        if not self.AutoCompActive():
+        #是否启用自动缩进
+        if not self.AutoCompActive() and utils.profile_get_int("AutoIndent", True):
             self.DoIndent()
             #屏蔽默认回车键事件
             return "break"

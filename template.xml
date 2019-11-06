@@ -155,7 +155,7 @@
         <Template>
         <Icon Large="noval/tool/bmp_source/template/txt.bmp" Small="noval/tool/bmp_source/template/txt-small.bmp"/>
         <Ext>.sql</Ext>
-        <Content> noval/tool/data/template/TextFile.tar.bz2 </Content>
+        <Content> noval/data/template/TextFile.tar.bz2 </Content>
         <DefaultName>SqlFile.sql</DefaultName>
         <Name>SQL Script</Name>
         <Description>a empty sql script</Description>
@@ -171,7 +171,7 @@
         <Template>
         <Icon Large="noval/tool/bmp_source/template/txt.bmp" Small="noval/tool/bmp_source/template/txt-small.bmp"/>
         <Ext>.txt</Ext>
-        <Content> noval/tool/data/template/TextFile.tar.bz2 </Content>
+        <Content> noval/data/template/TextFile.tar.bz2 </Content>
         <DefaultName>TextFile.txt</DefaultName>
         <Name>Text file</Name>
         <Description>An empty text file</Description>

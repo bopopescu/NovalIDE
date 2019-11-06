@@ -2,8 +2,8 @@ from distutils.core import setup
 from setuptools import find_packages
 
 setup(name='Pyinstaller',
-        version='1.0',
-        description='''use pyinstaller tool to convert to python project to windows exe''',
+        version='1.1',
+        description='''PyInstaller bundles a Python application and all its dependencies into a single package.The user can run the packaged app without installing a Python interpreter or any modules''',
         author='wukan',
         author_email='wekay102200@sohu.com',
         url='http://www.novalide.com',
@@ -11,7 +11,7 @@ setup(name='Pyinstaller',
         packages=find_packages(),
         install_requires=[],
         zip_safe=False,
-        package_data={'pyinstaller': ['locale/zh_CN/LC_MESSAGES/pyinstaller.mo']},
+        package_data={'pyinstaller': ['locale/zh_CN/LC_MESSAGES/pyinstaller.mo','file_version_info.txt']},
         classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',

@@ -1527,9 +1527,7 @@ class TextOptionsPanel(ui_utils.BaseConfigurationPanel):
    #     hasTabsCheckBox = ttk.Checkbutton(self,text=_("Use spaces instead of tabs"),variable=self._hasTabsVar)
     #    hasTabsCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
         
-        self._tabCompletionVar = tk.IntVar(value=utils.profile_get_int("TextTabCompletion", True))
-        tabCompletionCheckBox = ttk.Checkbutton(self,text=_("Allow code completion with tab-key"),variable=self._tabCompletionVar)
-        tabCompletionCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
+
 ##        row = ttk.Frame(self)
 ##        indentWidthLabel = ttk.Label(row,text=_("Indent Width:"))
 ##        indentWidthLabel.pack(side=tk.LEFT)
@@ -1548,6 +1546,24 @@ class TextOptionsPanel(ui_utils.BaseConfigurationPanel):
         self.edge_spin_ctrl = tk.Spinbox(row, from_=0, to=160,textvariable=self._edgeWidthVar)
         self.edge_spin_ctrl.pack(side=tk.LEFT)
         row.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        
+
+        self.autoIndentVar = tk.IntVar(value=utils.profile_get_int("AutoIndent", True))
+        autoIndentBox = ttk.Checkbutton(self, text=_("Auto Indent"),variable=self.autoIndentVar)
+        autoIndentBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=consts.DEFAUT_CONTRL_PAD_Y)
+
+        sbox = ttk.LabelFrame(self, text=_("Smart tips"))
+        self.use_tips_var =  tk.BooleanVar(value=utils.profile_get_int("UseSmartTips", True))
+        ttk.Checkbutton(sbox,text=_('Use smart tips'),variable=self.use_tips_var).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
+        self.show_tips_var =  tk.BooleanVar(value=utils.profile_get_int("ShowDocumentTips", True))
+        
+        self._tabCompletionVar = tk.IntVar(value=utils.profile_get_int("TextTabCompletion", True))
+        tabCompletionCheckBox = ttk.Checkbutton(sbox,text=_("Allow code completion with tab-key"),variable=self._tabCompletionVar)
+        tabCompletionCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
+        
+        ttk.Checkbutton(sbox,text=_('Show tips when mouse hover over word'),variable=self.show_tips_var).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
+        sbox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
+        
 ##        defaultEOLModelLabel = wx.StaticText(self, -1, _("Default EOL Mode:"))
 ##        self.eol_model_combox = wx.ComboBox(self, -1,choices=EOLFormat.EOLFormatDlg.EOL_CHOICES,style= wx.CB_READONLY)
 ##        if sysutilslib.isWindows():
@@ -1615,6 +1631,9 @@ class TextOptionsPanel(ui_utils.BaseConfigurationPanel):
         GetApp().MainFrame.GetNotebook().update_appearance()
         utils.profile_set("TextTabCompletion",self._tabCompletionVar.get())
         utils.profile_set("check_text_tabs",self.checkTabsVar.get())
+        utils.profile_set("UseSmartTips",self.use_tips_var.get())
+        utils.profile_set("ShowDocumentTips",self.show_tips_var.get())
+        utils.profile_set("AutoIndent",self.autoIndentVar.get())
         return True
                
          

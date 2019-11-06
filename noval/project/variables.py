@@ -11,7 +11,6 @@ import noval.ui_base as ui_base
 import noval.ttkwidgets.treeviewframe as treeviewframe
 from noval.python.parser.utils import py_sorted
 import getpass
-import noval.project.baseviewer as baseviewer
 import noval.constants as constants
 
 PROJECT_NAME_VARIABLE = "ProjectName"
@@ -29,7 +28,7 @@ def GetProjectVariableManager(current_project=None):
     if current_project is None:
         current_project = GetApp().MainFrame.GetProjectView(generate_event=False).GetCurrentProject()
     if current_project is None:
-        current_project = baseviewer.ProjectDocument.GetUnProjectDocument()
+        current_project = GetApp().project_document_class.GetUnProjectDocument()
     name = current_project.GetModel().name
     if name not in PRJECT_VARIABLES_MANAGER:
         PRJECT_VARIABLES_MANAGER[name] = VariablesManager(current_project)

@@ -122,10 +122,13 @@ class IntellisenceManager(object):
     def Stop(self):
         self.WriteUnfinishFiles()
         self._is_stopped = True
-        if self._process_obj != None and self.IsRunning:
-            for pid in utils.get_child_pids(self._process_obj.pid):
-                os.kill(pid,signal.SIGTERM)
-            self._process_obj.kill()
+        
+##        if self._process_obj != None and self.IsRunning:
+##            for pid in utils.get_child_pids(self._process_obj.pid):
+##                os.kill(pid,signal.SIGTERM)
+##            self._process_obj.kill()
+##            
+
            # self._process_obj.terminate(gracePeriod=2.0)
             #os.killpg( p.pid,signal.SIGUSR1)
     @property

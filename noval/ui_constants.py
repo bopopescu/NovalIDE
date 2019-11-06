@@ -31,3 +31,4 @@ _("New Project From Existing Code")
 
 _('Misc')
 _('Appearance')
+_('Plugin')

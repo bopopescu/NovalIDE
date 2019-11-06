@@ -13,7 +13,7 @@
 import logging
 import traceback
 import sys
-import os    
+import os    
 import types
 import noval.util.utillang as utillang
 import noval.util.datetimeparser as datetimeparser
@@ -235,8 +235,8 @@ def toDiffableRepr(value, maxLevel=None):
         s = "[" + ", ".join(items) + "]"
     elif (isinstance(value, dict)):
         items = []
-        for key, val in value.iteritems():
-            if (isinstance(val, UnicodeType)):
+        for key, val in value.items():
+            if (isinstance(val, unicode)):
                 items.append("'%s': u'%s'" % (key, toDiffableString(val, maxLevel)))
             elif (isinstance(val, basestring)):
                 items.append("'%s': '%s'" % (key, toDiffableString(val, maxLevel)))

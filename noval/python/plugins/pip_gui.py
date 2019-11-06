@@ -37,6 +37,7 @@ import noval.python.interpreter.pythonpackages as pythonpackages
 import noval.plugins.update as updateutils
 import noval.editor.text as texteditor
 import noval.util.urlutils as urlutils
+import noval.preference as preference
 
 #找回pip工具的url地址
 PIP_INSTALLER_URL = "https://bootstrap.pypa.io/get-pip.py"
@@ -787,7 +788,7 @@ class PluginsPipDialog(PipDialog):
         #显示插件安装目录
         if self._get_target_directory():
             self.info_text.direct_insert("end", _("Target:  "), ("caption",))
-            self.info_text.direct_insert("end", _("User directory or Application directory\n"), ("caption",))
+            self.info_text.direct_insert("end", _("User directory or System directory\n"), ("caption",))
 
             self.info_text.direct_insert(
                 "end",
@@ -955,7 +956,8 @@ class PluginsPipDialog(PipDialog):
         #执行插件的安装操作,需要在插件里面执行
         GetApp().GetPluginManager().LoadPluginByName(name)
         #必须重新加载后才能启用插件
-        GetApp().GetPluginManager().EnablePlugin(name)
+        if utils.profile_get_int("ENABLE_INSTALL_PLUGIN", True):
+            GetApp().GetPluginManager().EnablePlugin(name)
         #将插件安装信息通知到界面
         self._install_plugins[name] = {
             "project_name": name,
@@ -1562,6 +1564,44 @@ def _extract_click_text(widget, event, tag):
         logging.exception("extracting click text")
 
     return None
+    
+class PluginOptionPanel(ui_utils.CommonOptionPanel):
+    """
+    """
+    def __init__(self, parent):
+        ui_utils.CommonOptionPanel.__init__(self, parent)
+        
+        sbox = ttk.LabelFrame(self.panel, text=_("Default plugin directory:"))
+        value = self.GetPluginInstallpath()
+        self.default_plugin_dirvar = tk.IntVar(value=value)
+        ttk.Radiobutton(sbox,text=_('User directory'),variable=self.default_plugin_dirvar,value=0).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
+        ttk.Radiobutton(sbox,text=_('System directory'),variable=self.default_plugin_dirvar,value=1).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
+        sbox.pack(fill=tk.X)
+        self._enablePluginCheckVar = tk.IntVar(value=utils.profile_get_int("ENABLE_INSTALL_PLUGIN", True))
+        enablePluginCheckBox = ttk.Checkbutton(self.panel,text=_("Enable plugin after install it"),variable=self._enablePluginCheckVar)
+        enablePluginCheckBox.pack(fill=tk.X,pady=consts.DEFAUT_CONTRL_PAD_Y)
+
+    def OnOK(self, optionsDialog):
+        plugin_install_path = ''
+        if self.default_plugin_dirvar.get() == 0:
+            plugin_install_path = utils.get_user_plugin_path()
+        elif self.default_plugin_dirvar.get() == 1:
+            plugin_install_path = utils.get_sys_plugin_path()
+        utils.profile_set("PluginInstallPath", plugin_install_path)
+        utils.profile_set("ENABLE_INSTALL_PLUGIN", self._enablePluginCheckVar.get())
+        return True
+        
+    def GetPluginInstallpath(self):
+        #调式模式时默认安装到应用程序目录(系统目录)
+        #正常时默认安装到用户目录
+        if GetApp().GetDebug():
+            value = utils.get_sys_plugin_path()
+        else:
+            value = utils.get_user_plugin_path()
+        plugin_install_path = utils.profile_get("PluginInstallPath",value)
+        if plugin_install_path == utils.get_sys_plugin_path():
+            return 1
+        return 0
 
 class PluginManagerGUI(plugin.Plugin):
     plugin.Implements(iface.MainWindowI)
@@ -1575,6 +1615,7 @@ class PluginManagerGUI(plugin.Plugin):
                                   ("Plugin Manager GUI"),handler=self.ShowPluginManagerDlg,img=GetApp().GetImage("plugin.png"))
         self.message = {'msg':_("fetching plugin from server...")}
         self.plugin_dlg = None
+        preference.PreferenceManager().AddOptionsPanelClass("Misc","Plugin",PluginOptionPanel)
         self.GetPlugins()
         
     def ShowPluginManagerDlg(self):

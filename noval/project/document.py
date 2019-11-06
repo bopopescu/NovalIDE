@@ -10,6 +10,8 @@ import noval.project.basemodel as projectlib
 import noval.util.fileutils as fileutils
 import noval.consts as consts
 import six
+import noval.python.interpreter.interpretermanager as interpretermanager
+import noval.util.strutils as strutils
 
 PROJECT_KEY = "/NOV_Projects"
 
@@ -46,6 +48,7 @@ class ProjectDocument(core.Document):
         self.document_watcher = filewatcher.FileAlarmWatcher()
         self._commandProcessor = projectcommand.CommandProcessor()
         self._debugger = None
+        self._is_version_update = False
 
     def PromptToSaveFiles(self):
         def save_docs():
@@ -138,14 +141,45 @@ class ProjectDocument(core.Document):
     def OnCreate(self, path, flags):
         view = GetApp().MainFrame.GetProjectView().GetView()
         # All project documents share the same view.
+        #所有项目共用一个视图对象
         self.AddView(view)
         return view
 
     def LoadObject(self, fileObject):
         self.SetModel(projectlib.load(fileObject))
+        if self.GetModel().version != projectlib.PROJECT_VERSION_191025:
+            if utils.profile_get_int("PromptProjectAnalyzerDeprecated", True):
+                messagebox.showwarning(_("Warning"),_("Project analyzer version '%s' is deprecated,will update to latest verion '%s'")%(self.GetModel().version,projectlib.PROJECT_VERSION_191025))
+            self.GetModel().version = projectlib.PROJECT_VERSION_191025
+            self._is_version_update = True
       #  self.GetModel().SetDocCallback(GetDocCallback)
         return True
 
+    def CleanProject(self):
+        self.Cleandir(self.GetPath(),self.BIN_FILE_EXTS)
+
+    def Cleandir(self,path,filters=[]):
+        '''
+            清理目录下的所有文件或者带某些后缀的文件
+        '''
+        for root,path,files in os.walk(path):
+            for filename in files:
+                fullpath = os.path.join(root,filename)
+                removed = False
+                if not filters:
+                    removed = True
+                else:
+                    ext = strutils.get_file_extension(fullpath)
+                    #清理项目的二进制文件
+                    if ext in filters:
+                        removed = True
+                if removed:
+                    self.Cleanfile(fullpath)
+
+    def Cleanfile(self,filepath):
+        GetApp().GetTopWindow().PushStatusText(_("Cleaning \"%s\".") % filepath)
+        fileutils.safe_remove(filepath)
+        
 
     def SaveObject(self, fileObject):
         projectlib.save(fileObject, self.GetModel())
@@ -188,20 +222,22 @@ class ProjectDocument(core.Document):
             return True  # if we return False, the Project View is destroyed, Service windows shouldn't be destroyed
 
         project_obj = self.GetModel()
-        project_document_template_class = utils.GetClassFromDynamicImportModule(project_obj._runinfo.DocumentTemplate) 
-        if project_document_template_class != self.GetDocumentTemplate().__class__:
-            utils.get_logger().warn('default project document template %s is not same to the template %s assigned in project file,will reload project again',self.GetDocumentTemplate().__class__,project_obj._runinfo.DocumentTemplate)
-            #先删除原有的文档
-            if self in self.GetDocumentManager().GetDocuments():
-                self.Destroy()
-            fileObject.close()
-            #用新模板创建文档
-            GetApp().GetDocumentManager().CreateTemplateDocument(project_document_template_class.CreateProjectTemplate(),filePath, core.DOC_SILENT|core.DOC_OPEN_ONCE)
-            #必须返回True
+        try:
+            #判断项目里面的模板和默认项目模板是否一致,如果不一致则需要转换为项目
+            if self.NeedConvertto(project_obj):
+                fileObject.close()
+                #转换项目模板
+                self.ConvertTo(project_obj,filePath)
+                #必须返回True
+                return True
+        except ImportError as e:
+            messagebox.showerror(GetApp().GetAppName(),_("Convert project '%s' error.  %s") % (fileutils.get_filename_from_path(filePath), e))
             return True
         #to make compatible to old version,which old project instance has no id attr
         if project_obj.id == '':
             project_obj.id = str(uuid.uuid1()).upper()
+            self._is_version_update = True
+        if self._is_version_update:
             self.Modify(True)
         else:
             self.Modify(False)
@@ -214,6 +250,26 @@ class ProjectDocument(core.Document):
         self.document_watcher.AddFileDoc(self)
         GetApp().GetTopWindow().PushStatusText(_("Load project \"%s\" success.")%filePath)
         return True
+        
+    def ConvertTo(self,project_obj,filePath):
+        '''
+            将当前项目转换为其它项目
+        '''
+        utils.get_logger().warn('default project template %s is not same to the template %s assigned in project file,reload project again...',self.GetDocumentTemplate().__class__,project_obj._runinfo.DocumentTemplate)
+        #先删除原有的文档
+        if self in self.GetDocumentManager().GetDocuments():
+            self.Destroy()
+        project_document_template_class = utils.GetClassFromDynamicImportModule(project_obj._runinfo.DocumentTemplate) 
+        #用新模板创建文档
+        GetApp().GetDocumentManager().CreateTemplateDocument(project_document_template_class.CreateProjectTemplate(),filePath, core.DOC_SILENT|core.DOC_OPEN_ONCE)
+    
+    def NeedConvertto(self,project_obj):
+        '''
+            当前项目模板是否需要转换为其它项目模板
+            依据是项目文件里面的项目模板信息
+        '''
+        project_document_template_class = utils.GetClassFromDynamicImportModule(project_obj._runinfo.DocumentTemplate)
+        return project_document_template_class != self.GetDocumentTemplate().__class__
 
     def OnSaveDocument(self, filename):
         self.document_watcher.StopWatchFile(self)
@@ -289,8 +345,7 @@ class ProjectDocument(core.Document):
                 if self.GetModel().FindFile(filePath):
                     oldFilePaths.append(filePath)
                     range_value += 1
-                    wx.CallAfter(Publisher.sendMessage, ImportFiles.NOVAL_MSG_UI_IMPORT_FILES_PROGRESS, \
-                             value=range_value,is_cancel=self.GetFirstView().IsStopImport)
+                    que.put((range_value,filePath))
                 else:
                     newFilePaths.append(filePath)
     
@@ -640,6 +695,9 @@ class ProjectDocument(core.Document):
         return self.GetModel().StartupFile
 
     def GetandSetProjectStartupfile(self):
+        '''
+            项目启动文件为空时弹出设置界面
+        '''
         startup_file = self.GetStartupFile()
         if startup_file is None:
             messagebox.showerror(GetApp().GetAppName(),_("Your project needs a Python script marked as startup file to perform this action"))
@@ -647,6 +705,20 @@ class ProjectDocument(core.Document):
             GetApp().MainFrame.GetProjectView(generate_event=False).OnProjectProperties(item_name="Debug/Run")
             return None
         return startup_file
+
+    def GetandSetProjectDocInterpreter(self):
+        '''
+            项目解释器不存在时弹出设置界面并回写到项目文件中
+        '''
+        interpreter_info = self.GetModel().interpreter
+        interpreter = interpretermanager.InterpreterManager().GetInterpreterByName(interpreter_info.name)
+        if interpreter is None:
+            messagebox.showwarning(_('Interpreter not exist'),_("project interpreter %s is not exist,please choose one interpreter")%interpreter_info.name)
+            interpreter = interpretermanager.InterpreterManager().ShowChooseInterpreterDlg(None)
+            if interpreter:
+                self.GetModel().SetInterpreter(interpreter.Name)
+                self.Modify(True)
+        return interpreter
 
     def GetFileRefs(self):
         return self.GetModel().findAllRefs()
@@ -734,7 +806,7 @@ class ProjectDocument(core.Document):
         '''
             获取项目的运行配置类,是项目文件的_runinfo下面的RunConfig值
         '''
-        run_config_name = self.GetModel()._runinfo.RunConfig
+        run_config_name = self.GetDocumentTemplate().GetRunconfigClass()
         if not run_config_name:
             raise RuntimeError(_("We don't know how to run the program"))
         return utils.GetClassFromDynamicImportModule(run_config_name)

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from noval import _
 import tkinter as tk
 from tkinter import ttk
@@ -18,6 +19,10 @@ class PythonInterpreterPanel(ui_utils.BaseConfigurationPanel):
         row = ttk.Frame(self)
         interpreterLabelText = ttk.Label(row, text=_("Interpreter:")).pack(fill="x",side=tk.LEFT)
         choices,default_selection = interpretermanager.InterpreterManager().GetChoices()
+        #默认选择项目文件中指定的解释器
+        interpreter_info = self._current_project.GetModel().interpreter
+        if interpreter_info.name in choices:
+            default_selection = choices.index(interpreter_info.name)
         self.interpreterCombo = ttk.Combobox(row,values=choices)
         self.interpreterCombo['state'] = 'readonly'
         self.interpreterCombo.pack(fill="x",side=tk.LEFT,expand=1)
@@ -32,6 +37,10 @@ class PythonInterpreterPanel(ui_utils.BaseConfigurationPanel):
             self.interpreterCombo.current(choices.index(project_interpreter_name))
         
     def OnOK(self,optionsDialog):
+        #界面上更改解释器,项目文件中也要更改解释器信息
+        if self.GetInterpreter().Name != self._current_project.GetModel().interpreter.name:
+            self._current_project.GetModel().SetInterpreter(self.GetInterpreter().Name)
+            self._current_project.Modify(True)
         utils.profile_set(self._current_project.GetKey() + "/Interpreter",self.GetInterpreter().Name)
         return True
         

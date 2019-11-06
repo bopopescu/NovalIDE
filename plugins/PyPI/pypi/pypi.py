@@ -27,12 +27,202 @@ import noval.python.parser.utils as dirutils
 import noval.python.project.runconfiguration as runconfiguration
 import json
 import io as cStringIO
+import noval.misc as misc
+import noval.python.pyutils as pyutils
+from noval.python.project.model import *
+import noval.python.interpreter.interpretermanager as interpretermanager
+
+class PyPIOptionPanel(pyutils.PythonBaseConfigurationPanel):
+    
+    ZIP_FILE_EXTENSION = 0
+    EGG_FILE_EXTENSION = 1
+    WHEEL_FILE_EXTENSION = 2
+    def __init__(self,parent,item,current_project,**kwargs):
+        pyutils.PythonBaseConfigurationPanel.__init__(self,parent,current_project)
+        self.columnconfigure(1, weight=1)
+        self.current_project = current_project
+        self.item = item
+
+        self.output_default_var = tk.IntVar(value=self.ZIP_FILE_EXTENSION)
+        sbox = ttk.LabelFrame(self, text=_("Output file extension:"))
+        self.zip_btn = ttk.Radiobutton(sbox,text=_('Zip'),variable=self.output_default_var,value=self.ZIP_FILE_EXTENSION)
+        self.zip_btn.pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
+        self.whl_btn = ttk.Radiobutton(sbox,text=_('Wheel'),variable=self.output_default_var,value=self.WHEEL_FILE_EXTENSION)
+        self.whl_btn.pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
+        ttk.Radiobutton(sbox,text=_('Egg'),variable=self.output_default_var,value=self.EGG_FILE_EXTENSION).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
+        sbox.pack(fill="x")
+        self.DisableNoPythonfile(item)
+        
+    def OnOK(self,optionsDialog=None):
+        self.current_project.SaveBuildConfiguration(self.GetItemFile(self.item),self.GetBuildArgs(),self.GetBuildArgs(),self.current_project.GetModel().interpreter.name)
+        return True
+        
+    def GetBuildArgs(self):
+        if self.output_default_var.get() == self.ZIP_FILE_EXTENSION:
+            return 'sdist'
+        elif self.output_default_var.get() == self.EGG_FILE_EXTENSION:
+            return 'bdist_egg'
+        elif self.output_default_var.get() == self.WHEEL_FILE_EXTENSION:
+            return 'bdist_wheel'
+        
+
+class NovalPluginOptionPanel(PyPIOptionPanel):
+    def __init__(self,parent,item,current_project,**kwargs):
+        PyPIOptionPanel.__init__(self,parent,item,current_project,**kwargs)
+        self.output_default_var.set(PyPIOptionPanel.EGG_FILE_EXTENSION)
+        self.zip_btn['state'] = tk.DISABLED
+        self.whl_btn['state'] = tk.DISABLED
+        
+    def OnOK(self,optionsDialog=None):
+        self.current_project.SaveBuildConfiguration(self.GetItemFile(self.item),"bdist_novalplugin_egg",self.GetBuildArgs(),self.current_project.GetModel().interpreter.name)
+        return True
+
+class PyPIProject(PythonProject):
+    def __init__(self):
+        super(PyPIProject,self).__init__()
+        self._runinfo.DocumentTemplate = "pypi.pypi.PyPIProjectTemplate"
+        
+
+class NovalPluginProject(PythonProject):
+    def __init__(self):
+        super(NovalPluginProject,self).__init__()
+        self._runinfo.DocumentTemplate = "pypi.pypi.NovalPluginProjectTemplate"
+
+class PyPIProjectDocument(PythonProjectDocument):
+
+    def __init__(self, model=None):
+        ProjectDocument.__init__(self,model)
+
+    @staticmethod
+    def GetProjectModel():
+        return PyPIProject()
+        
+    def CleanProject(self):
+        PythonProjectDocument.CleanProject(self)
+        self.CleanBuilddir()
+        self.CleanOutput()
+
+    def CleanBuilddir(self):
+        project_path = self.GetPath()
+        build_dir = os.path.join(project_path,'build')
+        self.Cleandir(build_dir)
+        
+    def GetDistPath(self):
+        dist_path = os.path.join(self.GetPath(),'dist')
+        return dist_path
+        
+    def GetProjectStartupFile(self):
+        startup_file = self.GetandSetProjectStartupfile()
+        return startup_file
+            
+    def GetProjectDocInterpreter(self):
+        return self.GetandSetProjectDocInterpreter()
+
+    def GetEgg(self):
+        dist_path = self.GetDistPath()
+        startup_file = self.GetProjectStartupFile()
+        if startup_file is None:
+            return None,None,None
+        interpreter = self.GetProjectDocInterpreter()
+        if not interpreter:
+            return None,None,None
+        cmd = "%s %s --help --fullname"%(interpreter.Path,startup_file.filePath)
+        output = utils.GetCommandOutput(cmd)
+        fullname = output.strip()
+        utils.get_logger().info("interpreter %s minorversion is %s--------------",interpreter.Name,interpreter.MinorVersion)
+        if not interpreter.MinorVersion:
+            interpreter.GetMinorVersion()
+            interpretermanager.InterpreterManager().SavePythonInterpretersConfig()
+        egg_path = "%s/%s-py%s.egg"%(dist_path,fullname,interpreter.MinorVersion)
+        plugin_name = fullname.split("-")[0]
+        version = fullname.split("-")[1]
+        return egg_path,plugin_name,version
+        
+    def CleanOutput(self):
+        egg_path = self.GetEgg()[0]
+        utils.get_logger().info('egg path is %s----------',egg_path)
+        self.Cleanfile(egg_path)
+        
+    def SaveBuildConfiguration(self,main_module_file,configuration_name,build_args,interpreter_name):
+        file_configuration = runconfiguration.FileConfiguration(self,main_module_file)
+        file_configuration_list = [configuration_name]
+        pj_file_key = file_configuration.GetRootKeyPath()
+        #update file configuration list
+        utils.profile_set(pj_file_key + "/ConfigurationList",file_configuration_list)
+        args = {
+            runconfiguration.StartupConfiguration.CONFIGURATION_NAME:runconfiguration.StartupConfiguration(self,main_module_file, 0, ''),
+            runconfiguration.AugumentsConfiguration.CONFIGURATION_NAME:runconfiguration.AugumentsConfiguration(self,main_module_file,'',build_args),
+            runconfiguration.InterpreterConfiguration.CONFIGURATION_NAME:runconfiguration.InterpreterConfiguration(self,main_module_file,interpreter_name),
+            runconfiguration.EnvironmentConfiguration.CONFIGURATION_NAME:runconfiguration.EnvironmentConfiguration(self,main_module_file,{}),
+        }
+        
+        run_configuration = runconfiguration.RunConfiguration(configuration_name,**args)
+        run_configuration.SaveConfiguration()
+        run_configuration_name = "setup.py/" + configuration_name
+        utils.profile_set(self.GetKey() + "/ConfigurationList",[run_configuration_name])
+        utils.profile_set(self.GetKey()  + "/RunConfigurationName",run_configuration_name)
+        
+
+class NovalPluginProjectDocument(PyPIProjectDocument):
+    
+    @staticmethod
+    def GetProjectModel():
+        return NovalPluginProject()
+
+class PyPIProjectTemplate(PythonProjectTemplate):
+    @staticmethod
+    def CreateProjectTemplate():
+        projectTemplate = PyPIProjectTemplate(GetApp().GetDocumentManager(),
+                _("Project File"),
+                "*%s" % consts.PROJECT_EXTENSION,
+                os.getcwd(),
+                consts.PROJECT_EXTENSION,
+                "PyPIProject Document",
+                _("PyPIProject Viewer"),
+                PyPIProjectDocument,
+                PythonProjectView,
+                icon = imageutils.getProjectIcon())
+        GetApp().GetDocumentManager().DisassociateTemplate(projectTemplate)
+        return projectTemplate
+        
+    def GetPropertiPages(self):
+        return PythonProjectTemplate.GetPropertiPages(self) + [("PyPI option","file","pypi.pypi.PyPIOptionPanel")]
+        
+
+class NovalPluginProjectTemplate(PyPIProjectTemplate):
+    @staticmethod
+    def CreateProjectTemplate():
+        projectTemplate = NovalPluginProjectTemplate(GetApp().GetDocumentManager(),
+                _("Project File"),
+                "*%s" % consts.PROJECT_EXTENSION,
+                os.getcwd(),
+                consts.PROJECT_EXTENSION,
+                "NovalPluginProject Document",
+                _("NovalPluginProject Viewer"),
+                NovalPluginProjectDocument,
+                PythonProjectView,
+                icon = imageutils.getProjectIcon())
+        GetApp().GetDocumentManager().DisassociateTemplate(projectTemplate)
+        return projectTemplate
+        
+    def GetPropertiPages(self):
+        return PythonProjectTemplate.GetPropertiPages(self) + [("PyPI option","file","pypi.pypi.NovalPluginOptionPanel")]
 
 class PypiProjectNameLocationPage(BasePythonProjectNameLocationPage):
 
     def __init__(self,master,**kwargs):
         BasePythonProjectNameLocationPage.__init__(self,master,**kwargs)
         self.can_finish = False
+        
+    def GetProjectTemplate(self):
+        return PyPIProjectTemplate.CreateProjectTemplate()
+        
+
+class NovalPluginProjectNameLocationPage(PypiProjectNameLocationPage):
+    
+    def GetProjectTemplate(self):
+        return NovalPluginProjectTemplate.CreateProjectTemplate()
+        
 
 class PypiPackageInformationPage(projectwizard.BitmapTitledContainerWizardPage):
     """Creates the pypi interface
@@ -50,9 +240,6 @@ class PypiPackageInformationPage(projectwizard.BitmapTitledContainerWizardPage):
     def CreateContent(self,content_frame,**kwargs):
         sizer_frame = ttk.Frame(content_frame)
         sizer_frame.grid(column=0, row=1, sticky="nsew")
-
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(1, weight=1)
         
         sizer_frame.columnconfigure(1, weight=1)
 
@@ -119,6 +306,9 @@ class PypiPackageInformationPage(projectwizard.BitmapTitledContainerWizardPage):
         
     def GetBuildArgs(self):
         return 'sdist'
+        
+    def GetRunConfigurationName():
+        return self.GetBuildArgs()
 
     def Finish(self):
         path = resource_filename(__name__,'')
@@ -153,24 +343,7 @@ class PypiPackageInformationPage(projectwizard.BitmapTitledContainerWizardPage):
                 doc.GetCommandProcessor().Submit(command.ProjectAddFilesCommand(doc,[self.destpackageFile],folderPath))
             doc.GetCommandProcessor().Submit(command.ProjectAddFilesCommand(doc,[setup_path],None))
             main_module_file = doc.GetModel().FindFile(setup_path)
-            configuration_name = self.GetBuildArgs()
-            file_configuration = runconfiguration.FileConfiguration(doc,main_module_file)
-            file_configuration_list = [configuration_name]
-            pj_file_key = file_configuration.GetRootKeyPath()
-            #update file configuration list
-            utils.profile_set(pj_file_key + "/ConfigurationList",file_configuration_list)
-            args = {
-                runconfiguration.StartupConfiguration.CONFIGURATION_NAME:runconfiguration.StartupConfiguration(doc,main_module_file, 0, ''),
-                runconfiguration.AugumentsConfiguration.CONFIGURATION_NAME:runconfiguration.AugumentsConfiguration(doc,main_module_file,'',self.GetBuildArgs()),
-                runconfiguration.InterpreterConfiguration.CONFIGURATION_NAME:runconfiguration.InterpreterConfiguration(doc,main_module_file,prev_page.interpreter_entry_var.get()),
-                runconfiguration.EnvironmentConfiguration.CONFIGURATION_NAME:runconfiguration.EnvironmentConfiguration(doc,main_module_file,{}),
-            }
-            
-            run_configuration = runconfiguration.RunConfiguration(configuration_name,**args)
-            run_configuration.SaveConfiguration()
-            run_configuration_name = "setup.py/" + configuration_name
-            utils.profile_set(doc.GetKey() + "/ConfigurationList",[run_configuration_name])
-            utils.profile_set(doc.GetKey()  + "/RunConfigurationName",run_configuration_name)
+            doc.SaveBuildConfiguration(main_module_file,self.GetRunConfigurationName(),self.GetBuildArgs(),prev_page.interpreter_entry_var.get())
         except Exception as e:
             utils.get_logger().exception('')
             messagebox.showerror(GetApp().GetAppName(),_("New File Error.%s") % e)
@@ -196,6 +369,7 @@ class PypiPackageToolInformationPage(PypiPackageInformationPage):
         ttk.Label(sizer_frame,text=_('Tool Name:')).grid(column=0, row=7, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y,consts.DEFAUT_CONTRL_PAD_Y))
         self.tool_name_var = tk.StringVar()
         tool_entry = ttk.Entry(sizer_frame,textvariable=self.tool_name_var)
+        misc.create_tooltip(tool_entry,_('the executable name of package tool'))
         tool_entry.grid(column=1, row=7, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y,consts.DEFAUT_CONTRL_PAD_Y))
         
     def ReplaceVariableLine(self,line):
@@ -275,9 +449,6 @@ class {PluginName}Plugin(plugin.Plugin):
     def CreateContent(self,content_frame,**kwargs):
         sizer_frame = ttk.Frame(content_frame)
         sizer_frame.grid(column=0, row=1, sticky="nsew")
-
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(1, weight=1)
         
         sizer_frame.columnconfigure(1, weight=1)
 
@@ -334,6 +505,9 @@ class {PluginName}Plugin(plugin.Plugin):
     def GetBuildArgs(self):
         return 'bdist_egg'
         
+    def GetRunConfigurationName():
+        return "bdist_novalplugin_egg"
+        
 class PypiOptionPage(projectwizard.BitmapTitledContainerWizardPage):
     """Creates the calculators interface
     @todo: Dissable << and >> when floating values are present
@@ -349,20 +523,19 @@ class PypiOptionPage(projectwizard.BitmapTitledContainerWizardPage):
     def CreateContent(self,content_frame,**kwargs):
         sizer_frame = ttk.Frame(content_frame)
         sizer_frame.grid(column=0, row=1, sticky="nsew")
-
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(1, weight=1)
         
         sizer_frame.columnconfigure(1, weight=1)
   
         ttk.Label(sizer_frame,text=_('Keywords:')).grid(column=0, row=0, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         self.keyword_var = tk.StringVar()
         keyword_entry = ttk.Entry(sizer_frame,textvariable=self.keyword_var)
+        misc.create_tooltip(keyword_entry,_('multi keywords seperated by comma'))
         keyword_entry.grid(column=1, row=0, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
 
         ttk.Label(sizer_frame,text=_('Require Packages:')).grid(column=0, row=1, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         self.install_requires_var = tk.StringVar()
         install_requires_entry = ttk.Entry(sizer_frame,textvariable=self.install_requires_var)
+        misc.create_tooltip(install_requires_entry,_('multi packages seperated by comma'))
         install_requires_entry.grid(column=1, row=1, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         
         ttk.Label(sizer_frame,text=_('License:')).grid(column=0, row=2, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))

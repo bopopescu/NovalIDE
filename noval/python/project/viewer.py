@@ -33,6 +33,22 @@ class PythonProjectTemplate(ProjectTemplate):
     
     def CreateDocument(self, path, flags):
         return ProjectTemplate.CreateDocument(self,path,flags,wizard_cls=NewPythonProjectWizard)
+        
+    def GetPropertiPages(self):
+        return [
+            ("Resource","root","noval.project.resource.ResourcePanel"),
+            ("Debug/Run","root","noval.python.project.pages.debugrun.DebugRunPanel"),
+            ("PythonPath","root","noval.python.project.pages.pythonpath.PythonPathPanel"),
+            ("Interpreter","root","noval.python.project.pages.pythoninterpreter.PythonInterpreterPanel"),
+            ("Project References","root","noval.python.project.pages.projectreferrence.ProjectReferrencePanel"),
+            ("Resource","file","noval.project.resource.ResourcePanel"),
+            ("Debug/Run","file","noval.python.project.pages.debugrun.DebugRunPanel"),
+            ("Resource","folder","noval.project.resource.ResourcePanel"),
+            ("Debug/Run","folder","noval.python.project.pages.debugrun.DebugRunPanel")
+        ]
+
+    def GetRunconfigClass(self):
+        return "noval.python.project.runconfig.PythonRunconfig"
 
 class NewPythonProjectWizard(NewProjectWizard):
     def LoadDefaultProjectTemplates(self):
@@ -43,8 +59,8 @@ class NewPythonProjectWizard(NewProjectWizard):
         
 
 class BasePythonProjectNameLocationPage(ProjectNameLocationPage):
-    def __init__(self,master,project_dir_option=True,**kwargs):
-        ProjectNameLocationPage.__init__(self,master,project_dir_option=project_dir_option,**kwargs)
+    def __init__(self,master,**kwargs):
+        ProjectNameLocationPage.__init__(self,master,**kwargs)
 
     def CreateNamePage(self,content_frame):
         name_frame = ProjectNameLocationPage.CreateNamePage(self,content_frame)
@@ -73,33 +89,33 @@ class BasePythonProjectNameLocationPage(ProjectNameLocationPage):
         
 class PythonProjectNameLocationPage(BasePythonProjectNameLocationPage):
     def __init__(self,master,**kwargs):
-        BasePythonProjectNameLocationPage.__init__(self,master,project_dir_option=False,**kwargs)
+        BasePythonProjectNameLocationPage.__init__(self,master,**kwargs)
         
-
-    def CreateContent(self,content_frame,**kwargs):
-        BasePythonProjectNameLocationPage.CreateContent(self,content_frame,**kwargs)
+    def CreateBottomFrame(self,content_frame,**kwargs):
         sizer_frame = ttk.Frame(content_frame)
+        sbox = ttk.LabelFrame(sizer_frame,text=_("Option"))
+        sbox.pack(fill="x",expand=1,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         sizer_frame.grid(column=0, row=4, sticky="nsew")
         pythonpath_val = kwargs.get('pythonpath_pattern',PythonNewProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH)
         self.pythonpath_chkvar = tk.IntVar(value=pythonpath_val)
         self.add_src_radiobutton = ttk.Radiobutton(
-            sizer_frame, text=_("Create %s Folder And Add it to the PYTHONPATH") % PythonNewProjectConfiguration.DEFAULT_PROJECT_SRC_PATH, variable=self.pythonpath_chkvar,\
+            sbox, text=_("Create %s Folder And Add it to the PYTHONPATH") % PythonNewProjectConfiguration.DEFAULT_PROJECT_SRC_PATH, variable=self.pythonpath_chkvar,\
                         value=PythonNewProjectConfiguration.PROJECT_SRC_PATH_ADD_TO_PYTHONPATH
         )
-        self.add_src_radiobutton.pack(fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
+        self.add_src_radiobutton.pack(fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X,0))
         
         self.add_project_path_radiobutton = ttk.Radiobutton(
-            sizer_frame, text=_("Add Project Directory to the PYTHONPATH"), variable=self.pythonpath_chkvar,\
+            sbox, text=_("Add Project Directory to the PYTHONPATH"), variable=self.pythonpath_chkvar,\
                         value=PythonNewProjectConfiguration.PROJECT_PATH_ADD_TO_PYTHONPATH
         )
-        self.add_project_path_radiobutton.pack(fill="x")
+        self.add_project_path_radiobutton.pack(fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X,0))
         
         self.configure_no_path_radiobutton = ttk.Radiobutton(
-            sizer_frame, text=_("Don't Configure PYTHONPATH(later manually configure it)"), variable=self.pythonpath_chkvar,\
+            sbox, text=_("Don't Configure PYTHONPATH(later manually configure it)"), variable=self.pythonpath_chkvar,\
                         value=PythonNewProjectConfiguration.NONE_PATH_ADD_TO_PYTHONPATH
         )
-        self.configure_no_path_radiobutton.pack(fill="x")
-        ProjectNameLocationPage.CreateProjectDirPage(self,content_frame,chk_box_row=5,**kwargs)
+        self.configure_no_path_radiobutton.pack(fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X,0),pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+        ProjectNameLocationPage.CreateBottomFrame(self,content_frame,chk_box_row=5,**kwargs)
         
     def Finish(self):
         if not ProjectNameLocationPage.Finish(self):
@@ -116,7 +132,7 @@ class PythonProjectNameLocationPage(BasePythonProjectNameLocationPage):
                     return False
             
         view = GetApp().MainFrame.GetProjectView().GetView()
-        doc = view.GetDocument()
+        doc = self.new_project_doc
         #将项目路径添加到PYTHONPATH
         if self._new_project_configuration.PythonpathMode == PythonNewProjectConfiguration.PROJECT_PATH_ADD_TO_PYTHONPATH:
             utils.profile_set(doc.GetKey() + "/AppendProjectPath",True)
@@ -222,7 +238,7 @@ class PythonProjectView(ProjectView):
 class DefaultProjectTemplateLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)
     def Load(self):
-        ProjectTemplateManager().AddProjectTemplate("General","Empty Project",[PythonProjectNameLocationPage,])
+        ProjectTemplateManager().AddProjectTemplate("General","Empty Project",[(PythonProjectNameLocationPage,{'is_empty_project':True}),])
         #导入代码时默认不创建项目目录,并且项目创建页面不能做完成操作,只能下一步和上一部操作,导入代码页面才能做完成操作
         ProjectTemplateManager().AddProjectTemplate("General","New Project From Existing Code",\
                     [("noval.python.project.viewer.PythonProjectNameLocationPage",{'can_finish':False,\

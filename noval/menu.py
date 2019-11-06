@@ -422,6 +422,15 @@ class PopupMenu(tk.Menu):
                 return menu[1]
         return None
         
+    def GetMenuByname(self,menu_name):
+        menu_item = self.FindMenuItemByname(menu_name)
+        if not menu_item:
+            return None
+        for menu in self._submenus:
+            if menu[0] == menu_item.id:
+                return menu[1]
+        return None
+        
     def Insert(self, pos, id_, text, helpstr=u'', handler=None,img=None,accelerator=None,\
                kind=consts.NORMAL_MENU_ITEM_KIND,variable=None,tester=None):
         """Insert an item at position and attach a bitmap
@@ -562,6 +571,12 @@ class PopupMenu(tk.Menu):
     def FindMenuItem(self,menu_id):
         for menu_item in self._items:
             if menu_item.id == menu_id:
+                return menu_item
+        return None
+
+    def FindMenuItemByname(self,menu_name):
+        for menu_item in self._items:
+            if menu_item.label == menu_name:
                 return menu_item
         return None
         

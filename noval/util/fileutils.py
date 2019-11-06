@@ -28,6 +28,7 @@ import noval.syntax.syntax as syntax
 global fileutilsLogger
 from tkinter import messagebox
 import getpass
+import stat
 fileutilsLogger = logging.getLogger("activegrid.util.fileutils")
 _Checker = txtutils.FileTypeChecker()
 
@@ -364,6 +365,8 @@ def copyDir(src, dest):
 def safe_remove(file):
     if not os.path.exists(file):
         return
+    #删除只读文件之前需要设置文件可写
+    os.chmod(file, stat.S_IWRITE)
     if os.path.isfile(file):
         try:
             os.remove(file)
@@ -579,7 +582,6 @@ if apputils.is_windows():
         return True
 else:
     import pwd
-    import stat
     def is_writable(path, user=None):
         if not user:
             user = getpass.getuser()

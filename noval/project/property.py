@@ -11,7 +11,7 @@ import noval.util.singleton as singleton
 import noval.consts as consts
 import noval.ui_base as ui_base
 import noval.ttkwidgets.treeviewframe as treeviewframe
-import six
+import six
 RESOURCE_ITEM_NAME = "Resource"
 
 
@@ -27,9 +27,9 @@ class PropertiesService:
         """
         self._optionsPanelClasses = []
         self.current_project_document = GetApp().MainFrame.GetProjectView(generate_event=False).GetCurrentProject()
-        pages = self.current_project_document.GetModel().GetPropertiPages()
-        for page in pages:
-            self.AddOptionsPanelClass(page.item,page.name,page.objclass)
+        pages = self.current_project_document.GetDocumentTemplate().GetPropertiPages()
+        for item, name,objclass in pages:
+            self.AddOptionsPanelClass(item,name,objclass)
         
     def AddOptionsPanelClass(self,item,name,optionsPanelClass):
         #这里针对python2和python3中各自的string类型进行了区分:在python2中,使用的为basestring;在python3中,使用的为str
@@ -47,7 +47,7 @@ class PropertiesService:
     def GetItemOptionsPanelClasses(self,item):
         option_panel_classes = []
         for optionsPanelClass in self._optionsPanelClasses:
-            if optionsPanelClass[0] == item:
+            if optionsPanelClass[1] == item:
                 option_panel_classes.append(optionsPanelClass)
         return option_panel_classes
 
@@ -128,7 +128,7 @@ class PropertyDialog(ui_base.CommonModaldialog):
             selection = option_name
         else:
             selection = utils.profile_get(current_project_document.GetKey("Selection"),"")
-        for item,name,optionsPanelClass in option_pages:
+        for name,item,optionsPanelClass in option_pages:
             item = self.tree.insert("","end",text=_(name),values=(name,))
             option_panel = optionsPanelClass(page_frame,item = self._selected_project_item,current_project=self._current_project_document)
             self._optionsPanels[name] = option_panel
@@ -169,7 +169,8 @@ class PropertyDialog(ui_base.CommonModaldialog):
             return
         for name in self._optionsPanels:
             optionsPanel = self._optionsPanels[name]
-            if not optionsPanel.OnOK(self):
+            #如果配置页面被禁止了,不能调用ok方法
+            if not optionsPanel.IsDisabled() and not optionsPanel.OnOK(self):
                 return
         selections = self.tree.selection()
         if selections:

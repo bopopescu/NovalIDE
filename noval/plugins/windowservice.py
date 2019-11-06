@@ -190,5 +190,5 @@ class WindowsOptionPanel(ui_utils.CommonOptionPanel):
 class WindowServiceLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)
     def Load(self):
-        preference.PreferenceManager().AddOptionsPanelClass("Misc","Appearance",WindowsOptionPanel)
+        preference.PreferenceManager().AddOptionsPanelClass(preference.ENVIRONMENT_OPTION_NAME,"Appearance",WindowsOptionPanel)
 
