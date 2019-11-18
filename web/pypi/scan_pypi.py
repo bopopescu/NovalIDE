@@ -120,7 +120,8 @@ def generate_package_info(name):
         homepage = data['home_page']
     else:
         homepage = project_urls.get('Homepage','')
-    name = data['name']
+    if data['name'] != name:
+        logger.warn('package %s name is %s',name,data['name'])
     summary = data['summary']
     docs_url = data.get("docs_url", '')
     bugtrack_url = data.get("bugtrack_url", '')

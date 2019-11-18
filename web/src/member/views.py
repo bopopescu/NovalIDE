@@ -365,6 +365,7 @@ def publish_plugin(request):
         plugin_pkg.free = free
         plugin_pkg.app_version = app_version
         plugin_pkg.price = price
+        plugin_pkg.path = egg_name
         plugin_pkg.updated_at = datetime.datetime.utcnow()
         #更新插件信息
         plugin_pkg.save()
