@@ -38,6 +38,7 @@ import noval.plugins.update as updateutils
 import noval.editor.text as texteditor
 import noval.util.urlutils as urlutils
 import noval.preference as preference
+import inspect
 
 #找回pip工具的url地址
 PIP_INSTALLER_URL = "https://bootstrap.pypa.io/get-pip.py"
@@ -816,9 +817,25 @@ class PluginsPipDialog(PipDialog):
         self._select_list_item(0)
         
     def CreateBottomLabel(self,parent,label_text):
+        row = ttk.Frame(parent)
+        row.grid(row=3, column=0, sticky="nsew", padx=15, pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
         self.label_var = tk.StringVar(value=label_text)
-        ttk.Label(parent, textvariable=self.label_var).grid(row=3, column=0, sticky="nsew", padx=15, pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+        ttk.Label(row, textvariable=self.label_var).pack(fill="x",side=tk.LEFT)
+        self.img = GetApp().GetImage("python/plugins.png")
+        btn = ttk.Button(row,image=self.img,state=tk.NORMAL,style="Toolbutton",command=self.ShowAllPlugins)
+        btn.pack(side=tk.LEFT)
+        misc.create_tooltip(btn, _("View all plugins"))
         
+    def ShowAllPlugins(self):
+        '''
+            查看所有插件
+        '''
+        names = GetAllPlugins()
+        self.installled_var.set(_("All Plugins:"))
+        self.ShowNameList(names)
+        #显示第一个包名
+        self._start_show_package_info(names[0])
+    
     def NotFoundPackage(self,name):
         self.write(_("Could not find the plugin from Server.\n"))
         if not self._get_active_version(name):
@@ -894,15 +911,17 @@ class PluginsPipDialog(PipDialog):
             检查插件要求的软件版本是否小于等于当前版本,如果不是则需要提示用户更新软件版本
         '''
         app_version = utils.get_app_version()
+        if not plugin_data['app_version']:
+            return False
         #检查插件要求的软件版本是否大于当前版本,如果是则提示用户是否更新软件
         if parserutils.CompareCommonVersion(plugin_data['app_version'],app_version):
             ret = messagebox.askyesno(GetApp().GetAppName(),_("Plugin '%s' requires application version at least '%s',Do you want to update your application?"%(plugin_data['name'],plugin_data['app_version'])),parent=self)
             if ret == False:
-                return False
+                return True
             #更新软件,如果用户执行更新安装,则程序会退出,不会执行下面的语句
             updateutils.CheckAppUpdate()
         #再检查一次
-        return not parserutils.CompareCommonVersion(plugin_data['app_version'],app_version)
+        return parserutils.CompareCommonVersion(plugin_data['app_version'],app_version)
 
     def _should_install_to_site_packages(self):
         return self._targets_virtual_environment()
@@ -1058,7 +1077,7 @@ class PluginsPipDialog(PipDialog):
                 messagebox.showerror(GetApp().GetAppName(),_("Remove faile:%s fail") % dest_egg_path)
                 return False
         #检查软件的版本是否是插件要求的最低版本
-        return self._conflicts_with_application_version(package_data)
+        return not self._conflicts_with_application_version(package_data)
 
     def _get_target_directory(self):
         '''
@@ -1117,6 +1136,17 @@ class PluginsPipDialog(PipDialog):
         plugin_name = plugin_data.GetName()
         if not self._confirm_install({'name':plugin_name,'path':os.path.basename(filename),'app_version':plugin_data.Instance.GetMinVersion()}):
             return
+            
+        #必须要删除插件实例化对象
+        instance = plugin_data.GetInstance()
+        module = inspect.getmodule(instance)
+        #安装插件之前必须删除临时插件模块信息,否则插件加载的时候会报如下错误:
+        #UserWarning: Module xxxxx was already imported from xxxxxx\__init__.py, but c:\users\administrator\appdata\roaming\novalidedebug\plugins\xxxxx.egg is being added to sys.path
+        del sys.modules[module.__name__]
+        #删除插件实例
+        del instance
+        #删除插件导入模块
+        del module
         self.InstallEgg(plugin_name,filename,plugin_data.GetVersion())
         self._start_update_list(plugin_name)
         messagebox.showinfo(GetApp().GetAppName(),_("Install plugin '%s' success") % plugin_name)
@@ -1306,9 +1336,10 @@ class PyPiPipDialog(PipDialog):
             if not os.path.exists(packages_file):
                 temp_data_path  = pkg_resources.resource_filename("pipmanager",'')
                 run_pkg_path = os.path.join(temp_data_path,"run_pkg.py")
-                #生成每个解释器的安装包列表
-                p = pyutils.create_python_interpreter_process(interpreter,run_pkg_path + " " + packages_file)
-                p.wait()
+                if os.path.exists(interpreter.Path) and os.path.exists(run_pkg_path):
+                    #生成每个解释器的安装包列表
+                    p = pyutils.create_python_interpreter_process(interpreter,run_pkg_path + " " + packages_file)
+                    p.wait()
             if not os.path.exists(packages_file):
                 self.ShowNameList([])
                 self._clear()
@@ -1468,7 +1499,7 @@ class PyPiPipDialog(PipDialog):
         return True
 
     def _get_target_directory(self):
-        if self._get_interpreter() is None:
+        if self._get_interpreter() is None or not os.path.exists(self._get_interpreter().Path):
             return None
         if self._use_user_install():
             #获取解释器的site-packages路径

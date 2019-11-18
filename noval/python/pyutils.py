@@ -271,10 +271,10 @@ def get_environment_overrides_for_python_subprocess(target_executable,is_venv=Fa
     if is_venv:
         try:
             if "TCL_LIBRARY" not in os.environ or "TK_LIBRARY" not in os.environ:
-                result["TCL_LIBRARY"] = get_workbench().tk.exprstring("$tcl_library")
-                result["TK_LIBRARY"] = get_workbench().tk.exprstring("$tk_library")
+                result["TCL_LIBRARY"] = GetApp().tk.exprstring("$tcl_library")
+                result["TK_LIBRARY"] = GetApp().tk.exprstring("$tk_library")
         except Exception:
-            logging.exception("Can't compute Tcl/Tk library location")
+            utils.get_logger().exception("Can't compute Tcl/Tk library location")
 
     return result
     

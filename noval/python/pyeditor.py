@@ -40,6 +40,7 @@ import noval.python.pyutils as pyutils
 import io as StringIO  # For indent
 import noval.python.debugger.debugger as pythondebugger
 import noval.python.debugger.watchs as watchs
+import noval.util.compat as compat
 
 class PythonDocument(codeeditor.CodeDocument): 
 
@@ -129,6 +130,33 @@ class PythonDocument(codeeditor.CodeDocument):
         if self.GetDocEncoding(encoding) != self.GetDocEncoding(self.file_encoding):
             return True
         return False
+        
+    def DetectFileEncoding(self,filepath):
+        '''
+            检查python文件的编码
+        '''
+        encoding = None
+        try:
+            #必须以rb方式读取文件,可以消除编码影响
+            with open(filepath,'rb') as f:
+                coding_declare_lines = []
+                for i,line in enumerate(f):
+                    if utils.is_py3_plus():
+                        line = compat.ensure_string(line)
+                    #编码声明只读取前2行
+                    if i <=2:
+                        coding_declare_lines.append(line)
+                    else:
+                        break
+                #先获取python文件声明的编码
+                encoding = self.get_coding_spec(coding_declare_lines)
+        except Exception as e:
+            messagebox.showerror(_("Error"),str(e))
+        #如果没有声明编码则检测文件的编码
+        if encoding is None:
+            return codeeditor.CodeDocument.DetectFileEncoding(self,filepath)
+        else:
+            return encoding
 
 class PythonView(codeeditor.CodeView):
 
@@ -226,28 +254,6 @@ class PythonView(codeeditor.CodeView):
             return True
         self.GetCtrl().after(1,self._module_analyzer.AnalyzeModuleSynchronizeTree,callback_view,outlineView,force,lineNum)
         return True
-
-    def OnCommentLines(self):
-        newText = ""
-        for lineNo in self._GetSelectedLineNumbers():
-            lineText = self.GetCtrl().GetLine(lineNo)
-            if (len(lineText) > 1 and lineText[0] == '#') or (len(lineText) > 2 and lineText[:2] == '##'):
-                newText = newText + lineText
-            else:
-                newText = newText + "##" + lineText
-        self._ReplaceSelectedLines(newText)
-
-    def OnUncommentLines(self):
-        newText = ""
-        for lineNo in self._GetSelectedLineNumbers():
-            lineText = self.GetCtrl().GetLine(lineNo)
-            if len(lineText) >= 2 and lineText[:2] == "##":
-                lineText = lineText[2:]
-            elif len(lineText) >= 1 and lineText[:1] == "#":
-                lineText = lineText[1:]
-            newText = newText + lineText
-        self._ReplaceSelectedLines(newText)
-        
 
     def UpdateUI(self, command_id):
         if command_id in [constants.ID_INSERT_DECLARE_ENCODING, constants.ID_UNITTEST,constants.ID_RUN,constants.ID_DEBUG,constants.ID_SET_EXCEPTION_BREAKPOINT,constants.ID_STEP_INTO,constants.ID_STEP_NEXT,constants.ID_RUN_LAST,\
@@ -439,40 +445,6 @@ class PythonCtrl(codeeditor.CodeCtrl):
 
     def GetFontAndColorFromConfig(self):
         return CodeEditor.CodeCtrl.GetFontAndColorFromConfig(self, configPrefix = "Python")
-
-    def OnUpdateUI(self, evt):
-        braces = self.GetMatchingBraces()
-        
-        # check for matching braces
-        braceAtCaret = -1
-        braceOpposite = -1
-        charBefore = None
-        caretPos = self.GetCurrentPos()
-        if caretPos > 0:
-            charBefore = self.GetCharAt(caretPos - 1)
-            styleBefore = self.GetStyleAt(caretPos - 1)
-
-        # check before
-        if charBefore and chr(charBefore) in braces and styleBefore == wx.stc.STC_P_OPERATOR:
-            braceAtCaret = caretPos - 1
-
-        # check after
-        if braceAtCaret < 0:
-            charAfter = self.GetCharAt(caretPos)
-            styleAfter = self.GetStyleAt(caretPos)
-            if charAfter and chr(charAfter) in braces and styleAfter == wx.stc.STC_P_OPERATOR:
-                braceAtCaret = caretPos
-
-        if braceAtCaret >= 0:
-            braceOpposite = self.BraceMatch(braceAtCaret)
-
-        if braceAtCaret != -1  and braceOpposite == -1:
-            self.BraceBadLight(braceAtCaret)
-        else:
-            self.BraceHighlight(braceAtCaret, braceOpposite)
-
-        evt.Skip()
-
 
     def DoIndent(self):
         text = self.GetLineText(self.GetCurrentLine())
@@ -691,13 +663,7 @@ class PythonCtrl(codeeditor.CodeCtrl):
                 tip = scope_found.GetArgTip()
         if not tip:
             return
-        self.CallTipShow(pos,tip)   
-
-    def IsListMemberFlag(self,pos):
-        at = self.GetCharAt(pos)
-        if chr(at) != self.TYPE_POINT_WORD:
-            return False
-        return True
+        self.CallTipShow(pos,tip)
 
     def ListMembers(self,pos):
         text = self.GetTypeWord(pos[0],pos[1])

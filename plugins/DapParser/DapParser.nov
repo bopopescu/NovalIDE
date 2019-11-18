@@ -1,22 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<noval:project xmlns:noval="http://www.novalide.com/noval.xsd" version="12" name="DapParser" id="E99920E6-EA7A-11E9-A845-005056C00008">
+<noval:project xmlns:noval="http://www.novalide.com/noval.xsd" version="13" name="DapParser" id="E99920E6-EA7A-11E9-A845-005056C00008">
   <noval:file filePath="./dapparser/__init__.py" logicalFolder="dapparser"/>
   <noval:file filePath="./setup.py"/>
   <noval:file filePath="./dapparser/_dap.py" logicalFolder="dapparser"/>
-  <noval:_properties>
-    <noval:page name="Resource" item="root" objclass="noval.project.resource.ResourcePanel"/>
-    <noval:page name="Debug/Run" item="root" objclass="noval.python.project.pages.debugrun.DebugRunPanel"/>
-    <noval:page name="PythonPath" item="root" objclass="noval.python.project.pages.pythonpath.PythonPathPanel"/>
-    <noval:page name="Interpreter" item="root" objclass="noval.python.project.pages.pythoninterpreter.PythonInterpreterPanel"/>
-    <noval:page name="Project References" item="root" objclass="noval.python.project.pages.projectreferrence.ProjectReferrencePanel"/>
-    <noval:page name="Resource" item="file" objclass="noval.project.resource.ResourcePanel"/>
-    <noval:page name="Debug/Run" item="file" objclass="noval.python.project.pages.debugrun.DebugRunPanel"/>
-    <noval:page name="Resource" item="folder" objclass="noval.project.resource.ResourcePanel"/>
-    <noval:page name="Debug/Run" item="folder" objclass="noval.python.project.pages.debugrun.DebugRunPanel"/>
-  </noval:_properties>
   <noval:_runinfo>
-    <noval:DocumentTemplate>noval.python.project.viewer.PythonProjectTemplate</noval:DocumentTemplate>
-    <noval:RunConfig>noval.python.project.runconfig.PythonRunconfig</noval:RunConfig>
+    <noval:DocumentTemplate>pypi.pypi.NovalPluginProjectTemplate</noval:DocumentTemplate>
     <noval:StartupFile>setup.py</noval:StartupFile>
   </noval:_runinfo>
   <noval:interpreter name="3.6-32" version="3.6.4rc1" path="C:\Users\Administrator\AppData\Local\Programs\Python\Python36-32\python.exe"/>

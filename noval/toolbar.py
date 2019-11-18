@@ -22,9 +22,9 @@ class ToolBar(ui_base.DockFrame):
     def __init__(self,parent,orient = tk.HORIZONTAL):
         ui_base.DockFrame.__init__(self,consts.DEFAULT_TOOL_BAR_ROW, parent,show=self.IsDefaultShown())
         #padx设置工具栏左边距
-      #  self.grid(column=0, row=0, sticky=tk.EW, padx=0, pady=(5, 0))
         self._orient = orient
         self._commands = []
+        self.pad_y = 5
         
     def CreateSlave(self):
         slaves = self.grid_slaves(0, self.toolbar_group)

@@ -153,7 +153,7 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
     def OnDoubleClick(self, event):
         pass
 
-    def AppendText(self,source,text,last_readonly=False):
+    def AppendText(self,source,text,last_readonly=False,append_logs=True):
         '''
             输出文本时输出框不要设置为readonly,在最后一次输出,即程序完成或者退出时才执行readonly
         '''
@@ -164,7 +164,9 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         self.InputStartPos = self.GetCurrentPos()
         if last_readonly:
             self.set_read_only(True)
-        self.AppendLogs(source,text)
+        #是否纪录输出日志
+        if append_logs:
+            self.AppendLogs(source,text)
 
     def SetTraceLog(self,trace_log):
         self.trace_log = trace_log
@@ -217,6 +219,22 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         tags = ("io",'stdin')
         texteditor.TextCtrl.intercept_insert(self, "insert", text, tags)
         
+    def SetLogs(self,source):
+        '''
+            根据输出来源设置输出日志
+        '''
+        logs = self.logs[source]
+        self.ClearOutput()
+        for log_text in logs:
+            #这里不要重复附加日志了
+            self.AppendText(source,log_text,append_logs=False)
+        self.set_read_only(True)
+        
+    def ClearLogs(self):
+        '''
+            清空日志
+        '''
+        self.logs = {}
 
 class CommononOutputview(ttk.Frame):
     def __init__(self, master,trace_log=False,is_debug=False):

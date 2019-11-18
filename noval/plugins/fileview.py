@@ -435,4 +435,4 @@ class MainFileBrowser(BaseFileBrowser):
 class FileViewLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)
     def Load(self):
-        GetApp().MainFrame.AddView(consts.FILE_VIEW_NAME,MainFileBrowser, _("File View"), "nw",default_position_key="B")
+        GetApp().MainFrame.AddView(consts.FILE_VIEW_NAME,MainFileBrowser, _("File View"), "nw",default_position_key="B",image_file="filenav_nav.png")

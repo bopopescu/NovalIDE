@@ -179,6 +179,11 @@ class CommonRunCommandUI(ttk.Frame):
         '''
             这里必须返回True,否则会导致程序不允许关闭
         '''
+        #关闭窗口之前检查是否有进程在运行
+        if not self._stopped and self._executor is not None:
+            ret = messagebox.askyesno(_("Process Running.."),_("Process is still running,Do you want to kill the process and remove it?"),parent=self)
+            if ret == False:
+                return False
         #类似于右上角按钮关闭事件,会更新菜单是否选中
         self.master.close()
         return True
@@ -224,6 +229,9 @@ class CommonRunCommandUI(ttk.Frame):
 
     def Close(self):
         self.StopAndRemoveUI()
+        
+    def GetOutputCtrl(self):
+        return self._textCtrl
 
 
 class DebugView(core.View):
@@ -320,6 +328,8 @@ class OutputRunCommandUI(CommonRunCommandUI):
         CommonRunCommandUI.__init__(self,master,debugger,None)
         self._tb.AddLabel(text=" " + _("Source:") + " ",pos=0)
         self.combo = self._tb.AddCombox(pos=1)
+        #根据输出来源来显示输出的日志
+        self.combo.bind("<<ComboboxSelected>>",self.SelectSource)
 
     def AppendText(self, event):
         CommonRunCommandUI.AppendText(self,event)
@@ -341,6 +351,12 @@ class OutputRunCommandUI(CommonRunCommandUI):
                 
     def ShutdownAllRunners(self):
         self.StopExecution()
+
+    def SelectSource(self,event):
+        source = self.combo['values'][self.combo.current()]
+        if not source:
+            return
+        self.GetOutputCtrl().SetLogs(source)
         
 #----------------------------------------------------------------------
 

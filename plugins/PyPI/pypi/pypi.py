@@ -307,7 +307,7 @@ class PypiPackageInformationPage(projectwizard.BitmapTitledContainerWizardPage):
     def GetBuildArgs(self):
         return 'sdist'
         
-    def GetRunConfigurationName():
+    def GetRunConfigurationName(self):
         return self.GetBuildArgs()
 
     def Finish(self):
@@ -425,19 +425,19 @@ class {PluginName}Plugin(plugin.Plugin):
         pass
 
     def UninstallHook(self):
-        ''''''
+        pass
 
     def EnableHook(self):
-        ''''''
+        pass
         
     def DisableHook(self):
-        ''''''
+        pass
         
     def GetFree(self):
         return True
         
     def GetPrice(self):
-        ''''''
+        pass
     '''
     
     def __init__(self, parent):
@@ -505,7 +505,7 @@ class {PluginName}Plugin(plugin.Plugin):
     def GetBuildArgs(self):
         return 'bdist_egg'
         
-    def GetRunConfigurationName():
+    def GetRunConfigurationName(self):
         return "bdist_novalplugin_egg"
         
 class PypiOptionPage(projectwizard.BitmapTitledContainerWizardPage):

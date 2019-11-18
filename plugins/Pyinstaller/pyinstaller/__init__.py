@@ -91,7 +91,7 @@ class OutputView(OutputRunCommandUI):
     def ExecutorFinished(self,stopped=True):
         OutputRunCommandUI.ExecutorFinished(self,stopped=stopped)
         if not self._stopped:
-            target_exe_path = self._run_parameter.GetTargetPath()
+            target_exe_path = self.GetProjectDocument().GetTargetPath(self._run_parameter)[0]
             print ('target exe path is',target_exe_path)
             view = GetApp().MainFrame.GetCommonView("Output")
             view.GetOutputview().SetTraceLog(True)
@@ -151,7 +151,7 @@ class Pyinstaller(plugin.Plugin):
         ProjectTemplateManager().AddProjectTemplate("Python/Pyinstaller",_("A simple Pyinstaller demo"),[pyinstall.PyinstallerSimpleDemoNameLocationPage,pyinstall.PyinstallerBaseInformationPage,pyinstall.PyinstallSpecOptionPage])
 
  
-        GetApp().MainFrame.AddView("Output",OutputView, _("Output"), "s",image_file="search.ico")
+        GetApp().MainFrame.AddView("Output",OutputView, _("Output"), "s",image_file="writeout.png")
         
     def GetMinVersion(self):
         return '1.1.9'

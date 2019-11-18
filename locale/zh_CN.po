@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2019-11-05 18:33+ÖÐ¹ú±ê×¼Ê±¼ä\n"
-"PO-Revision-Date: 2019-11-05 18:58+0800\n"
+"POT-Creation-Date: 2019-11-12 15:27+ÖÐ¹ú±ê×¼Ê±¼ä\n"
+"PO-Revision-Date: 2019-11-12 15:28+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -60,7 +60,7 @@ msgstr "保持配置"
 #: G:\work\project\Noval\noval\python\interpreter\environment.py:89
 #: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:444
 #: G:\work\project\Noval\noval\python\interpreter\interpreterconfigruation.py:446
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1265
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1283
 #: G:\work\project\Noval\noval\ui_utils.py:441
 msgid "Warning"
 msgstr "警告"
@@ -570,8 +570,8 @@ msgstr "查找下一个"
 #: G:\work\project\Noval\noval\find\findindir.py:502
 #: G:\work\project\Noval\noval\find\findindir.py:651
 #: G:\work\project\Noval\noval\project\wizard.py:41
-#: G:\work\project\Noval\noval\ui_base.py:982
-#: G:\work\project\Noval\noval\ui_base.py:1055
+#: G:\work\project\Noval\noval\ui_base.py:983
+#: G:\work\project\Noval\noval\ui_base.py:1056
 msgid "Cancel"
 msgstr "取消"
 
@@ -955,7 +955,7 @@ msgstr "关于"
 #: G:\work\project\Noval\noval\python\debugger\breakpoints.py:61
 #: G:\work\project\Noval\noval\python\project\rundocument.py:272
 #: G:\work\project\Noval\noval\ttkwidgets\messagedialog.py:22
-#: G:\work\project\Noval\noval\ui_base.py:980
+#: G:\work\project\Noval\noval\ui_base.py:981
 msgid "&OK"
 msgstr "确定"
 
@@ -1034,7 +1034,7 @@ msgid "could not connect to server"
 msgstr "不能连接服务器"
 
 #: G:\work\project\Noval\noval\plugins\update.py:43
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1058
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1076
 msgid "Remove faile:%s fail"
 msgstr ""
 
@@ -1408,7 +1408,7 @@ msgstr "目的文件存在，确定覆盖它吗？"
 
 #: G:\work\project\Noval\noval\project\baseviewer.py:1509
 #: G:\work\project\Noval\noval\project\document.py:467
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1051
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1069
 msgid "Move File"
 msgstr "移动文件"
 
@@ -2405,7 +2405,7 @@ msgid "Intellisence database location"
 msgstr "智能提示数据库路径"
 
 #: G:\work\project\Noval\noval\python\interpreter\gerneralconfiguration.py:69
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1235
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1253
 #: G:\work\project\Noval\noval\python\project\pages\debugrun.py:235
 #: G:\work\project\Noval\noval\python\project\pages\pythoninterpreter.py:20
 #: G:\work\project\Noval\noval\python\project\viewer.py:67
@@ -3083,19 +3083,19 @@ msgid "Install from Server\n"
 msgstr "从服务器安装\n"
 
 #: G:\work\project\Noval\noval\python\plugins\pip_gui.py:774
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1189
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1207
 msgid "Install from local file\n"
 msgstr "从本地文件安装\n"
 
 #: G:\work\project\Noval\noval\python\plugins\pip_gui.py:775
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1182
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1190
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1200
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1208
 msgid "Click "
 msgstr ""
 
 #: G:\work\project\Noval\noval\python\plugins\pip_gui.py:776
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1183
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1191
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1201
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1209
 msgid "here"
 msgstr "这里"
 
@@ -3106,19 +3106,19 @@ msgid ""
 msgstr ""
 
 #: G:\work\project\Noval\noval\python\plugins\pip_gui.py:784
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1199
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1217
 msgid "Upgrade or uninstall\n"
 msgstr "升级或者卸载\n"
 
 #: G:\work\project\Noval\noval\python\plugins\pip_gui.py:786
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1201
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1219
 msgid ""
 "Start by selecting the package from the left.\n"
 "\n"
 msgstr ""
 
 #: G:\work\project\Noval\noval\python\plugins\pip_gui.py:790
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1205
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1223
 msgid "Target:  "
 msgstr "安装目录: "
 
@@ -3126,12 +3126,20 @@ msgstr "安装目录: "
 msgid "User directory or System directory\n"
 msgstr "用户目录或者系统目录\n"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:823
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:826
+msgid "View all plugins"
+msgstr "查看所有插件"
+
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:833
+msgid "All Plugins:"
+msgstr "所有插件:"
+
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:839
 msgid "Could not find the plugin from Server.\n"
 msgstr "没有找到该插件.\n"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:826
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1254
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:842
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1272
 msgid ""
 "\n"
 "Please check your spelling!"
@@ -3139,52 +3147,52 @@ msgstr ""
 "\n"
 "请检查你的单词拼写!"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:826
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1254
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:842
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1272
 msgid ""
 "\n"
 "You need to enter "
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:827
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:843
 msgid "exact plugin name"
 msgstr "准确的插件名称"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:834
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:850
 msgid "Searched Plugins:"
 msgstr "搜索插件列表:"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:982
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1122
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1000
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1140
 msgid "Install plugin '%s' success"
 msgstr "安装插件'%s'成功"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1013
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1031
 msgid "Uninstall success"
 msgstr "卸载成功"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1020
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1093
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1131
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1135
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1038
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1111
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1149
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1153
 msgid "Enabled"
 msgstr "启用"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1021
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1131
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1133
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1039
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1149
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1151
 msgid "Disabled"
 msgstr "禁止"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1051
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1069
 msgid "Plugin file is already exist,Do you want to overwrite it?"
 msgstr "插件文件已经存在，确定覆盖它吗？"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1075
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1093
 msgid "This dialog is for managing Noval plug-ins and their dependencies.\n"
 msgstr "这个对话框是用来管理noval插件及其依赖包.\n"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1076
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1094
 msgid ""
 "If you want to install packages for your own programs please install "
 "PipManager plugin and then choose 'Tools â Manage packages...'\n"
@@ -3192,102 +3200,102 @@ msgstr ""
 "如果你想在解释器中安装包请先安装PipManager插件并选择菜单'工具->Manage "
 "packages...'\n"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1085
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1103
 msgid "Find plugin from Server"
 msgstr "搜索插件"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1085
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1103
 msgid "Installed Plugins:"
 msgstr "已安装插件:"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1085
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1103
 msgid "input the plugin name to search..."
 msgstr "输入要搜索的插件..."
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1088
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1106
 msgid "NovalIDE plug-ins"
 msgstr "插件管理"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1103
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1121
 msgid "Plugin Configuration Changed"
 msgstr "插件配置已经更改"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1103
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1121
 msgid "You must restart NovalIDE before your changes will take full affect."
 msgstr "要想使插件配置生效必须重启软件."
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1115
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1133
 msgid "invalid plugin"
 msgstr "非法插件"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1131
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1149
 msgid "State"
 msgstr "状态"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1166
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1184
 #, fuzzy
 #| msgid "Home directory"
 msgid "Packages' directory\n"
 msgstr "主目录"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1171
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1189
 msgid "Install from PyPI\n"
 msgstr "从PyPI服务器安装\n"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1181
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1199
 msgid "Install from requirements file\n"
 msgstr "从requirements文件安装\n"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1186
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1204
 msgid ""
 " to locate requirements.txt file and install the packages specified in it.\n"
 "\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1194
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1212
 msgid ""
 " to locate and install the package file (usually with .whl, .tar.gz or .zip "
 "extension).\n"
 "\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1207
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1225
 msgid "virtual environment\n"
 msgstr "虚拟环境\n"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1209
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1227
 msgid "user site-packages\n"
 msgstr ""
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1242
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1260
 msgid "refresh"
 msgstr "刷新"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1251
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1269
 msgid "Could not find the package from PyPI."
 msgstr "没有找到该包."
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1255
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1273
 msgid "exact package name"
 msgstr "正确的包名称"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1262
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1280
 msgid "Searched Packages:"
 msgstr "搜索包列表:"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1265
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1283
 msgid "The resuls count is tool much!trim to %d"
 msgstr "搜索结果太多了!削减至%d个"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1324
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1343
 msgid "NB!\n"
 msgstr "注意!\n"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1420
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1439
 msgid "Really uninstall?"
 msgstr "确定卸载?"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1421
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1440
 msgid ""
 "Package '{}' is required for installing and uninstalling other packages.\n"
 "\n"
@@ -3295,31 +3303,31 @@ msgstr ""
 "需要用'{}'工具来安装和卸载其它包,如果移除会影响包的安装和卸载.\n"
 "\n"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1424
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1443
 msgid "Are you sure you want to uninstall it?"
 msgstr "确定要从解释器中卸载工具吗?"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1574
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1593
 msgid "Default plugin directory:"
 msgstr "默认插件目录:"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1577
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1596
 msgid "User directory"
 msgstr "用户目录"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1578
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1597
 msgid "System directory"
 msgstr "系统目录"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1581
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1600
 msgid "Enable plugin after install it"
 msgstr "插件安装后立即启用"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1614
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1633
 msgid "Plugin Manager"
 msgstr "插件管理器"
 
-#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1616
+#: G:\work\project\Noval\noval\python\plugins\pip_gui.py:1635
 msgid "fetching plugin from server..."
 msgstr "正在从服务器拉取插件列表..."
 
@@ -3770,11 +3778,11 @@ msgstr "C/C++头文件"
 msgid "C/C++ Header Editor"
 msgstr "C/C++头文件编辑器"
 
-#: G:\work\project\Noval\noval\ui_base.py:1037
+#: G:\work\project\Noval\noval\ui_base.py:1038
 msgid "New Document"
 msgstr "新建文档"
 
-#: G:\work\project\Noval\noval\ui_base.py:1037
+#: G:\work\project\Noval\noval\ui_base.py:1038
 msgid "Select a document type:"
 msgstr "选择文档类型:"
 

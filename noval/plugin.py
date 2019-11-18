@@ -709,6 +709,7 @@ class PluginManager(object):
                                 # Save plugins that are not compatible with
                                 # this version to use for notifications.
                                 self._obsolete[name] = cls.__module__
+                                self.LOG.warn("[pluginmgr][info] application is obsolete,Plugin: %s need app version is %s,but current version is %s" % (egg.project_name,minv,utils.get_app_version()))
                         else:
                             self.LOG("[pluginmgr][info] Skip re-init of %s" % cls)
                     finally:

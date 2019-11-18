@@ -854,6 +854,7 @@ class DockFrame(ttk.Frame):
         self._is_show = show
         #复现菜单关联变量,通过这个变量控制复选菜单是否选中
         self.visibility_flag = tk.BooleanVar(value=bool(self._is_show))
+        self.pad_y = 0
         
     def Hide(self):
         self.grid_forget()
@@ -863,7 +864,7 @@ class DockFrame(ttk.Frame):
     def Show(self,show=True):
         if show:
             #设置状态栏和工具栏水平方向拉伸
-            self.grid(column=0, row=self._row, sticky=tk.EW, padx=0, pady=0)
+            self.grid(column=0, row=self._row, sticky=tk.EW, padx=0, pady=self.pad_y)
             self._is_show = True
             self.visibility_flag.set(True)
         else:

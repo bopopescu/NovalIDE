@@ -90,8 +90,17 @@ def check_plugins(ignore_error = False):
             ret = messagebox.askyesno(_("Plugin Update Available"),_("Plugin '%s' latest version '%s' is available,do you want to download and update it?")%(plugin_name,plugin_data['version']))
             if ret:
                 new_version = plugin_data['version']
+                app_version = apputils.get_app_version()
+                #检查更新插件要求的软件版本是否大于当前版本,如果是则提示用户是否更新软件
+                if parserutils.CompareCommonVersion(plugin_data['app_version'],app_version):
+                    ret = messagebox.askyesno(GetApp().GetAppName(),_("Plugin '%s' requires application version at least '%s',Do you want to update your application?"%(plugin_name,plugin_data['app_version'])))
+                    if ret == False:
+                        break
+                    #更新软件,如果用户执行更新安装,则程序会退出,不会执行下面的语句
+                    CheckAppUpdate()
+                    break
                 download_url = '%s/member/download_plugin' % (UserDataDb.HOST_SERVER_ADDR)
-                payload = dict(app_version = apputils.get_app_version(),\
+                payload = dict(app_version = app_version,\
                     lang = GetApp().locale.GetLanguageCanonicalName(),os_name=sys.platform,plugin_id=plugin_id)
                 #下载插件文件
                 downutils.download_file(download_url,call_back=after_update_download,**payload)

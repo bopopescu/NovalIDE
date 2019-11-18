@@ -2,7 +2,7 @@ from distutils.core import setup
 from setuptools import find_packages
 
 setup(name='PyPI',
-        version='1.0',
+        version='1.1',
         description='''a simple tool to enable user publish package to local site-packages or pypi server conveniently via new pypi project''',
         author='wukan',
         author_email='wekay102200@sohu.com',
