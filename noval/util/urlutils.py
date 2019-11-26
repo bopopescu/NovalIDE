@@ -4,7 +4,10 @@ from concurrent import futures
 import atexit
 
 #删除注册全局退出函数,否则会在程序退出时等待ThreadPoolExecutor异步线程执行完才退出,导致程序卡死
-atexit.unregister(futures.thread._python_exit)
+try:
+    atexit.unregister(futures.thread._python_exit)
+except:
+    pass
 
 def RequestData(addr,arg={},method='get',timeout = None,to_json=True):
     '''
