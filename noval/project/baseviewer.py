@@ -250,7 +250,10 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledContainerWizardPage):
         return True
         
     def GetStartupfile(self):
-        return variablesutils.VariablesManager(self.new_project_doc).EvalulateValue(self.startup_path_var.get().strip())
+        try:
+            return variablesutils.VariablesManager(self.new_project_doc).EvalulateValue(self.startup_path_var.get().strip())
+        except RuntimeError as e:
+           return self.startup_path_var.get().strip()
         
     def CheckStartup(self):
         ''''''

@@ -18,7 +18,6 @@ import noval.consts as consts
 import noval.util.utils as utils
 
 class ToolBar(ui_base.DockFrame):
-    toolbar_group = 100
     def __init__(self,parent,orient = tk.HORIZONTAL):
         ui_base.DockFrame.__init__(self,consts.DEFAULT_TOOL_BAR_ROW, parent,show=self.IsDefaultShown())
         #padx设置工具栏左边距
@@ -26,12 +25,20 @@ class ToolBar(ui_base.DockFrame):
         self._commands = []
         self.pad_y = 5
         
+    def CreateNewSlave(self):
+        group_frame = ttk.Frame(self)
+        padx = (0, 10)
+        group_frame.pack(fill="x",side=tk.RIGHT)
+        return group_frame
+        
     def CreateSlave(self):
-        slaves = self.grid_slaves(0, self.toolbar_group)
+        slaves = self.pack_slaves()
         if len(slaves) == 0:
             group_frame = ttk.Frame(self)
-            padx = (0, 10)
-            group_frame.grid(row=0, column=self.toolbar_group, padx=padx)
+            if self._orient == tk.HORIZONTAL:
+                group_frame.pack(fill="x",side=tk.LEFT)
+            elif self._orient == tk.VERTICAL:
+                group_frame.pack(fill="y",side=tk.TOP)
         else:
             group_frame = slaves[0]
         return group_frame
@@ -66,8 +73,8 @@ class ToolBar(ui_base.DockFrame):
     def Update(self):
         if not self.winfo_ismapped():
            return
-        for group_frame in self.grid_slaves(0):
-            for button in group_frame.grid_slaves():
+        for group_frame in self.pack_slaves():
+            for button in group_frame.grid_slaves(0):
                 if isinstance(button,ttk.Button):
                     if button.tester and not button.tester():
                         button["state"] = tk.DISABLED
@@ -119,9 +126,9 @@ class ToolBar(ui_base.DockFrame):
                     ctrl.grid(row=i,column=0)
 
     def AddSeparator(self):
-        slaves = self.grid_slaves(0, self.toolbar_group)
+        slaves = self.pack_slaves()
         group_frame = slaves[0]
-        separator = ttk.Separator (group_frame, orient = tk.VERTICAL)
+        separator = ttk.Separator(group_frame, orient = tk.VERTICAL)
         pos = len(self._commands)
         separator.grid(row=0,column=pos,sticky=tk.NSEW, padx=0, pady=3)
         self._commands.append([None,separator])

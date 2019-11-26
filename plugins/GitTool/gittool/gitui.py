@@ -33,6 +33,12 @@ class CloneProgressDialog(ui_base.GenericProgressDialog):
     def Cancel(self):
         self.mpb.stop()
         ui_base.GenericProgressDialog.Cancel(self)
+        
+
+class OutputReader:
+    def Read(self,msg):
+        print (msg,"-------------------")
+    
 
 class GitProjectNameLocationPage(BasePythonProjectNameLocationPage):
 
@@ -73,10 +79,11 @@ class ImportFilesPage(projectwizard.BitmapTitledContainerWizardPage):
         return sizer_frame
         
     def Validate(self):
-        progress_dlg = CloneProgressDialog(self)
-        self.CloneGitProject(progress_dlg)
-        progress_dlg.Pulse()
-        progress_dlg.ShowModal()
+        self.GetGitBraches()
+       # progress_dlg = CloneProgressDialog(self)
+        #self.CloneGitProject(progress_dlg)
+        #progress_dlg.Pulse()
+        #progress_dlg.ShowModal()
         return False
 
     def CloneGitProject(self,progress_dlg):
@@ -85,9 +92,8 @@ class ImportFilesPage(projectwizard.BitmapTitledContainerWizardPage):
         
     def ExecCommandAndOutput(self,command,progress_dlg):
         #shell must be True on linux
-        project_path = self.GetPrev().GetProjectLocation()
-        if not os.path.exists(project_path):
-            os.makedirs(project_path)
+        project_path = self.GetAndEnsureProjectPath()
+        print ('git cmd is %s'%command)
         p = subprocess.Popen(command,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,cwd=project_path)
         stdout_thread = outputthread.SynchronizeOutputThread(p.stdout,p,progress_dlg)
         stdout_thread.start()
@@ -95,6 +101,13 @@ class ImportFilesPage(projectwizard.BitmapTitledContainerWizardPage):
         stderr_thread.start()
         p.wait()
         return p.returncode
+        
+    def GetAndEnsureProjectPath(self):
+        project_path = self.GetPrev().GetProjectLocation()
+        if not os.path.exists(project_path):
+            os.makedirs(project_path)
+        return project_path
+        
 
     def CloneProject(self,progress_dlg):
         progress_dlg.call_back = progress_dlg.AppendMsg
@@ -104,3 +117,16 @@ class ImportFilesPage(projectwizard.BitmapTitledContainerWizardPage):
         progress_dlg.destroy()
         if ret_code != 0:
             messagebox.showerror(_("Clone project error"),_("%s")%msg,parent=self)
+
+    def GetGitBraches(self):
+        project_path = self.GetAndEnsureProjectPath()
+        command = "git init"
+        ret_code = utils.create_process(command,'',cwd=project_path)
+        
+        command = "git remote add origin %s"%self.addr_var.get().strip()
+        ret_code = utils.create_process(command,'',cwd=project_path)
+        
+        command = "git remote show origin"
+        reader = OutputReader()
+        reader.call_back = reader.Read
+        self.ExecCommandAndOutput(command,reader)

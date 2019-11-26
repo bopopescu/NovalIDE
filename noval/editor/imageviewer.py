@@ -56,7 +56,7 @@ class ImageView(core.View):
 
     def OnClose(self, deleteWindow = True):
         self.Activate(False)
-        if deleteWindow:
+        if deleteWindow and self.GetFrame():
             self.GetFrame().Destroy()
         return True
         

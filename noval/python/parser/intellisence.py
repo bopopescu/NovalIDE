@@ -56,11 +56,11 @@ class IntellisenceDataLoader(object):
                      member_list=os.path.join(data_path,name +config.MEMBERLIST_FILE_EXTENSION))
             self.module_dicts[name] = d
 
-    def Load(self,interpreter,share_user_data=False):
-        t = threading.Thread(target=self.LoadInterperterData,args=(interpreter,share_user_data))
+    def Load(self,interpreter):
+        t = threading.Thread(target=self.LoadInterperterData,args=(interpreter,))
         t.start()
         
-    def LoadInterperterData(self,interpreter,share_user_data):
+    def LoadInterperterData(self,interpreter):
         utils.update_statusbar(_("Loading intellisence database"))
         self.module_dicts.clear()
         #should copy builtin list to import_list,otherwise it will change
@@ -76,8 +76,6 @@ class IntellisenceDataLoader(object):
         self.LoadImportList()
         self.LoadBuiltinModule(interpreter)
         utils.update_statusbar(_("Finish load Intellisence database"))
-        if share_user_data:
-            self._manager.ShareUserData()
         
     def LoadImportList(self):
         for key in self.module_dicts.keys():
@@ -177,8 +175,6 @@ class IntellisenceManager(object):
         if progress_dlg != None:
             progress_dlg.KeepGoing = False
             progress_dlg.destroy()
-        else:
-            self.ShareUserData()
         if load_data_end and not self._is_stopped:
             self.load_intellisence_data(interpreter)
         if not self._is_stopped:
@@ -189,6 +185,10 @@ class IntellisenceManager(object):
     def GetLastUpdateTime(self,database_location):
         with open(os.path.join(database_location,config.UPDATE_FILE)) as f:
             return f.read()
+            
+    def AsyncShareUserData(self):
+        t = threading.Thread(target=self.ShareUserData)
+        t.start()
     
     def ShareUserData(self):
         if GetApp().GetDebug():
@@ -223,9 +223,10 @@ class IntellisenceManager(object):
         current_interpreter = interpretermanager.InterpreterManager().GetCurrentInterpreter()
         if current_interpreter is None:
             return
+        self.AsyncShareUserData()
         if not self.IsInterpreterNeedUpdateDatabase(current_interpreter):
             utils.get_logger().info("interpreter %s is no need to update database" % current_interpreter.Name)
-            self.load_intellisence_data(current_interpreter,True)
+            self.load_intellisence_data(current_interpreter)
             return
         utils.get_logger().info("interpreter %s is need to update database" % current_interpreter.Name)
         try:
@@ -236,8 +237,8 @@ class IntellisenceManager(object):
                                         os.path.join(self.data_root_path,str(current_interpreter.Id)),e)
             utils.get_logger().exception("")
         
-    def load_intellisence_data(self,interpreter,share_user_data=False):
-        self._loader.Load(interpreter,share_user_data)
+    def load_intellisence_data(self,interpreter):
+        self._loader.Load(interpreter)
         
     def GetImportList(self):
         return self._loader.ImportList

@@ -245,7 +245,7 @@ class ImportfilesPage(projectwizard.BitmapTitledContainerWizardPage):
         self.pb["maximum"] = len(file_list)
         prev_page = self.GetPrev()
         if GetApp().GetDefaultLangId() == lang.ID_LANG_PYTHON and self._is_wizard:
-            if prev_page._new_project_configuration.PythonpathMode == baseconfig.NewProjectConfiguration.PROJECT_ADD_SRC_PATH:
+            if hasattr(prev_page,"_new_project_configuration") and prev_page._new_project_configuration.PythonpathMode == baseconfig.NewProjectConfiguration.PROJECT_ADD_SRC_PATH:
                 #目的路径为Src路径
                 self.dest_path = os.path.join(self.dest_path,baseconfig.NewProjectConfiguration.DEFAULT_PROJECT_SRC_PATH)
         root_path = self.check_box_view.tree.item(self.root_item)["values"][0]
@@ -258,7 +258,7 @@ class ImportfilesPage(projectwizard.BitmapTitledContainerWizardPage):
             
         self.notify_queue = queue.Queue()
         GetApp().MainFrame.after(1000,self.ShowImportProgress)
-        self.project_browser.StartCopyFilesToProject(self,file_list,root_path,self.dest_path,self.notify_queue)
+        self.project_browser.StartCopyFilesToProject(self,file_list,root_path,self.dest_path,self.notify_queue,self._is_wizard)
         return False
 
     def ShowImportProgress(self):
@@ -360,6 +360,26 @@ class ImportfilesPage(projectwizard.BitmapTitledContainerWizardPage):
         self.is_cancel = True
         if hasattr(self,"cur_prog_val"):
             self.label_var.set("cancel importing file.....")
+
+    def SetStartupfile(self):
+        '''
+            导入文件后设置项目的启动文件
+        '''
+        prev_page = self.GetPrev()
+        while prev_page:
+            #顺序查找上一个页面是否是新建项目页面
+            if hasattr(prev_page,"startup_path_var"):
+                startup_file_path = prev_page.GetStartupfile()
+                doc = self.project_browser.GetView().GetDocument()
+                startup_file = doc.GetModel().FindFile(startup_file_path)
+                if startup_file:
+                    item = doc.GetFirstView()._treeCtrl.FindItem(startup_file.filePath)
+                    doc.GetFirstView().SetProjectStartupFileItem(item)
+                else:
+                    #启动文件未找到
+                    messagebox.showwarning(GetApp().GetAppName(),_("Startup path %s is not exists in project")%startup_file_path)
+                break
+            prev_page = prev_page.GetPrev()
 
 class ImportfilesDialog(ui_base.CommonModaldialog):
     

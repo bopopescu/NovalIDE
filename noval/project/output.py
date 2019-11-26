@@ -30,6 +30,8 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         self._input_start_pos = 0
         self._executor = None
         self.trace_log = trace_log
+        #不要高亮当前行
+        self._should_tag_current_line = False
         self.bind('<Double-Button-1>',self.OnDoubleClick)
         #鼠标和键盘松开时激活视图
         self.bind("<<ActivateView>>", self.ActivateView)

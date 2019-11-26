@@ -799,14 +799,14 @@ class BaseProjectbrowser(ttk.Frame):
             filePath = fileutils.opj(os.path.join(project_path,self.GetView()._GetItemFolderPath(item)))
         return filePath
 
-    def StartCopyFilesToProject(self,progress_ui,file_list,src_path,dest_path,que):
-        self.copy_thread = threading.Thread(target = self.CopyFilesToProject,args=(progress_ui,file_list,src_path,dest_path,que))
+    def StartCopyFilesToProject(self,progress_ui,file_list,src_path,dest_path,que,is_wizard=False):
+        self.copy_thread = threading.Thread(target = self.CopyFilesToProject,args=(progress_ui,file_list,src_path,dest_path,que,is_wizard))
         self.copy_thread.start()
         
     def BuildFileList(self,file_list):
         return file_list
         
-    def CopyFilesToProject(self,progress_ui,file_list,src_path,dest_path,que):
+    def CopyFilesToProject(self,progress_ui,file_list,src_path,dest_path,que,is_wizard):
         #构建路径对应文件列表的对照表
         utils.get_logger().info('start import total %d files to path %s',len(file_list),dest_path)
         start_time = time.time()
@@ -837,6 +837,9 @@ class BaseProjectbrowser(ttk.Frame):
         que.put((None,None))
         end_time = time.time()
         utils.get_logger().info('success import total %d files,elapse %d seconds',copy_file_count,int(end_time-start_time))
+        #导入完成后设置启动文件
+        if is_wizard:
+            progress_ui.SetStartupfile()
 
     def BuildFileMaps(self,file_list):
         d = {}
