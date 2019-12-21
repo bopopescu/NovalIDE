@@ -16,6 +16,7 @@ import noval.python.parser.utils as parserutils
 from noval.util import apputils
 from noval import _,GetApp
 import noval.util.txtutils as txtutils
+import shlex
 
 def caseInsensitiveCompare(s1, s2):
     """ Method used by sort() to sort values in case insensitive order """
@@ -282,3 +283,20 @@ def normpath_with_actual_case(name):
             return result
     else:
         return os.path.normpath(name)
+        
+def is_sample_file(file_1,file_2):
+    
+    if apputils.is_py3_plus():
+        return os.path.samefile(file_1,file_2)
+    elif apputils.is_py2():
+        return 0 == caseInsensitiveCompare(normpath_with_actual_case(file_1),normpath_with_actual_case(file_2))
+        
+
+def shorten_repr(original_repr, max_len = 1000):
+    if len(original_repr) > max_len:
+        return original_repr[: max_len - 1] + "…"
+    else:
+        return original_repr
+
+def parse_cmd_line(s,posix=False):
+    return shlex.split(s, posix=posix)

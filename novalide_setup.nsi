@@ -2,7 +2,7 @@
 
 ; 安装程序初始定义常量
 !define PRODUCT_NAME "NovalIDE"
-!define PRODUCT_VERSION "1.1.9"
+!define PRODUCT_VERSION "1.2.0"
 !define PRODUCT_PUBLISHER "wukan"
 !define PRODUCT_WEB_SITE "http://www.genetalks.com"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\NovalIDE.exe"
@@ -138,11 +138,6 @@ Section "MainSection" SEC01
   SetOutPath "$INSTDIR\win32com\shell"
   File /r "dist\${PRODUCT_NAME}\win32com\shell\*.*"
 
-
-  Delete "$APPDATA\NovalIDE\intellisence\builtins\2\*.*"
-  Delete "$APPDATA\NovalIDE\intellisence\builtins\3\*.*"
-  SetOutPath "$APPDATA\NovalIDE\intellisence\builtins"
-  File /r "dist\${PRODUCT_NAME}\builtins\*.*"
 SectionEnd
 
 Section -AdditionalIcons

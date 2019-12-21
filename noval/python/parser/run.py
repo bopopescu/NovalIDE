@@ -9,94 +9,11 @@ import time
 import functools
 import multiprocessing
 import datetime
-
-def generate_builtin_data(dest_path):
-    def make_python2_builtin_types(builtin_type,recursive=True):
-        childs = []
-        for name in dir(builtin_type):
-            try:
-                builtin_attr_intance = getattr(builtin_type,name)
-            except:
-                continue
-            builtin_attr_type = type(builtin_attr_intance)
-            if builtin_attr_type == types.TypeType:
-                if not recursive:
-                    continue
-                builtin_attr_childs = make_python2_builtin_types(builtin_attr_intance,False)
-                node = dict(name = name,is_builtin=True,type = config.NODE_CLASSDEF_TYPE,childs=builtin_attr_childs,doc=builtin_attr_intance.__doc__)
-                childs.append(node)
-            elif builtin_attr_type == types.BuiltinFunctionType or builtin_attr_type == types.BuiltinMethodType \
-                        or str(builtin_attr_type).find("method_descriptor") != -1:
-                node = dict(name = name,is_builtin=True,type = config.NODE_FUNCDEF_TYPE,doc=builtin_attr_intance.__doc__)
-                childs.append(node)
-            else:
-                node = dict(name = name,is_builtin=True,type = config.NODE_OBJECT_PROPERTY)
-                childs.append(node)
-        return childs
-
-    def make_python3_builtin_types(builtin_type,recursive=True):
-        childs = []
-        for name in dir(builtin_type):
-            try:
-                builtin_attr_intance = getattr(builtin_type,name)
-            except:
-                continue
-            builtin_attr_type = type(builtin_attr_intance)
-            if builtin_attr_type == type(type):
-                if not recursive:
-                    continue
-                builtin_attr_childs = make_python3_builtin_types(builtin_attr_intance,False)
-                node = dict(name = name,is_builtin=True,type = config.NODE_CLASSDEF_TYPE,childs=builtin_attr_childs,doc=builtin_attr_intance.__doc__)
-                childs.append(node)
-            elif builtin_attr_type == types.BuiltinFunctionType or builtin_attr_type == types.BuiltinMethodType \
-                        or str(builtin_attr_type).find("method_descriptor") != -1:
-                node = dict(name = name,is_builtin=True,type = config.NODE_FUNCDEF_TYPE,doc=builtin_attr_intance.__doc__)
-                childs.append(node)
-            else:
-                node = dict(name = name,is_builtin=True,type = config.NODE_OBJECT_PROPERTY)
-                childs.append(node)
-        return childs
-
-    def make_builtin_types(builtin_type):
-        if utils.IsPython2():
-            return make_python2_builtin_types(builtin_type)
-        else:
-            return make_python3_builtin_types(builtin_type)
-        
-    dest_path = os.path.join(dest_path,"builtins")
-    utils.MakeDirs(dest_path)
-    for built_module in sys.builtin_module_names:
-        module_instance = __import__(built_module)
-        childs = make_builtin_types(module_instance)
-        with open(dest_path + "/" + built_module + config.MEMBERLIST_FILE_EXTENSION, 'w') as f:
-            for node in childs:
-                f.write(node['name'])
-                f.write('\n')
-        module_dict = fileparser.make_module_dict(built_module,'',True,childs,doc=module_instance.__doc__)
-        with open(dest_path + "/" + built_module + config.MEMBERS_FILE_EXTENSION, 'wb') as j:
-            # Pickle dictionary using protocol 0.
-            pickle.dump(module_dict, j,protocol=0)
-            
-def LoadDatabaseVersion(database_location):
-    with open(os.path.join(database_location,config.DATABASE_FILE)) as f:
-        return f.read()
-        
-def SaveDatabaseVersion(database_location,new_database_version):
-    with open(os.path.join(database_location,config.DATABASE_FILE),"w") as f:
-        f.write(new_database_version)
         
 def SaveLastUpdateTime(database_location):
     with open(os.path.join(database_location,config.UPDATE_FILE),"w") as f:
         datetime_str = datetime.datetime.strftime(datetime.datetime.now(), config.ISO_8601_DATETIME_FORMAT)
         f.write(datetime_str)
-        
-def NeedRenewDatabase(database_location,new_database_version):
-    if not os.path.exists(os.path.join(database_location,config.DATABASE_FILE)):
-        return True
-    old_database_version = LoadDatabaseVersion(database_location)
-    if 0 == utils.CompareCommonVersion(new_database_version,old_database_version):
-        return False
-    return True
 
 def get_python_version():
     #less then python 2.7 version
@@ -127,7 +44,7 @@ def generate_intelligent_data_by_pool(out_path,new_database_version):
     version = get_python_version()
     dest_path = os.path.join(out_path,version)
     utils.MakeDirs(dest_path)
-    need_renew_database = NeedRenewDatabase(dest_path,new_database_version)
+    need_renew_database = utils.NeedRenewDatabase(dest_path,new_database_version)
     sys_path_list = sys.path
     max_pool_count = 5
     for i,path in enumerate(sys_path_list):
@@ -141,7 +58,7 @@ def generate_intelligent_data_by_pool(out_path,new_database_version):
     pool.join()
     process_sys_modules(dest_path)
     if need_renew_database:
-        SaveDatabaseVersion(dest_path,new_database_version)
+        utils.SaveDatabaseVersion(dest_path,new_database_version)
     SaveLastUpdateTime(dest_path)
     
 def get_unfinished_modules(outpath):

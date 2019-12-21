@@ -9,7 +9,7 @@ import uuid
 from noval.python.debugger.commandui import *
 import noval.python.project.runconfiguration as runconfiguration
 import noval.consts as consts
-
+from noval.util.command import ToplevelCommand
 '''
     运行python文件或者项目
     按运行模式分为运行:单个文件和项目
@@ -86,7 +86,7 @@ class PythonProjectDocument(ProjectDocument):
         environment,initialArgs = run_parameter.Environment,run_parameter.Arg
         sys.argv = [fileToRun]
         command = 'execfile(r"%s")' % fileToRun
-        python_interpreter_view.run(command)
+        python_interpreter_view.Runner.send_command(ToplevelCommand("execute_source", source=command))
         sys.argv = old_argv
         
     def GetRunConfiguration(self,run_file=None):
@@ -287,6 +287,10 @@ class PythonProjectDocument(ProjectDocument):
         '''
         if BaseDebuggerUI.DebuggerRunning():
             messagebox.showinfo( _("Debugger Running"),_("A debugger is already running. Please shut down the other debugger first."))
+            return
+        #内建解释器不支持断点调试
+        if run_parameter.Interpreter.IsBuiltIn:
+            messagebox.showinfo(GetApp().GetAppName(),_("Builtin interpreter does not support this operation."))
             return
         host = utils.profile_get("DebuggerHostName", DEFAULT_HOST)
         if not host:

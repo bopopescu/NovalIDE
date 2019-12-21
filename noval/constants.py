@@ -223,3 +223,15 @@ ID_NOTOALL                  = NewId()
 PROJECTVIEW_POPUP_FOLDER_MENU_EVT = 'EvtPopupProjectFolderMenu'
 PROJECTVIEW_POPUP_FILE_MENU_EVT = 'EvtPopupProjectFileMenu'
 PROJECTVIEW_POPUP_ROOT_MENU_EVT = 'EvtPopupProjectRootMenu'
+
+#文件正在打开事件
+FILE_OPENING_EVT = "EvtFileOpening"
+#文件已经打开文件
+FILE_OPENED_EVT = "EvtFileOpened"
+#文件正在保存事件
+FILE_SAVEING_EVT = "EvtFileSaveing"
+#文件已经保存事件
+FILE_SAVED_EVT = "EvtFileSaved"
+
+#双击文件视图文件夹事件
+DOUBLECLICKPATH_EVT = "EvtDoubleClickPath"

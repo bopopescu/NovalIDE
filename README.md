@@ -80,7 +80,6 @@ pip install requests
 
 - **Ubuntu**
 
-- sudo apt-get install python-tk(python2.7)
 - sudo apt-get install python3-tk(python3)
 
 - **Centos**
@@ -92,8 +91,8 @@ pip install requests
 ```
 git clone https://gitee.com/wekay/NovalIDE.git
 cd Noval
-运行python setup.py install，权限不够请用sudo
-最后运行Python NovalIDE.py或者直接运行NovalIDE命令
+运行python3 setup.py install，权限不够请用sudo
+最后运行Python3 NovalIDE.py或者直接运行NovalIDE命令
 ```
 
 安装
@@ -112,7 +111,6 @@ cd Noval
 
 - **Ubuntu**
 
-- sudo apt-get install python-tk(python2)(一般linux服务器已经安装tkinter,如果没有安装则需要执行一次)
 - sudo apt-get install python3-tk(python3)
 
 - **Centos**
@@ -122,8 +120,8 @@ cd Noval
 - **安装步骤**
 
 ```
-运行sudo python pip install novalide
-最后输入命令NovalIDE来运行IDE。
+运行python3 setup.py install，权限不够请用sudo
+最后运行NovalIDE命令。
 ```
 
 功能截图

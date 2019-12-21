@@ -27,6 +27,8 @@ class PythonDebugger(Debugger):
     # Constants
     #----------------------------------------------------------------------------
     RUN_PARAMETERS = []
+    #异常中断列表
+    EXCEPTIONS = []
     #调试器只允许运行一个
     _debugger_ui = None
 
@@ -36,7 +38,6 @@ class PythonDebugger(Debugger):
 
     def __init__(self):
         Debugger.__init__(self)
-        self._exceptions = []
         self._frame = None
         self.projectPath = None
         self.phpDbgParam = None
@@ -50,10 +51,10 @@ class PythonDebugger(Debugger):
         cls._debugger_ui  = debugger_ui
         
     def GetExceptions(self):
-        return self._exceptions
+        return PythonDebugger.EXCEPTIONS
         
     def SetExceptions(self,exceptions):
-        self._exceptions = exceptions
+        PythonDebugger.EXCEPTIONS = exceptions
 
     def _right_btn_press(self, event):
         try:

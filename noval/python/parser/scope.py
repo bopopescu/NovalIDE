@@ -83,8 +83,14 @@ class Scope(object):
     def FindScopeInChildScopes(self,name):
         child_scopes = []
         for child_scope in self.ChildScopes:
-            if child_scope.EqualName(name):
-                child_scopes.append(child_scope)
+            #如果是from范围则在其import子范围中查找
+            if isinstance(child_scope,FromImportScope):
+                for import_scope in child_scope.ChildScopes:
+                    if import_scope.EqualName(name):
+                        child_scopes.append(import_scope)
+            else:
+                if child_scope.EqualName(name):
+                    child_scopes.append(child_scope)
         return child_scopes
         
     def IsRoutetoEnd(self,scope):
@@ -196,6 +202,10 @@ class ModuleScope(Scope):
     @property
     def Module(self):
         return self._module
+        
+    @property
+    def Node(self):
+        return self.Module
     
     def MakeModuleScopes(self):
         self.MakeScopes(self.Module,self)
@@ -529,15 +539,25 @@ class ImportScope(NodeScope):
         return fix_name
 
     def GetImportMemberList(self,name):
-        fix_name = self.MakeFixName(name)
-        member_list = intellisence.IntellisenceManager().GetModuleMembers(self.Node.Name,fix_name)
+        #如果import范围父亲是from范围,则获取from对象的成员
+        if isinstance(self.Parent,FromImportScope):
+            fix_name = name
+            member_list = intellisence.IntellisenceManager().GetModuleMembers(self.Parent.Node.Name,fix_name)
+        else:
+            fix_name = self.MakeFixName(name)
+            member_list = intellisence.IntellisenceManager().GetModuleMembers(self.Node.Name,fix_name)
         return member_list
 
     def GetMember(self,name):
-        fix_name = self.MakeFixName(name)
-        if fix_name == "":
-            return [self]
-        return intellisence.IntellisenceManager().GetModuleMember(self.Node.Name,fix_name)
+        #如果import范围父亲是from范围,则获取from对象的成员
+        if isinstance(self.Parent,FromImportScope):
+            fix_name = name
+            return intellisence.IntellisenceManager().GetModuleMember(self.Parent.Node.Name,fix_name)
+        else:
+            fix_name = self.MakeFixName(name)
+            if fix_name == "":
+                return [self]
+            return intellisence.IntellisenceManager().GetModuleMember(self.Node.Name,fix_name)
 
     def GetDoc(self):
         doc = intellisence.IntellisenceManager().GetModuleDoc(self.Node.Name)
@@ -554,9 +574,6 @@ class FromImportScope(NodeScope):
         super(FromImportScope,self).__init__(from_import_node,parent,root)
         
     def EqualName(self,name):
-        for child_scope in self.ChildScopes:
-            if child_scope.EqualName(name):
-                return True
         return False
             
 class MainFunctionScope(NodeScope):

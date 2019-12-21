@@ -27,7 +27,7 @@ import noval.misc as misc
 import tkinter.font as tk_font
 from tkinter import ttk
 from noval.syntax import synglob,syntax
-from noval.util import record
+from noval.util.command import Record
 import noval.menu as tkmenu
 import noval.syntax.lang as lang
 import noval.preference as preference
@@ -39,6 +39,7 @@ import traceback
 import noval.ttkwidgets.messagedialog as messagedialog
 import noval.util.fileutils as fileutils
 import noval.logview as logview
+from noval.util.command import BackendSpec
 #----------------------------------------------------------------------------
 # Classes
 #----------------------------------------------------------------------------
@@ -171,6 +172,7 @@ class IDEApplication(core.App):
         
         #默认菜单id列表,这些菜单在没有任何可编辑文本窗口时菜单处于灰色状态
         self._default_command_ids = []
+        self._backends = {}  # type: Dict[str, BackendSpec]
         self._InitMenu()
         #先创建主框架
         self._InitMainFrame()
@@ -555,7 +557,10 @@ class IDEApplication(core.App):
         
     @misc.update_toolbar
     def OnOpen(self):
-        self.GetDocumentManager().CreateDocument('',core.DEFAULT_DOCMAN_FLAGS)
+        docs = self.GetDocumentManager().CreateDocument('',core.DEFAULT_DOCMAN_FLAGS)
+        #检查文件扩展名是否有对应的文件扩展插件
+        if docs:
+            ui_utils.CheckFileExtension(docs[0].GetFilename(),False)
         
     def OnNew(self):
         self.GetDocumentManager().CreateDocument('',core.DOC_NEW)
@@ -1072,8 +1077,26 @@ class IDEApplication(core.App):
                 return result
         else:
             raise NotImplementedError("Only numeric dimensions supported at the moment")
+            
+
+    def add_backend(self,name,proxy_class,description,sort_key):
+        self._backends[name] = BackendSpec(
+            name,
+            proxy_class,
+            description,
+            sort_key if sort_key is not None else description,
+        )
+
+        # assing names to related classes
+        proxy_class.backend_name = name  # type: ignore
+
+    def get_backends(self):
+        return self._backends
         
-class AppEvent(record.Record):
+    def ShowPluginsDlg(self,plugin_names):
+        self.event_generate("ShowInstallPluginsDlg",plugin_names=plugin_names)
+        
+class AppEvent(Record):
     def __init__(self, sequence, **kwargs):
-        record.Record.__init__(self, **kwargs)
+        Record.__init__(self, **kwargs)
         self.sequence = sequence

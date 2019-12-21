@@ -57,3 +57,7 @@ class DapParserPlugin(plugin.Plugin):
         
     def GetMinVersion(self):
         ''''''
+        return "1.2.0"
+        
+    def GetFileExtension(self):
+        return '.dap'

@@ -3,6 +3,7 @@ from noval.util.logger import *
 from noval.util.apputils import *
 from noval.util.appdirs import *
 from noval.util.urlutils import *
+from noval.util.strutils import *
 from noval import GetApp
 import subprocess
     
@@ -250,11 +251,23 @@ class Config(object):
                 os.remove(self.config_path)
             self.cfg.read(self.config_path)
 
-def call_after(func): 
+def call_after(func):
+    '''
+        不带参数的装饰器
+    '''
     def _wrapper(*args, **kwargs): 
-        return GetApp().after(100,func, *args, **kwargs) 
+        GetApp().after(100,func, *args, **kwargs) 
     return _wrapper 
-
+    
+def call_after_with_arg(*wrap_args,**wrap_kwargs):
+    '''
+        带参数的装饰器
+    '''
+    def call_after(func): 
+        def _wrapper(*args, **kwargs): 
+            GetApp().after(wrap_args[0],func, *args, **kwargs) 
+        return _wrapper
+    return call_after
 
 def GetClassFromDynamicImportModule(full_class_path):
     '''
@@ -279,7 +292,7 @@ def compute_run_time(func):
         func(*args,**kwargs)
         end = time.clock()
         elapse = end - start
-        get_logger().debug("%s elapse %.3f seconds" % (func.__name__,end-start))
+        get_logger().info("%s elapse %.3f seconds" % (func.__name__,end-start))
 
     return wrapped_func
     
@@ -320,7 +333,8 @@ def create_process(command,args,shell=True,env=None,universal_newlines=True,cwd=
     #如果shell为False,表示命令是列表,subprocess.Popen只接受数组变量作为命令
     if not shell:
         if isinstance(args,str):
-            args = args.split(' ')
+            #将字符串参数按空格转换成参数列表,支持分割双引号参数
+            args = parse_cmd_line(args)
         cmd = [command] + args
     #否则是shell命令字符串
     else:

@@ -5,12 +5,14 @@ import noval.constants as constants
 import noval.ui_base as ui_base
 import noval.iface as iface
 import noval.plugin as plugin
+import tkinter as tk
 from tkinter import ttk
 import noval.ttkwidgets.treeviewframe as treeviewframe
 import noval.imageutils as imageutils
 import noval.consts as consts
 import noval.menu as tkmenu
 import noval.util.utils as utils
+import noval.ttkwidgets.checklistbox as checklistbox
 
 class BreakpointExceptionDialog(ui_base.CommonModaldialog):
     EXCEPTIONS = ['ArithmeticError', 'AssertionError', 'AttributeError', 'BaseException', 'BufferError', \
@@ -23,80 +25,54 @@ class BreakpointExceptionDialog(ui_base.CommonModaldialog):
          'UnboundLocalError', 'UnicodeDecodeError', 'UnicodeEncodeError', 'UnicodeError', 'UnicodeTranslateError',\
           'UnicodeWarning', 'UserWarning', 'ValueError', 'Warning', 'WindowsError', 'ZeroDivisionError']
  
-    def __init__(self,parent,dlg_id,title):
+    def __init__(self,parent):
         self.filters = []
-        wx.Dialog.__init__(self,parent,dlg_id,title)
-        boxsizer = wx.BoxSizer(wx.VERTICAL)
+        ui_base.CommonModaldialog.__init__(self,parent)
+        self.title(_("Add Python Exception Breakpoint"))
         
-        boxsizer.Add(wx.StaticText(self, -1, _("Break when exception is:"), \
-                        style=wx.ALIGN_CENTRE),0,flag=wx.ALL,border=SPACE)
+        ttk.Label(self.main_frame,text=_("Break when exception is:")).pack(fill="x",pady=consts.DEFAUT_CONTRL_PAD_Y)
+        check_listbox_view = treeviewframe.TreeViewFrame(self.main_frame,treeview_class=checklistbox.CheckListbox,borderwidth=1,relief="solid",height=10)
+        self.listbox = check_listbox_view.tree
+        check_listbox_view.pack(fill="both",expand=1)
         
-        self.listbox = wx.CheckListBox(self,-1,size=(400,300),choices=[])
-        boxsizer.Add(self.listbox,0,flag = wx.EXPAND|wx.BOTTOM|wx.RIGHT,border = SPACE)
-        
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.select_all_btn = wx.Button(self, -1, _("Select All"))
-        wx.EVT_BUTTON(self.select_all_btn, -1, self.SelectAll)
-        lineSizer.Add(self.select_all_btn, 0,flag=wx.LEFT, border=SPACE)
-        
-        self.unselect_all_btn = wx.Button(self, -1, _("UnSelect All"))
-        wx.EVT_BUTTON(self.unselect_all_btn, -1, self.UnSelectAll)
-        lineSizer.Add(self.unselect_all_btn, 0,flag=wx.LEFT, border=SPACE)
-        boxsizer.Add(lineSizer,0,flag = wx.RIGHT|wx.ALIGN_RIGHT,border = SPACE) 
-
-
-        boxsizer.Add(wx.StaticText(self, -1, _("User defined exceptions:"), \
-                        style=wx.ALIGN_CENTRE),0,flag=wx.BOTTOM|wx.RIGHT|wx.TOP,border=SPACE)
-                        
-        self.other_exception_ctrl = wx.TextCtrl(self, -1, "", size=(-1,-1))
-        boxsizer.Add(self.other_exception_ctrl, 0, flag=wx.BOTTOM|wx.RIGHT|wx.EXPAND,border=SPACE)
-
-        lineSizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.add_exception_btn = wx.Button(self, -1, _("Add Exception"))
-        wx.EVT_BUTTON(self.add_exception_btn, -1, self.AddException)
-        lineSizer.Add(self.add_exception_btn, 0,flag=wx.LEFT, border=SPACE)
-        boxsizer.Add(lineSizer,0,flag = wx.RIGHT|wx.ALIGN_RIGHT|wx.BOTTOM,border = SPACE)
-        
-        bsizer = wx.StdDialogButtonSizer()
-        ok_btn = wx.Button(self, wx.ID_OK, _("&OK"))
-        wx.EVT_BUTTON(ok_btn, -1, self.OnOKClick)
-        #set ok button default focused
-        ok_btn.SetDefault()
-        bsizer.AddButton(ok_btn)
-        
-        cancel_btn = wx.Button(self, wx.ID_CANCEL, _("&Cancel"))
-        bsizer.AddButton(cancel_btn)
-        bsizer.Realize()
-        boxsizer.Add(bsizer, 0, wx.ALIGN_RIGHT | wx.RIGHT | wx.BOTTOM|wx.TOP,HALF_SPACE)
-        self.SetSizer(boxsizer)
-        self.Fit()
+        frame = ttk.Frame(self.main_frame)
+        ttk.Button(frame,text=_("UnSelect All"),command=self.UnSelectAll).pack(side=tk.RIGHT,fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
+        ttk.Button(frame,text=_("Select All"),command=self.SelectAll).pack(side=tk.RIGHT,fill="x")
+        frame.pack(fill="x",pady=consts.DEFAUT_CONTRL_PAD_Y)
+        ttk.Label(self.main_frame,text= _("User defined exceptions:")).pack(fill="x")
+        self.user_exception = tk.StringVar()
+        ttk.Entry(self.main_frame, text="",textvariable=self.user_exception).pack(fill="x",expand=1)
+        frame = ttk.Frame(self.main_frame)
+        ttk.Button(frame,text=_("Add Exception"),command=self.AddException).pack(fill="x",side=tk.RIGHT,padx=consts.DEFAUT_CONTRL_PAD_X)
+        frame.pack(fill="x",pady=consts.DEFAUT_CONTRL_PAD_Y)
+        self.AddokcancelButton()
         self.InitExceptions()
         self.exceptions = []
         
-    def OnOKClick(self,event):
+    def _ok(self,event=None):
         for i in range(self.listbox.GetCount()):
             if self.listbox.IsChecked(i):
                 exception = self.listbox.GetString(i)
                 self.exceptions.append(exception)
-        self.EndModal(wx.ID_OK)
+        ui_base.CommonModaldialog._ok(self,event)
         
     def InitExceptions(self):
         descr = ''
         for exception in self.EXCEPTIONS:
             self.listbox.Append(exception)
             
-    def SelectAll(self,event):
+    def SelectAll(self):
         for i in range(self.listbox.GetCount()):
             if not self.listbox.IsChecked(i):
                 self.listbox.Check(i,True)
         
-    def UnSelectAll(self,event):
+    def UnSelectAll(self):
         for i in range(self.listbox.GetCount()):
             if self.listbox.IsChecked(i):
                 self.listbox.Check(i,False)
             
-    def AddException(self,event):
-        other_exception = self.other_exception_ctrl.GetValue().strip()
+    def AddException(self):
+        other_exception = self.user_exception.get().strip()
         if other_exception == "":
             return
         self.listbox.Append(other_exception)
@@ -243,6 +219,11 @@ class BreakpointsUI(treeviewframe.TreeViewFrame):
                 GetApp().GetDebugger()._debugger_ui.NotifyDebuggersOfBreakpointChange()
             else:
                 utils.get_logger().error("In ClearBreak: no filename %s line %d",filename,lineno)
+                
+    def SetExceptionBreakPoint(self):
+        exception_dlg = BreakpointExceptionDialog(GetApp().GetTopWindow())
+        if exception_dlg.ShowModal() == constants.ID_OK:
+            GetApp().GetDebugger().SetExceptions(exception_dlg.exceptions)
        
 class BreakpointsViewLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)

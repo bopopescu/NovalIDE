@@ -3,7 +3,7 @@ from setuptools import find_packages
 
 
 setup(name='DapParser',
-        version='1.0',
+        version='1.1',
         description='''cloudwms dap file parser''',
         author='wukan',
         author_email='kan.wu@genetalks.com',

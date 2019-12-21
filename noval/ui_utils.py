@@ -12,6 +12,9 @@ import noval.ui_base as ui_base
 import noval.util.strutils as strutils
 import noval.ttkwidgets.treeviewframe as treeviewframe
 import noval.constants as constants
+import noval.syntax.syntax as syntax
+from dummy.userdb import UserDataDb
+import noval.util.urlutils as urlutils
 
 class FileHistory(hiscache.CycleCache):
     '''
@@ -566,3 +569,30 @@ def capture_tclerror(func):
         except tk.TclError as e:
             print('warning:tkinter object is not accessable when run function %s'%func.__name__)
     return _wrapper
+    
+
+@utils.call_after
+def CheckFileExtension(filename,external):
+    '''
+        检查软件是否支持该文件扩展名,如果不支持则从服务器上查找是否有对应的文件扩展插件
+    '''
+    file_extension = strutils.get_file_extension(filename,has_dot=True)
+    for lexer in syntax.SyntaxThemeManager().Lexers:
+        if lexer.ContainExt(file_extension):
+            return
+    check_url = '%s/member/check_file_plugin' % (UserDataDb.HOST_SERVER_ADDR)
+    try:
+        req = urlutils.RequestData(check_url,arg={'file_extension':file_extension})
+        plugin_names = req.get('plugin_names',[])
+        if len(plugin_names) > 0:
+            if external:
+                editor_text = _("an external system editor")
+            else:
+                editor_text = _("a internal text editor")
+            msg = _("Your '*%s' file was opened in %s ,Better editor support is available on the Plugin Marketplace,Do you want to show it and install them?")%(file_extension,editor_text)
+            ret = messagebox.askyesno(GetApp().GetAppName(),msg)
+            if ret == True:
+                #弹出插件对话框
+                GetApp().ShowPluginsDlg(plugin_names)
+    except:
+        pass

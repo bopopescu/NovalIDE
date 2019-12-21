@@ -78,7 +78,9 @@ class ShellSyntaxColorer(SyntaxColorer):
     def __init__(self, text):
         SyntaxColorer.__init__(self,text)
         magic_command = matches_any("magic", [r"^%[^\n]*"])  # used only in shell
-        self.prog = get_prog(make_pat()+ "|" + magic_command) 
+        self.prog = get_prog(make_pat()+ "|" + magic_command)
+		#shell刚开始输出欢迎信息,需要重置以避免被文本渲染
+        self.reset = True
 
     def _config_tags(self):
         SyntaxColorer._config_tags(self)
@@ -88,8 +90,11 @@ class ShellSyntaxColorer(SyntaxColorer):
 
     def _update_coloring(self):
         #TOTO end标签有待优化
-        self.text.tag_remove("TODO", "1.0", "end")
-        self.text.tag_add("SYNC", "1.0", "end")
+		#重置文本以免被python语法渲染
+        if self.reset:
+            self.text.tag_remove("TODO", "1.0", "end")
+            self.text.tag_add("SYNC", "1.0", "end")
+            self.reset = False
         SyntaxColorer._update_coloring(self)
 
 class SyntaxLexer(syndata.BaseLexer):

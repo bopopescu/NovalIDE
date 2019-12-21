@@ -19,6 +19,7 @@ import noval.terminal as terminal
 import noval.project.property as projectproperty
 import time
 import noval.project.document as projectdocument
+import noval.ui_utils as ui_utils
 
 class EntryPopup(tk.Entry):
 
@@ -404,6 +405,8 @@ class BaseProjectbrowser(ttk.Frame):
                     self.SetProject(filepath)
                 elif docs:
                     baseviewer.AddProjectMapping(docs[0])
+                    #检查文件扩展名是否有对应的文件扩展插件
+                    ui_utils.CheckFileExtension(filepath,False)
                         
 
         except IOError as e:

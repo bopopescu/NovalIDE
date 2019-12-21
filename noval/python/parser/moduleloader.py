@@ -48,7 +48,7 @@ class ModuleLoader(object):
         with open(self._member_list_file) as f:
            # for line in f.readlines():
             #    member_list.append(line.strip())
-            return(map(lambda s:s.strip(),f.readlines()))
+            return list(map(lambda s:s.strip(),f.readlines()))
         return member_list
 
     def GetMemberList(self):

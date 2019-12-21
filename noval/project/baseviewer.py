@@ -786,17 +786,14 @@ class ProjectView(misc.AlarmEventView):
                 if self.GetDocument() != projectDoc:  # project being updated isn't currently viewed project
                     return
                     
-                self._treeCtrl.Freeze()
-                try:
-                    item = self._treeCtrl.FindFolder(hint[2])
-                    if item:
-                        self._treeCtrl.UnselectAll()
-                        self._treeCtrl.SetItemText(item, os.path.basename(hint[3]))
-                        self._treeCtrl.SortChildren(self._treeCtrl.GetItemParent(item))
-                        self._treeCtrl.SelectItem(item)
-                        self._treeCtrl.EnsureVisible(item)
-                finally:
-                    self._treeCtrl.Thaw()
+                item = self._treeCtrl.FindFolder(hint[2])
+                if item:
+#                    self._treeCtrl.UnselectAll()
+                    self._treeCtrl.item(item)["text"] = os.path.basename(hint[3])
+                    self._treeCtrl.SortChildren(self._treeCtrl.parent(item))
+                    self._treeCtrl.SelectItem(item)
+#                    self._treeCtrl.EnsureVisible(item)
+         
                 return
      
 
@@ -1224,9 +1221,9 @@ class ProjectView(misc.AlarmEventView):
         return True
 
     def DeleteFolder(self, folderPath,delete_folder_files=True):
+        projectdir = self.GetDocument().GetModel().homeDir
+        folder_local_path = os.path.join(projectdir,folderPath)
         if delete_folder_files:
-            projectdir = self.GetDocument().GetModel().homeDir
-            folder_local_path = os.path.join(projectdir,folderPath)
             if os.path.exists(folder_local_path):
                 try:
                     fileutils.RemoveDir(folder_local_path)
@@ -1236,6 +1233,10 @@ class ProjectView(misc.AlarmEventView):
                     return
         item = self._treeCtrl.FindFolder(folderPath)
         self.DeleteFolderItems(item)
+        dummy_file = os.path.join(folder_local_path,consts.DUMMY_NODE_TEXT)
+        #如果文件夹下存在虚拟文件,则需要删除这个文件才能彻底删除文件夹
+        if self.GetDocument().GetModel().FindFile(dummy_file):
+            self.GetDocument().GetCommandProcessor().Submit(projectcommand.ProjectRemoveFilesCommand(self.GetDocument(), [dummy_file]))
         self._treeCtrl.delete(item)
         return True
         
@@ -1457,7 +1458,7 @@ class ProjectView(misc.AlarmEventView):
                 return False
             self._treeCtrl.SortChildren(self._treeCtrl.parent(item))
             #should delete the folder item ,other it will have double folder item
-            self._treeCtrl.Delete(item)
+            self._treeCtrl.delete(item)
 
         return True
 

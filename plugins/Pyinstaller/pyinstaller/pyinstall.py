@@ -35,29 +35,43 @@ import noval.python.pyutils as pyutils
 from pkg_resources import resource_filename
 import datetime
 
+
+if utils.is_py2():
+    from noval.util.which import which
+elif utils.is_py3_plus():
+    from shutil import which
+
 def SetVariablevar(variable):
     path = filedialog.askdirectory()
     if path:
         path = fileutils.opj(path)
         variable.set(path)
         
-def GetInterpreterScriptPath(interpreter):
-    interpreter_path = interpreter.InstallPath
+def GetInterpreterScriptPath(interpreter,is_user_site=False):
+    if is_user_site:
+        interpreter_path = os.path.dirname(interpreter.GetUserLibPath())
+    else:
+        interpreter_path = interpreter.InstallPath
     return os.path.join(interpreter_path,"Scripts")
     
-def GetToolPath(interpreter,name):
+def GetToolPath(interpreter,name,is_user_site=False):
     if utils.is_windows():
-        return os.path.join(GetInterpreterScriptPath(interpreter),name + ".exe")
-    return name
+        return os.path.join(GetInterpreterScriptPath(interpreter,is_user_site),name + ".exe")
+    return which(name)
 
 def GetPyinstallerToolPath(interpreter):
     pyinstaller_tool_path = GetToolPath(interpreter,"pyinstaller")
     if not os.path.exists(pyinstaller_tool_path):
-        raise RuntimeError(_("interpreter %s need to install package \"pyinstaller\"")%interpreter.Name)
+        print (interpreter.GetUserLibPath(),"=========")
+        pyinstaller_tool_path = GetToolPath(interpreter,"pyinstaller",is_user_site=True)
+        if not os.path.exists(pyinstaller_tool_path): 
+            raise RuntimeError(_("interpreter %s need to install package \"pyinstaller\"")%interpreter.Name)
     return pyinstaller_tool_path
 
 def GetPyinstallerMakeToolPath(interpreter):
     pyinstallermake_tool_path = GetToolPath(interpreter,"pyi-makespec")
+    if not os.path.exists(pyinstallermake_tool_path):
+        pyinstallermake_tool_path = GetToolPath(interpreter,"pyi-makespec",is_user_site=True)
     return pyinstallermake_tool_path
 
 def CheckPyinstaller(interpreter,parent=None):
@@ -212,7 +226,10 @@ class PyinstallerProjectDocument(PythonProjectDocument):
         dist_path = os.path.join(project_path,'dist')
         main_module_file = self.GetModel().FindFile(pyinstaller_run_parameter.filepath)
         make_single = utils.profile_get_int(self.GetFileKey(main_module_file) + "/MakeSingleExe",False)
-        target_name = "%s.exe"%strutils.get_filename_without_ext(pyinstaller_run_parameter.file_name)
+        if utils.is_windows():
+            target_name = "%s.exe"%strutils.get_filename_without_ext(pyinstaller_run_parameter.file_name)
+        else:
+            target_name = "%s"%strutils.get_filename_without_ext(pyinstaller_run_parameter.file_name)
         if not make_single:
             dist_project_path = os.path.join(dist_path,strutils.get_filename_without_ext(pyinstaller_run_parameter.file_name))
             target_exe_path = os.path.join(dist_project_path,target_name)

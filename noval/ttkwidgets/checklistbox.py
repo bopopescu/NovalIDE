@@ -77,5 +77,8 @@ class CheckListbox(checkboxtreeview.CheckboxTreeview):
         item = childs[index]
         return self.item(item)['values'][0]
 
+    def Clear(self):
+       for child in self.get_children():
+           self.delete(child)
 
-   
+                

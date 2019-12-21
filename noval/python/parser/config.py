@@ -31,7 +31,7 @@ ASSIGN_FILE_OBJECT = 12
 
 
 
-DATABASE_FILE = "version"
+
 UPDATE_FILE = 'update_time'
 
 ISO_8601_DATE_FORMAT = "%Y-%m-%d"

@@ -232,10 +232,7 @@ def get_environment_overrides_for_python_subprocess(target_executable,is_venv=Fa
     ]
 
     result = {}
-
-    if os.path.samefile(
-        target_executable, this_executable
-    ) or is_venv:
+    if strutils.is_sample_file(target_executable, this_executable) or is_venv:
         # bring out some important variables so that they can
         # be explicitly set in macOS Terminal
         # (If they are set then it's most likely because current exe is in Thonny bundle)

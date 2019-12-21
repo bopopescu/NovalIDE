@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<noval:project xmlns:noval="http://www.novalide.com/noval.xsd" version="13" name="GitTool" id="DA82272C-007B-11EA-A2E3-005056C00008">
+  <noval:file filePath="./gittool/__init__.py" logicalFolder="gittool"/>
+  <noval:file filePath="./setup.py"/>
+  <noval:file filePath="./gittool/gitui.py" logicalFolder="gittool"/>
+  <noval:_runinfo>
+    <noval:DocumentTemplate>pypi.pypi.NovalPluginProjectTemplate</noval:DocumentTemplate>
+    <noval:StartupFile>setup.py</noval:StartupFile>
+  </noval:_runinfo>
+  <noval:interpreter name="3.6-32" version="3.6.4rc1" path="C:\Users\Administrator\AppData\Local\Programs\Python\Python36-32\python.exe"/>
+</noval:project>

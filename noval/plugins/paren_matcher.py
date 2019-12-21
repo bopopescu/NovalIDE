@@ -167,7 +167,7 @@ class ShellParenMatcher(ParenMatcher):
 def update_highlighting(event=None):
     text = event.widget
     if not hasattr(text, "paren_matcher"):
-        if isinstance(text, CodeCtrl):
+        if isinstance(text, CodeCtrl) and not getattr(text,"disable_paren",False):
             text.paren_matcher = ParenMatcher(text)
         else:
             return

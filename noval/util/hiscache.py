@@ -161,6 +161,12 @@ class HistoryCache(object):
         self._list.append(item)
         self.cpos += 1
         self._Resize()
+        
+    def PopItem(self,item):
+        assert(item in self._list)
+        self._list.remove(item)
+        self.cpos -= 1
+        self._Resize()
 
     def SetMaxSize(self, max_size):
         """Set the maximum size of the cache

@@ -41,6 +41,7 @@ import io as StringIO  # For indent
 import noval.python.debugger.debugger as pythondebugger
 import noval.python.debugger.watchs as watchs
 import noval.util.compat as compat
+from noval.util.command import ToplevelCommand
 
 class PythonDocument(codeeditor.CodeDocument): 
 
@@ -389,7 +390,7 @@ class PythonCtrl(codeeditor.CodeCtrl):
         code = self.get(first,last)
         GetApp().MainFrame.ShowView(consts.PYTHON_INTERPRETER_VIEW_NAME,toogle_visibility_flag=True)
         python_interpreter_view = GetApp().MainFrame.GetCommonView(consts.PYTHON_INTERPRETER_VIEW_NAME)
-        python_interpreter_view.runsource(code)
+        python_interpreter_view.Runner.send_command(ToplevelCommand("execute_source", source=code))
         
     def ToogleBreakpoint(self):
         line_no = self.GetCurrentLine()
@@ -591,19 +592,21 @@ class PythonCtrl(codeeditor.CodeCtrl):
         return False,''
                 
     def OnChar(self,event):
+        self.HandlerInput(event.char)
+
+    def HandlerInput(self,char):
         if not utils.profile_get_int("UseSmartTips", True):
             return
-        keycode = event.keycode
         pos = self.GetCurrentPos()
         pos = pos[0],pos[1]-1
         #输入(符号,弹出文档提示信息
-        if event.char == "(":
+        if char == "(":
             self.GetArgTip(pos)
         #输入dot(.)符号,列出成员
-        elif event.char == self.TYPE_POINT_WORD:
+        elif char == self.TYPE_POINT_WORD:
             self.ListMembers(pos)
         #输入空格提示导入信息
-        elif event.char == self.TYPE_BLANK_WORD:
+        elif char == self.TYPE_BLANK_WORD:
             #输入的是否from xx import 这样的句式
             ret,name = self.IsFromImportType(pos)
             if ret:
@@ -623,7 +626,9 @@ class PythonCtrl(codeeditor.CodeCtrl):
             #输入from xxx后自动完成输入import关键字
             elif self.IsFromplusType(pos):
                 self.AddText(self.TYPE_BLANK_WORD)
-                self.AutoCompShow(0, [self.TYPE_IMPORT_WORD])            
+                self.AutoCompShow(0, [self.TYPE_IMPORT_WORD])
+                #输入from xx import后接着弹出后面的提示信息
+                self.HandlerInput(self.TYPE_BLANK_WORD)        
 
     def GetCurdirImports(self):
         cur_project = wx.GetApp().GetService(project.ProjectEditor.ProjectService).GetView().GetDocument()

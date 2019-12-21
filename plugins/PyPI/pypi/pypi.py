@@ -508,6 +508,27 @@ class {PluginName}Plugin(plugin.Plugin):
     def GetRunConfigurationName(self):
         return "bdist_novalplugin_egg"
         
+
+class NovalFileExtensionPluginInformationPage(NovalPluginInformationPage):
+    plugin_template_content = NovalPluginInformationPage.plugin_template_content + '''
+    def GetFileExtension(self):
+        return '{file_extension}'
+    '''
+    
+    def CreateContent(self,content_frame,**kwargs):
+        sizer_frame = NovalPluginInformationPage.CreateContent(self,content_frame,**kwargs)
+        ttk.Label(sizer_frame,text=_('File Extension:')).grid(column=0, row=6, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        self.file_extension_var = tk.StringVar()
+        file_extension_entry = ttk.Entry(sizer_frame,textvariable=self.file_extension_var)
+        file_extension_entry.grid(column=1, row=6, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y,consts.DEFAUT_CONTRL_PAD_Y))
+        
+    def Finish(self):
+        PypiPackageInformationPage.Finish(self)
+        with open(self.destpackageFile,"w") as f:
+            content = self.plugin_template_content.format(PluginName=self.name_var.get().strip(),file_extension=self.file_extension_var.get().strip())
+            f.write(content)
+        return True
+        
 class PypiOptionPage(projectwizard.BitmapTitledContainerWizardPage):
     """Creates the calculators interface
     @todo: Dissable << and >> when floating values are present

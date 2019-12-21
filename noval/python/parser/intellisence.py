@@ -11,7 +11,7 @@ import threading
 import time
 from noval.python.parser import config
 from noval.python.parser import builtinmodule
-from noval.python.parser.utils import CmpMember,py_sorted
+from noval.python.parser.utils import CmpMember,py_sorted,NeedRenewDatabase
 import glob
 import signal
 from dummy.userdb import UserDataDb
@@ -19,7 +19,6 @@ import noval.util.utils as utils
 import datetime
 import copy
 import noval.consts as consts
-
 from moduleloader import *
 
         
@@ -39,10 +38,22 @@ class IntellisenceDataLoader(object):
             builtin_data_path = os.path.join(self.__builtin_data_location,"3")
 
         utils.get_logger().debug('load builtin data path:%s',builtin_data_path)
-        if not os.path.exists(builtin_data_path):
+        if not os.path.exists(builtin_data_path) or NeedRenewDatabase(builtin_data_path,config.DATABASE_VERSION):
             utils.get_logger().debug('builtin data path:%s is not exist',builtin_data_path)
-            return
+            self.GenerateBuiltinData(interpreter,builtin_data_path)
         self.LoadIntellisenceDirData(builtin_data_path)
+        
+    def GenerateBuiltinData(self,interpreter,builtin_data_path):
+        script_path = os.path.join(utils.get_app_path(), "noval", "python","parser", "run_builtin.py")
+        cmd_list = [interpreter.Path,script_path,builtin_data_path, config.DATABASE_VERSION]
+        if apputils.is_windows():
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = subprocess.SW_HIDE
+        else:
+            startupinfo = None
+        work_dir = os.path.join(utils.get_app_path(), "noval", "python","parser")
+        subprocess.Popen(cmd_list,startupinfo=startupinfo,cwd=work_dir)
     
     def LoadIntellisenceDirData(self,data_path):
         name_sets = set()

@@ -63,11 +63,12 @@ def _run_in_terminal_in_windows(cmd, cwd, env, keep_open, title=None,pause=False
                     .format(cwd=cwd,
                             quoted_args=quoted_args,
                             title='"' + title + '"' if title else ""))
-    
+        utils.get_logger().info("run in windows terminal open cmd is %s",cmd_line)
         subprocess.Popen(cmd_line, cwd=cwd, env=env, shell=True)
     elif pause:
         command = u"cmd.exe /c call %s"  % (cmd)
         command += " &pause"
+        utils.get_logger().info("run in windows terminal pause cmd is %s",command)
         subprocess.Popen(command,shell = False,creationflags = subprocess.CREATE_NEW_CONSOLE,cwd=cwd,env=env)
     else:
         subprocess.Popen(cmd, creationflags=subprocess.CREATE_NEW_CONSOLE,
@@ -106,6 +107,7 @@ def _run_in_terminal_in_linux(cmd, cwd, env, keep_open,pause=False):
         whole_cmd = "{term_cmd} {in_term_cmd}".format(
             term_cmd=term_cmd, in_term_cmd=_shellquote(in_term_cmd)
         )
+    utils.get_logger().info("run in linux terminal cmd is %s",whole_cmd)
     subprocess.Popen(whole_cmd, cwd=cwd, env=env, shell=True)
 
 

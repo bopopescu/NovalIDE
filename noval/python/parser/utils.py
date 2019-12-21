@@ -2,6 +2,7 @@
 import os
 import sys
 import functools
+DATABASE_FILE = "version"
 
 def MakeDirs(dirname):
     dirname = os.path.abspath(dirname)
@@ -169,3 +170,20 @@ if IsPython2():
     py_cmp = cmp
 elif IsPython3():
     py_cmp = py3_cmp
+    
+
+def LoadDatabaseVersion(database_location):
+    with open(os.path.join(database_location,DATABASE_FILE)) as f:
+        return f.read()
+        
+def SaveDatabaseVersion(database_location,new_database_version):
+    with open(os.path.join(database_location,DATABASE_FILE),"w") as f:
+        f.write(new_database_version)
+        
+def NeedRenewDatabase(database_location,new_database_version):
+    if not os.path.exists(os.path.join(database_location,DATABASE_FILE)):
+        return True
+    old_database_version = LoadDatabaseVersion(database_location)
+    if 0 == CompareCommonVersion(new_database_version,old_database_version):
+        return False
+    return True

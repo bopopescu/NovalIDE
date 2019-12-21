@@ -14,6 +14,8 @@ import noval.util.fileutils as fileutils
 import noval.util.strutils as strutils
 import noval.syntax.syntax as syntax
 import noval.menu as tkmenu
+import noval.ui_utils as ui_utils
+import noval.preference as preference
 try:
     import tkSimpleDialog
 except ImportError:
@@ -424,15 +426,41 @@ class MainFileBrowser(BaseFileBrowser):
                     GetApp().GotoView(path,0)
             else:
                 try:
-                    fileutils.start_file(path)
+                    fileutils.startfile(path)
+                    #检查文件扩展名是否有对应的文件扩展插件
+                    ui_utils.CheckFileExtension(path,True)
                 except:
-                    pass
+                    utils.get_logger().exception("")
             #双击文件时,记住并保存文件夹的状态
             self.save_current_folder()
         elif os.path.isdir(path):
             self.refresh_tree(self.get_selected_node(), True)
+            GetApp().event_generate(constants.DOUBLECLICKPATH_EVT,path=path)
+            
+
+class FileviewOptionPanel(ui_utils.CommonOptionPanel):
+    """
+    """
+    def __init__(self, parent):
+        ui_utils.CommonOptionPanel.__init__(self, parent)
+        self._saveFolderCheckVar = tk.IntVar(value=utils.profile_get_int(SAVE_OPEN_FOLDER_KEY, True))
+        #记住上次打开文件夹状态,只有双击文件时才能记住文件夹打开状态
+        saveFoldeCheckBox = ttk.Checkbutton(self.panel,text=_("Load last open folder state When program startup"),variable=self._saveFolderCheckVar)
+        saveFoldeCheckBox.pack(fill=tk.X)
+
+        self._execute_cd_CheckVar = tk.IntVar(value=utils.profile_get_int("ExecuateCdDoubleClick", True))
+        execute_cdCheckBox = ttk.Checkbutton(self.panel,text=_("Execute 'cd' command in python shell When double click folder"),variable=self._execute_cd_CheckVar)
+        execute_cdCheckBox.pack(fill=tk.X)
+
+    def OnOK(self, optionsDialog):
+        utils.profile_set(SAVE_OPEN_FOLDER_KEY, self._saveFolderCheckVar.get())
+        utils.profile_set("ExecuateCdDoubleClick", self._execute_cd_CheckVar.get())
+        return True
+        
 
 class FileViewLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)
     def Load(self):
         GetApp().MainFrame.AddView(consts.FILE_VIEW_NAME,MainFileBrowser, _("File View"), "nw",default_position_key="B",image_file="filenav_nav.png")
+        #首选项显示面板                
+        preference.PreferenceManager().AddOptionsPanelClass("Misc","File View",FileviewOptionPanel)

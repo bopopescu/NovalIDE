@@ -1081,7 +1081,10 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
         rbt.start()
         
     def PushExceptionBreakpoints(self):
-        self._debuggerServer.set_all_exceptions(self._service.GetExceptions())
+        '''
+            添加异常中断
+        '''
+        self._debuggerServer.set_all_exceptions(self._debuggerUI._debugger.GetExceptions())
 
     def WaitForRPC(self,callback=None):
         self._waiting = True

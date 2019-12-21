@@ -301,17 +301,23 @@ class TextDocument(core.Document):
 
     def SaveObject(self, fileObject):
         view = self.GetFirstView()
-        fileObject.write(view.GetValue())
+        msg = {'doc':self,'data':view.GetValue()}
+        #保存文件事件
+        GetApp().event_generate(constants.FILE_SAVEING_EVT,msg=msg)
+        fileObject.write(msg['data'])
         view.SetModifyFalse()
         return True
         
     def LoadObject(self, fileObject,is_bytes=False):
         view = self.GetFirstView()
         data = fileObject.read()
+        msg = {'doc':self,'data':data}
+        #打开文件事件
+        GetApp().event_generate(constants.FILE_OPENING_EVT,msg=msg)
         if is_bytes:
-            view.SetBinaryValue(data)
+            view.SetBinaryValue(msg['data'])
         else:
-            view.SetValue(data)
+            view.SetValue(msg['data'])
         view.SetModifyFalse()
         return True
 

@@ -1,6 +1,7 @@
 from distutils.core import setup
 from setuptools import find_packages
 import os
+import sys
 
 def list_files(directory):
     files = []
@@ -8,6 +9,9 @@ def list_files(directory):
         file_path = os.path.join(directory,filename)
         files.append(file_path)
     return files
+
+if sys.version_info < (3, 5):
+    raise RuntimeError("NovalIDE requires Python 3.5 or later")
 
 with open("version.txt") as f:
     version = f.read()
@@ -58,7 +62,9 @@ setup(name='NovalIDE',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Topic :: Software Development :: Libraries :: Python Modules',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy'
         ],

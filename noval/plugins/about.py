@@ -71,7 +71,7 @@ class AboutDialog(ui_base.CommonModaldialog):
 
         credits_label = ttk.Label(
             self.main_frame,
-            text="Based on the open source version →",
+            text=_("Based on the open source version →"),
             style="Url.TLabel",
             cursor="hand2",
             font=url_font,
@@ -90,9 +90,9 @@ class AboutDialog(ui_base.CommonModaldialog):
         license_font.configure(size=7)
         license_label = ttk.Label(
             self.main_frame,
-            text="Copyright © 2018-"
+            text=_("Copyright © 2018-")
             + str(datetime.datetime.now().year)
-            + " wukan\nAll rights reserved",
+            + _(" wukan\nAll rights reserved"),
             justify=tk.CENTER,
             font=license_font,
         )
@@ -112,7 +112,7 @@ class AboutLoader(plugin.Plugin):
     def Load(self):
         GetApp().AddCommand(constants.ID_ABOUT,_("&Help"),_("&About"),self.OnAbout,image="about.png")
 
-    def OnAbout(self):
+    def OnAbout(self):
         aboutdlg = AboutDialog(GetApp().GetTopWindow())
         aboutdlg.ShowModal()
         

@@ -527,7 +527,6 @@
   <noval:file filePath="./noval/project/baseviewer.py" logicalFolder="noval/project"/>
   <noval:file filePath="./noval/python/project/viewer.py" logicalFolder="noval/python/project"/>
   <noval:file filePath="./noval/util/hiscache.py" logicalFolder="noval/util"/>
-  <noval:file filePath="./noval/util/record.py" logicalFolder="noval/util"/>
   <noval:file filePath="./noval/binds.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/find/__init__.py" logicalFolder="noval/find"/>
   <noval:file filePath="./noval/find/find.py" logicalFolder="noval/find"/>
@@ -602,7 +601,6 @@
   <noval:file filePath="./noval/plugins/base_ui_themes.py" logicalFolder="noval/plugins"/>
   <noval:file filePath="./noval/plugins/clean_ui_themes.py" logicalFolder="noval/plugins"/>
   <noval:file filePath="./noval/python/plugins/__init__.py" logicalFolder="noval/python/plugins"/>
-  <noval:file filePath="./noval/python/plugins/pyshell.py" logicalFolder="noval/python/plugins"/>
   <noval:file filePath="./noval/python/plugins/outline.py" logicalFolder="noval/python/plugins"/>
   <noval:file filePath="./noval/plugins/printer/__init__.py" logicalFolder="noval/plugins/printer"/>
   <noval:file filePath="./noval/plugins/printer/template.html" logicalFolder="noval/plugins/printer"/>
@@ -635,6 +633,17 @@
   <noval:file filePath="./noval/logview.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/python/plugins/pip_gui.py" logicalFolder="noval/python/plugins"/>
   <noval:file filePath="./noval/util/downutils.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/util/command.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./noval/running.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/python/plugins/pyshell/__init__.py" logicalFolder="noval/python/plugins/pyshell"/>
+  <noval:file filePath="./noval/python/plugins/pyshell/running_py.py" logicalFolder="noval/python/plugins/pyshell"/>
+  <noval:file filePath="./noval/python/plugins/pyshell/pyshell.py" logicalFolder="noval/python/plugins/pyshell"/>
+  <noval:file filePath="./noval/python/plugins/pyshell/backend_launcher.py" logicalFolder="noval/python/plugins/pyshell"/>
+  <noval:file filePath="./noval/shell.py" logicalFolder="noval"/>
+  <noval:file filePath="./noval/roughparse.py" logicalFolder="noval"/>
+  <noval:file filePath="G:/work/project/Noval/noval/python/plugins/pyshell/backend3.py" logicalFolder="noval/python/plugins/pyshell"/>
+  <noval:file filePath="./noval/python/parser/run_builtin.py" logicalFolder="noval/python/parser"/>
+  <noval:file filePath="./noval/util/uploadutils.py" logicalFolder="noval/util"/>
   <noval:_runinfo>
     <noval:DocumentTemplate>pyinstaller.pyinstall.PyinstallerProjectTemplate</noval:DocumentTemplate>
     <noval:StartupFile>NovalIDE.py</noval:StartupFile>

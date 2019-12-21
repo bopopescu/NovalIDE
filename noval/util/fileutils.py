@@ -365,8 +365,11 @@ def copyDir(src, dest):
 def safe_remove(file):
     if not os.path.exists(file):
         return
-    #删除只读文件之前需要设置文件可写
-    os.chmod(file, stat.S_IWRITE)
+    try:
+        #删除只读文件之前需要设置文件可写
+        os.chmod(file, stat.S_IWRITE)
+    except:
+        pass
     if os.path.isfile(file):
         try:
             os.remove(file)

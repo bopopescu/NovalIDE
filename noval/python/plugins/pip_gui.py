@@ -84,6 +84,18 @@ def GetAllPlugins(find_name=None,message=None,plugin_dlg=None,aync=False):
         if data:
             return data['names']
         return []
+        
+def GetPluginInstallpath():
+    #调式模式时默认安装到应用程序目录(系统目录)
+    #正常时默认安装到用户目录
+    if GetApp().GetDebug():
+        #系统目录(软件安装目录)
+        value = utils.get_sys_plugin_path()
+    else:
+        #用户数据目录
+        value = utils.get_user_plugin_path()
+    plugin_install_path = utils.profile_get("PluginInstallPath",value)
+    return plugin_install_path
 
 class PipDialog(ui_base.CommonModaldialog):
     def __init__(self, master,package_count,message=None):
@@ -835,6 +847,12 @@ class PluginsPipDialog(PipDialog):
         self.ShowNameList(names)
         #显示第一个包名
         self._start_show_package_info(names[0])
+        
+    def ShowAvailablePlugins(self,names):
+        self.installled_var.set(_("Available Plugins:"))
+        self.ShowNameList(names)
+        #显示第一个包名
+        self._start_show_package_info(names[0])
     
     def NotFoundPackage(self,name):
         self.write(_("Could not find the plugin from Server.\n"))
@@ -915,7 +933,7 @@ class PluginsPipDialog(PipDialog):
             return False
         #检查插件要求的软件版本是否大于当前版本,如果是则提示用户是否更新软件
         if parserutils.CompareCommonVersion(plugin_data['app_version'],app_version):
-            ret = messagebox.askyesno(GetApp().GetAppName(),_("Plugin '%s' requires application version at least '%s',Do you want to update your application?"%(plugin_data['name'],plugin_data['app_version'])),parent=self)
+            ret = messagebox.askyesno(GetApp().GetAppName(),_("Plugin '%s' requires application version at least '%s',Do you want to update your application?")%(plugin_data['name'],plugin_data['app_version']),parent=self)
             if ret == False:
                 return True
             #更新软件,如果用户执行更新安装,则程序会退出,不会执行下面的语句
@@ -926,7 +944,7 @@ class PluginsPipDialog(PipDialog):
     def _should_install_to_site_packages(self):
         return self._targets_virtual_environment()
         
-    def GetInstallPluginPath(self,plugin_name,user_directory=True):
+    def GetInstallPluginPath(self,plugin_name):
         '''
             先检查插件是否安装,如果已安装则安装到插件安装的目录
             否则获取插件安装目录,有2种目录供选择,一种是用户数据目录,一种是软件安装目录
@@ -934,12 +952,7 @@ class PluginsPipDialog(PipDialog):
         dist = GetApp().GetPluginManager().GetPluginDistro(plugin_name)
         #如果插件未安装则选择2种插件目录中的一种
         if not dist:
-            if not user_directory:
-                #软件安装目录
-                plugin_path = utils.get_sys_plugin_path()
-            else:
-                #用户数据目录
-                plugin_path =  utils.get_user_plugin_path()
+            plugin_path = GetPluginInstallpath()
         else:
             plugin_path = os.path.dirname(dist.location)
         utils.get_logger().info("plugin %s install path is %s",plugin_name,plugin_path)
@@ -959,7 +972,11 @@ class PluginsPipDialog(PipDialog):
         plugin_path = self.GetInstallPluginPath(name)
         if utils.is_windows():
             #将下载的插件文件移至插件目录下
-            shutil.move(egg_path,plugin_path)
+            try:
+                shutil.move(egg_path,plugin_path)
+            except Exception as e:
+                messagebox.showerror(_("Error"),str(e))
+                return False
         #linux系统下有可能是python3.x解释器,只能加载python3.x的插件,故需要将插件的python版本改成3.x的
         else:
             #如果python3不是3.6版本则需要更改egg文件名,改之后的插件也是可以加载的
@@ -987,6 +1004,7 @@ class PluginsPipDialog(PipDialog):
         }
         self.install_button['state'] = tk.DISABLED
         self._plugin_configuration_changed = True
+        return True
 
     def _perform_install(self,package_data):
         '''
@@ -996,9 +1014,11 @@ class PluginsPipDialog(PipDialog):
             '''
                 插件下载后回调函数
             '''
-            self.InstallEgg(name,egg_path,package_data['version'])
-            PipDialog._perform_install(self,package_data)
-            messagebox.showinfo(GetApp().GetAppName(),_("Install plugin '%s' success") % name)
+            if self.InstallEgg(name,egg_path,package_data['version']):
+                PipDialog._perform_install(self,package_data)
+                messagebox.showinfo(GetApp().GetAppName(),_("Install plugin '%s' success") % name)
+            else:
+                messagebox.showerror(GetApp().GetAppName(),_("Install plugin '%s' fail") % name)
             
         name = package_data["name"]
         lang = GetApp().locale.GetLanguageCanonicalName()
@@ -1063,7 +1083,11 @@ class PluginsPipDialog(PipDialog):
         '''
             确认是否安装插件
         '''
-        plugin_path = self.GetInstallPluginPath(package_data['name'])
+        try:
+            plugin_path = self.GetInstallPluginPath(package_data['name'])
+        except Exception as e:
+            messagebox.showerror(_("Error"),str(e))
+            return False
         dest_egg_path =  os.path.join(plugin_path,package_data['path'])
         #是否替换现有插件文件
         if os.path.exists(dest_egg_path):
@@ -1096,7 +1120,7 @@ class PluginsPipDialog(PipDialog):
         )
         banner_msg += (
             "\n"
-            + "NB! You need to restart Noval after installing / upgrading / uninstalling a plug-in."
+            + _("NB! You need to restart Noval after installing / upgrading / uninstalling a plug-in.")
         )
 
         banner_text = tk.Label(banner, text=banner_msg, background=bg, justify="left")
@@ -1166,6 +1190,10 @@ class PluginsPipDialog(PipDialog):
             self.enabled_button.grid(row=0, column=2)
         else:
             self.enabled_button.grid_remove()
+        #调试版本时显示插件下载次数
+        if GetApp().GetDebug() and data and error_code is None:
+            self.write_att(_("Installs"), str(data['down_amount']))
+            
             
 class PyPiPipDialog(PipDialog):
     
@@ -1549,9 +1577,10 @@ def _start_fetching_package_info(name, version_str, completion_handler):
     api_addr = '%s/member/get_package' % (UserDataDb.HOST_SERVER_ADDR)
     def poll_fetch_complete():
         data = utils.RequestData(api_addr,method='get',arg={'name':name})
-        #去掉非数据字段
-        data.pop('message')
-        data.pop('code')
+        if data is not None:
+            #去掉非数据字段
+            data.pop('message')
+            data.pop('code')
         if data:
             completion_handler(name, data)
         else:
@@ -1569,9 +1598,10 @@ def _start_fetching_plugin_info(name, version_str, completion_handler):
     api_addr = '%s/member/get_plugin' % (UserDataDb.HOST_SERVER_ADDR)
     def poll_fetch_complete():
         data = utils.RequestData(api_addr,method='get',arg={'name':name})
-        #去掉非数据字段
-        data.pop('message')
-        data.pop('code')
+        if data is not None:
+            #去掉非数据字段
+            data.pop('message')
+            data.pop('code')
         if data:
             completion_handler(name, data)
         else:
@@ -1623,13 +1653,7 @@ class PluginOptionPanel(ui_utils.CommonOptionPanel):
         return True
         
     def GetPluginInstallpath(self):
-        #调式模式时默认安装到应用程序目录(系统目录)
-        #正常时默认安装到用户目录
-        if GetApp().GetDebug():
-            value = utils.get_sys_plugin_path()
-        else:
-            value = utils.get_user_plugin_path()
-        plugin_install_path = utils.profile_get("PluginInstallPath",value)
+        plugin_install_path = GetPluginInstallpath()
         if plugin_install_path == utils.get_sys_plugin_path():
             return 1
         return 0
@@ -1649,8 +1673,17 @@ class PluginManagerGUI(plugin.Plugin):
         preference.PreferenceManager().AddOptionsPanelClass("Misc","Plugin",PluginOptionPanel)
         self.GetPlugins()
         
+        GetApp().bind("ShowInstallPluginsDlg",self.ShowInstallPluginsDlg,True)
+        
     def ShowPluginManagerDlg(self):
         self.plugin_dlg = PluginsPipDialog(self.parent,package_count=0,message=self.message)
+        self.plugin_dlg.ShowModal()
+        self.plugin_dlg = None
+        
+    def ShowInstallPluginsDlg(self,event):
+        plugin_names = event.get('plugin_names')
+        self.plugin_dlg = PluginsPipDialog(self.parent,package_count=0,message=self.message)
+        self.plugin_dlg.ShowAvailablePlugins(plugin_names)
         self.plugin_dlg.ShowModal()
         self.plugin_dlg = None
         

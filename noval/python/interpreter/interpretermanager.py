@@ -23,6 +23,11 @@ from tkinter import messagebox
 from noval.ui_base import GetSingleChoiceIndex
 import noval.constants as constants
 import noval.python.explain_environment as explain_environment
+import noval.util.fileutils as fileutils
+if utils.is_py2():
+    from noval.util.which import which
+elif utils.is_py3_plus():
+    from shutil import which
 
 BUILTIN_INTERPRETER_NAME = "Builtin_Interpreter"
 
@@ -120,6 +125,20 @@ class InterpreterManager:
                     utils.get_logger().warn("load python interpreter from regkey %s error:%s",ROOT_KEY_NAMES[k],e)
                     ####utils.get_logger().exception("")
                     continue
+            #如果注册吧未找到解释器,到系统环境变量中去找
+            if 0 == len(self.interpreters):
+                name = "python"
+                utils.get_logger().warn("could not find python interpreter from the registry,will find it from environment")
+                python_path = which(name)
+                if python_path is not None:
+                    utils.get_logger().info("find interpreter path %s from environment",python_path)
+                    interpreter = pythoninterpreter.PythonInterpreter(name,python_path)
+                    self.interpreters.insert(0,interpreter)
+                    files = []
+                    #获取python帮助文档路径
+                    fileutils.GetDirFiles(os.path.join(os.path.dirname(python_path),"doc"),files,"chm")
+                    if files:
+                        interpreter.HelpPath = files[0]
         else:
             targets = explain_environment.get_targets("python")
             target_executables = [target[1] for target in targets]

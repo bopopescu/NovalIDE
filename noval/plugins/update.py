@@ -178,7 +178,7 @@ class UpdateLoader(plugin.Plugin):
         if utils.profile_get_int(consts.CHECK_UPDATE_ATSTARTUP_KEY, True) or force_update:
             self.CheckUpdateAfter()
             
-    @utils.call_after
+    @utils.call_after_with_arg(1000)
     def CheckUpdateAfter(self,ignore_error=True,check_plugin_update=True):
         #tkinter不支持多线程,要想试用多线程必须设置函数或方法为after模式
         t = threading.Thread(target=self.CheckUpdate,args=(ignore_error,check_plugin_update))

@@ -66,7 +66,8 @@ class PyPi(plugin.Plugin):
         ProjectTemplateManager().AddProjectTemplate("Python/PyPI",_("PyPI Package"),[(pypi.PypiProjectNameLocationPage,{'startup_path':'${ProjectDir}/setup.py','enable_set_startup':False}),pypi.PypiPackageInformationPage,pypi.PypiOptionPage]) 
         ProjectTemplateManager().AddProjectTemplate("Python/PyPI",_("PyPI Package Tool"),[(pypi.PypiProjectNameLocationPage,{'startup_path':'${ProjectDir}/setup.py','enable_set_startup':False}),pypi.PypiPackageToolInformationPage,pypi.PypiOptionPage])
         if GetApp().GetDebug(): 
-            ProjectTemplateManager().AddProjectTemplate("Python/PyPI",_("Noval Plugin"),[(pypi.PypiProjectNameLocationPage,{'startup_path':'${ProjectDir}/setup.py','enable_set_startup':False}),pypi.NovalPluginInformationPage]) 
+            ProjectTemplateManager().AddProjectTemplate("Python/PyPI",_("Noval Plugin"),[(pypi.PypiProjectNameLocationPage,{'startup_path':'${ProjectDir}/setup.py','enable_set_startup':False}),pypi.NovalPluginInformationPage])
+            ProjectTemplateManager().AddProjectTemplate("Python/PyPI",_("Noval FileExtension Plugin"),[(pypi.PypiProjectNameLocationPage,{'startup_path':'${ProjectDir}/setup.py','enable_set_startup':False}),pypi.NovalFileExtensionPluginInformationPage]) 
         GetApp().bind(constants.PROJECTVIEW_POPUP_FILE_MENU_EVT, self.AppenFileMenu,True)
         self.project_browser = GetApp().MainFrame.GetView(consts.PROJECT_VIEW_NAME)
         GetApp().AddMessageCatalog('pypi', __name__)
@@ -192,6 +193,8 @@ class PyPi(plugin.Plugin):
                     assert(type(price) == int or type(price) == float)
                 data['price'] = price
                 data['app_version'] = instance.GetMinVersion()
+                if hasattr(instance,"GetFileExtension"):
+                   data['file_extension'] = instance.GetFileExtension()
         
         with open(pkg_file_path) as f:
             for line in f:

@@ -26,6 +26,9 @@ import noval.util.fileutils as fileutils
 import noval.terminal as terminal
 import noval.ui_common as ui_common
 import noval.misc as misc
+import noval.python.debugger.debugger as pythondebugger
+import noval.running as running
+
 
 class PyIDEApplication(ide.IDEApplication):
 
@@ -39,7 +42,6 @@ class PyIDEApplication(ide.IDEApplication):
         #这里必须用相对导入,因为搜索路径已经添加了,如果使用长路径导入会导致IntellisenceManager的实例信息和其它地方的不一样
         import intellisence
         from noval.project.document import ProjectDocument
-        import noval.python.debugger.debugger as pythondebugger
         
         self._debugger_class = pythondebugger.PythonDebugger
         
@@ -77,19 +79,38 @@ class PyIDEApplication(ide.IDEApplication):
         self.AddCommand(constants.ID_CLEAR_ALL_BREAKPOINTS,_("&Run"),_("&Clear All Breakpoints"),self.ClearAllBreakPoints,default_tester=True,default_command=False) 
         #关闭软件启动图片
         self.CloseSplash()
+        self.bind(constants.DOUBLECLICKPATH_EVT,self.request_focus_into,True)
         
         self.LoadDefaultInterpreter()
         self.AddInterpreters()
         self.intellisence_mananger = intellisence.IntellisenceManager()
         self.intellisence_mananger.generate_default_intellisence_data()
         return True
+        
+    def request_focus_into(self, event):
+        '''
+           双击文件视图文件夹时同时在解释器shell中切换路径
+        '''
+        path = event.get('path')
+        if not os.path.isdir(path) or not utils.profile_get_int("ExecuateCdDoubleClick", True):
+            return
+            
+        self.MainFrame.ShowView(consts.PYTHON_INTERPRETER_VIEW_NAME,toogle_visibility_flag=True)
+        shell = self.MainFrame.GetCommonView(consts.PYTHON_INTERPRETER_VIEW_NAME)
+        proxy = shell.Runner.get_backend_proxy()
+        if (
+            proxy
+            and proxy.uses_local_filesystem()
+            and proxy.get_cwd() != path
+            and shell.Runner.is_waiting_toplevel_command()
+        ):
+            shell.submit_magic_command(running.construct_cd_command(path))
 
     def GetInterpreterManager(self):
         return interpretermanager.InterpreterManager()
         
-    @ui_utils.no_implemented_yet
     def SetExceptionBreakPoint(self):
-        pass
+        self.MainFrame.GetView(consts.BREAKPOINTS_TAB_NAME).SetExceptionBreakPoint()
         
     def StepNext(self):
         self.GetDebugger().StepNext()
@@ -144,7 +165,7 @@ class PyIDEApplication(ide.IDEApplication):
         preference.PreferenceManager().AddOptionsPanelClass(preference.INTERPRETER_OPTION_NAME,preference.INTERPRETER_CONFIGURATIONS_ITEM_NAME,interpreterconfigruation.InterpreterConfigurationPanel)
         
         consts.DEFAULT_PLUGINS += ("noval.python.project.browser.ProjectViewLoader",)
-        consts.DEFAULT_PLUGINS += ('noval.python.plugins.pyshell.PyshellViewLoader',)
+        consts.DEFAULT_PLUGINS += ('noval.python.plugins.pyshell.pyshell.PyshellViewLoader',)
         #window面板在outline面板之前,故需在outline之前初始化
         consts.DEFAULT_PLUGINS += ('noval.plugins.windowservice.WindowServiceLoader',)
         consts.DEFAULT_PLUGINS += ('noval.python.plugins.outline.PythonOutlineViewLoader',)
@@ -199,24 +220,21 @@ class PyIDEApplication(ide.IDEApplication):
     @misc.update_toolbar
     def OnCombo(self,event):
         selection = self.interpreter_combo.current()
+        prompt = False
         if selection == len(self.interpreter_combo['values']) - 1:
-            pass
-        #    if BaseDebuggerUI.DebuggerRunning():
-         
-         #       prompt = True
-          #  else:
-            #    UICommon.ShowInterpreterOptionPage()
-            ui_common.ShowInterpreterConfigurationPage()
+            if pythondebugger.BaseDebuggerUI.DebuggerRunning():
+                prompt = True
+            else:
+                ui_common.ShowInterpreterConfigurationPage()
         else:
             interpreter = interpretermanager.InterpreterManager().interpreters[selection]
-            self.SelectInterpreter(interpreter)
-            if interpreter != self.GetCurrentInterpreter():
+            if interpreter != self.GetCurrentInterpreter() and pythondebugger.BaseDebuggerUI.DebuggerRunning():
                 prompt = True
             else:
                 self.SelectInterpreter(interpreter)
-        #if prompt:
-        #    wx.MessageBox(_("Please stop the debugger first!"),style=wx.OK|wx.ICON_WARNING)
-         #   wx.GetApp().SetCurrentInterpreter()
+        if prompt:
+            messagebox.showinfo(self.GetAppName(),_("Please stop the debugger first!"),parent=self.GetTopWindow())
+            self.SetCurrentInterpreter()
 
     def OpenPythonHelpDocument(self):
         interpreter = self.GetCurrentInterpreter()
@@ -235,6 +253,9 @@ class PyIDEApplication(ide.IDEApplication):
             if self.intellisence_mananger.IsRunning:
                 return
             self.intellisence_mananger.load_intellisence_data(interpreter)
+        #切换解释器时是否更新解释器的后端进程
+        if utils.profile_get_int('UPDATE_SHELL_SWITCH_INTERPRETER',True):
+            self.event_generate("UpdateShell")
             
     def GetDefaultLangId(self):
         return lang.ID_LANG_PYTHON

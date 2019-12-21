@@ -98,6 +98,7 @@ class BaseWizard(ui_base.CommonModaldialog):
         if next is None:
             self.UpdateNext(self.current_page)
             return
+        next.Init()
         self.FitToPage(next)
         self.SetTitle(next)
         self.current_page = next
@@ -190,6 +191,9 @@ class TitledWizardPage(ttk.Frame):
         '''
             取消按钮事件,默认不处理,如果要处理取消事件,需要在派生类继承并重写该方法
         '''
+        pass
+        
+    def Init(self):
         pass
         
 class BitmapTitledWizardPage(TitledWizardPage):
