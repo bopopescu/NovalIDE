@@ -14,6 +14,7 @@ from util.utils import *
 from util.errors import *
 import sys
 import pymongo
+import mongoengine
 
 logger = logging.getLogger('logsite')
 
@@ -208,6 +209,8 @@ def download_plugin(request):
         plugin_pkg.update(**{'set__down_amount':down_amount})
     except pymongo.errors.DuplicateKeyError:
         pass
+    except mongoengine.errors.NotUniqueError:
+        pass
     response = download_file(request,egg_file_path)
     return response
     
@@ -343,8 +346,12 @@ def publish_plugin(request):
             'app_version':app_version
         }
         logger.info("insert plugin name %s success",name)
-        #保存插件信息
-        PluginPackage(**data).save()
+        if not 'file_extension' in request.REQUEST:
+            #保存插件信息
+            PluginPackage(**data).save()
+        else:
+            data.update({'file_extensions':request.REQUEST.get('file_extension').split(",")})
+            FileExtensionPluginPackage(**data).save()
     else:
         #更新已有插件信息
         assert(plugin_pkgs.count() == 1)
@@ -367,9 +374,20 @@ def publish_plugin(request):
         plugin_pkg.price = price
         plugin_pkg.path = egg_name
         plugin_pkg.updated_at = datetime.datetime.utcnow()
+        if 'file_extension' in request.REQUEST:
+            plugin_pkg.file_extensions = request.REQUEST.get('file_extension').split(",")
         #更新插件信息
         plugin_pkg.save()
     return json_response()
+    
+@require_http_methods(['GET'])
+def check_file_plugin(request):
+    file_extension = request.REQUEST.get('file_extension')
+    data = dict(plugin_names=[])
+    for pkg in FileExtensionPluginPackage.objects():
+        if file_extension in pkg.file_extensions:
+            data['plugin_names'].append(pkg.name)
+    return json_response(**data)
         
 @require_http_methods(['GET'])
 def check_force_update(request):

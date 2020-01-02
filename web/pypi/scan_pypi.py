@@ -79,7 +79,7 @@ def generate_package_info(name):
     if not ONLY_NEW or not is_exist:
         #从pypi从获取包信息
         api_addr = "https://pypi.org//pypi/%s/json" % name
-        data = RequestData(api_addr,to_json=True)
+        data = RequestData(api_addr,to_json=True,timeout=600)
         if data is None:
             #logger.error("could not get pypi packge %s info",name)
             return

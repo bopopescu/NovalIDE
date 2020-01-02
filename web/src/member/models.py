@@ -119,6 +119,9 @@ class PluginPackage(PyPackage):
         'db_alias':'plugins',
     }
     
+class FileExtensionPluginPackage(PluginPackage):
+    file_extensions = ListField(required=True)
+    
 class Payments(Document):
     '''
         付款记录

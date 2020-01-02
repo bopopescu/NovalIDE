@@ -42,6 +42,7 @@ urlpatterns = [
     url(r'^member/get_plugins', member.views.get_plugin_packages),
     #获取插件信息
     url(r'^member/get_plugin', member.views.get_plugin_info),
+    url(r'^member/check_file_plugin', member.views.check_file_plugin),
     #发布并上传插件
     url(r'^member/publish', member.views.publish_plugin),
     #下载插件
