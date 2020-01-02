@@ -18,6 +18,9 @@ from noval.util.command import *
 from noval.running import *
 from code import InteractiveInterpreter
 import six.moves.builtins as builtins
+import threading
+import queue
+import shlex
 
 WINDOWS_EXE = "python.exe"
 
@@ -708,11 +711,94 @@ class BuiltinCPythonProxy(BackendProxy):
         self.push(data.strip())
         
     def send_command(self, cmd):
+        if cmd.cmd_line.startswith("!"):
+            self.execute_system_command(cmd)
+            return
+        elif cmd.cmd_line.startswith("%"):
+            self.cd(cmd.cmd_line.strip()[1:])
+            return
         """Send the command to backend. Return None, 'discard' or 'postpone'"""
         if cmd.source is None:
             self.next_msg = ToplevelResponse()
             return
         self.push(cmd.source.strip())
+        
+    def execute_system_command(self, cmd):
+        self._stopped = False
+        self.notify_queue = queue.Queue()
+        self.process_msg()
+#        self._check_update_tty_mode(cmd)
+        env = dict(os.environ).copy()
+        encoding = utils.get_default_encoding()
+        env["PYTHONIOENCODING"] = encoding
+        # Make sure this python interpreter and its scripts are available
+        # in PATH
+        update_system_path(env, get_augmented_system_path(get_exe_dirs()))
+        popen_kw = dict(
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
+            env=env,
+            universal_newlines=True,
+            cwd=os.getcwd(),
+        )
+
+        if sys.version_info >= (3, 6):
+            popen_kw["errors"] = "replace"
+            popen_kw["encoding"] = encoding
+
+        assert cmd.cmd_line.startswith("!")
+        cmd_line = cmd.cmd_line[1:]
+        proc = subprocess.Popen(cmd_line, **popen_kw)
+
+        def copy_stream(source, is_error):
+            while True:
+                c = source.readline()
+                c = c.encode(encoding,'ignore').decode(encoding)
+                if c == "":
+                    break
+                else:
+                    self.notify_queue.put((c,is_error))
+        #tkinter text控件不支持多线程,这里使用队列的方式操作text控件
+        copy_out = threading.Thread(target=lambda: copy_stream(proc.stdout, False), daemon=True)
+        copy_err = threading.Thread(target=lambda: copy_stream(proc.stderr, True), daemon=True)
+
+        copy_out.start()
+        copy_err.start()
+        try:
+            proc.wait()
+        except KeyboardInterrupt as e:
+            print(str(e), file=sys.stderr)
+
+        copy_out.join()
+        copy_err.join()
+        self.notify_queue.put((None,0))
+        
+    def process_msg(self):
+        if self._stopped:
+            return
+        GetApp().after(1,self.process_msg)
+        while not self.notify_queue.empty():
+            try:
+                msg = self.notify_queue.get()
+                if msg[0] == None:
+                    self._stopped = True
+                    self.next_msg = ToplevelResponse()
+                else:
+                    data,is_error = msg
+                    if is_error:
+                        self.writeErr(data)
+                    else:
+                        self.writeOut(data)
+            except queue.Empty:
+                pass
+                
+    def cd(self,cmd,usePrint=False):
+        path = shlex.split(cmd)[1]
+        os.chdir(os.path.expandvars(os.path.expanduser(path)))
+        if usePrint:
+            pwd()
+        self.next_msg = ToplevelResponse()
 
 class CustomCPythonProxy(CPythonProxy):
     def __init__(self, clean):

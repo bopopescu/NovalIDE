@@ -23,6 +23,7 @@ import warnings
 from collections import namedtuple
 from importlib.machinery import PathFinder, SourceFileLoader
 from threading import Thread
+import locale
 
 import __main__  # @UnresolvedImport
 import _ast
@@ -37,6 +38,12 @@ AFTER_EXPRESSION_MARKER = "_thonny_hidden_after_expr"
 logger = logging.getLogger("novalide.backendrun.debug")
 
 #_CONFIG_FILENAME = os.path.join(thonny.THONNY_USER_DIR, "backend_configuration.ini")
+
+def get_default_encoding():
+    try:
+        return locale.getpreferredencoding()
+    except:
+        return locale.getdefaultlocale()[1]
 
 def path_startswith(child_name, dir_name):
     normchild = os.path.normpath(os.path.normcase(child_name))
@@ -423,7 +430,7 @@ class VM:
     def _cmd_execute_system_command(self, cmd):
         self._check_update_tty_mode(cmd)
         env = dict(os.environ).copy()
-        encoding = "utf-8"
+        encoding = get_default_encoding()
         env["PYTHONIOENCODING"] = encoding
         # Make sure this python interpreter and its scripts are available
         # in PATH
@@ -447,6 +454,7 @@ class VM:
         def copy_stream(source, target):
             while True:
                 c = source.readline()
+                c = c.encode(encoding,'ignore').decode(encoding)
                 if c == "":
                     break
                 else:

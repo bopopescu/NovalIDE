@@ -20,6 +20,7 @@ import noval.editor.text as texteditor
 import noval.util.utils as utils
 import noval.toolbar as toolbar
 import noval.ttkwidgets.textframe as textframe
+import queue
 
 class LogCtrl(texteditor.TextCtrl):
     def __init__(self, parent,**kwargs):
@@ -45,6 +46,7 @@ class LogView(ttk.Frame):
         self._CreateControl()
             
     def _CreateControl(self):
+        self.notify_queue = queue.Queue()
         self._tb = toolbar.ToolBar(self,orient=tk.HORIZONTAL)
         self._tb.pack(fill="x",expand=0)
         self._tb.AddLabel(text=_("Logger Name:"))
@@ -69,15 +71,24 @@ class LogView(ttk.Frame):
         self._tb.AddButton(self.ID_CLEAR,None,("Clear"),handler=self.ClearLines,style=None)
         text_frame = textframe.TextFrame(self,text_class=LogCtrl,undo=False)
         self.textCtrl = text_frame.text
-        self.log_ctrl_handler = LogCtrlHandler(self)
-        #屏蔽debug日志,由于日志窗口不支持多线程写入,但是很多多线程中包含debug日志,故屏蔽debug日志
-        self.log_ctrl_handler.setLevel(logging.INFO)
+        self.log_ctrl_handler = LogCtrlHandler(self,self.notify_queue)
+        
         
         #logging.getLogger() is root logger,add log ctrl handler to root logger
         #then other logger will output log to the log view
         self.textCtrl.set_read_only(True)
         text_frame.pack(fill="both",expand=1)
         logging.getLogger().addHandler(self.log_ctrl_handler)
+        self.process_msg()
+        
+    def process_msg(self):
+        GetApp().after(1,self.process_msg)
+        while not self.notify_queue.empty():
+            try:
+                msg = self.notify_queue.get()
+                self.log_ctrl_handler.append_log(msg)
+            except queue.Empty:
+                pass
       
     def OnSettingsClick(self):  
         import LoggingConfigurationService
@@ -175,14 +186,19 @@ class LogView(ttk.Frame):
 
 class LogCtrlHandler(logging.Handler):
     
-    def __init__(self, log_view):
+    def __init__(self, log_view,que):
         logging.Handler.__init__(self)
         self._log_view = log_view
+        self.que = que
         
         self.setLevel(logging.DEBUG)
         self.setFormatter(logging.Formatter("%(asctime)s %(name)s %(levelname)s: %(message)s"))
         
     def emit(self, record):
+        #由于日志窗口不支持多线程写入,这里将日志放入队列中,通过队列写入日志窗口
+        self.que.put(record)
+        
+    def append_log(self,record):
         level = record.levelno
         msg = self.format(record)
         self._log_view.AddLogger(record.name)
