@@ -69,7 +69,7 @@ class VariablesManager():
                 raise RuntimeError(_("Could not evaluate the expression variable of \"%s\"") % name)
             else:
                 format_name = FormatVariableName(name)
-                src_text = src_text.replace(format_name,self.GetVariable(name))
+                src_text = src_text.replace(format_name,str(self.GetVariable(name)))
         return src_text
         
     @staticmethod
@@ -91,8 +91,8 @@ class VariablesManager():
             d['USER'] = getpass.getuser()
         return d
         
-    def AddVariable(self,name,value):
-        if name in self._variables:
+    def AddVariable(self,name,value,replace_exist=False):
+        if name in self._variables and not replace_exist:
             return
         self._variables[name] = value
 

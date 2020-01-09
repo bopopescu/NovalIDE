@@ -252,7 +252,18 @@ class IntellisenceManager(object):
         self._loader.Load(interpreter)
         
     def GetImportList(self):
-        return self._loader.ImportList
+        #全局加载的导入模块列表
+        import_list = self._loader.ImportList
+        current_project = GetApp().MainFrame.GetProjectView(False).GetCurrentProject()
+        if current_project is not None:
+            #当前项目里面的导入模块列表
+            try:
+                l = copy.copy(current_project.db_loader.import_list)
+                l.extend(import_list)
+                import_list = l
+            except:
+                pass
+        return import_list
         
     def GetBuiltinMemberList(self,name):
         if self._loader.BuiltinModule is None:
@@ -287,13 +298,25 @@ class IntellisenceManager(object):
         return type_obj.GetMemberList()
 
     def GetModule(self,name):
-        if name in self._loader.module_dicts:
-            return ModuleLoader(name,self._loader.module_dicts[name][ModuleLoader.MEMBERS_KEY],\
-                        self._loader.module_dicts[name][ModuleLoader.MEMBER_LIST_KEY],self)
+        d = self.GetModules()
+        if name in d:
+            return ModuleLoader(name,d[name][ModuleLoader.MEMBERS_KEY],d[name][ModuleLoader.MEMBER_LIST_KEY],self)
         return None
 
     def HasModule(self,name):
-        return name in self._loader.module_dicts
+        return name in self.GetModules()
+        
+    def GetModules(self):
+        #所有模块为当前项目的所有模块加上全局模块
+        current_project = GetApp().MainFrame.GetProjectView(False).GetCurrentProject()
+        if current_project is None:
+            return self._loader.module_dicts
+        try:
+            d = copy.copy(self._loader.module_dicts)
+            d.update(current_project.db_loader.module_dicts)
+            return d
+        except:
+            return self._loader.module_dicts
 
     def GetModuleMembers(self,module_name,child_name):
         module = self.GetModule(module_name)

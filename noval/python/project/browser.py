@@ -7,6 +7,7 @@ import noval.consts as consts
 import os
 import noval.python.project.viewer as projectviewer
 import noval.python.project.rundocument as runprojectdocument
+import noval.python.project.sched as sched
 
 class PythonProjectTreeCtrl(ProjectTreeCtrl):
     #----------------------------------------------------------------------------
@@ -54,6 +55,12 @@ class PythonProjectTreeCtrl(ProjectTreeCtrl):
 
 class ProjectBrowser(BaseProjectbrowser):
     """description of class"""
+        
+    def RunSched(self):
+        sched.SchedulerRun(self.GetCurrentProject()).start()
+        #1分钟扫描一次项目代码更新
+        if utils.profile_get_int('CreateProjectIntellisenseDatabase',True):
+            self.after(60000,self.RunSched)
 
     def BuildFileList(self,file_list):
         '''put the package __init__.py to the first item'''
@@ -143,6 +150,12 @@ class ProjectBrowser(BaseProjectbrowser):
             i = project_item_ids.index(constants.ID_ADD_FOLDER)
             project_item_ids.insert(i+1,constants.ID_ADD_PACKAGE_FOLDER)
         return project_item_ids
+        
+    def SetCurrentProject(self):
+        BaseProjectbrowser.SetCurrentProject(self)
+        #是否生成项目代码的智能提示数据库
+        if utils.profile_get_int('CreateProjectIntellisenseDatabase',True):
+            self.RunSched()
     
 class ProjectViewLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)

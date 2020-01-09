@@ -432,6 +432,7 @@ class ShellText(PythonText):
                     argv=argv,
                     cmd_line=cmd_line,
                     tty_mode=self.tty_mode,
+                    source = None
                 )
             )
         else:

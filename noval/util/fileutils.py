@@ -476,7 +476,10 @@ def open_path_in_terminator(file_path):
         
 def startfile(file_path):
     if apputils.is_windows():
-        os.startfile(file_path)
+        try:
+            os.startfile(file_path)
+        except:
+            pass
     else:
         subprocess.call(["xdg-open", file_path])
         

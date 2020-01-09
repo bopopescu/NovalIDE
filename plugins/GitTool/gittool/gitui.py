@@ -15,6 +15,7 @@ from pkg_resources import resource_filename
 import noval.ttkwidgets.checklistbox as checklistbox
 import shutil
 import noval.project.importfiles as importfiles
+import noval.util.strutils as strutils
 
 def SetVariablevar(prefix,variable):
     path = filedialog.askdirectory()
@@ -62,11 +63,18 @@ class OutputReader:
             return
         self.last_msg = msg
         default_branch_flag = 'HEAD branch:'
+        head_zn_flag = 'HEAD 分支：'
         if msg.find(default_branch_flag) != -1:
             default_branch = msg.replace(default_branch_flag,"").strip()
             OutputReader.Repositoryes[OutputReader.CURRENT_REPOSITORY]['default_branch'] = default_branch
             print ('default branch is',default_branch)
-        elif msg.find('Remote branches:') != -1 or msg.find('Remote branch:') != -1:
+            
+        elif msg.find(head_zn_flag) != -1:
+            default_branch = msg.replace(head_zn_flag,"").strip()
+            OutputReader.Repositoryes[OutputReader.CURRENT_REPOSITORY]['default_branch'] = default_branch
+            print ('default branch is',default_branch)
+            
+        elif msg.find('Remote branches:') != -1 or msg.find('Remote branch:') != -1 or msg.find('远程分支：') != -1:
             OutputReader.branch_flag = 1
         elif OutputReader.branch_flag:
             branch_name = msg.split()[0].strip()
@@ -79,6 +87,11 @@ class GitProjectNameLocationPage(BasePythonProjectNameLocationPage):
         BasePythonProjectNameLocationPage.__init__(self,master,**kwargs)
         self.can_finish = False
         
+    def SaveProject(self,path):
+        return True
+        
+    def SaveGitProject(self,path):
+        return BasePythonProjectNameLocationPage.SaveProject(self,path)
 
 class LocationSelectionPage(projectwizard.BitmapTitledContainerWizardPage):
     def __init__(self,master):
@@ -360,6 +373,22 @@ class ImportGitfilesPage(importfiles.ImportfilesPage):
     def __init__(self,master):
         importfiles.ImportfilesPage.__init__(self,master)
         self.can_finish = True
+        self.rejects += [consts.PROJECT_SHORT_EXTENSION]
         
     def Init(self):
-        self.dir_entry_var.set(self.GetPrev().dest_path_var.get())
+        dest_path = os.path.join(self.GetPrev().dest_path_var.get(),strutils.get_filename_without_ext(self.GetPrev().GetPrev().GetPrev().addr_var.get().strip()))
+        self.dir_entry_var.set(dest_path)
+        
+    def Finish(self):
+        project_name_page = self.GetPrev().GetPrev().GetPrev().GetPrev().GetPrev()
+        projName = project_name_page.name_var.get().strip()
+        project_path = self.GetProjectPath()
+        fullProjectPath = os.path.join(project_path, strutils.MakeNameEndInExtension(projName, consts.PROJECT_EXTENSION))
+        if not project_name_page.SaveGitProject(fullProjectPath):
+            return False
+        return importfiles.ImportfilesPage.Finish(self)
+        
+    def GetProjectPath(self):
+        project_name_page = self.GetPrev().GetPrev().GetPrev().GetPrev().GetPrev()
+        project_path = project_name_page.GetProjectLocation()
+        return os.path.join(project_path,strutils.get_filename_without_ext(self.GetPrev().GetPrev().GetPrev().addr_var.get().strip()))

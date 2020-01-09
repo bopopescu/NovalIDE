@@ -53,6 +53,9 @@ import six
 import noval.syntax.syntax as syntax
 import noval.project.variables as variablesutils
 import stat
+import noval.project.document as projectdocument
+import noval.project.importfiles as importfiles
+import noval.misc as misc
 #----------------------------------------------------------------------------
 # Constants
 #----------------------------------------------------------------------------
@@ -182,6 +185,9 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledContainerWizardPage):
             sizer_frame, text=_("Create Project Directory"), variable=self.project_dir_chkvar
         )
         self.create_project_dir_checkbutton.pack(side=tk.LEFT,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))
+        
+        if not kwargs.get('enable_create_project_dir',True):
+            self.create_project_dir_checkbutton['state'] = tk.DISABLED
 
         sizer_frame = ttk.Frame(content_frame)
         sizer_frame.grid(column=0, row=chk_box_row+1, sticky="nsew")
@@ -303,13 +309,18 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledContainerWizardPage):
    
         self._new_project_configuration = self.GetNewPojectConfiguration()
         utils.profile_set(PROJECT_DIRECTORY_KEY, self._new_project_configuration.Location)
+        if not self.SaveProject(fullProjectPath):
+            return False
+        return True
+
+    def SaveProject(self,path):
         template = self.GetProjectTemplate()
-        self.new_project_doc = template.CreateDocument(fullProjectPath, flags = core.DOC_NEW)
+        self.new_project_doc = template.CreateDocument(path, flags = core.DOC_NEW)
         #set project name
         self.new_project_doc.GetModel().Name = self._new_project_configuration.Name
         self.new_project_doc.GetModel().Id = str(uuid.uuid1()).upper()
         self.new_project_doc.GetModel().SetInterpreter(self._new_project_configuration.Interpreter)
-        if not self.new_project_doc.OnSaveDocument(fullProjectPath):
+        if not self.new_project_doc.OnSaveDocument(path):
             return False
         #强制显示项目视图
         view = GetApp().MainFrame.GetProjectView(show=True).GetView()
@@ -485,6 +496,21 @@ class ProjectTemplate(core.DocTemplate):
             wiz = wizard_cls(GetApp().GetTopWindow())
             wiz.RunWizard(wiz._project_template_page)
             return None  # never return the doc, otherwise docview will think it is a new file and rename it
+            
+    @staticmethod
+    def CreateProjectTemplate():
+        projectTemplate = ProjectTemplate(GetApp().GetDocumentManager(),
+                _("Project File"),
+                "*%s" % consts.PROJECT_EXTENSION,
+                os.getcwd(),
+                consts.PROJECT_EXTENSION,
+                "Project Document",
+                _("Project Viewer"),
+                projectdocument.ProjectDocument,
+                ProjectView,
+                icon = imageutils.getProjectIcon())
+        GetApp().GetDocumentManager().AssociateTemplate(projectTemplate)
+        return projectTemplate
 
 
 class ProjectView(misc.AlarmEventView):
@@ -2121,6 +2147,16 @@ class ProjectOptionsPanel(ui_utils.BaseConfigurationPanel):
         promptDeprecatedCheckBox = ttk.Checkbutton(self, text=_("Prompt warning when project analyzer version is deprecated"),variable=self.promptDeprecated_chkvar)
         promptDeprecatedCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
         
+
+        self.createProjectIntellisenseDatabase_chkvar = tk.IntVar(value=utils.profile_get_int("CreateProjectIntellisenseDatabase", True))
+        createProjectIntellisenseDatabaseCheckBox = ttk.Checkbutton(self, text=_("Generate intellisense database of project automaticlly"),variable=self.createProjectIntellisenseDatabase_chkvar)
+        createProjectIntellisenseDatabaseCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
+        
+        btn = ttk.Button(self,text=_("File Filters"),command=self.Filter)
+        btn.pack(padx=consts.DEFAUT_CONTRL_PAD_X,anchor=tk.W,pady=consts.DEFAUT_HALF_CONTRL_PAD_Y)
+        misc.create_tooltip(btn,_("set filter file extentions when refresh project folder"))
+        self.filters = GetApp().MainFrame.GetProjectView(show=False,generate_event=False).filters
+        
 ##        if not ACTIVEGRID_BASE_IDE:
 ##            self._projShowWelcomeCheckBox = wx.CheckBox(self, -1, _("Show Welcome Dialog"))
 ##            self._projShowWelcomeCheckBox.SetValue(config.ReadInt("RunWelcomeDialog2", True))
@@ -2133,6 +2169,11 @@ class ProjectOptionsPanel(ui_utils.BaseConfigurationPanel):
 ##            self._langCtrl.SetToolTipString(_("Programming language to be used throughout the project."))
 ##            sizer.Add(self._langCtrl, 0, wx.ALIGN_CENTER_VERTICAL|wx.RIGHT, MAC_RIGHT_BORDER)
 ##            projectSizer.Add(sizer, 0, wx.ALL, HALF_SPACE)
+
+    def Filter(self):
+        filter_dlg = importfiles.FileFilterDialog(self,self.filters)
+        if filter_dlg.ShowModal() == constants.ID_OK:
+            self.filters = filter_dlg.filters
 
     def OnUseSashSelect(self, event):
         if not self._useSashMessageShown:
@@ -2151,6 +2192,9 @@ class ProjectOptionsPanel(ui_utils.BaseConfigurationPanel):
         utils.profile_set("PromptSaveProjectFile", self.promptSavedoc_chkvar.get())
         utils.profile_set("LoadFolderState", self.loadFolderState_chkvar.get())
         utils.profile_set("PromptProjectAnalyzerDeprecated", self.promptDeprecated_chkvar.get())
+        utils.profile_set("CreateProjectIntellisenseDatabase", self.createProjectIntellisenseDatabase_chkvar.get())
+        GetApp().MainFrame.GetProjectView(show=False,generate_event=False).filters = self.filters
+        utils.profile_set("DEFAULT_FILE_FILTERS",self.filters)
        # if not ACTIVEGRID_BASE_IDE:
          #   config.WriteInt("RunWelcomeDialog2", self._projShowWelcomeCheckBox.GetValue())
           #  config.Write(APP_LAST_LANGUAGE, self._langCtrl.GetStringSelection())

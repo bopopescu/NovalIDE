@@ -7,7 +7,7 @@ Commands get executed via shell, this way the command line in the
 shell becomes kind of title for the execution.
 
 """
-from noval import GetApp
+from noval import GetApp,_
 import os.path
 import subprocess
 import sys
@@ -21,6 +21,10 @@ import six.moves.builtins as builtins
 import threading
 import queue
 import shlex
+try:
+    import tkSimpleDialog
+except ImportError:
+    import tkinter.simpledialog as tkSimpleDialog
 
 WINDOWS_EXE = "python.exe"
 
@@ -611,14 +615,23 @@ class BuiltinCPythonProxy(BackendProxy):
         reader.isreading = True
         self.prompt()
         try:
-            while not reader.input:
-                wx.YieldIfNeeded()
+            reader.input = self.get_input_text()
             input = reader.input
         finally:
             reader.input = ''
             reader.isreading = False
         input = str(input)  # In case of Unicode.
         return input
+        
+    def prompt(self):
+        pass
+        
+    def get_input_text(self):
+        text = tkSimpleDialog.askstring(
+            _("Enter input"),
+            _("Enter the input text:")
+        )
+        return text
 
     def readlines(self):
         """Replacement for stdin.readlines()."""
@@ -711,14 +724,14 @@ class BuiltinCPythonProxy(BackendProxy):
         self.push(data.strip())
         
     def send_command(self, cmd):
-        if cmd.cmd_line.startswith("!"):
-            self.execute_system_command(cmd)
-            return
-        elif cmd.cmd_line.startswith("%"):
-            self.cd(cmd.cmd_line.strip()[1:])
-            return
         """Send the command to backend. Return None, 'discard' or 'postpone'"""
         if cmd.source is None:
+            if cmd.cmd_line.startswith("!"):
+                self.execute_system_command(cmd)
+                return
+            elif cmd.cmd_line.startswith("%"):
+                self.cd(cmd.cmd_line.strip()[1:])
+                return
             self.next_msg = ToplevelResponse()
             return
         self.push(cmd.source.strip())
@@ -799,6 +812,9 @@ class BuiltinCPythonProxy(BackendProxy):
         if usePrint:
             pwd()
         self.next_msg = ToplevelResponse()
+        
+    def get_cwd(self):
+        return os.getcwd()
 
 class CustomCPythonProxy(CPythonProxy):
     def __init__(self, clean):

@@ -82,7 +82,7 @@ class LogView(ttk.Frame):
         self.process_msg()
         
     def process_msg(self):
-        GetApp().after(1,self.process_msg)
+        GetApp().after(1000,self.process_msg)
         while not self.notify_queue.empty():
             try:
                 msg = self.notify_queue.get()

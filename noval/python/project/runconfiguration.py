@@ -213,11 +213,11 @@ class RunConfiguration():
         initialArgs = arguments_configuration.GetArgs()
         #参数里面可能有一些变量,需要将这些变量转换成实际值
         if initialArgs:
-            initialArgs = variablesutils.VariablesManager(self.ProjectDocument).EvalulateValue(initialArgs)
+            initialArgs = variablesutils.GetProjectVariableManager(self.ProjectDocument).EvalulateValue(initialArgs)
         startIn = startup_configuration.StartupPath
         #路径里面可能有一些变量,需要将这些变量转换成变量对应的值
         if startup_configuration.StartupPathPattern != StartupConfiguration.DEFAULT_PROJECT_DIR_PATH:
-            startIn = variablesutils.VariablesManager(self.ProjectDocument).EvalulateValue(startIn)
+            startIn = variablesutils.GetProjectVariableManager(self.ProjectDocument).EvalulateValue(startIn)
         interpreter_option = arguments_configuration.GetInterpreterOption()
         env = environment_configuration.GetEnviron()
         project_configuration = ProjectConfiguration(self.ProjectDocument)
@@ -283,8 +283,7 @@ class ProjectConfiguration(BaseConfiguration):
         self._configuration_list = []
         
     def LoadConfigurations(self):
-        pj_key = self._project_document.GetKey()
-        configuration_name_list = utils.profile_get(pj_key + "/" + "ConfigurationList",[])
+        configuration_name_list = self.LoadConfigurationNames()
         for name in configuration_name_list:
             run_configuration = self.LoadConfiguration(name)
             if run_configuration:
@@ -292,6 +291,11 @@ class ProjectConfiguration(BaseConfiguration):
             else:
                 utils.get_logger().warn("run configuration name %s is not exist",name)
         return self._configuration_list
+        
+    def LoadConfigurationNames(self):
+        pj_key = self._project_document.GetKey()
+        configuration_name_list = utils.profile_get(pj_key + "/" + "ConfigurationList",[])
+        return configuration_name_list
         
     def LoadConfiguration(self,name):
         file_key,configuration_name = name.split("/")
@@ -331,7 +335,7 @@ class ProjectConfiguration(BaseConfiguration):
     def LoadPythonPath(self):
         python_path_list = self.LoadProjectInternalPath(self.ProjectDocument.GetKey())
         for i,python_path in enumerate(python_path_list):
-            python_variable_manager = variablesutils.VariablesManager(self.ProjectDocument)
+            python_variable_manager = variablesutils.GetProjectVariableManager(self.ProjectDocument)
             path = python_variable_manager.EvalulateValue(python_path)
             python_path_list[i] = path
         if self.IsAppendProjectPath(self.ProjectDocument.GetKey()):

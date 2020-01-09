@@ -48,9 +48,9 @@ def make_module_dict(name,path,is_builtin,childs,doc,refs=[]):
 
 class FiledumpParser(codeparser.CodebaseParser):
 
-    def __init__(self,module_path,output_path,force_update=False):
+    def __init__(self,module_path,output_path,force_update=False,path_list=sys.path):
         codeparser.CodebaseParser.__init__(self,deep=False)
-        self.top_module_name,self.is_package = utils.get_relative_name(module_path)
+        self.top_module_name,self.is_package = utils.get_relative_name(module_path,path_list)
         self.output = output_path
         self.force_update = force_update
         self.module_path = module_path

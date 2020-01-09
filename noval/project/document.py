@@ -414,7 +414,9 @@ class ProjectDocument(core.Document):
                 openDoc = self.GetFirstView().GetOpenDocument(oldFilePath)
                 if openDoc:
                     openDoc.FileWatcher.StopWatchFile(openDoc)
-                os.rename(oldFilePath, newFilePath)
+                #目的文件如果存在不要重命名了,直接更改文件item路径
+                if not os.path.exists(newFilePath):
+                    os.rename(oldFilePath, newFilePath)
             if isProject:
                 documents = self.GetDocumentManager().GetDocuments()
                 for document in documents:
@@ -650,7 +652,9 @@ class ProjectDocument(core.Document):
         try:
             oldFolderPath = os.path.join(self.GetModel().homeDir,oldFolderLogicPath)
             newFolderPath = os.path.join(self.GetModel().homeDir,newFolderLogicPath)
-            os.rename(oldFolderPath, newFolderPath)
+            #目的文件夹如果存在不要重命名了,直接更改文件夹item路径
+            if not os.path.exists(newFolderPath):
+                os.rename(oldFolderPath, newFolderPath)
         except Exception as e:
             messagebox.showerror(_("Rename Folder Error"),_("Could not rename folder '%s'.  '%s'") % (fileutils.get_filename_from_path(oldFolderPath), e),parent= GetApp().GetTopWindow())
             return False

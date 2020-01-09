@@ -13,7 +13,7 @@ else:
     
 data_files['gittool'].append('res/*.*')
 setup(name='GitTool',
-        version='1.0',
+        version='1.1',
         description='''GitTool is a graphical Git client plugin with support for Git and Pull Requests for GitHub, Gitee and so on. it runs on Windows and Linux os system''',
         author='wukan',
         author_email='kan.wu@genetalks.com',

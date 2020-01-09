@@ -10,6 +10,7 @@ from noval.python.debugger.commandui import *
 import noval.python.project.runconfiguration as runconfiguration
 import noval.consts as consts
 from noval.util.command import ToplevelCommand
+import noval.python.project.sched as sched
 '''
     运行python文件或者项目
     按运行模式分为运行:单个文件和项目
@@ -18,6 +19,7 @@ from noval.util.command import ToplevelCommand
 class PythonProjectDocument(ProjectDocument):
     def __init__(self, model=None):
         ProjectDocument.__init__(self,model)
+        self.db_loader = sched.ProjectDatabaseLoader(self)
         
     @staticmethod
     def GetProjectModel():
@@ -89,7 +91,7 @@ class PythonProjectDocument(ProjectDocument):
         python_interpreter_view.Runner.send_command(ToplevelCommand("execute_source", source=command))
         sys.argv = old_argv
         
-    def GetRunConfiguration(self,run_file=None):
+    def GetRunConfiguration(self,run_file=None,is_debug=False):
         '''
             获取项目的当前运行配置,也就是默认启动文件的运行配置
         '''
@@ -137,7 +139,7 @@ class PythonProjectDocument(ProjectDocument):
                 return True
         return False
         
-    def GetRunParameter(self,filetoRun=None,is_break_debug=False):
+    def GetRunParameter(self,filetoRun=None,is_break_debug=False,is_debug=False):
         '''
             @is_break_debug:user force to debug breakpoint or not
         '''
@@ -145,7 +147,7 @@ class PythonProjectDocument(ProjectDocument):
             return None
         is_debug_breakpoint = False
         #load project configuration first,if have one run configuration,the run it
-        run_configuration_name = self.GetRunConfiguration()
+        run_configuration_name = self.GetRunConfiguration(is_debug=is_debug)
         #if user force run one project file ,then will not run configuration from config
         if filetoRun is None and run_configuration_name:
             project_configuration = runconfiguration.ProjectConfiguration(self)
@@ -171,7 +173,7 @@ class PythonProjectDocument(ProjectDocument):
         return run_parameter
         
     def Debug(self):
-        run_parameter = self.GetRunParameter()
+        run_parameter = self.GetRunParameter(is_debug=True)
         if run_parameter is None:
             return
         if not run_parameter.IsBreakPointDebug:
@@ -274,7 +276,7 @@ class PythonProjectDocument(ProjectDocument):
 
 
     def BreakintoDebugger(self,filetoRun=None):
-        run_parameter = self.GetRunParameter(filetoRun,is_break_debug=True)
+        run_parameter = self.GetRunParameter(filetoRun,is_break_debug=True,is_debug=True)
         #debugger must run in project
         if run_parameter is None or run_parameter.Project is None:
             return
@@ -304,3 +306,10 @@ class PythonProjectDocument(ProjectDocument):
         page.Execute()
         self.GetDebugger().SetDebuggerUI(page)
         GetApp().GetDocumentManager().ActivateView(self.GetDebugger().GetView())
+        
+    def GetDataPath(self):
+        metadata_path = os.path.join(self.GetPath(),".metadata")
+        return metadata_path
+        
+    def UpdateData(self,md):
+        self.db_loader.LoadMetadata(md)

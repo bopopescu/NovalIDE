@@ -2,7 +2,7 @@ from distutils.core import setup
 from setuptools import find_packages
 
 setup(name='Pyinstaller',
-        version='1.2',
+        version='1.3',
         description='''PyInstaller bundles a Python application and all its dependencies into a single package.The user can run the packaged app without installing a Python interpreter or any modules''',
         author='wukan',
         author_email='wekay102200@sohu.com',

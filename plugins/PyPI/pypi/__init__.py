@@ -196,7 +196,7 @@ class PyPi(plugin.Plugin):
                 if hasattr(instance,"GetFileExtension"):
                    data['file_extension'] = instance.GetFileExtension()
         
-        with open(pkg_file_path) as f:
+        with open(pkg_file_path,encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 get_key_value(line,'name',"Name:",data)

@@ -14,7 +14,7 @@ class GitToolPlugin(plugin.Plugin):
         """Hook the calculator into the menu and bind the event"""
         utils.get_logger().info("Installing GitTool plugin")
         
-        ProjectTemplateManager().AddProjectTemplate("General",_("New Project From Git Server"),[(gitui.GitProjectNameLocationPage),gitui.LocationSelectionPage,gitui.RepositorySourcePage,\
+        ProjectTemplateManager().AddProjectTemplate("General",_("New Project From Git Server"),[(gitui.GitProjectNameLocationPage,{'project_dir_checked':False,'enable_create_project_dir':False}),gitui.LocationSelectionPage,gitui.RepositorySourcePage,\
                                                         gitui.BranchSelectionPage,gitui.LocalDestinationPage,gitui.ImportGitfilesPage]) 
         GetApp().bind(constants.PROJECTVIEW_POPUP_FILE_MENU_EVT, self.AppenFileMenu,True)
         self.project_browser = GetApp().MainFrame.GetView(consts.PROJECT_VIEW_NAME)
@@ -28,7 +28,7 @@ class GitToolPlugin(plugin.Plugin):
         version of novalide.
         @return: version str
         """
-        return "1.2.0"
+        return "1.2.1"
 
     def InstallHook(self):
         """Override in subclasses to allow the plugin to be loaded

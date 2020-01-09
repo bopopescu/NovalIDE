@@ -28,6 +28,7 @@ import noval.ui_common as ui_common
 import noval.ui_utils as ui_utils
 import noval.project.variables as variablesutils
 from noval.project.document import ProjectDocument
+import noval.imageutils as imageutils
         
 class PythonProjectTemplate(ProjectTemplate):
     
@@ -49,6 +50,22 @@ class PythonProjectTemplate(ProjectTemplate):
 
     def GetRunconfigClass(self):
         return "noval.python.project.runconfig.PythonRunconfig"
+        
+
+    @staticmethod
+    def CreateProjectTemplate():
+        projectTemplate = PythonProjectTemplate(GetApp().GetDocumentManager(),
+                _("Project File"),
+                "*%s" % consts.PROJECT_EXTENSION,
+                os.getcwd(),
+                consts.PROJECT_EXTENSION,
+                "Project Document",
+                _("Project Viewer"),
+                GetApp().project_document_class,
+                PythonProjectView,
+                icon = imageutils.getProjectIcon())
+        GetApp().GetDocumentManager().AssociateTemplate(projectTemplate)
+        return projectTemplate
 
 class NewPythonProjectWizard(NewProjectWizard):
     def LoadDefaultProjectTemplates(self):

@@ -20,6 +20,8 @@ import noval.project.property as projectproperty
 import time
 import noval.project.document as projectdocument
 import noval.ui_utils as ui_utils
+import noval.syntax.syntax as syntax
+import noval.project.command as projectcommand
 
 class EntryPopup(tk.Entry):
 
@@ -322,6 +324,8 @@ class BaseProjectbrowser(ttk.Frame):
         GetApp().bind("InitTkDnd",self.SetDropTarget,True)
         self.tree.bind("<3>", self.on_secondary_click, True)
         self.tree.bind("<<TreeviewSelect>>", self._on_select, True)
+        #加载默认过滤项目文件扩展名列表,刷新项目文件夹时使用
+        self.filters = utils.profile_get("DEFAULT_FILE_FILTERS",syntax.SyntaxThemeManager().GetLexer(GetApp().GetDefaultLangId()).Exts)
         
     def SetDropTarget(self,event):
         #项目视图允许拖拽添加文件
@@ -643,6 +647,7 @@ class BaseProjectbrowser(ttk.Frame):
         
         menu.Append(constants.ID_RENAME,_("&Rename"),handler=lambda:self.ProcessEvent(constants.ID_RENAME))
         menu.Append(constants.ID_REMOVE_FROM_PROJECT,_("Remove from Project"),handler=lambda:self.ProcessEvent(constants.ID_REMOVE_FROM_PROJECT))
+        menu.InsertAfter(constants.ID_ADD_FOLDER,constants.ID_REFRESH_FOLDER,_("&Refresh folder"),handler=lambda:self.ProcessEvent(constants.ID_REFRESH_FOLDER),img=GetApp().GetImage("project/refresh.png"))
         GetApp().event_generate(constants.PROJECTVIEW_POPUP_FOLDER_MENU_EVT,menu=menu,item=item)
         self.AppendFileFoderCommonMenu(menu)
         return menu
@@ -659,6 +664,7 @@ class BaseProjectbrowser(ttk.Frame):
         common_item_ids = self.GetPopupProjectItemIds()
         self.GetCommonItemsMenu(menu,common_item_ids)
         if self.GetCurrentProject() is not None:
+            menu.InsertAfter(constants.ID_ADD_FOLDER,constants.ID_REFRESH_FOLDER,_("&Refresh folder"),img=GetApp().GetImage("project/refresh.png"),handler=lambda:self.ProcessEvent(constants.ID_REFRESH_FOLDER))
             menu.Append(constants.ID_RENAME,_("&Rename"),handler=lambda:self.ProcessEvent(constants.ID_RENAME))
             menu.Append(constants.ID_OPEN_TERMINAL_PATH,_("Open Command Prompt here..."),handler=lambda:self.ProcessEvent(constants.ID_OPEN_TERMINAL_PATH))
             menu.Append(constants.ID_COPY_PATH,_("Copy Full Path"),handler=lambda:self.ProcessEvent(constants.ID_COPY_PATH))
@@ -762,8 +768,61 @@ class BaseProjectbrowser(ttk.Frame):
         elif id == constants.ID_COPY_PATH:
             self.CopyPath()
             return True
+        elif id == constants.ID_REFRESH_FOLDER:
+            self.Refresh()
         else:
             return False
+            
+
+    def Refresh(self):
+        item = self.tree.GetSingleSelectItem()
+        filePath = self.GetItemPath(item)
+        self.RefreshPath(filePath)
+        
+    def RefreshPath(self,path):
+        '''
+            刷新文件夹添加新文件
+        '''
+        add_count = 0
+        doc = self.GetCurrentProject()
+        item = self.tree.GetSingleSelectItem()
+        folderPath = self.GetView()._GetItemFolderPath(item)
+        try:
+            #扫描文件夹下的新文件
+            for l in os.listdir(path):
+                file_path = os.path.join(path,l)
+                if fileutils.is_file_path_hidden(file_path):
+                    continue
+                if os.path.isfile(file_path) and strutils.get_file_extension(l) in self.filters:
+                    if not doc.GetModel().FindFile(file_path):
+                        add_count += 1
+                        doc.GetCommandProcessor().Submit(projectcommand.ProjectAddFilesCommand(doc, [file_path], folderPath=folderPath))
+                elif os.path.isdir(file_path):
+                    if folderPath:
+                        child_folderPath = folderPath + "/" + l
+                    else:
+                        child_folderPath = l
+                    folder = self.GetView()._treeCtrl.FindFolder(child_folderPath)
+                    if not folder:
+                        #空文件夹下创建一个虚拟文件,防止空文件夹节点被删除
+                        doc.GetCommandProcessor().Submit(projectcommand.ProjectAddFolderCommand(self.GetView(), doc, child_folderPath))
+                        dummy_file = os.path.join(file_path,consts.DUMMY_NODE_TEXT)
+                        doc.GetCommandProcessor().Submit(projectcommand.ProjectAddFilesCommand(doc,[dummy_file],folderPath=folderPath))
+        except Exception as e:
+            messagebox.showerror(GetApp().GetAppName(),str(e))
+            return
+            
+        #检查节点文件或文件夹是否存在
+        for child in self.GetView()._treeCtrl.get_children(item):
+            item_path = self.GetItemPath(child)
+            print (item_path)
+            if not os.path.exists(item_path):
+                self.GetView()._treeCtrl.delete(child)
+        if 0 == add_count:
+            messagebox.showinfo(GetApp().GetAppName(),_("there is not files to add"))
+        else:
+            messagebox.showinfo(GetApp().GetAppName(),_("total add %d files to project")%add_count)
+        
             
     def OnProperties(self):
         projectproperty.PropertiesService().ShowPropertyDialog(self.tree.GetSingleSelectItem())

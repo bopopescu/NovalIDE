@@ -91,7 +91,7 @@ class NovalPluginProject(PythonProject):
 class PyPIProjectDocument(PythonProjectDocument):
 
     def __init__(self, model=None):
-        ProjectDocument.__init__(self,model)
+        PythonProjectDocument.__init__(self,model)
 
     @staticmethod
     def GetProjectModel():

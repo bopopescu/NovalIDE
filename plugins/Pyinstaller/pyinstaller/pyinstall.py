@@ -62,7 +62,6 @@ def GetToolPath(interpreter,name,is_user_site=False):
 def GetPyinstallerToolPath(interpreter):
     pyinstaller_tool_path = GetToolPath(interpreter,"pyinstaller")
     if not os.path.exists(pyinstaller_tool_path):
-        print (interpreter.GetUserLibPath(),"=========")
         pyinstaller_tool_path = GetToolPath(interpreter,"pyinstaller",is_user_site=True)
         if not os.path.exists(pyinstaller_tool_path): 
             raise RuntimeError(_("interpreter %s need to install package \"pyinstaller\"")%interpreter.Name)
@@ -188,7 +187,7 @@ class PyinstallerProject(PythonProject):
 class PyinstallerProjectDocument(PythonProjectDocument):
 
     def __init__(self, model=None):
-        ProjectDocument.__init__(self,model)
+        PythonProjectDocument.__init__(self,model)
         
     @staticmethod
     def GetProjectModel():
