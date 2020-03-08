@@ -1,0 +1,8 @@
+setup.py
+AutoCompletion.egg-info/PKG-INFO
+AutoCompletion.egg-info/SOURCES.txt
+AutoCompletion.egg-info/dependency_links.txt
+AutoCompletion.egg-info/entry_points.txt
+AutoCompletion.egg-info/not-zip-safe
+AutoCompletion.egg-info/top_level.txt
+autocompletion/__init__.py

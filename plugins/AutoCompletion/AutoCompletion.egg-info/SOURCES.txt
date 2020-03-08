@@ -1,0 +1,6 @@
+G:/work/project/Noval/plugins/AutoCompletion/AutoCompletion.egg-info/PKG-INFO
+G:/work/project/Noval/plugins/AutoCompletion/AutoCompletion.egg-info/SOURCES.txt
+G:/work/project/Noval/plugins/AutoCompletion/AutoCompletion.egg-info/dependency_links.txt
+G:/work/project/Noval/plugins/AutoCompletion/AutoCompletion.egg-info/entry_points.txt
+G:/work/project/Noval/plugins/AutoCompletion/AutoCompletion.egg-info/not-zip-safe
+G:/work/project/Noval/plugins/AutoCompletion/AutoCompletion.egg-info/top_level.txt
