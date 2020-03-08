@@ -1,4 +1,0 @@
-
-        [Noval.plugins]
-        AutoCompletion = autocompletion:AutoCompletionPlugin
-        
