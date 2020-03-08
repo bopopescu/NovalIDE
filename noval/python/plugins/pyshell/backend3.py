@@ -1096,6 +1096,8 @@ class VM:
                 while True:
                     cmd = self._vm._fetch_command()
                     if isinstance(cmd, InputSubmission):
+                        if cmd.data is None:
+                            raise KeyboardInterrupt("operation cancelled")
                         self._processed_symbol_count += len(cmd.data)
                         return cmd.data
                     elif isinstance(cmd, InlineCommand):

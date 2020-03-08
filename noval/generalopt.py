@@ -106,6 +106,11 @@ class GeneralOptionPanel(ui_utils.BaseConfigurationPanel):
         chkplugin_UpdateCheckBox = ttk.Checkbutton(self, text=_("Check plugin update at start up"),variable=self.check_plugin_update_var)
         chkplugin_UpdateCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
 
+        if GetApp().GetDebug():
+            self.auto_login_var = tk.IntVar(value=utils.profile_get_int("StartupAutoLogin", False))
+            autoLoginCheckBox = ttk.Checkbutton(self, text=_("Auto login at start up"),variable=self.auto_login_var)
+            autoLoginCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
+
         row = ttk.Frame(self)
         self.lang_list = GetLangList()
         values = [_(lang[2]) for lang in self.lang_list]
@@ -187,6 +192,8 @@ class GeneralOptionPanel(ui_utils.BaseConfigurationPanel):
         utils.profile_set(consts.ENABLE_MRU_KEY,self.enablemru_var.get())
         utils.profile_set("RedirectTkException",self.redirect_output_var.get())
         utils.profile_set("CheckPluginUpdate",self.check_plugin_update_var.get())
+        if GetApp().GetDebug():
+            utils.profile_set("StartupAutoLogin",self.auto_login_var.get())
         return True
 
     def GetIcon(self):

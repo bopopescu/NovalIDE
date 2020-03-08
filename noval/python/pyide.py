@@ -163,6 +163,10 @@ class PyIDEApplication(ide.IDEApplication):
         #添加Python语言仅有的首选项面板,在other面板之前
         preference.PreferenceManager().AddOptionsPanelClass(preference.INTERPRETER_OPTION_NAME,preference.GENERAL_ITEM_NAME,interpretergerneralconfiguration.InterpreterGeneralConfigurationPanel)
         preference.PreferenceManager().AddOptionsPanelClass(preference.INTERPRETER_OPTION_NAME,preference.INTERPRETER_CONFIGURATIONS_ITEM_NAME,interpreterconfigruation.InterpreterConfigurationPanel)
+        #不能用斜杆分割,斜杆作为数据默认分割符,显示时会替换|为/
+        preference.PreferenceManager().AddOptionsPanelClass("Debug|Run","Debug",pythondebugger.DebuggerOptionsPanel)
+        preference.PreferenceManager().AddOptionsPanelClass("Debug|Run","Output",pythondebugger.OutputOptionsPanel)
+        preference.PreferenceManager().AddOptionsPanelClass("Debug|Run","Run",pythondebugger.RunOptionsPanel)
         
         consts.DEFAULT_PLUGINS += ("noval.python.project.browser.ProjectViewLoader",)
         consts.DEFAULT_PLUGINS += ('noval.python.plugins.pyshell.pyshell.PyshellViewLoader',)

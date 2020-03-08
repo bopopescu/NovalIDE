@@ -1559,14 +1559,18 @@ class TextOptionsPanel(ui_utils.BaseConfigurationPanel):
         autoIndentBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=consts.DEFAUT_CONTRL_PAD_Y)
 
         sbox = ttk.LabelFrame(self, text=_("Smart tips"))
-        self.use_tips_var =  tk.BooleanVar(value=utils.profile_get_int("UseSmartTips", True))
-        ttk.Checkbutton(sbox,text=_('Use smart tips'),variable=self.use_tips_var).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
-        self.show_tips_var =  tk.BooleanVar(value=utils.profile_get_int("ShowDocumentTips", True))
+        self.use_autocompletion_var =  tk.BooleanVar(value=utils.profile_get_int("UseAutoCompletion", True))
+        ttk.Checkbutton(sbox,text=_('Auto-Completion'),variable=self.use_autocompletion_var,command=self.SetAutoCompletion).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
+        
+        self.use_enhanced_autocompletion_var =  tk.BooleanVar(value=utils.profile_get_int("UseEnhancedAutoCompletion", False))
+        self.enhanced_autocompletion_btn = ttk.Checkbutton(sbox,text=_('Use Enhanced Auto-Completion'),variable=self.use_enhanced_autocompletion_var)
+        self.enhanced_autocompletion_btn.pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X*2)
         
         self._tabCompletionVar = tk.IntVar(value=utils.profile_get_int("TextTabCompletion", True))
         tabCompletionCheckBox = ttk.Checkbutton(sbox,text=_("Allow code completion with tab-key"),variable=self._tabCompletionVar)
         tabCompletionCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
         
+        self.show_tips_var =  tk.BooleanVar(value=utils.profile_get_int("ShowDocumentTips", True))
         ttk.Checkbutton(sbox,text=_('Show tips when mouse hover over word'),variable=self.show_tips_var).pack(fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
         sbox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
         
@@ -1580,6 +1584,13 @@ class TextOptionsPanel(ui_utils.BaseConfigurationPanel):
 ##        self.eol_model_combox.SetSelection(idx)
 
         self.CheckViewRightEdge()
+        self.SetAutoCompletion()
+        
+    def SetAutoCompletion(self):
+        if self.use_autocompletion_var.get():
+            self.enhanced_autocompletion_btn['state'] = tk.NORMAL
+        else:
+            self.enhanced_autocompletion_btn['state'] = tk.DISABLED
         
     def CheckViewRightEdge(self):
         if self._viewRightEdgeVar.get():
@@ -1637,7 +1648,18 @@ class TextOptionsPanel(ui_utils.BaseConfigurationPanel):
         GetApp().MainFrame.GetNotebook().update_appearance()
         utils.profile_set("TextTabCompletion",self._tabCompletionVar.get())
         utils.profile_set("check_text_tabs",self.checkTabsVar.get())
-        utils.profile_set("UseSmartTips",self.use_tips_var.get())
+        utils.profile_set("UseAutoCompletion",self.use_autocompletion_var.get())
+        if self.use_autocompletion_var.get():
+            utils.profile_set("UseEnhancedAutoCompletion",self.use_enhanced_autocompletion_var.get())
+        else:
+            utils.profile_set("UseEnhancedAutoCompletion",False)
+        #使用自动完成增强功能时需要安装自动完成插件  
+        if self.use_autocompletion_var.get() and self.use_enhanced_autocompletion_var.get():
+            plugin_dist = GetApp().GetPluginManager().GetPluginDistro('AutoCompletion')
+            if plugin_dist is None:
+                ok = messagebox.askokcancel(GetApp().GetAppName(),_("You need to install 'AutoCompletion' plugin if you want to use enhanced auto-completion"))
+                if ok:
+                    GetApp().ShowPluginsDlg(['AutoCompletion'])
         utils.profile_set("ShowDocumentTips",self.show_tips_var.get())
         utils.profile_set("AutoIndent",self.autoIndentVar.get())
         return True

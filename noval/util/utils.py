@@ -33,7 +33,10 @@ def profile_set(key,value):
             GetApp().GetConfig().Write(key,repr(value))
 
 def update_statusbar(msg):
-    GetApp().MainFrame.PushStatusText(msg)
+    try:
+        GetApp().MainFrame.PushStatusText(msg)
+    except:
+        pass
     
 def get_main_frame():
     return GetApp().MainFrame
@@ -296,30 +299,31 @@ def compute_run_time(func):
 
     return wrapped_func
     
-def GetCommandOutput(command,read_error=False):
+def GetCommandOutput(command,read_error=False,cwd=None,encoding = get_default_encoding()):
     '''
         获取命令的输出信息,输出不能太长
     '''
     output = ''
     try:
-        p = subprocess.Popen(command,shell=True,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        p = subprocess.Popen(command,shell=True,cwd=cwd,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         if read_error:
             output = p.stderr.read()
         else:
             output = p.stdout.read()
         #PY3输出类型为bytes,需要转换为str类型
         if is_py3_plus():
-            output = str(output,encoding = get_default_encoding())
+            output = str(output,encoding = encoding)
     except Exception as e:
         get_logger().error("get command %s output error:%s",command,e)
         get_logger().exception("")
+        return ''
     return output
 
 def call_process(cmd,args):
     '''
         简单调用进程
     '''
-    if is_windows:
+    if is_windows():
         import win32api
         win32api.ShellExecute(0,"open",cmd," " + args + " " +extension.commandPostArgs , '', 1)
     else:

@@ -72,6 +72,8 @@ class ModuleLoader(object):
         if member is not None:
             if member[self.TYPE_KEY] == config.NODE_MODULE_TYPE:
                 child_module = self._manager.GetModule(member[self.FULL_NAME_KEY])
+                if child_module is None:
+                    return member_list
                 member_list = child_module.GetMemberList()
             else:
                 if self.CHILD_KEY in member:
@@ -223,6 +225,8 @@ class ModuleLoader(object):
                         return child_definition
                     else:
                         child_module = self._manager.GetModule(child[self.FULL_NAME_KEY])
+                        if child_module is None:
+                            return []
                         data = child_module.LoadMembers()
                         return child_module.FindChildDefinition(data[self.CHILD_KEY],names[1:])
         return []

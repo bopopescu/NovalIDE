@@ -12,6 +12,7 @@ import noval.constants as constants
 import noval.consts as consts
 import noval.util.strutils as strutils
 import noval.util.utils as utils
+import noval.preference as preference
 
 class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
     '''
@@ -19,6 +20,8 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
     '''
     TEXT_WRAP_ID = NewId()
     EXPORT_TEXT_ID = NewId()
+    CLEAR_OUTPUT_ID = NewId()
+    SETTINGS_ID = NewId()
   
     def __init__(self, parent,trace_log=False,**kwargs):
         '''
@@ -45,19 +48,19 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         
         self.tag_configure(
             "stdin",
-            foreground="Blue"
+            foreground=utils.profile_get("StandardInputColor","blue")
         )
         
         self.tag_configure(
             "stdout",
-            foreground="Black"
+            foreground=utils.profile_get("StandardOutputColor","black")
         )
         
         self.tag_configure(
             "stderr",
-            foreground="Red"
+            foreground=utils.profile_get("StandardErrorColor","red")
         )
-        self._is_wrap = tk.IntVar(value=False)
+        self._is_wrap = tk.IntVar(value=utils.profile_get_int("WordWrap",False))
         self.SetWrap()
         self.logs = {}
         self.inputText = ""
@@ -103,7 +106,14 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         self._popup_menu.Append(self.TEXT_WRAP_ID,_("Word Wrap"),kind=consts.CHECK_MENU_ITEM_KIND,handler=self.SetWrap,variable=self._is_wrap)
         self._popup_menu.AppendMenuItem(GetApp().Menubar.GetEditMenu().FindMenuItem(constants.ID_FIND),handler=self.DoFind,tester=None)
         self._popup_menu.Append(self.EXPORT_TEXT_ID, _("Export All"),handler=self.SaveAll)
-
+        self._popup_menu.Append(self.CLEAR_OUTPUT_ID, _("Clear"),handler=self.ClearOutput,img=GetApp().GetImage('icon_clear_console.png'))
+        self._popup_menu.Append(self.SETTINGS_ID, _("Settings"),handler=self.SetOutput)
+        
+    def SetOutput(self):
+        
+        preference_dlg = preference.PreferenceDialog(self.master,selection=preference.GetOptionName("Debug|Run","Output"))
+        preference_dlg.ShowModal()
+        
     def DoFind(self):
         finddialog.ShowFindReplaceDialog(self)
         
@@ -160,7 +170,7 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
             输出文本时输出框不要设置为readonly,在最后一次输出,即程序完成或者退出时才执行readonly
         '''
         self.set_read_only(False)
-        self.AddText(text)
+        self.AppendStdout(text)
         self.ScrolltoEnd()
         #rember last position
         self.InputStartPos = self.GetCurrentPos()
@@ -182,8 +192,9 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         else:
             self.logs[source] = [txt]
 
-    def AddText(self,txt):
-        self.insert(tk.END, txt)
+    def AppendStdout(self,txt):
+        tags = ("io",'stdout')
+        self.insert(tk.END, txt,tags=tags)
 
     def AppendErrorText(self, source,text,last_readonly=False):
         '''

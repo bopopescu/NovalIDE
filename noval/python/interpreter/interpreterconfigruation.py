@@ -538,12 +538,8 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
         
         is_pythonpath_changed = self.path_panel.CheckPythonPathList()
         self._configuration_changed = self._configuration_changed or is_pythonpath_changed
-        try:
-            is_environment_changed = self.environment_panel.CheckEnviron()
-            self._configuration_changed = self._configuration_changed or is_environment_changed
-        except PromptErrorException as e:
-            wx.MessageBox(e.msg,_("Environment Variable Error"),wx.OK|wx.ICON_ERROR,wx.GetApp().GetTopWindow())
-            return False
+        is_environment_changed = self.environment_panel.CheckEnviron()
+        self._configuration_changed = self._configuration_changed or is_environment_changed
         if self._configuration_changed:
             self.SaveInterpreterConfiguration()
             

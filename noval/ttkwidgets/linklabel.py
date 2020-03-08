@@ -40,7 +40,7 @@ class LinkLabel(ttk.Label):
         link_label_font = tk_font.Font(
             name="LinkLabelFont",
             family=GetApp().GetDefaultEditorFamily(),
-            underline=True,
+            underline=kwargs.get('underline',True),
         ),
         self._cursor = kwargs.pop("cursor", "hand2")
         self._link = kwargs.pop("link", "")

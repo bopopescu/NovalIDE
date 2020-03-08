@@ -43,8 +43,6 @@ class Completer(listboxframe.ListboxFrame):
         self.text.bind_class(
             self.text_priority_bindtag, "<Key>", self._on_text_keypress, True
         )
-        #单击文本框时,关闭智能提示
-        self.text.bind("<1>", self.on_text_click)
         # for cases when Listbox gets focus
         #按Esc建关闭智能提示
         self.listbox.bind("<Escape>", self._close)
@@ -53,13 +51,16 @@ class Completer(listboxframe.ListboxFrame):
         #双击listbox插入选中内容
         self.listbox.bind("<Double-Button-1>", self._insert_current_selection)
 
-    def _present_completions(self, completions,replaceLen):
+    def _present_completions(self, completions,replaceLen,auto_insert=True):
+        '''
+            auto_insert:当列表为1时是否自动插入文本
+        '''
         self.completions = completions
         self._typedlen = replaceLen
         # present
         if len(completions) == 0:
             self._close()
-        elif len(completions) == 1:
+        elif len(completions) == 1 and auto_insert:
             self._insert_completion(completions[0])  # insert the only completion
             self._close()
         else:
@@ -170,27 +171,34 @@ class Completer(listboxframe.ListboxFrame):
             return "break"
         else:
             #根据输入内容匹配列表框关键字
-            is_back_space = event.keysym == "BackSpace"
-            if event.char in self.text.DEFAULT_WORD_CHARS or is_back_space:
-                type_word = self.GetInputword()
-                if event.char in self.text.DEFAULT_WORD_CHARS:
-                    word = type_word + event.char
-                else:
-                    word = type_word[0:-1]
-                sel = self.GetInputSelection(word)
+            type_word = self.GetInputword()
+            if event.char in self.text.DEFAULT_WORD_CHARS:
+                hint = type_word + event.char
+            else:
+                hint = type_word[0:-1]
+            if event.char in self.text.DEFAULT_WORD_CHARS:
+                self.ShowHintCompletions(hint)
+            elif event.keysym == "BackSpace":
+                if type_word:
+                    self.ShowHintCompletions(hint)
                 #如果退格非asc字符,比如空格,换行符等,则关闭提示
-                if sel >=0 and (type_word or not is_back_space):
-                    self._typedlen = len(word)
-                    if len(self.listbox.curselection()) > 0:
-                        self.listbox.selection_clear(0, self.listbox.size() - 1)
-                    self.listbox.activate(sel)
-                    self.listbox.selection_set(sel)
-                    self.listbox.see(sel)
                 else:
-                    #未匹配到关键字则关闭提示
-                    self._typedlen = 0
-                    self._close()
+                    self.close()
         return None
+        
+    def ShowHintCompletions(self,hint):
+        sel = self.GetInputSelection(hint)
+        if sel >=0:
+            self._typedlen = len(hint)
+            if len(self.listbox.curselection()) > 0:
+                self.listbox.selection_clear(0, self.listbox.size() - 1)
+            self.listbox.activate(sel)
+            self.listbox.selection_set(sel)
+            self.listbox.see(sel)
+        else:
+            #未匹配到关键字则关闭提示
+            self._typedlen = 0
+            self._close()
 
     def GetInputword(self):
         line,col = self.text.GetCurrentPos()
@@ -237,10 +245,9 @@ class Completer(listboxframe.ListboxFrame):
         self.doc_label.place_forget()
         self.text.focus_set()
 
-    def on_text_click(self, event=None):
+    def close(self):
         if self._is_visible():
             self._close()
-
 
 class ShellCompleter(Completer):
     def _bind_result_event(self):

@@ -69,37 +69,8 @@ class CodeView(texteditor.TextView):
     #----------------------------------------------------------------------------
 
     def GetAutoCompleteHint(self):
-        """ Replace this method with Editor specific method """
-        line,col = self.GetCtrl().GetCurrentPos()
-        if line == 0 and col == 0:
-            return None, None
-        if self.GetCtrl().GetCharAt(line,col) == '.':
-            col = col - 1
-            hint = None
-        else:
-            hint = ''
-            
-        validLetters = self.GetCtrl().DEFAULT_WORD_CHARS + '.'
-        word = ''
-        while (True):
-            col = col - 1
-            if col < 0:
-                break
-            char = self.GetCtrl().GetCharAt(line,col)
-            if char not in validLetters:
-                break
-            word = char + word
-            
-        context = word
-        
-        if hint is not None:            
-            lastDot = word.rfind('.')
-            if lastDot != -1:
-                context = word[0:lastDot]
-                hint = word[lastDot+1:]
-            else:
-                hint = word
-        return context, hint
+        """获取自动完成的上下文以及提示内容"""
+        return '',''
 
     def GetAutoCompleteDefaultKeywords(self):
         """ Replace this method with Editor specific keywords """
@@ -214,6 +185,15 @@ class CodeCtrl(texteditor.SyntaxTextCtrl):
         self.autocompleter = None
         self.calltip = None
         self.tag_configure("before", syntax.SyntaxThemeManager().get_syntax_options_for_tag("active_focus"))
+        #单击文本框时,关闭自动完成和文档提示
+        self.bind("<1>", self.on_text_click)
+        self.bind("<KeyPress>", self.OnChar, True)
+        
+    def on_text_click(self, event=None):
+        #关闭文档提示信息
+        self.CallTipHide()
+        #关闭自动完成列表框
+        self.AutoCompHide()
 
     def CreatePopupMenu(self):
         texteditor.TextCtrl.CreatePopupMenu(self)
@@ -302,18 +282,54 @@ class CodeCtrl(texteditor.SyntaxTextCtrl):
         root.tk.call("set", "tcl_wordchars", u"[a-zA-Z0-9_À-ÖØ-öø-ÿĀ-ſƀ-ɏА-я]")
         root.tk.call("set", "tcl_nonwordchars", u"[^a-zA-Z0-9_À-ÖØ-öø-ÿĀ-ſƀ-ɏА-я]")
 
-    def AutoCompShow(self,replaceLen,chars):
+    def AutoCompShow(self,replaceLen,chars,auto_insert=True):
+        '''
+            显示自动完成列表框
+            chars:显示内容列表
+            replaceLen:已输入的内容长度,回车键插入填充内容时将不插入整个文本,而是只插入replaceLen长度以后的内容
+        '''
+        #列表内容为空时关闭已显示的自动完成列表框
+        if 0 == len(chars):
+            self.AutoCompHide()
+            return
         if self.autocompleter is None:
             self.autocompleter = autocomplete.Completer(self)
-        self.autocompleter._present_completions(chars,replaceLen)
+        self.autocompleter._present_completions(chars,replaceLen,auto_insert)
+        
+    def AutoCompHide(self):
+        '''
+            关闭自动完成列表框
+        '''
+        if self.autocompleter is None:
+            return
+        self.autocompleter.close()
         
     def AutoCompActive(self):
+        '''
+            自动完成列表框是否可见
+        '''
         if self.autocompleter is None:
             return False
         return self.autocompleter._is_visible()
 
     def OnChar(self,event):
-        return None
+        if event.char == "(":
+            self.insert("insert", '()')
+            return "break"
+        elif event.char == "'":
+            #插入成双的单引号
+            self.insert("insert", "'")
+        elif event.char == '"':
+            #插入成双的双引号
+            self.insert("insert", '"')
+        elif event.char == "[":
+            self.insert("insert", '[]')
+            return "break"
+        elif event.char == "{":
+            self.insert("insert", '{}')
+            return "break"
+        else:
+            return None
 
     def CallTipShow(self,pos,tip):
         '''
@@ -329,7 +345,7 @@ class CodeCtrl(texteditor.SyntaxTextCtrl):
         '''
         if self.calltip is None:
             return
-        self.calltip._close()
+        self.calltip.close()
         
     def ClearCurrentLineMarkers(self):
         '''

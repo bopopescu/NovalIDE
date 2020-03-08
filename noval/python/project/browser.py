@@ -55,12 +55,20 @@ class PythonProjectTreeCtrl(ProjectTreeCtrl):
 
 class ProjectBrowser(BaseProjectbrowser):
     """description of class"""
+    
+    def ProjectSelect(self,event):
+        BaseProjectbrowser.ProjectSelect(self,event)
+        if not self.IsLoading and utils.profile_get_int('CreateProjectIntellisenseDatabase',True):
+            self.Rundoc(self.GetCurrentProject())
         
     def RunSched(self):
-        sched.SchedulerRun(self.GetCurrentProject()).start()
+        self.Rundoc(self.GetCurrentProject())
         #1分钟扫描一次项目代码更新
         if utils.profile_get_int('CreateProjectIntellisenseDatabase',True):
             self.after(60000,self.RunSched)
+            
+    def Rundoc(self,doc):
+        sched.SchedulerRun(doc).start()
 
     def BuildFileList(self,file_list):
         '''put the package __init__.py to the first item'''

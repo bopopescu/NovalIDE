@@ -50,9 +50,15 @@ class CommonWatcher:
             treeNode = self.tree.insert(parent,"end",text=name)
         return self.UpdateSubTreeFromNode(node,name,treeNode)
         
-    def UpdateSubTreeFromNode(self, node, name, treeNode):
+    def GetNodeValueType(self,node):
+        value_type = node.getAttribute("type").replace('class ',"").strip("<").strip(">").strip("'")
+        if value_type == consts.DEBUG_UNKNOWN_VALUE_TYPE:
+            value_type = _(consts.DEBUG_UNKNOWN_VALUE_TYPE)
+        return value_type
+        
+    def UpdateSubTreeFromNode(self, node, name, treeNode,watch=False):
         '''
-            单步调试过程中,不断更新监视节点的值
+            单步调试过程中,不断更新监视节点的值,这个方法被监视面板和堆栈面板公用,需要通过watch参数来区分
         '''
         tree = self.tree
         children = node.childNodes
@@ -63,6 +69,8 @@ class CommonWatcher:
             self.SetPyData(treeNode, "Introspect")
         if node.getAttribute("value"):
             tree.set(treeNode, column='Value', value=self.StripOuterSingleQuotes(node.getAttribute("value")))
+            if watch:
+                tree.set(treeNode, value=self.GetNodeValueType(node), column='Type')
         for index in range(0, children.length):
             subNode = children.item(index)
             if self.HasChildren(subNode):
@@ -72,6 +80,8 @@ class CommonWatcher:
                 value = self.StripOuterSingleQuotes(subNode.getAttribute("value"))
                 n = tree.insert(treeNode, "end",text=name)
                 tree.set(n, value=value, column='Value')
+                if watch:
+                    tree.set(n, value=self.GetNodeValueType(subNode), column='Type')
                 intro = subNode.getAttribute('intro')
                 if intro == "True":
                     #这些节点只有展开时才能实时获取监视值
@@ -313,12 +323,14 @@ class WatchsPanel(treeviewframe.TreeViewFrame,CommonWatcher):
     ID_VIEW_WATCH = NewId()
     
     def __init__(self,parent):
-        treeviewframe.TreeViewFrame.__init__(self, parent,columns= ['Value','Hide'],displaycolumns=(0,))
+        treeviewframe.TreeViewFrame.__init__(self, parent,columns= ['Value','Type','Hide'],displaycolumns=(0,1,))
       
         self.tree.heading("#0", text=_("Name"), anchor=tk.W)
         self.tree.heading("Value", text=_("Value"), anchor=tk.W)
+        self.tree.heading("Type", text=_("Type"), anchor=tk.W)
             
         self.tree.column('#0',width=80,anchor='w')
+        self.tree.column('#2',width=40,anchor='w')
         self.tree["show"] = ("headings", "tree")
         
         self.error_bmp = imageutils.load_image("","python/debugger/error.png")
@@ -436,6 +448,7 @@ class WatchsPanel(treeviewframe.TreeViewFrame,CommonWatcher):
         for i,watch_data in enumerate(self.watchs):
             treeNode = self.tree.insert("","end",text=watch_data.Name,image=self.error_bmp)
             self.tree.set(treeNode, value=ERROR_NAME_VALUE, column='Value')
+            self.tree.set(treeNode, value=_(consts.DEBUG_UNKNOWN_VALUE_TYPE), column='Type')
 
     def UpdateWatchs(self):
         root_item = self.GetRootItem()
@@ -447,7 +460,7 @@ class WatchsPanel(treeviewframe.TreeViewFrame,CommonWatcher):
     def UpdateSubTreeFromNode(self, node, name, item):
         self.DeleteItemChild(item)
         self.tree.item(item,image=self.watch_expr_bmp)
-        return CommonWatcher.UpdateSubTreeFromNode(self,node,name,item)
+        return CommonWatcher.UpdateSubTreeFromNode(self,node,name,item,True)
         
     def GetRootItem(self):
         return self._root
@@ -459,6 +472,7 @@ class WatchsPanel(treeviewframe.TreeViewFrame,CommonWatcher):
             self.DeleteItemChild(item)
             self.tree.set(item, value=ERROR_NAME_VALUE, column='Value')
             self.tree.item(item, image=self.error_bmp)
+            self.tree.set(item, value=_(consts.DEBUG_UNKNOWN_VALUE_TYPE), column='Type')
             
     def DeleteItemChild(self,item):
         childs = self.tree.get_children(item)
@@ -470,6 +484,7 @@ class WatchsPanel(treeviewframe.TreeViewFrame,CommonWatcher):
         treeNode = self._treeCtrl.AppendItem(parent, watch_obj.Name)
         self._treeCtrl.SetItemImage(treeNode,self.ErrorIndex)
         self._treeCtrl.SetItemText(treeNode, ERROR_NAME_VALUE, 1)
+        self._treeCtrl.SetItemText(treeNode, _(consts.DEBUG_UNKNOWN_VALUE_TYPE), 2)
         self._debugger_service.AppendWatch(watch_obj)
         self.SetItemPyData(treeNode,watch_obj)
         

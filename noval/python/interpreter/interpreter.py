@@ -48,9 +48,6 @@ class PythonEnvironment(object):
     def SetEnviron(self,dct):
         self.environ = {}
         for key in dct:
-            #should avoid environment contain unicode string,such as u'xxx'
-            if len(key) != len(str(key)) or len(dct[key]) != len(str(dct[key])):
-                raise PromptErrorException(_("Environment variable contains invalid character"))
             self.environ[str(key)] = str(dct[key])
         #must use this environment variable to unbuffered binary stdout and stderr
         #environment value must be a string,not a digit,which linux os does not support a digit value

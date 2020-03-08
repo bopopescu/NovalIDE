@@ -1,6 +1,6 @@
 from noval import _,GetApp
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk,messagebox
 import os
 import noval.consts as consts
 from noval.util import utils
@@ -33,6 +33,12 @@ class ProjectReferrencePanel(ui_utils.BaseConfigurationPanel):
         
     def OnOK(self,optionsDialog):
         ref_project_names = self.GetReferenceProjects()
+        for ref_project_path in ref_project_names:
+            other_ref_pjs = GetApp().MainFrame.GetProjectView(generate_event=False).GetReferenceProjects(ref_project_path)
+            if self._current_project.GetFilename() in other_ref_pjs:
+                messagebox.showerror(GetApp().GetAppName(),_("reference project relation is cycled"),parent=self)
+                return False
+                
         utils.profile_set(self._current_project.GetKey() + "/ReferenceProjects",ref_project_names)
         return True
         

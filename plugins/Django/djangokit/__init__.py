@@ -9,6 +9,8 @@ import os
 from tkinter import ttk,messagebox
 import noval.consts as consts
 import noval.menu as tkmenu
+import tkinter.simpledialog as tkSimpleDialog
+import noval.project.command as command
 
 class DjangoPlugin(plugin.Plugin):
     """plugin description here..."""
@@ -31,19 +33,40 @@ class DjangoPlugin(plugin.Plugin):
         else:
             submenu = tkmenu.PopupMenu()
             menu.AppendMenu(NewId(),_("Django"),submenu)
-            submenu.Append(NewId(),_("Run in debugger"),handler=self.Run)
-            submenu.Append(NewId(),_("Run in terminal"),handler=None)
-            submenu.Append(NewId(),_("Configuration"),handler=None)
+            submenu.Append(NewId(),_("New app"),handler=self.NewApp)
+            submenu.Append(NewId(),_("Run in debugger"),handler=self.RunIndebugger)
+            submenu.Append(NewId(),_("Run in terminal"),handler=self.RunInterminal)
+            submenu.Append(NewId(),_("Configuration"),handler=self.Configuration)
             
+    def Configuration(self):
+        self.GetProjectFrame().OnProjectProperties(item_name="Django option")
+            
+    def NewApp(self):
+        app_name = tkSimpleDialog.askstring(
+            "New App",
+            "Provide app name",
+        )
+        if not app_name:
+            return
+        doc = self.GetProjectDocument()
+        doc.NewApp(app_name)
+
+    def RunIndebugger(self):
+        ''''''
+        self.GetProjectDocument().RunIndebugger()
+        
+    def RunInterminal(self):
+        ''''''
+        self.GetProjectDocument().RunInterminal()
+
+        
     def Convertto(self):
         find = False
         project_doc = self.GetProjectDocument()
-        start_up_dir = ''
         for root,dir,files in os.walk(project_doc.GetPath()):
             for filename in files:
                 if filename == "manage.py":
                     fullpath = os.path.join(root,filename)
-                    start_up_dir = root.replace(project_doc.GetPath(),"")
                     if messagebox.askyesno(GetApp().GetAppName(),"Does file '%s' is the startup file of your django project?"%fullpath):
                         item = self.GetProjectFrame().GetView()._treeCtrl.FindItem(fullpath)
                         self.GetProjectFrame().GetView()._treeCtrl.selection_set(item)
@@ -62,10 +85,7 @@ class DjangoPlugin(plugin.Plugin):
         self.GetProjectFrame().CloseProject()
         
         project_doc = self.GetProjectDocument()
-        configuration_list = []
-        project_doc.NewRunConfiguration(project_doc.GetModel().StartupFile,"run_web_server",'runserver 0.0.0.0:8000',project_doc.GetModel().interpreter.name,configuration_list)
-        project_doc.NewRunConfiguration(project_doc.GetModel().StartupFile,"debug_web_server",'runserver 127.0.0.1:${SERVER_PORT} --noreload',project_doc.GetModel().interpreter.name,configuration_list)
-        project_doc.SaveRunConfiguration(configuration_list,prefix=start_up_dir.lstrip(os.sep) + "|")
+        project_doc.SaveDebugRunConfiguration()
 
     def GetProjectFrame(self):
         return GetApp().MainFrame.GetView(consts.PROJECT_VIEW_NAME)

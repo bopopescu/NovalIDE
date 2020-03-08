@@ -69,17 +69,17 @@ class SyntaxColorer(syndata.BaseSyntaxcolorer):
         if value in ("def", "class"):
             m1 = self.idprog.match(chars, match_end)
             if m1:
-                a, b = m1.span(1)
+                id_match_start, id_match_end = m1.span(1)
                 self.text.tag_add("definition",
-                             head + "+%dc" % match_start,
-                             head + "+%dc" % match_end)
+                             head + "+%dc" % id_match_start,
+                             head + "+%dc" % id_match_end)
                     
 class ShellSyntaxColorer(SyntaxColorer):
     def __init__(self, text):
         SyntaxColorer.__init__(self,text)
         magic_command = matches_any("magic", [r"^%[^\n]*"])  # used only in shell
         self.prog = get_prog(make_pat()+ "|" + magic_command)
-		#shell刚开始输出欢迎信息,需要重置以避免被文本渲染
+        #shell刚开始输出欢迎信息,需要重置以避免被文本渲染
         self.reset = True
 
     def _config_tags(self):
@@ -90,7 +90,7 @@ class ShellSyntaxColorer(SyntaxColorer):
 
     def _update_coloring(self):
         #TOTO end标签有待优化
-		#重置文本以免被python语法渲染
+        #重置文本以免被python语法渲染
         if self.reset:
             self.text.tag_remove("TODO", "1.0", "end")
             self.text.tag_add("SYNC", "1.0", "end")
@@ -98,11 +98,7 @@ class ShellSyntaxColorer(SyntaxColorer):
         SyntaxColorer._update_coloring(self)
 
 class SyntaxLexer(syndata.BaseLexer):
-    """SyntaxData object for Python""" 
-    #---- Syntax Style Specs ----#
-    SYNTAX_ITEMS = [ 
-    ]
-                 
+    """SyntaxData object for Python"""       
     def __init__(self):
         lang_id = lang.RegisterNewLangId("ID_LANG_PYTHON")
         syndata.BaseLexer.__init__(self,lang_id)
@@ -110,10 +106,6 @@ class SyntaxLexer(syndata.BaseLexer):
     def GetKeywords(self):
         """Returns Specified Keywords List """
         return [PY_KW, PY_BIN]
-
-    def GetSyntaxSpec(self):
-        """Syntax Specifications """
-        return SYNTAX_ITEMS
         
     def GetDescription(self):
         return _('Python Script')

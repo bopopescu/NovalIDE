@@ -327,7 +327,9 @@ class PyinstallerProjectTemplate(PythonProjectTemplate):
         
     def GetPropertiPages(self):
         return PythonProjectTemplate.GetPropertiPages(self) + [("Application information","file","pyinstaller.pyinstall.PyinstallerBaseInformationPanel"),\
-                ("Spec option","file","pyinstaller.pyinstall.PyinstallSpecOptionPanel"),("Data files","file","pyinstaller.pyinstall.PyinstallDatafilesPanel")]
+                ("Spec option","file","pyinstaller.pyinstall.PyinstallSpecOptionPanel"),("Data files","file","pyinstaller.pyinstall.PyinstallDatafilesPanel"),\
+                ("Application information","root","pyinstaller.pyinstall.PyinstallerBaseInformationPanel"),\
+                ("Spec option","root","pyinstaller.pyinstall.PyinstallSpecOptionPanel"),("Data files","root","pyinstaller.pyinstall.PyinstallDatafilesPanel")]
 
 class PyinstallerProjectNameLocationPage(BasePythonProjectNameLocationPage):
 
@@ -384,6 +386,9 @@ class PyinstallerBaseInformationPanel(pyutils.PythonBaseConfigurationPanel):
         row_index = 0
         if item is None:
              root_file_key = "xxxxxxxx..."
+        elif item == self.GetCurrentProject().GetFirstView()._treeCtrl.GetRootItem():
+            self.item = self.GetCurrentProject().GetFirstView()._treeCtrl.FindItem(self.GetCurrentProject().GetModel().StartupFile.filePath)
+            root_file_key = self.GetCurrentProject().GetFileKey(self.GetCurrentProject().GetModel().StartupFile)
         else:
             main_module_file = self.GetItemFile(item)
             root_file_key = self.GetCurrentProject().GetFileKey(main_module_file)

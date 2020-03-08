@@ -30,10 +30,7 @@ class SyntaxColorer(syndata.BaseSyntaxcolorer):
         self.allow_colorizing = use_coloring
 
 class SyntaxLexer(syndata.BaseLexer):
-    """SyntaxData object for many C like languages""" 
-    
-    SYNTAX_ITEMS = [
-    ]
+    """SyntaxData object for many C like languages"""
     def __init__(self):
         syndata.BaseLexer.__init__(self,lang.ID_LANG_TXT)
         

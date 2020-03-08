@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2020-01-09 09:49+0800\n"
+"POT-Creation-Date: 2020-02-09 17:36+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,7 +42,7 @@ msgid "Syntax Themes:"
 msgstr ""
 
 #: G:/work/project/Noval/noval/colorfont.py:176
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:580
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:576
 msgid "Save configuration"
 msgstr ""
 
@@ -60,8 +60,8 @@ msgstr ""
 #: G:/work/project/Noval/noval/python/interpreter/environment.py:89
 #: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:444
 #: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:446
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1323
-#: G:/work/project/Noval/noval/ui_utils.py:444
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1331
+#: G:/work/project/Noval/noval/ui_utils.py:445
 msgid "Warning"
 msgstr ""
 
@@ -111,7 +111,7 @@ msgstr ""
 #: G:/work/project/Noval/noval/core.py:2318
 #: G:/work/project/Noval/noval/editor/text.py:159
 #: G:/work/project/Noval/noval/editor/text.py:256
-#: G:/work/project/Noval/noval/ide.py:793
+#: G:/work/project/Noval/noval/ide.py:844
 #: G:/work/project/Noval/noval/project/basebrowser.py:419
 #: G:/work/project/Noval/noval/project/document.py:199
 #: G:/work/project/Noval/noval/project/document.py:215
@@ -160,8 +160,8 @@ msgstr ""
 #: G:/work/project/Noval/noval/frame.py:185
 #: G:/work/project/Noval/noval/frame.py:187
 #: G:/work/project/Noval/noval/frame.py:275
-#: G:/work/project/Noval/noval/ide.py:512
-#: G:/work/project/Noval/noval/ide.py:955
+#: G:/work/project/Noval/noval/ide.py:548
+#: G:/work/project/Noval/noval/ide.py:1006
 #: G:/work/project/Noval/noval/menu.py:771
 #: G:/work/project/Noval/noval/python/plugins/outline.py:247
 msgid "&View"
@@ -234,124 +234,137 @@ msgstr ""
 msgid "Check plugin update at start up"
 msgstr ""
 
-#: G:/work/project/Noval/noval/generalopt.py:125
+#: G:/work/project/Noval/noval/generalopt.py:111
+msgid "Auto login at start up"
+msgstr ""
+
+#: G:/work/project/Noval/noval/generalopt.py:130
 msgid "Language"
 msgstr ""
 
-#: G:/work/project/Noval/noval/generalopt.py:129
+#: G:/work/project/Noval/noval/generalopt.py:134
 msgid "Enable MRU Menu"
 msgstr ""
 
-#: G:/work/project/Noval/noval/generalopt.py:137
+#: G:/work/project/Noval/noval/generalopt.py:142
 msgid "File History length in MRU Files"
 msgstr ""
 
-#: G:/work/project/Noval/noval/generalopt.py:143
+#: G:/work/project/Noval/noval/generalopt.py:148
 msgid "Redirect Application exception output to Message dialog"
 msgstr ""
 
-#: G:/work/project/Noval/noval/generalopt.py:174
+#: G:/work/project/Noval/noval/generalopt.py:179
 #, python-format
 msgid "MRU Length must not be greater than %d"
 msgstr ""
 
-#: G:/work/project/Noval/noval/generalopt.py:178
+#: G:/work/project/Noval/noval/generalopt.py:183
 msgid "MRU Length must not be less than 1"
 msgstr ""
 
-#: G:/work/project/Noval/noval/generalopt.py:184
+#: G:/work/project/Noval/noval/generalopt.py:189
 msgid "Language Options"
 msgstr ""
 
-#: G:/work/project/Noval/noval/generalopt.py:184
+#: G:/work/project/Noval/noval/generalopt.py:189
 msgid "Language changes will not appear until the application is restarted."
 msgstr ""
 
 #: G:/work/project/Noval/noval/editor/notebook.py:528
-#: G:/work/project/Noval/noval/ide.py:136
+#: G:/work/project/Noval/noval/ide.py:140
 #: G:/work/project/Noval/noval/project/baseviewer.py:1333
 #: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:163
 #: G:/work/project/Noval/noval/util/strutils.py:177
 msgid "All Files"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:141
+#: G:/work/project/Noval/noval/ide.py:145
 #: G:/work/project/Noval/noval/syntax/lexer/_txt.py:53
 msgid "Text Editor"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:149
+#: G:/work/project/Noval/noval/ide.py:153
 msgid "Image File"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:154
+#: G:/work/project/Noval/noval/ide.py:158
 msgid "Image Viewer"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:308
+#: G:/work/project/Noval/noval/ide.py:274
+msgid "Logout success"
+msgstr ""
+
+#: G:/work/project/Noval/noval/ide.py:333
+#, python-format
+msgid "-%s(Logged on)"
+msgstr ""
+
+#: G:/work/project/Noval/noval/ide.py:344
 #: G:/work/project/Noval/noval/project/baseviewer.py:503
 #: G:/work/project/Noval/noval/python/project/viewer.py:58
 msgid "Project File"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:313
+#: G:/work/project/Noval/noval/ide.py:349
 #: G:/work/project/Noval/noval/project/baseviewer.py:508
 #: G:/work/project/Noval/noval/python/project/viewer.py:63
 msgid "Project Viewer"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:494
-#: G:/work/project/Noval/noval/ide.py:495
-#: G:/work/project/Noval/noval/ide.py:496
-#: G:/work/project/Noval/noval/ide.py:497
-#: G:/work/project/Noval/noval/ide.py:499
-#: G:/work/project/Noval/noval/ide.py:500
-#: G:/work/project/Noval/noval/ide.py:502
-#: G:/work/project/Noval/noval/ide.py:505
+#: G:/work/project/Noval/noval/ide.py:530
+#: G:/work/project/Noval/noval/ide.py:531
+#: G:/work/project/Noval/noval/ide.py:532
+#: G:/work/project/Noval/noval/ide.py:533
+#: G:/work/project/Noval/noval/ide.py:535
+#: G:/work/project/Noval/noval/ide.py:536
+#: G:/work/project/Noval/noval/ide.py:538
+#: G:/work/project/Noval/noval/ide.py:541
 #: G:/work/project/Noval/noval/menu.py:765
 #: G:/work/project/Noval/noval/plugins/printer/__init__.py:90
-#: G:/work/project/Noval/noval/ui_utils.py:99
+#: G:/work/project/Noval/noval/ui_utils.py:100
 msgid "&File"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:494
+#: G:/work/project/Noval/noval/ide.py:530
 msgid "&New..."
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:495
+#: G:/work/project/Noval/noval/ide.py:531
 msgid "&Open..."
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:496
+#: G:/work/project/Noval/noval/ide.py:532
 msgid "&Close"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:497
+#: G:/work/project/Noval/noval/ide.py:533
 msgid "&Close A&ll"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:499
+#: G:/work/project/Noval/noval/ide.py:535
 msgid "&Save..."
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:500
+#: G:/work/project/Noval/noval/ide.py:536
 msgid "Save &As..."
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:502
+#: G:/work/project/Noval/noval/ide.py:538
 msgid "Save All"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:505
+#: G:/work/project/Noval/noval/ide.py:541
 msgid "E&xit"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:512
+#: G:/work/project/Noval/noval/ide.py:548
 msgid "Show FullScreen"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:514
-#: G:/work/project/Noval/noval/ide.py:515
+#: G:/work/project/Noval/noval/ide.py:550
+#: G:/work/project/Noval/noval/ide.py:551
 #: G:/work/project/Noval/noval/menu.py:782
 #: G:/work/project/Noval/noval/python/pyide.py:67
 #: G:/work/project/Noval/noval/python/pyide.py:69
@@ -366,15 +379,15 @@ msgstr ""
 msgid "&Run"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:514
+#: G:/work/project/Noval/noval/ide.py:550
 msgid "&Start Running"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:515
+#: G:/work/project/Noval/noval/ide.py:551
 msgid "&Start Debugging"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:516
+#: G:/work/project/Noval/noval/ide.py:552
 #: G:/work/project/Noval/noval/menu.py:785
 #: G:/work/project/Noval/noval/python/plugins/unittest.py:158
 #: G:/work/project/Noval/noval/python/pyide.py:59
@@ -382,40 +395,51 @@ msgstr ""
 msgid "&Tools"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:516
+#: G:/work/project/Noval/noval/ide.py:552
 msgid "&Open terminator..."
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:517
-#: G:/work/project/Noval/noval/ide.py:518
+#: G:/work/project/Noval/noval/ide.py:553
+#: G:/work/project/Noval/noval/ide.py:554
+#: G:/work/project/Noval/noval/ide.py:556
+#: G:/work/project/Noval/noval/ide.py:564
 #: G:/work/project/Noval/noval/menu.py:791
 #: G:/work/project/Noval/noval/plugins/about.py:113
-#: G:/work/project/Noval/noval/plugins/update.py:176
+#: G:/work/project/Noval/noval/plugins/update.py:163
 #: G:/work/project/Noval/noval/python/pyide.py:54
 #: G:/work/project/Noval/noval/python/pyide.py:57
 msgid "&Help"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:517
+#: G:/work/project/Noval/noval/ide.py:553
 msgid "&Visit NovalIDE Website"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:518
+#: G:/work/project/Noval/noval/ide.py:554
 msgid "Feedback"
 msgstr ""
 
 #: G:/work/project/Noval/noval/ide.py:556
+#: G:/work/project/Noval/noval/ide.py:569
+msgid "Register/Login"
+msgstr ""
+
+#: G:/work/project/Noval/noval/ide.py:567
+msgid "Logout"
+msgstr ""
+
+#: G:/work/project/Noval/noval/ide.py:607
 msgid "Logs"
 msgstr ""
 
 #: G:/work/project/Noval/noval/find/findresult.py:77
-#: G:/work/project/Noval/noval/ide.py:795
+#: G:/work/project/Noval/noval/ide.py:846
 #: G:/work/project/Noval/noval/python/debugger/output.py:38
 #, python-format
 msgid "The file '%s' doesn't exist and couldn't be opened!"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:957
+#: G:/work/project/Noval/noval/ide.py:1008
 msgid "&Application Look"
 msgstr ""
 
@@ -456,15 +480,15 @@ msgstr ""
 #: G:/work/project/Noval/noval/project/basebrowser.py:557
 #: G:/work/project/Noval/noval/project/basebrowser.py:558
 #: G:/work/project/Noval/noval/project/basebrowser.py:692
-#: G:/work/project/Noval/noval/python/project/browser.py:138
+#: G:/work/project/Noval/noval/python/project/browser.py:146
 msgid "&Project"
 msgstr ""
 
-#: G:/work/project/Noval/noval/plugin.py:695
+#: G:/work/project/Noval/noval/plugin.py:702
 msgid "No Description Available"
 msgstr ""
 
-#: G:/work/project/Noval/noval/plugin.py:696
+#: G:/work/project/Noval/noval/plugin.py:703
 msgid "Unknown"
 msgstr ""
 
@@ -472,19 +496,31 @@ msgstr ""
 msgid "Options"
 msgstr ""
 
-#: G:/work/project/Noval/noval/shell.py:1092
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:910
+#: G:/work/project/Noval/noval/python/plugins/pyshell/running_py.py:637
+#: G:/work/project/Noval/noval/shell.py:134
+msgid "Enter input"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:911
+#: G:/work/project/Noval/noval/python/plugins/pyshell/running_py.py:638
+#: G:/work/project/Noval/noval/shell.py:135
+msgid "Enter the input text:"
+msgstr ""
+
+#: G:/work/project/Noval/noval/shell.py:1105
 msgid "Clear shell"
 msgstr ""
 
-#: G:/work/project/Noval/noval/shell.py:1095
+#: G:/work/project/Noval/noval/shell.py:1108
 msgid "Stop/Restart backend"
 msgstr ""
 
-#: G:/work/project/Noval/noval/shell.py:1097
+#: G:/work/project/Noval/noval/shell.py:1110
 msgid "Paste Plus"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/project/sched.py:102
+#: G:/work/project/Noval/noval/python/project/sched.py:131
 #: G:/work/project/Noval/noval/statusbar.py:15
 #: G:/work/project/Noval/noval/statusbar.py:49
 msgid "Ready"
@@ -501,12 +537,14 @@ msgid "Col %i"
 msgstr ""
 
 #: G:/work/project/Noval/noval/plugins/about.py:102
-#: G:/work/project/Noval/noval/python/project/rundocument.py:274
+#: G:/work/project/Noval/noval/python/project/rundocument.py:277
 #: G:/work/project/Noval/noval/ttkwidgets/messagedialog.py:22
 #: G:/work/project/Noval/noval/ui_base.py:981
 msgid "&OK"
 msgstr ""
 
+#: G:/work/project/Noval/noval/auth/login.py:42
+#: G:/work/project/Noval/noval/auth/register.py:89
 #: G:/work/project/Noval/noval/find/find.py:211
 #: G:/work/project/Noval/noval/find/findindir.py:502
 #: G:/work/project/Noval/noval/find/findindir.py:651
@@ -524,10 +562,12 @@ msgstr ""
 msgid "Select a document type:"
 msgstr ""
 
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1207
 #: G:/work/project/Noval/noval/ui_common.py:330
 msgid "Yes"
 msgstr ""
 
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1209
 #: G:/work/project/Noval/noval/ui_common.py:332
 msgid "No"
 msgstr ""
@@ -624,92 +664,235 @@ msgstr ""
 msgid "Plugin"
 msgstr ""
 
+#: G:/work/project/Noval/noval/ui_constants.py:35
+msgid "Output"
+msgstr ""
+
 #: G:/work/project/Noval/noval/python/pyeditor.py:99
-#: G:/work/project/Noval/noval/python/pyide.py:331
-#: G:/work/project/Noval/noval/ui_utils.py:125
+#: G:/work/project/Noval/noval/python/pyide.py:335
+#: G:/work/project/Noval/noval/ui_utils.py:126
 msgid "Declare Encoding"
 msgstr ""
 
 #: G:/work/project/Noval/noval/python/project/pages/debugrun.py:432
-#: G:/work/project/Noval/noval/ui_utils.py:132
-#: G:/work/project/Noval/noval/ui_utils.py:375
+#: G:/work/project/Noval/noval/ui_utils.py:133
+#: G:/work/project/Noval/noval/ui_utils.py:376
 msgid "Edit"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:203
+#: G:/work/project/Noval/noval/ui_utils.py:204
 msgid "FullScreen Display"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:238
+#: G:/work/project/Noval/noval/ui_utils.py:239
 msgid "Close Show FullScreen"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:332
+#: G:/work/project/Noval/noval/ui_utils.py:333
 msgid ""
 "chardet version is less then 3.0.4,please use python pip to upgrade it "
 "first!"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:340
+#: G:/work/project/Noval/noval/ui_utils.py:341
 msgid "Key: "
 msgstr ""
 
 #: G:/work/project/Noval/noval/project/variables.py:111
-#: G:/work/project/Noval/noval/ui_utils.py:347
+#: G:/work/project/Noval/noval/ui_utils.py:348
 msgid "Value:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:363
+#: G:/work/project/Noval/noval/ui_utils.py:364
 msgid "Set user defined environment variable:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:373
+#: G:/work/project/Noval/noval/ui_utils.py:374
 msgid "New.."
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:377
+#: G:/work/project/Noval/noval/ui_utils.py:378
 msgid "Remove..."
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:416
+#: G:/work/project/Noval/noval/ui_utils.py:417
 msgid "New Environment Variable"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:429
+#: G:/work/project/Noval/noval/ui_utils.py:430
 msgid "Edit Environment Variable"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:444
+#: G:/work/project/Noval/noval/ui_utils.py:445
 msgid ""
 "Key name has already exist in environment variable,Do you wann't to "
 "overwrite it?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:508
+#: G:/work/project/Noval/noval/ui_utils.py:509
 msgid "This function does not implemented yet!"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:548
+#: G:/work/project/Noval/noval/auth/register.py:24
+#: G:/work/project/Noval/noval/ui_utils.py:549
 msgid "Username:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:553
+#: G:/work/project/Noval/noval/auth/login.py:28
+#: G:/work/project/Noval/noval/auth/register.py:39
+#: G:/work/project/Noval/noval/ui_utils.py:554
 msgid "Password:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:589
+#: G:/work/project/Noval/noval/ui_utils.py:590
 msgid "an external system editor"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:591
+#: G:/work/project/Noval/noval/ui_utils.py:592
 msgid "a internal text editor"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:592
+#: G:/work/project/Noval/noval/ui_utils.py:593
 #, python-format
 msgid ""
 "Your '*%s' file was opened in %s ,Better editor support is available on "
 "the Plugin Marketplace,Do you want to show it and install them?"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/login.py:76
+#: G:/work/project/Noval/noval/auth/register.py:76
+#: G:/work/project/Noval/noval/plugins/update.py:28
+#: G:/work/project/Noval/noval/plugins/update.py:105
+#: G:/work/project/Noval/noval/ui_utils.py:608
+msgid "could not connect to server"
+msgstr ""
+
+#: G:/work/project/Noval/noval/ui_utils.py:634
+#, python-format
+msgid "You need to pay %d ¥ to use '%s' plugin"
+msgstr ""
+
+#: G:/work/project/Noval/noval/ui_utils.py:640
+msgid ""
+"The plugin will disabled if you don't pay,Are you sure to disable this "
+"plugin?"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/forget.py:17
+msgid "Forget Password"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/forget.py:22
+#: G:/work/project/Noval/noval/auth/login.py:23
+#: G:/work/project/Noval/noval/auth/register.py:29
+msgid "Email:"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/forget.py:27
+msgid "Verification Code:"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/forget.py:32
+msgid "Send Verification Code"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/forget.py:34
+msgid "New Password:"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/forget.py:40
+msgid "Confirm New Password:"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/forget.py:47
+msgid "Reset Password"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/forget.py:56
+msgid "Send verification code success"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/forget.py:58
+msgid "Send verification code fail"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/forget.py:73
+msgid "Reset password success"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/login.py:19
+#: G:/work/project/Noval/noval/auth/register.py:84
+msgid "Login"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/login.py:37
+msgid "Forget password"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/login.py:40
+msgid "&Login"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/login.py:67
+msgid "Login success"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/login.py:74
+#, python-format
+msgid "Login fail:%s"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/register.py:19
+msgid "Register"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/register.py:34
+msgid "Phone:"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/register.py:45
+msgid "Confirm Password:"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/register.py:72
+msgid ""
+"An activate mail have been send to your mail addr,please check your mail "
+"and activate your \n"
+"account,if you don't receive the email,please register again later or "
+"contact the author!"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/register.py:74
+#, python-format
+msgid "Register fail:%s"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/register.py:87
+msgid "&Register"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/validation.py:18
+msgid "username could not empty"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/validation.py:24
+msgid "password could not empty"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/validation.py:30
+msgid "verification code could not empty"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/validation.py:36
+msgid "email could not empty"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/validation.py:43
+msgid "invalid email addr"
+msgstr ""
+
+#: G:/work/project/Noval/noval/auth/validation.py:49
+msgid "password is not match"
 msgstr ""
 
 #: G:/work/project/Noval/noval/editor/format.py:120
@@ -1005,15 +1188,25 @@ msgid "Smart tips"
 msgstr ""
 
 #: G:/work/project/Noval/noval/editor/text.py:1563
-msgid "Use smart tips"
+msgid "Auto-Completion"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1567
-msgid "Allow code completion with tab-key"
+#: G:/work/project/Noval/noval/editor/text.py:1566
+msgid "Use Enhanced Auto-Completion"
 msgstr ""
 
 #: G:/work/project/Noval/noval/editor/text.py:1570
+msgid "Allow code completion with tab-key"
+msgstr ""
+
+#: G:/work/project/Noval/noval/editor/text.py:1574
 msgid "Show tips when mouse hover over word"
+msgstr ""
+
+#: G:/work/project/Noval/noval/editor/text.py:1660
+msgid ""
+"You need to install 'AutoCompletion' plugin if you want to use enhanced "
+"auto-completion"
 msgstr ""
 
 #: G:/work/project/Noval/noval/find/find.py:103
@@ -1234,7 +1427,10 @@ msgstr ""
 #: G:/work/project/Noval/noval/plugins/fileview.py:337
 #: G:/work/project/Noval/noval/plugins/fileview.py:393
 #: G:/work/project/Noval/noval/project/baseviewer.py:285
-#: G:/work/project/Noval/noval/project/output.py:153
+#: G:/work/project/Noval/noval/project/output.py:163
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:865
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:341
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:345
 #: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:176
 #: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:180
 #: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:183
@@ -1243,14 +1439,13 @@ msgstr ""
 #: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:492
 #: G:/work/project/Noval/noval/python/interpreter/pythonpackages.py:700
 #: G:/work/project/Noval/noval/python/interpreter/pythonpath.py:40
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:978
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1089
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:973
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1095
 #: G:/work/project/Noval/noval/python/plugins/unittest.py:76
 #: G:/work/project/Noval/noval/python/project/pages/debugrun.py:172
 #: G:/work/project/Noval/noval/python/project/pages/debugrun.py:217
 #: G:/work/project/Noval/noval/python/project/pages/debugrun.py:297
 #: G:/work/project/Noval/noval/python/project/pages/debugrun.py:470
-#: G:/work/project/Noval/noval/python/project/rundocument.py:48
 #: G:/work/project/Noval/noval/python/pyeditor.py:155
 #: G:/work/project/Noval/noval/util/fileutils.py:636
 msgid "Error"
@@ -1272,46 +1467,41 @@ msgstr ""
 msgid "File View"
 msgstr ""
 
-#: G:/work/project/Noval/noval/plugins/update.py:27
-#: G:/work/project/Noval/noval/plugins/update.py:118
-msgid "could not connect to server"
-msgstr ""
-
-#: G:/work/project/Noval/noval/plugins/update.py:43
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1101
+#: G:/work/project/Noval/noval/plugins/update.py:44
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1107
 #, python-format
 msgid "Remove faile:%s fail"
 msgstr ""
 
-#: G:/work/project/Noval/noval/plugins/update.py:49
+#: G:/work/project/Noval/noval/plugins/update.py:50
 #, python-format
 msgid "Update plugin '%s' success"
 msgstr ""
 
-#: G:/work/project/Noval/noval/plugins/update.py:90
+#: G:/work/project/Noval/noval/plugins/update.py:77
 msgid "Plugin Update Available"
 msgstr ""
 
-#: G:/work/project/Noval/noval/plugins/update.py:90
+#: G:/work/project/Noval/noval/plugins/update.py:77
 #, python-format
 msgid ""
 "Plugin '%s' latest version '%s' is available,do you want to download and "
 "update it?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/plugins/update.py:96
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:936
+#: G:/work/project/Noval/noval/plugins/update.py:83
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:931
 #, python-format
 msgid ""
 "Plugin '%s' requires application version at least '%s',Do you want to "
 "update your application?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/plugins/update.py:126
+#: G:/work/project/Noval/noval/plugins/update.py:113
 msgid "Update Available"
 msgstr ""
 
-#: G:/work/project/Noval/noval/plugins/update.py:176
+#: G:/work/project/Noval/noval/plugins/update.py:163
 msgid "&Check for Updates"
 msgstr ""
 
@@ -1469,11 +1659,11 @@ msgstr ""
 msgid "&Refresh folder"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:822
+#: G:/work/project/Noval/noval/project/basebrowser.py:821
 msgid "there is not files to add"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:824
+#: G:/work/project/Noval/noval/project/basebrowser.py:823
 #, python-format
 msgid "total add %d files to project"
 msgstr ""
@@ -1686,7 +1876,7 @@ msgstr ""
 
 #: G:/work/project/Noval/noval/project/baseviewer.py:1539
 #: G:/work/project/Noval/noval/project/document.py:469
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1094
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1100
 msgid "Move File"
 msgstr ""
 
@@ -1857,7 +2047,7 @@ msgid "Prompt warning when project analyzer version is deprecated"
 msgstr ""
 
 #: G:/work/project/Noval/noval/project/baseviewer.py:2152
-msgid "Generate intellisense database of project automaticlly"
+msgid "Generate and Load intellisense database of project automaticlly"
 msgstr ""
 
 #: G:/work/project/Noval/noval/project/baseviewer.py:2155
@@ -1934,7 +2124,7 @@ msgid "Run Error"
 msgstr ""
 
 #: G:/work/project/Noval/noval/project/debugger.py:82
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:254
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:255
 msgid "Close Window"
 msgstr ""
 
@@ -1951,12 +2141,12 @@ msgid "Restart the Run."
 msgstr ""
 
 #: G:/work/project/Noval/noval/project/debugger.py:184
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:131
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:135
 msgid "Process Running.."
 msgstr ""
 
 #: G:/work/project/Noval/noval/project/debugger.py:184
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:131
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:135
 msgid "Process is still running,Do you want to kill the process and remove it?"
 msgstr ""
 
@@ -2157,12 +2347,23 @@ msgstr ""
 msgid "Load Template File Error.%s"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/output.py:103
+#: G:/work/project/Noval/noval/project/output.py:106
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:360
 msgid "Word Wrap"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/output.py:105
+#: G:/work/project/Noval/noval/project/output.py:108
 msgid "Export All"
+msgstr ""
+
+#: G:/work/project/Noval/noval/project/output.py:109
+#: G:/work/project/Noval/noval/python/debugger/inspectconsole.py:81
+#: G:/work/project/Noval/noval/python/debugger/watchs.py:395
+msgid "Clear"
+msgstr ""
+
+#: G:/work/project/Noval/noval/project/output.py:110
+msgid "Settings"
 msgstr ""
 
 #: G:/work/project/Noval/noval/project/property.py:62
@@ -2239,7 +2440,7 @@ msgid "Could not evaluate the expression variable of \"%s\""
 msgstr ""
 
 #: G:/work/project/Noval/noval/project/variables.py:104
-#: G:/work/project/Noval/noval/python/debugger/watchs.py:318
+#: G:/work/project/Noval/noval/python/debugger/watchs.py:328
 msgid "Name"
 msgstr ""
 
@@ -2286,45 +2487,45 @@ msgid ""
 "Click 'Yes' to insert,or 'No' to cancel?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/pyeditor.py:355
+#: G:/work/project/Noval/noval/python/pyeditor.py:412
 msgid "Find in Outline View"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/pyeditor.py:362
+#: G:/work/project/Noval/noval/python/pyeditor.py:419
 msgid "&Execute Code in interpreter"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/project/browser.py:106
-#: G:/work/project/Noval/noval/python/project/rundocument.py:228
-#: G:/work/project/Noval/noval/python/pyeditor.py:370
+#: G:/work/project/Noval/noval/python/project/browser.py:114
+#: G:/work/project/Noval/noval/python/project/rundocument.py:231
+#: G:/work/project/Noval/noval/python/pyeditor.py:427
 msgid "Debug"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/project/browser.py:110
-#: G:/work/project/Noval/noval/python/pyeditor.py:374
+#: G:/work/project/Noval/noval/python/project/browser.py:118
+#: G:/work/project/Noval/noval/python/pyeditor.py:431
 msgid "&Break into Debugger"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/debugger.py:238
-#: G:/work/project/Noval/noval/python/pyeditor.py:379
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:241
+#: G:/work/project/Noval/noval/python/pyeditor.py:436
 msgid "&Quick add Watch"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/debugger.py:239
-#: G:/work/project/Noval/noval/python/pyeditor.py:382
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:242
+#: G:/work/project/Noval/noval/python/pyeditor.py:439
 msgid "&Add Watch"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/pyeditor.py:385
+#: G:/work/project/Noval/noval/python/pyeditor.py:442
 msgid "&Add to Watch"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/pyeditor.py:714
+#: G:/work/project/Noval/noval/python/pyeditor.py:820
 #: G:/work/project/Noval/noval/python/pyide.py:56
 msgid "Goto Definition"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/pyeditor.py:714
+#: G:/work/project/Noval/noval/python/pyeditor.py:820
 msgid "Cannot find definition"
 msgstr ""
 
@@ -2390,28 +2591,28 @@ msgid "&Clear All Breakpoints"
 msgstr ""
 
 #: G:/work/project/Noval/noval/python/project/viewer.py:95
-#: G:/work/project/Noval/noval/python/pyide.py:206
+#: G:/work/project/Noval/noval/python/pyide.py:210
 msgid "Configuration"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/pyide.py:236
+#: G:/work/project/Noval/noval/python/pyide.py:240
 msgid "Please stop the debugger first!"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/pyide.py:269
+#: G:/work/project/Noval/noval/python/pyide.py:273
 msgid "No interpreter..."
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/pyide.py:278
+#: G:/work/project/Noval/noval/python/pyide.py:282
 msgid "Open Error"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/pyide.py:278
+#: G:/work/project/Noval/noval/python/pyide.py:282
 #, python-format
 msgid "%s"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/pyide.py:331
+#: G:/work/project/Noval/noval/python/pyide.py:335
 msgid ""
 "The Python Document have already declare coding,Do you want to overwrite "
 "it?"
@@ -2511,179 +2712,227 @@ msgstr ""
 msgid "Choose a starting directory:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:127
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:164
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:131
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:172
 msgid "Running"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:127
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:164
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:131
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:172
 msgid "Finished Running"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:249
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:250
 msgid "Starting debug..."
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:258
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:259
 msgid "Continue Execution"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:262
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:263
 msgid "Break into Debugger"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:265
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:266
 msgid "Stop Debugging"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:268
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:269
 msgid "Restart Debugging"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:273
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:274
 msgid "Step to next line"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:277
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:278
 msgid "Step in"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:280
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:281
 msgid "Stop at function return"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:286
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:763
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:287
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:771
 msgid "Quick Add a Watch"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:289
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:765
-#: G:/work/project/Noval/noval/python/debugger/stacksframe.py:61
-#: G:/work/project/Noval/noval/python/debugger/watchs.py:298
-#: G:/work/project/Noval/noval/python/debugger/watchs.py:301
-#: G:/work/project/Noval/noval/python/debugger/watchs.py:370
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:290
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:773
+#: G:/work/project/Noval/noval/python/debugger/stacksframe.py:64
+#: G:/work/project/Noval/noval/python/debugger/watchs.py:308
+#: G:/work/project/Noval/noval/python/debugger/watchs.py:311
+#: G:/work/project/Noval/noval/python/debugger/watchs.py:382
 msgid "Add a Watch"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:293
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:294
 msgid "Clear output pane"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:389
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:685
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:390
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:693
 msgid "Debugging"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:389
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:685
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:390
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:693
 msgid "Finished Debugging"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:411
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:412
 #: G:/work/project/Noval/noval/python/debugger/inspectconsole.py:31
-#: G:/work/project/Noval/noval/python/debugger/watchs.py:395
+#: G:/work/project/Noval/noval/python/debugger/watchs.py:407
 msgid "Debugger has been stopped."
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:468
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:469
 msgid "Debugger Running.."
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:468
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:469
 msgid "Debugger is still running,Do you want to kill the debugger and remove it?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:505
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:506
 msgid "Out of Ports"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:505
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:506
 msgid ""
 "Out of ports for debugging!  Please restart the application builder.\n"
-"If that does not work, check for and remove running instances of python."
+"If that does not work, check for your debugger host address or the "
+"debugger server is running."
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:676
-#: G:/work/project/Noval/noval/python/project/rundocument.py:291
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:684
+#: G:/work/project/Noval/noval/python/project/rundocument.py:294
 msgid "Debugger Running"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:676
-#: G:/work/project/Noval/noval/python/project/rundocument.py:291
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:684
+#: G:/work/project/Noval/noval/python/project/rundocument.py:294
 msgid "A debugger is already running. Please shut down the other debugger first."
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:895
-#: G:/work/project/Noval/noval/python/plugins/pyshell/running_py.py:631
-msgid "Enter input"
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:865
+#, python-format
+msgid "Connect Debugger server fail.%s"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:896
-#: G:/work/project/Noval/noval/python/plugins/pyshell/running_py.py:632
-msgid "Enter the input text:"
-msgstr ""
-
-#: G:/work/project/Noval/noval/python/debugger/commandui.py:1021
+#: G:/work/project/Noval/noval/python/debugger/commandui.py:1036
 msgid "Could not connect to break server!"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/debugger.py:112
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:115
 #: G:/work/project/Noval/noval/python/plugins/pip_gui.py:270
 msgid "Close"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/debugger.py:113
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:116
 msgid "Close All"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/debugger.py:134
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:137
 msgid "Interpreter not exists"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/debugger.py:139
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:142
 msgid "Check Syntax Ok!"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/debugger.py:233
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:236
 msgid "&Restart"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/debugger.py:234
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:237
 msgid "&Stop Debugging"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/debugger.py:235
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:238
 msgid "&Break"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/debugger.py:236
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:239
 msgid "&Continue"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/debugger.py:237
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:240
 msgid "&Step Out"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/debugger.py:264
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:267
+msgid "Disable edit code file When debugger is running"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:273
+msgid "Show memory value when mouse hover over word while debugger is running"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:278
 msgid "Local Host Name:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/debugger.py:266
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:285
 msgid "Port Range:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/debugger.py:267
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:286
 msgid "through to"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/debugger.py:301
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:305
+msgid "Reset Port List"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:330
+msgid "Invalid Starting Port Number"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:330
 msgid "The starting port is not valid. Please change the value and try again."
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/debugger.py:301
-msgid "Invalid Starting Port Number"
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:341
+msgid "Debugger start port is out of range"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:345
+msgid "Debugger end port is out of range"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:366
+msgid "Limit console line output"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:372
+msgid "Console line length(characters):"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:380
+msgid "NB!Large values may cause poor performance!"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:387
+msgid "Standard Output text color:"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:388
+msgid "Standard Error text color:"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:389
+msgid "Standard Input text color:"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:427
+msgid "Max line length must greater then 500"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/debugger/debugger.py:441
+msgid "Keep terminal window pause after Python process ends"
 msgstr ""
 
 #: G:/work/project/Noval/noval/python/debugger/executor.py:29
@@ -2706,77 +2955,76 @@ msgstr ""
 msgid "Execute"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/inspectconsole.py:81
-#: G:/work/project/Noval/noval/python/debugger/watchs.py:383
-msgid "Clear"
-msgstr ""
-
 #: G:/work/project/Noval/noval/python/debugger/inspectconsole.py:119
 msgid "Interact"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/stacksframe.py:25
+#: G:/work/project/Noval/noval/python/debugger/stacksframe.py:26
 msgid "Stack Frame:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/stacksframe.py:63
+#: G:/work/project/Noval/noval/python/debugger/stacksframe.py:66
 msgid "Add to Watch"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/stacksframe.py:65
-#: G:/work/project/Noval/noval/python/debugger/watchs.py:374
+#: G:/work/project/Noval/noval/python/debugger/stacksframe.py:68
+#: G:/work/project/Noval/noval/python/debugger/watchs.py:386
 msgid "View in Dialog"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/stacksframe.py:68
+#: G:/work/project/Noval/noval/python/debugger/stacksframe.py:71
 msgid "Send to Interact"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/stacksframe.py:206
+#: G:/work/project/Noval/noval/python/debugger/stacksframe.py:219
 msgid "Stack Frame"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/watchs.py:252
+#: G:/work/project/Noval/noval/python/debugger/watchs.py:262
 msgid "Watch Name:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/watchs.py:258
+#: G:/work/project/Noval/noval/python/debugger/watchs.py:268
 msgid "Expression:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/watchs.py:263
+#: G:/work/project/Noval/noval/python/debugger/watchs.py:273
 msgid "Watch Information"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/watchs.py:298
+#: G:/work/project/Noval/noval/python/debugger/watchs.py:308
 msgid "You must enter a name for the watch."
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/watchs.py:301
+#: G:/work/project/Noval/noval/python/debugger/watchs.py:311
 msgid "You must enter some code to run for the watch."
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/watchs.py:319
+#: G:/work/project/Noval/noval/python/debugger/watchs.py:329
 msgid "Value"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/watchs.py:377
+#: G:/work/project/Noval/noval/python/debugger/watchs.py:330
+msgid "Type"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/debugger/watchs.py:389
 msgid "Edit Watch"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/watchs.py:380
+#: G:/work/project/Noval/noval/python/debugger/watchs.py:392
 msgid "Copy Watch Expression"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/watchs.py:386
+#: G:/work/project/Noval/noval/python/debugger/watchs.py:398
 msgid "Clear All"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/watchs.py:419
+#: G:/work/project/Noval/noval/python/debugger/watchs.py:431
 msgid "Edit a Watch"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/debugger/watchs.py:504
+#: G:/work/project/Noval/noval/python/debugger/watchs.py:519
 msgid "Watchs"
 msgstr ""
 
@@ -2847,7 +3095,7 @@ msgid "Intellisence database location"
 msgstr ""
 
 #: G:/work/project/Noval/noval/python/interpreter/gerneralconfiguration.py:73
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1293
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1301
 #: G:/work/project/Noval/noval/python/project/pages/debugrun.py:235
 #: G:/work/project/Noval/noval/python/project/pages/pythoninterpreter.py:20
 #: G:/work/project/Noval/noval/python/project/viewer.py:84
@@ -2868,10 +3116,6 @@ msgstr ""
 
 #: G:/work/project/Noval/noval/python/interpreter/gerneralconfiguration.py:101
 msgid "Clear data"
-msgstr ""
-
-#: G:/work/project/Noval/noval/python/interpreter/interpreter.py:53
-msgid "Environment variable contains invalid character"
 msgstr ""
 
 #: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:51
@@ -3009,61 +3253,57 @@ msgid ""
 "remove this interpreter?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:545
-msgid "Environment Variable Error"
-msgstr ""
-
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:580
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:576
 msgid ""
 "Interpreter configuration has already been modified outside,Do you want "
 "to save?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:588
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:584
 msgid "Interpreter Smart Analyse"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:589
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:585
 msgid "Please wait a minute for end analysing"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:50
+#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:51
 msgid "Python interpreter not found"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:50
+#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:51
 msgid ""
 "No python interpreter found in your computer,will use the builtin "
 "interpreter instead"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:52
+#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:53
 msgid "No Interpreter"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:52
+#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:53
 msgid "Python interpreter not found!"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:69
-#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:81
+#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:70
+#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:82
 msgid "Choose Interpreter"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:69
+#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:70
 msgid "Please Choose Default Interpreter:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:81
+#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:82
 msgid "No default interpreter selected, application may not run normal!"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:375
+#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:384
 #, python-format
 msgid "%s is not a valid interpreter path"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:378
+#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:387
 msgid "interpreter have already exist"
 msgstr ""
 
@@ -3347,12 +3587,12 @@ msgstr ""
 msgid "Finish load Intellisence database"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/parser/intellisence.py:170
+#: G:/work/project/Noval/noval/python/parser/intellisence.py:162
 #, python-format
 msgid "Updating interpreter %s intellisence database"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/parser/intellisence.py:192
+#: G:/work/project/Noval/noval/python/parser/intellisence.py:185
 msgid "Intellisence database has been updated"
 msgstr ""
 
@@ -3547,312 +3787,352 @@ msgid "Install from Server\n"
 msgstr ""
 
 #: G:/work/project/Noval/noval/python/plugins/pip_gui.py:780
+msgid "If you don't know where to get the plugin from, "
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:781
+msgid "then most likely you'll want to search the plugin Package Index. "
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:782
 msgid ""
-"If you don't know where to get the plugin from, then most likely you'll "
-"want to search the plugin Package Index. Start by entering the name of "
-"the plugin in the search box above and pressing ENTER.\n"
+"Start by entering the name of the plugin in the search box above and "
+"pressing ENTER.\n"
 "\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:787
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1247
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:785
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1259
 msgid "Install from local file\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:788
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1240
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1248
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:786
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1252
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1260
 msgid "Click "
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:789
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1241
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1249
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:787
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1253
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1261
 msgid "here"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:792
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:790
 msgid ""
 " to locate and install the plugin file (usually with .egg extension).\n"
 "\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:797
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1257
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:795
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1269
 msgid "Upgrade or uninstall\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:799
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1259
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:797
 msgid ""
-"Start by selecting the package from the left.\n"
+"Start by selecting the plugin from the left.\n"
 "\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:803
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1263
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:801
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1275
 msgid "Target:  "
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:804
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:802
 msgid "User directory or System directory\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:808
-msgid ""
-"This dialog lists all available plugins, but allows upgrading and "
-"uninstalling only plugins from "
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:806
+msgid "This dialog lists all available plugins,"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:823
-msgid ""
-". New plugin will be also installed into this directory. Other locations "
-"must be managed by alternative means."
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:807
+msgid " but allows upgrading and uninstalling only plugins from "
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:839
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:819
+msgid ". New plugin will be also installed into the user directory default."
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:820
+msgid ""
+" if you want to install to other location,Please go to "
+"Tools->Options...->Misc->Plugin"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:833
 msgid "View all plugins"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:846
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:840
 msgid "All Plugins:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:852
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:847
 msgid "Available Plugins:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:858
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:853
 msgid "Could not find the plugin from Server.\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:861
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1312
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:856
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1320
 msgid ""
 "\n"
 "Please check your spelling!"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:861
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1312
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:856
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1320
 msgid ""
 "\n"
 "You need to enter "
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:862
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:857
 msgid "exact plugin name"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:869
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:864
 msgid "Searched Plugins:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1019
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1176
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1014
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1185
 #, python-format
 msgid "Install plugin '%s' success"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1021
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1016
 #, python-format
 msgid "Install plugin '%s' fail"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1052
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1047
 msgid "Uninstall success"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1059
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1136
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1185
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1189
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1054
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1145
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1194
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1198
 msgid "Enabled"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1060
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1185
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1187
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1055
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1194
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1196
 msgid "Disabled"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1094
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1057
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1059
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1194
+msgid "State"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1100
 msgid "Plugin file is already exist,Do you want to overwrite it?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1118
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1127
 msgid "This dialog is for managing Noval plug-ins and their dependencies.\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1119
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1128
 msgid ""
 "If you want to install packages for your own programs please install "
 "PipManager plugin and then choose 'Tools → Manage packages...'\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1123
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1132
 msgid ""
 "NB! You need to restart Noval after installing / upgrading / uninstalling"
 " a plug-in."
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1128
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1137
 msgid "Installed Plugins:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1128
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1137
 msgid "Find plugin from Server"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1128
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1137
 msgid "input the plugin name to search..."
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1131
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1140
 msgid "NovalIDE plug-ins"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1146
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1155
 msgid "Plugin Configuration Changed"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1146
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1155
 msgid "You must restart NovalIDE before your changes will take full affect."
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1158
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1167
 msgid "invalid plugin"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1185
-msgid "State"
-msgstr ""
-
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1195
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1203
 msgid "Installs"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1217
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1207
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1209
+msgid "Free"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1210
+msgid "Price"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1231
 msgid ""
 "With current interpreter you can only browse the packages here.\n"
 "Use 'Tools → Plugin Manager' for installing, upgrading or uninstalling.\n"
 "\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1224
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1238
 msgid "Packages' directory\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1229
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1243
 msgid "Install from PyPI\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1232
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1246
+msgid "If you don't know where to get the package from, "
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1247
+msgid "then most likely you'll want to search the Python Package Index. "
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1248
 msgid ""
-"If you don't know where to get the package from, then most likely you'll "
-"want to search the Python Package Index. Start by entering the name of "
-"the package in the search box above and pressing ENTER.\n"
+"Start by entering the name of the package in the search box above and "
+"pressing ENTER.\n"
 "\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1239
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1251
 msgid "Install from requirements file\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1244
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1256
 msgid ""
 " to locate requirements.txt file and install the packages specified in "
 "it.\n"
 "\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1252
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1264
 msgid ""
 " to locate and install the package file (usually with .whl, .tar.gz or "
 ".zip extension).\n"
 "\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1265
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1271
+msgid ""
+"Start by selecting the package from the left.\n"
+"\n"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1277
 msgid "virtual environment\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1267
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1279
 msgid "user site-packages\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1271
-msgid ""
-"This dialog lists all available packages, but allows upgrading and "
-"uninstalling only packages from "
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1283
+msgid "This dialog lists all available packages,"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1279
-msgid ""
-". New packages will be also installed into this directory. Other "
-"locations must be managed by alternative means."
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1284
+msgid " but allows upgrading and uninstalling only packages from "
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1300
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1289
+msgid ". New packages will be also installed into this directory."
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1290
+msgid " Other locations must be managed by alternative means."
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1308
 msgid "refresh"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1309
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1317
 msgid "Could not find the package from PyPI."
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1313
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1321
 msgid "exact package name"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1320
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1328
 msgid "Searched Packages:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1323
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1331
 #, python-format
 msgid "The resuls count is tool much!trim to %d"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1383
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1391
 msgid "NB!\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1479
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1492
 msgid "Really uninstall?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1480
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1493
 msgid ""
 "Package '{}' is required for installing and uninstalling other packages.\n"
 "\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1483
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1496
 msgid "Are you sure you want to uninstall it?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1635
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1648
 msgid "Default plugin directory:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1638
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1651
 msgid "User directory"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1639
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1652
 msgid "System directory"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1642
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1655
 msgid "Enable plugin after install it"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1669
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1682
 msgid "Plugin Manager"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1671
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1684
 msgid "fetching plugin from server..."
 msgstr ""
 
@@ -3868,27 +4148,27 @@ msgstr ""
 msgid "&UnitTest"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pyshell/pyshell.py:543
+#: G:/work/project/Noval/noval/python/plugins/pyshell/pyshell.py:555
 msgid "The same interpreter which runs Thonny (default)"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pyshell/pyshell.py:549
+#: G:/work/project/Noval/noval/python/plugins/pyshell/pyshell.py:561
 msgid "Alternative Python 3 interpreter or virtual environment"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pyshell/pyshell.py:556
+#: G:/work/project/Noval/noval/python/plugins/pyshell/pyshell.py:568
 msgid "Shell"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/project/browser.py:113
+#: G:/work/project/Noval/noval/python/project/browser.py:121
 msgid "Set as Startup File..."
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/project/browser.py:138
+#: G:/work/project/Noval/noval/python/project/browser.py:146
 msgid "New Package Folder"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/project/browser.py:169
+#: G:/work/project/Noval/noval/python/project/browser.py:177
 msgid "Project Browser"
 msgstr ""
 
@@ -3897,49 +4177,51 @@ msgstr ""
 msgid "Interpreter \"%s\" is not exist"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/project/rundocument.py:116
+#: G:/work/project/Noval/noval/python/project/rundocument.py:119
 msgid "Debugger can only run in active project"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/project/rundocument.py:191
+#: G:/work/project/Noval/noval/python/project/rundocument.py:194
 msgid "Running: "
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/project/rundocument.py:224
+#: G:/work/project/Noval/noval/python/project/rundocument.py:227
 msgid "Run File"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/project/rundocument.py:225
+#: G:/work/project/Noval/noval/python/project/rundocument.py:228
 msgid "Run"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/project/rundocument.py:227
+#: G:/work/project/Noval/noval/python/project/rundocument.py:230
 msgid "Debug File"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/project/rundocument.py:274
+#: G:/work/project/Noval/noval/python/project/rundocument.py:277
 msgid "Set Parameter And Environment"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/project/rundocument.py:295
+#: G:/work/project/Noval/noval/python/project/rundocument.py:298
 msgid "Builtin interpreter does not support this operation."
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/project/rundocument.py:299
+#: G:/work/project/Noval/noval/python/project/rundocument.py:302
 msgid "No debugger host set. Please go to Tools->Options->Debugger and set one."
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/project/rundocument.py:299
+#: G:/work/project/Noval/noval/python/project/rundocument.py:302
 msgid "No Debugger Host"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/project/rundocument.py:303
+#: G:/work/project/Noval/noval/python/project/rundocument.py:306
 msgid "Debugging: "
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/project/sched.py:95
+#: G:/work/project/Noval/noval/python/project/sched.py:108
+#: G:/work/project/Noval/noval/python/project/sched.py:117
+#: G:/work/project/Noval/noval/python/project/sched.py:124
 #, python-format
-msgid "updating intellisense of file %s"
+msgid "updating intellisense of file \"%s\""
 msgstr ""
 
 #: G:/work/project/Noval/noval/python/project/viewer.py:119
@@ -4101,6 +4383,10 @@ msgstr ""
 #: G:/work/project/Noval/noval/python/project/pages/projectreferrence.py:18
 #, python-format
 msgid "The reference projects for '%s':"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/project/pages/projectreferrence.py:39
+msgid "reference project relation is cycled"
 msgstr ""
 
 #: G:/work/project/Noval/noval/python/project/pages/pythoninterpreter.py:32

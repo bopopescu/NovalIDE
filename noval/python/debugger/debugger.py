@@ -18,9 +18,12 @@ from noval.project.debugger import *
 import traceback
 import noval.python.debugger.watchs as watchs
 import pickle
-from noval.python.debugger.commandui import BaseDebuggerUI,ShowBreakdebugViews,RunCommandUI
+from noval.python.debugger.commandui import BaseDebuggerUI,ShowBreakdebugViews,PythonDebuggerUI,RunCommandUI
 import noval.menu as tkmenu
 from noval.python.debugger.executor import PythonExecutor
+import noval.ui_utils as ui_utils
+import noval.misc as misc
+from tkinter import colorchooser
 
 class PythonDebugger(Debugger):
     #----------------------------------------------------------------------------
@@ -254,65 +257,192 @@ class PythonDebugger(Debugger):
     def AddWatchText(self,text,quick_watch=False):
         self._debugger_ui.framesTab.AddWatchExpression(text,text,quick_watch)
 
-class DebuggerOptionsPanel(ttk.Frame):
+class DebuggerOptionsPanel(ui_utils.CommonOptionPanel):
+    def __init__(self, parent):
+        ui_utils.CommonOptionPanel.__init__(self, parent)
+        row = ttk.Frame(self.panel)
+        
+        row = ttk.Frame(self.panel)
+        self.disable_edit_var = tk.IntVar(value=utils.profile_get_int("DISABLE_EDIT_WHEN_DEBUGGER_RUNNING",True))
+        disable_edit_chk_box = ttk.Checkbutton(row,text = _("Disable edit code file When debugger is running"),variable=self.disable_edit_var)
+        disable_edit_chk_box.pack(fill="x")
+        row.pack(fill=tk.X)
 
+        row = ttk.Frame(self.panel)
+        self.show_tip_value_var = tk.IntVar(value=utils.profile_get_int("ShowTipValueWhenDebugging",True))
+        show_tip_value_chk_box = ttk.Checkbutton(row,text = _("Show memory value when mouse hover over word while debugger is running"),variable=self.show_tip_value_var)
+        show_tip_value_chk_box.pack(fill="x")
+        row.pack(fill=tk.X,pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+        
+        row = ttk.Frame(self.panel)
+        localHostStaticText = ttk.Label(row,text = _("Local Host Name:"))
+        self.host_name_var = tk.StringVar(value=utils.profile_get("DebuggerHostName", consts.DEFAULT_HOST))
+        LocalHostTextCtrl = ttk.Entry(row, textvariable=self.host_name_var)
+        localHostStaticText.pack(fill="x",side=tk.LEFT)
+        LocalHostTextCtrl.pack(fill="x",side=tk.LEFT)
+        row.pack(fill=tk.X)
+        row = ttk.Frame(self.panel)
+        portNumberStaticText = ttk.Label(row,text= _("Port Range:"))
+        dashStaticText = ttk.Label(row, text=_("through to"))
+        startingPort = utils.profile_get_int("DebuggerStartingPort", consts.DEFAULT_PORT)
+        self.start_port_var = tk.IntVar(value=startingPort)
+        
+        #验证端口文本控件输入是否合法,端口只能输入数字
+        validate_cmd = self.register(self.validatePortInput)
+        self._PortNumberTextCtrl = ttk.Entry(row, validate = 'key', validatecommand = (validate_cmd, '%P'),textvariable=self.start_port_var)
+        self.start_port_var.trace("w", self.MinPortChange)
+        
+        self.end_port_var = tk.IntVar(value=startingPort + consts.PORT_COUNT)
+        self._EndPortNumberTextCtrl = ttk.Entry(row,validate = 'key', validatecommand = (validate_cmd, '%P'), textvariable=self.end_port_var)
+        self._EndPortNumberTextCtrl['state'] = tk.DISABLED
+        
+        portNumberStaticText.pack(fill="x",side=tk.LEFT)
+        self._PortNumberTextCtrl.pack(fill="x",side=tk.LEFT)
+        
+        dashStaticText.pack(fill="x",side=tk.LEFT)
+        self._EndPortNumberTextCtrl.pack(fill="x",side=tk.LEFT)
+        row.pack(fill=tk.X,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        self._flushPortsButton = ttk.Button(self.panel,text=_("Reset Port List"),command=self.FlushPorts)
+        self._flushPortsButton.pack(anchor=tk.W,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
 
-    def __init__(self, parent, id):
-        wx.Panel.__init__(self, parent, id)
-        SPACE = 10
-        config = wx.ConfigBase_Get()
-        localHostStaticText = wx.StaticText(self, -1, _("Local Host Name:"))
-        self._LocalHostTextCtrl = wx.TextCtrl(self, -1, config.Read("DebuggerHostName", DEFAULT_HOST), size = (150, -1))
-        portNumberStaticText = wx.StaticText(self, -1, _("Port Range:"))
-        dashStaticText = wx.StaticText(self, -1, _("through to"))
-        startingPort=config.ReadInt("DebuggerStartingPort", DEFAULT_PORT)
-        self._PortNumberTextCtrl = wx.lib.intctrl.IntCtrl(self, -1, startingPort, size = (50, -1))
-        self._PortNumberTextCtrl.SetMin(1)#What are real values?
-        self._PortNumberTextCtrl.SetMax(65514) #What are real values?
-        self.Bind(wx.lib.intctrl.EVT_INT, self.MinPortChange, self._PortNumberTextCtrl)
-
-        self._EndPortNumberTextCtrl = wx.lib.intctrl.IntCtrl(self, -1, startingPort + PORT_COUNT, size = (50, -1))
-        self._EndPortNumberTextCtrl.SetMin(22)#What are real values?
-        self._EndPortNumberTextCtrl.SetMax(65535)#What are real values?
-        self._EndPortNumberTextCtrl.Enable( False )
-        debuggerPanelBorderSizer = wx.BoxSizer(wx.VERTICAL)
-        debuggerPanelSizer = wx.GridBagSizer(hgap = 5, vgap = 5)
-        debuggerPanelSizer.Add( localHostStaticText, (0,0), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT)
-        debuggerPanelSizer.Add( self._LocalHostTextCtrl, (0,1), (1,3), flag=wx.EXPAND|wx.ALIGN_CENTER)
-        debuggerPanelSizer.Add( portNumberStaticText, (1,0), flag=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL)
-        debuggerPanelSizer.Add( self._PortNumberTextCtrl, (1,1), flag=wx.ALIGN_CENTER)
-        debuggerPanelSizer.Add( dashStaticText, (1,2), flag=wx.ALIGN_CENTER)
-        debuggerPanelSizer.Add( self._EndPortNumberTextCtrl, (1,3), flag=wx.ALIGN_CENTER)
-        FLUSH_PORTS_ID = wx.NewId()
-        self._flushPortsButton = wx.Button(self, FLUSH_PORTS_ID, "Reset Port List")
-        wx.EVT_BUTTON(parent, FLUSH_PORTS_ID, self.FlushPorts)
-        debuggerPanelSizer.Add(self._flushPortsButton, (2,2), (1,2), flag=wx.ALIGN_RIGHT)
-
-        debuggerPanelBorderSizer.Add(debuggerPanelSizer, 0, wx.ALL, SPACE)
-        self.SetSizer(debuggerPanelBorderSizer)
-        self.Layout()
-
-    def FlushPorts(self, event):
-        if self._PortNumberTextCtrl.IsInBounds():
-            config = wx.ConfigBase_Get()
-            config.WriteInt("DebuggerStartingPort", self._PortNumberTextCtrl.GetValue())
+    def validatePortInput(self,contents):
+        if not contents.isdigit():
+            self._PortNumberTextCtrl.bell()
+            self._EndPortNumberTextCtrl.bell()
+            return False
+        return True
+        
+    def IsStartportInbounds(self):
+        if self.start_port_var.get() >= 1 and self.start_port_var.get() <= 65514:
+            return  True
+        return False
+        
+    def IsEndportInbounds(self):
+        if self.end_port_var.get() >= 22 and self.end_port_var.get() <= 65535:
+            return  True
+        return False
+        
+    def FlushPorts(self):
+        if self.IsStartportInbounds():
+            utils.profile_set("DebuggerStartingPort", self.start_port_var.get())
             PythonDebuggerUI.NewPortRange()
         else:
-            wx.MessageBox(_("The starting port is not valid. Please change the value and try again."), _("Invalid Starting Port Number"))
+            messagebox.showinfo( _("Invalid Starting Port Number"),_("The starting port is not valid. Please change the value and try again."))
 
-    def MinPortChange(self, event):
-        self._EndPortNumberTextCtrl.Enable( True )
-        self._EndPortNumberTextCtrl.SetValue( self._PortNumberTextCtrl.GetValue() + PORT_COUNT)
-        self._EndPortNumberTextCtrl.Enable( False )
+    def MinPortChange(self, *args):
+        self._EndPortNumberTextCtrl['state'] = tk.NORMAL
+        self.end_port_var.set( self.start_port_var.get() + consts.PORT_COUNT)
+        self._EndPortNumberTextCtrl['state'] = tk.DISABLED
 
     def OnOK(self, optionsDialog):
-        config = wx.ConfigBase_Get()
-        config.Write("DebuggerHostName", self._LocalHostTextCtrl.GetValue())
-        if self._PortNumberTextCtrl.IsInBounds():
-            config.WriteInt("DebuggerStartingPort", self._PortNumberTextCtrl.GetValue())
+        if self.IsStartportInbounds():
+            utils.profile_set("DebuggerStartingPort", self.start_port_var.get())
+        else:
+            messagebox.showerror(_("Error"),_("Debugger start port is out of range"))
+            return False
+            
+        if not self.IsEndportInbounds():
+            messagebox.showerror(_("Error"),_("Debugger end port is out of range"))
+            return False
+        utils.profile_set("DebuggerHostName", self.host_name_var.get())
+        utils.profile_set("DISABLE_EDIT_WHEN_DEBUGGER_RUNNING", self.disable_edit_var.get())
+        utils.profile_set("ShowTipValueWhenDebugging", self.show_tip_value_var.get())
         return True
 
     def GetIcon(self):
         return getContinueIcon()
 
+class OutputOptionsPanel(ui_utils.CommonOptionPanel):
+    def __init__(self, parent):
+        ui_utils.CommonOptionPanel.__init__(self, parent)
+        row = ttk.Frame(self.panel)
+        self.wrap_var = tk.IntVar(value=utils.profile_get_int("WordWrap",False))
+        wrap_chk_box = ttk.Checkbutton(row,text = _("Word Wrap"),variable=self.wrap_var)
+        wrap_chk_box.pack(fill="x",side=tk.LEFT)
+        row.pack(fill=tk.X)
+        
+        row = ttk.Frame(self.panel)
+        self.limit_line_var = tk.IntVar(value=utils.profile_get_int("LimitLineLength",True))
+        limit_chk_box = ttk.Checkbutton(row,text = _("Limit console line output"),variable=self.limit_line_var,\
+                                command=self.CheckLimitLine)
+        limit_chk_box.pack(fill="x",side=tk.LEFT)
+        row.pack(fill=tk.X)
+        
+        row = ttk.Frame(self.panel)
+        consoleLineStaticText = ttk.Label(row,text= _("Console line length(characters):"))
+   
+        limit_line_length = utils.profile_get_int("MaxLineLength", 1000)
+        self.max_line_length_var = tk.IntVar(value=limit_line_length)
+        
+        #验证控件输入是否合法,只能输入数字
+        validate_cmd = self.register(self.validateLimitLineInput)
+        self.limit_line_lengthTextCtrl = ttk.Entry(row, validate = 'key', validatecommand = (validate_cmd, '%P'),textvariable=self.max_line_length_var)
+        misc.create_tooltip(self.limit_line_lengthTextCtrl,_('NB!Large values may cause poor performance!'))
+        consoleLineStaticText.pack(fill="x",side=tk.LEFT)
+        self.limit_line_lengthTextCtrl.pack(fill="x",side=tk.LEFT)
+        
+        row.pack(fill=tk.X)
+        self.CheckLimitLine()
+        palette = ttk.Frame(self.panel)
+        self.output_label = self.CreateColorPalette(_("Standard Output text color:"),utils.profile_get("StandardOutputColor","black"),palette,0)
+        self.error_label = self.CreateColorPalette(_("Standard Error text color:"),utils.profile_get("StandardErrorColor","red"),palette,1)
+        self.input_label = self.CreateColorPalette(_("Standard Input text color:"),utils.profile_get("StandardInputColor","blue"),palette,2)
+        palette.pack(fill="x",pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y,0))
+        
+    def CreateColorPalette(self,text,color,palette,row):
+        ttk.Label(palette,text=text).grid(row=row,column=0,sticky="nsew")
+        f = ttk.Frame(palette, borderwidth=1, relief="raised",style="palette.TFrame")
+        l = tk.Label(f, background=color, width=2, height=1)
+        l.bind("<1>", self._palette_cmd)
+        f.bind("<FocusOut>", lambda e: e.widget.configure(relief="raised"))
+        l.pack()
+        f.grid(row=row,column=1,sticky="nsew",padx=(consts.DEFAUT_HALF_CONTRL_PAD_X,0),pady=(consts.DEFAUT_HALF_CONTRL_PAD_Y,0))
+        return l
+        
+    def _palette_cmd(self, event):
+        label = event.widget
+        label.master.focus_set()
+        label.master.configure(relief="sunken")
+        rgb,result = colorchooser.askcolor(color=label.cget("background"),parent=self)
+        if rgb and result:
+            label.configure(background=result)
+        label.master.configure(relief="raised")
+        
+    def CheckLimitLine(self):
+        if not self.limit_line_var.get():
+            self.limit_line_lengthTextCtrl['state'] = tk.DISABLED
+        else:
+            self.limit_line_lengthTextCtrl['state'] = tk.NORMAL
+
+    def validateLimitLineInput(self,contents):
+        if not contents.isdigit():
+            self.limit_line_lengthTextCtrl.bell()
+            return False
+        return True
+        
+    def OnOK(self, optionsDialog):
+        utils.profile_set('WordWrap',self.wrap_var.get())
+        utils.profile_set('LimitLineLength',self.limit_line_var.get())
+        if self.max_line_length_var.get() < 500:
+            messagebox.showinfo(GetApp().GetAppName(),_('Max line length must greater then 500'))
+            return False
+        utils.profile_set('MaxLineLength',self.max_line_length_var.get())
+        
+        utils.profile_set('StandardOutputColor',self.output_label.cget("background"))
+        utils.profile_set('StandardErrorColor',self.error_label.cget("background"))
+        utils.profile_set('StandardInputColor',self.input_label.cget("background"))
+        return True
+        
+class RunOptionsPanel(ui_utils.CommonOptionPanel):
+    def __init__(self, parent):
+        ui_utils.CommonOptionPanel.__init__(self, parent)
+        row = ttk.Frame(self.panel)
+        self.keep_pause_var = tk.IntVar(value=utils.profile_get_int("KeepTerminalPause",True))
+        keep_pause_chk_box = ttk.Checkbutton(row,text = _("Keep terminal window pause after Python process ends"),variable=self.keep_pause_var)
+        keep_pause_chk_box.pack(fill="x",side=tk.LEFT)
+        row.pack(fill=tk.X)
+        
+    def OnOK(self, optionsDialog):
+        utils.profile_set('KeepTerminalPause',self.keep_pause_var.get())
+        return True
 

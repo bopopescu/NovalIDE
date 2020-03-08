@@ -286,7 +286,6 @@
   <noval:file filePath="./noval/project/basemodel.py" logicalFolder="noval/project"/>
   <noval:file filePath="./noval/python/project/browser.py" logicalFolder="noval/python/project"/>
   <noval:file filePath="./noval/python/project/model.py" logicalFolder="noval/python/project"/>
-  <noval:file filePath="./noval/python/project/parser.py" logicalFolder="noval/python/project"/>
   <noval:file filePath="./noval/python/project/__init__.py" logicalFolder="noval/python/project"/>
   <noval:file filePath="./noval/project/baseviewer.py" logicalFolder="noval/project"/>
   <noval:file filePath="./noval/python/project/viewer.py" logicalFolder="noval/python/project"/>
@@ -385,7 +384,6 @@
   <noval:file filePath="./tests/test_file_parser.py" logicalFolder="tests"/>
   <noval:file filePath="./noval/autocomplete.py" logicalFolder="noval"/>
   <noval:file filePath="./requirements.txt"/>
-  <noval:file filePath="./noval/python/run.py" logicalFolder="noval/python"/>
   <noval:file filePath="./MANIFEST.in"/>
   <noval:file filePath="./noval/calltip.py" logicalFolder="noval"/>
   <noval:file filePath="./noval/python/debugger/stacksframe.py" logicalFolder="noval/python/debugger"/>
@@ -453,6 +451,12 @@
   <noval:file filePath="./noval/bmp_source/python/plugins.png" logicalFolder="noval/bmp_source/python"/>
   <noval:file filePath="./noval/bmp_source/python/python_nature.png" logicalFolder="noval/bmp_source/python"/>
   <noval:file filePath="./noval/bmp_source/python/welcome.png" logicalFolder="noval/bmp_source/python"/>
+  <noval:file filePath="./noval/auth/__init__.py" logicalFolder="noval/auth"/>
+  <noval:file filePath="./noval/auth/register.py" logicalFolder="noval/auth"/>
+  <noval:file filePath="./noval/auth/login.py" logicalFolder="noval/auth"/>
+  <noval:file filePath="./noval/auth/forget.py" logicalFolder="noval/auth"/>
+  <noval:file filePath="./noval/plugins/adv.py" logicalFolder="noval/plugins"/>
+  <noval:file filePath="./noval/auth/validation.py" logicalFolder="noval/auth"/>
   <noval:_runinfo>
     <noval:DocumentTemplate>pyinstaller.pyinstall.PyinstallerProjectTemplate</noval:DocumentTemplate>
     <noval:StartupFile>NovalIDE.py</noval:StartupFile>

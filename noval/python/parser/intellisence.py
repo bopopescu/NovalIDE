@@ -132,14 +132,6 @@ class IntellisenceManager(object):
         self.WriteUnfinishFiles()
         self._is_stopped = True
         
-##        if self._process_obj != None and self.IsRunning:
-##            for pid in utils.get_child_pids(self._process_obj.pid):
-##                os.kill(pid,signal.SIGTERM)
-##            self._process_obj.kill()
-##            
-
-           # self._process_obj.terminate(gracePeriod=2.0)
-            #os.killpg( p.pid,signal.SIGUSR1)
     @property
     def IsRunning(self):
         return self._is_running
@@ -157,7 +149,7 @@ class IntellisenceManager(object):
         script_path = os.path.join(utils.get_app_path(), "noval", "python","parser", "run.py")
         database_version = config.DATABASE_VERSION
         cmd_list = [interpreter.Path,script_path,self.GetInterpreterDatabasePath(interpreter),\
-                    database_version]
+                    database_version,str(int(GetApp().GetDebug()))]
         if apputils.is_windows():
             startupinfo = subprocess.STARTUPINFO()
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -175,7 +167,8 @@ class IntellisenceManager(object):
         self.Wait(interpreter,progress_dlg,load_data_end)
         
     def Wait(self,interpreter,progress_dlg,load_data_end):
-        t = threading.Thread(target=self.WaitProcessEnd,args=(interpreter,progress_dlg,load_data_end))
+        #设置为后台线程,防止退出程序时卡死
+        t = threading.Thread(target=self.WaitProcessEnd,daemon=True,args=(interpreter,progress_dlg,load_data_end))
         t.start()
         
     def WaitProcessEnd(self,interpreter,progress_dlg,load_data_end):

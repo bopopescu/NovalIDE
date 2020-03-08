@@ -16,6 +16,7 @@ import noval.util.downutils as downutils
 import noval.python.parser.utils as parserutils
 import threading
 import shutil
+import noval.ui_utils as ui_utils
 
 def check_plugins(ignore_error = False):
     '''
@@ -68,23 +69,9 @@ def check_plugins(ignore_error = False):
         else:
             log = utils.get_logger().info
         log("plugin %s version is %s latest verison is %s",plugin_name,plugin_version,plugin_data['version'])
-        #插件是否免费
-        if not free:
-            #查询用户是否付款
-            api_addr = '%s/member/get_payment' % (UserDataDb.HOST_SERVER_ADDR)
-            data = urlutils.RequestData(api_addr,arg = {'member_id':user_id,'plugin_id':plugin_id})
-            if not data:
-                pop_error(data)
-                return
-            payed = int(data['payed'])
-            #如果服务器插件收费而且用户未付费,强制检查更新
-            if not payed:
-                check_plugin_update = True
-            price = plugin_data.get('price',None)
-            #用户没有付款而且插件存在价格,弹出付款二维码
-            if not payed and price:
-                #这里弹出付款二维码
-                pass
+        #如果服务器插件收费而且用户未付费,强制检查更新
+        if GetApp().GetPluginManager().GetPlugin(plugin_name).IsEnabled() and not ui_utils.check_plugin_free_or_payed(plugin_name,installed=True):
+            check_plugin_update = True
         #比较安装插件版本和服务器上的插件版本是否一致
         if check_plugin_update  and parserutils.CompareCommonVersion(plugin_data['version'],plugin_version):
             ret = messagebox.askyesno(_("Plugin Update Available"),_("Plugin '%s' latest version '%s' is available,do you want to download and update it?")%(plugin_name,plugin_data['version']))
@@ -182,6 +169,7 @@ class UpdateLoader(plugin.Plugin):
     def CheckUpdateAfter(self,ignore_error=True,check_plugin_update=True):
         #tkinter不支持多线程,要想试用多线程必须设置函数或方法为after模式
         t = threading.Thread(target=self.CheckUpdate,args=(ignore_error,check_plugin_update))
+        #设置为后台线程,防止退出程序时卡死
         t.daemon = True
         t.start()
 

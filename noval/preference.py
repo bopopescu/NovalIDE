@@ -63,13 +63,13 @@ class PreferenceDialog(ui_base.CommonModaldialog):
         category_list = PreferenceManager().GetOptionList()
         category_dct = PreferenceManager().GetOptionPageClasses()
         for category in category_list:
-            item = self.tree.insert("", "end", text=_(category))
+            item = self.tree.insert("", "end", text=_(category.replace("|","/")))
             optionsPanelClasses = category_dct[category]
             for name,optionsPanelClass in optionsPanelClasses:
                 option_panel = optionsPanelClass(page_frame)
                 option_name = GetOptionName(category , name)
                 self._optionsPanels[option_name] = option_panel
-                child = self.tree.insert(item,"end",text=_(name),values=(option_name,))
+                child = self.tree.insert(item,"end",text=_(name.replace("|","/")),values=(option_name,))
                 #select the default item,to avoid select no item
                 if name == GENERAL_ITEM_NAME and category == ENVIRONMENT_OPTION_NAME:
                     self.select_item(child)

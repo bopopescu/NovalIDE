@@ -470,7 +470,11 @@ class DocTabbedParentFrame(ttk.Frame):
         self._last_perspective = {}
         for view_name in views:
             visibility_flag = views[view_name]['visibility_flag']
-            instance = self._views[view_name]["instance"]
+            view = self._views[view_name]
+            if 'instance' not in view:
+                utils.get_logger().error('view %s is not valid view instance when save perspective',view_name)
+                continue
+            instance = view["instance"]
             d = {}
             d['visible'] = visibility_flag.get()
             location = {}
@@ -516,6 +520,9 @@ class DocTabbedParentFrame(ttk.Frame):
         self._is_maximized = False
         
     def ToogleMaximizeView(self):
+        #全屏时不能最大化以及回复编辑器窗口
+        if GetApp().IsFullScreen:
+            return
         if self._is_maximized:
             self.RestoreEditor()
         else:

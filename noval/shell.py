@@ -14,8 +14,9 @@ import re
 from noval.util.command import *
 import noval.menu as tkmenu
 import noval.constants as constants
-
-
+import tkinter.simpledialog as tkSimpleDialog
+# NB! Don't add parens without refactoring split procedure!
+OUTPUT_SPLIT_REGEX = re.compile(r"(\x1B\[[0-?]*[ -/]*[@-~]|[\a\b\r])")
 SIMPLE_URL_SPLIT_REGEX = re.compile(
     r"(https?:\/\/[\w\/.:\-\?#=%]+[\w\/]|data:image\/[a-z]+;base64,[A-Za-z0-9\/=]+)"
 )
@@ -120,8 +121,20 @@ class BaseShellText(CodeCtrl):
         self.focus_set()
         self.mark_set("insert", "end")
         self.tag_remove("sel", "1.0", tk.END)
-        self._try_submit_input()  # try to use leftovers from previous request
+        #self._try_submit_input()  # try to use leftovers from previous request
+        submittable_text = self.get_input_text()
+        #输入不能用空字符串,如果为空用换行符代替
+        if submittable_text == "":
+            submittable_text = "\n"
+        self._submit_input(submittable_text)
         self.see("end")
+
+    def get_input_text(self):
+        text = tkSimpleDialog.askstring(
+            _("Enter input"),
+            _("Enter the input text:")
+        )
+        return text
 
     def _handle_program_output(self, msg):
         # Discard but not too often, as toplevel response will discard anyway
@@ -218,7 +231,7 @@ class BaseShellText(CodeCtrl):
             self._queued_io_events.append((data, stream_name))
 
     def _update_visible_io(self, target_num_visible_chars):
-        current_num_visible_chars = sum(map(lambda x: len(x[0]), self._applied_io_events))
+        current_num_visible_chars = sum(map(lambda x: 0 if x[0] is None else len(x[0]), self._applied_io_events))
 
         if (
             target_num_visible_chars is not None
@@ -1067,7 +1080,7 @@ class BaseShellText(CodeCtrl):
         return result
 
     def update_tty_mode(self):
-        self.tty_mode = utils.profile_get_int("shell.tty_mode",0)
+        self.tty_mode = utils.profile_get_int("shell.tty_mode",True)
 
     def set_syntax_options(self, syntax_options):
         super().set_syntax_options(syntax_options)

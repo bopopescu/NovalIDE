@@ -616,11 +616,17 @@ class BuiltinCPythonProxy(BackendProxy):
         self.prompt()
         try:
             reader.input = self.get_input_text()
+            #取消时模拟键盘中断
+            if reader.input is None:
+                raise KeyboardInterrupt("operation cancelled")
             input = reader.input
         finally:
             reader.input = ''
             reader.isreading = False
         input = str(input)  # In case of Unicode.
+        #输入不能返回空字符串,如果为空用换行符代替
+        if input == "":
+            return  "\n"
         return input
         
     def prompt(self):

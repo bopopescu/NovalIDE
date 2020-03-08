@@ -23,7 +23,8 @@ class SchedulerRun(threading.Thread):
     UPDATE_FILE = 'update.time'
     
     def __init__(self,proj):
-        threading.Thread.__init__(self)
+        #设置为后台线程,防止退出程序时卡死
+        threading.Thread.__init__(self,daemon=True)
         self._is_parsing = False
         self.last_update_time = -1
         self._proj = proj
@@ -35,6 +36,11 @@ class SchedulerRun(threading.Thread):
         doc = self._proj
         if doc != None:
             self.parse_project(doc)
+            #解析引用项目的代码
+            ref_project_docs = GetApp().MainFrame.GetProjectView(generate_event=False).GetReferenceProjects(doc,ensure_open=True)
+            for document in ref_project_docs:
+                self.parse_project(document)
+
             
     def get_last_update(self,intellisence_data_path):
         update_file_path = os.path.join(intellisence_data_path,self.UPDATE_FILE)
@@ -47,8 +53,12 @@ class SchedulerRun(threading.Thread):
         time_stamp = 0
         update_file_path = os.path.join(intellisence_data_path,self.UPDATE_FILE)
         with open(update_file_path,"rb") as f:
-            date_list = pickle.load(f)
-            time_stamp = date_list[0]
+            try:
+                date_list = pickle.load(f)
+                time_stamp = date_list[0]
+            except:
+                utils.get_logger().error('load update time file %s fail',update_file_path)
+                return 0
         return time_stamp
                 
     def update_last_time(self,intellisence_data_path):
@@ -60,6 +70,7 @@ class SchedulerRun(threading.Thread):
             pickle.dump(tm,f)
 
     def parse_project(self,doc):
+        doc.UpdateData([])
         assert (doc != None)
         project = doc.GetModel()
         project_location = os.path.dirname(doc.GetFilename())
@@ -87,12 +98,30 @@ class SchedulerRun(threading.Thread):
                     mk_time = os.path.getmtime(filepath)
                     relative_module_name,is_package = parserutils.get_relative_name(filepath,path_list)
                     all_modules.append(relative_module_name)
-                    if mk_time > self.last_update_time or not os.path.exists(os.path.join(intellisence_data_path,relative_module_name + ".$members")):
-                        utils.get_logger().debug('update file %s ,relative module name is %s',filepath,parserutils.get_relative_name(filepath,path_list)[0])
+                    is_new_module = not os.path.exists(os.path.join(intellisence_data_path,relative_module_name + ".$members"))
+                    if mk_time > self.last_update_time or is_new_module:
+                        utils.get_logger().debug('update file %s ,relative module name is %s,%d,%d,%d',filepath,relative_module_name,mk_time, self.last_update_time , is_new_module)
                         file_parser = fileparser.FiledumpParser(filepath,intellisence_data_path,force_update=True,path_list=path_list)
-                        file_parser.Dump()
-                        update_file_count += 1
-                        utils.update_statusbar(_("updating intellisense of file %s")%filepath)
+                        suc = file_parser.Dump()
+                        if suc:
+                            update_file_count += 1
+                            utils.update_statusbar(_("updating intellisense of file \"%s\"")%filepath)
+                            #新添加包则需要更新父包的子模块信息
+                            if is_package or is_new_module:
+                                parent_dir = os.path.dirname(os.path.dirname(file_dir))
+                                if fileparser.is_package_dir(parent_dir):
+                                    parent_package_file_path = os.path.join(parent_dir,"__init__.py")
+                                    file_parser = fileparser.FiledumpParser(parent_package_file_path,intellisence_data_path,force_update=True,path_list=path_list)
+                                    file_parser.Dump()
+                                    update_file_count += 1
+                                    utils.update_statusbar(_("updating intellisense of file \"%s\"")%parent_package_file_path)
+                                #新添加子模块则需要更新包的子模块信息
+                                elif is_new_module and is_package_dir:
+                                    package_file_path = os.path.join(file_dir,"__init__.py")
+                                    file_parser = fileparser.FiledumpParser(package_file_path,intellisence_data_path,force_update=True,path_list=path_list)
+                                    file_parser.Dump()
+                                    update_file_count += 1
+                                    utils.update_statusbar(_("updating intellisense of file \"%s\"")%package_file_path)
             else:
                 utils.get_logger().debug('%s is not valid parse dir',file_dir)
         utils.get_logger().debug('total update %d files',update_file_count)
@@ -107,14 +136,16 @@ class ProjectDatabaseLoader:
         self.import_list = []
         self.doc = doc
         
-    def LoadMetadata(self,all_modules):
+    def LoadMetadata(self,all_modules=[]):
         meta_data_path = self.doc.GetDataPath()
+        if not os.path.exists(meta_data_path):
+            return
         self.module_dicts.clear()
         name_sets = set()
         for filepath in glob.glob(os.path.join(meta_data_path,"*.$members")):
             filename = os.path.basename(filepath)
             module_name = '.'.join(filename.split(".")[0:-1])
-            if not module_name in all_modules:
+            if all_modules and not module_name in all_modules:
                 utils.get_logger().warn('module name %s is not exist again,remove members file....',module_name)
                 fileutils.safe_remove(filepath)
                 fileutils.safe_remove(os.path.join(meta_data_path,module_name+".$memberlist"))
@@ -125,6 +156,14 @@ class ProjectDatabaseLoader:
                      member_list=os.path.join(meta_data_path,name +".$memberlist"))
             self.module_dicts[name] = d
         self.LoadImportList()
+        
+        #加载引用项目的智能提示数据
+        ref_project_docs = GetApp().MainFrame.GetProjectView(generate_event=False).GetReferenceProjects(self.doc,ensure_open=True)
+        for document in ref_project_docs:
+            ref_doc = ProjectDatabaseLoader(document)
+            ref_doc.LoadMetadata()
+            self.module_dicts.update(ref_doc.module_dicts)
+            self.import_list.append(ref_doc.import_list)
 
     def LoadImportList(self):
         self.import_list = []

@@ -40,16 +40,19 @@ import noval.ttkwidgets.messagedialog as messagedialog
 import noval.util.fileutils as fileutils
 import noval.logview as logview
 from noval.util.command import BackendSpec
+import noval.auth.register as register
+import noval.auth.login as login
 #----------------------------------------------------------------------------
 # Classes
 #----------------------------------------------------------------------------
 class IDEApplication(core.App):
 
     def __init__(self):
-        
         #程序自定义事件字典集合
         #自定义事件是指事件名称不以<开头,以<开头的均为tk内部事件
         self._event_handlers = {}  # type: Dict[str, Set[Callable]]
+        #是否已登录
+        self.is_login = False
         core.App.__init__(self)
 
     def OnInit(self):
@@ -95,6 +98,7 @@ class IDEApplication(core.App):
         self._config = utils.Config(self.GetAppName())
         self._init_scaling()
         self._init_theming()
+        
         #设置窗体大小
         self.geometry(
             "{0}x{1}+{2}+{3}".format(
@@ -129,7 +133,7 @@ class IDEApplication(core.App):
 
         docManager = core.DocManager()
         self.SetDocumentManager(docManager)
-
+        
         # Note:  These templates must be initialized in display order for the "Files of type" dropdown for the "File | Open..." dialog
         #这个是默认模板,所有未知扩展名的文件类型均使用这个模板
         defaultTemplate = core.DocTemplate(docManager,
@@ -192,6 +196,7 @@ class IDEApplication(core.App):
         #加载上次程序退出时的活跃项目
         self.SetCurrentProject()
         ###self.ShowTipfOfDay()
+
 
         self.initializing = False
         #初始化拖拽对象以支持拖拽打开文件功能,由于在linux下面加载dll耗时较长
@@ -256,7 +261,28 @@ class IDEApplication(core.App):
         if self.dnd is not None:
             self.event_generate("InitTkDnd")
         self.event_generate("<<AppInitialized>>")
-
+        #自动登录并获取账号信息
+        #TODO 暂时禁止自动登录
+        self.is_login = utils.profile_get_int('StartupAutoLogin',False) and login.auto_login()
+        if self.is_login:
+            self.UpdateLoginState()
+        
+    def Logout(self,auto=False):
+        self.is_login = False
+        login.logout()
+        self.UpdateLoginState()
+        messagebox.showinfo(self.GetAppName(),_('Logout success'),parent=self)
+        
+    def Register(self):
+        dlg = register.RegisterDialog(self.MainFrame)
+        dlg.ShowModal()
+        
+    def RegisterLogout(self):
+        if self.is_login:
+            self.Logout()
+        else:
+            self.Register()
+            
     def _on_focus_in(self, event):
         '''
             主界面在前台显示时,检查文本是否在外部改变
@@ -295,6 +321,16 @@ class IDEApplication(core.App):
         #只有文本编辑区域才在内容更改时更新大纲显示内容
         if isinstance(text.master.master,core.DocTabbedChildFrame):
             self.MainFrame.GetView(consts.OUTLINE_VIEW_NAME)._update_frame_contents()
+
+    def SetAppTitle(self):
+        self.SetAppName(self._app_name)
+        
+    def SetAppName(self,app_name):
+        core.App.SetAppName(self,app_name)
+        #如果已登录标题栏显示用户账号信息
+        if self.is_login:
+            mail = UserDataDb().GetUserInfo()[7]
+            self.title(self._app_name + _("-%s(Logged on)")%mail)
         
     def CreateLexerTemplates(self):
         synglob.LexerFactory().CreateLexerTemplates(self.GetDocumentManager())
@@ -516,6 +552,21 @@ class IDEApplication(core.App):
         self.AddCommand(constants.ID_OPEN_TERMINAL,_("&Tools"),_("&Open terminator..."),self.OpenTerminator,image="cmd.png")
         self.AddCommand(constants.ID_GOTO_OFFICIAL_WEB,_("&Help"),_("&Visit NovalIDE Website"),self.GotoWebsite)
         self.AddCommand(constants.ID_FEEDBACK,_("&Help"), _("Feedback"),self.Feedback)
+        if self.GetDebug():
+            self.AddCommand(constants.ID_REGISTER_LOGOUT,_("&Help"), _("Register/Login"),self.RegisterLogout) 
+        
+
+    def UpdateLoginState(self):
+        '''
+            登录成功后更新标题栏以及菜单文本
+        '''
+        self.SetAppTitle()
+        menu = self.Menubar.GetMenu(_("&Help"))
+        i = menu.GetMenuIndex(constants.ID_REGISTER_LOGOUT)
+        if self.is_login:
+            menu.entryconfigure(i,label=_("Logout"))
+        else:
+            menu.entryconfigure(i,label=_("Register/Login"))
         
     def Run(self):
         '''

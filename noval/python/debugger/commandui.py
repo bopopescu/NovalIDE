@@ -115,11 +115,15 @@ class RunCommandUI(CommonRunCommandUI):
             更新调式视图刚开始的标签文本,否则在最大化和恢复文档窗口时,调式窗口显示的标签文本不准确
         '''
         for view_name in GetApp().MainFrame._views:
-            instance = GetApp().MainFrame._views[view_name]["instance"]
+            view = GetApp().MainFrame._views[view_name]
+            if 'instance' not in view:
+                utils.get_logger().error('view %s is not valid view instance when update label',view_name)
+                continue
+            instance = view["instance"]
             if instance == self:
-                old_label = GetApp().MainFrame._views[view_name]['label']
+                old_label = view['label']
                 newLabel = old_label.replace(src_text,to_text)
-                GetApp().MainFrame._views[view_name]['label'] = newLabel
+                view['label'] = newLabel
                 break
             
     #when process finished,update tag page text
@@ -140,7 +144,11 @@ class RunCommandUI(CommonRunCommandUI):
         self.master.master.close_child(self.master)
         #务必从视图列表中移除
         for view_name in GetApp().MainFrame._views:
-            instance = GetApp().MainFrame._views[view_name]["instance"]
+            view = GetApp().MainFrame._views[view_name]
+            if 'instance' not in view:
+                utils.get_logger().error('view %s is not valid view instance when remove it',view_name)
+                continue
+            instance = view["instance"]
             if instance == self:
                 del GetApp().MainFrame._views[view_name]
                 break
@@ -175,13 +183,6 @@ class RunCommandUI(CommonRunCommandUI):
             openDoc = GetApp().GetDocumentManager().GetDocument(self._run_parameter.FilePath)
             if openDoc:
                 openDoc.Save()
-                
-
-
-DEFAULT_PORT = 32032
-DEFAULT_HOST = 'localhost'
-PORT_COUNT = 21
-
 
 class AGXMLRPCServer(SimpleXMLRPCServer):
     def __init__(self, address, logRequests=0):
@@ -502,8 +503,8 @@ class PythonDebuggerUI(BaseDebuggerUI):
             if PythonDebuggerUI.PortAvailable(port):
                 PythonDebuggerUI.debuggerPortList.pop(index)
                 return port
-        messagebox.showerror(_("Out of Ports"),_("Out of ports for debugging!  Please restart the application builder.\nIf that does not work, check for and remove running instances of python."))
-        assert False, "Out of ports for debugger."
+        messagebox.showerror(_("Out of Ports"),_("Out of ports for debugging!  Please restart the application builder.\nIf that does not work, check for your debugger host address or the debugger server is running."))
+        raise RuntimeError("Out of ports for debugger.")
 
     GetAvailablePort = staticmethod(GetAvailablePort)
 
@@ -517,7 +518,7 @@ class PythonDebuggerUI(BaseDebuggerUI):
     ReturnPortToPool = staticmethod(ReturnPortToPool)
 
     def PortAvailable(port):
-        hostname = utils.profile_get("DebuggerHostName", DEFAULT_HOST)
+        hostname = utils.profile_get("DebuggerHostName", consts.DEFAULT_HOST)
         try:
             server = AGXMLRPCServer((hostname, port))
             server.server_close()
@@ -531,18 +532,23 @@ class PythonDebuggerUI(BaseDebuggerUI):
     PortAvailable = staticmethod(PortAvailable)
 
     def NewPortRange():
-        startingPort = utils.profile_get_int("DebuggerStartingPort", DEFAULT_PORT)
-        PythonDebuggerUI.debuggerPortList = list(range(startingPort, startingPort + PORT_COUNT))
+        startingPort = utils.profile_get_int("DebuggerStartingPort", consts.DEFAULT_PORT)
+        PythonDebuggerUI.debuggerPortList = list(range(startingPort, startingPort + consts.PORT_COUNT))
     NewPortRange = staticmethod(NewPortRange)
 
     def __init__(self, parent, debugger,run_parameter ,autoContinue=True):
         # Check for ports before creating the panel.
         if not PythonDebuggerUI.debuggerPortList:
             PythonDebuggerUI.NewPortRange()
-        self._debuggerPort = str(PythonDebuggerUI.GetAvailablePort())
-        self._guiPort = str(PythonDebuggerUI.GetAvailablePort())
-        self._debuggerBreakPort = str(PythonDebuggerUI.GetAvailablePort())
-        self._debuggerHost = self._guiHost = utils.profile_get("DebuggerHostName", DEFAULT_HOST)
+        try:
+            self._debuggerPort = str(PythonDebuggerUI.GetAvailablePort())
+            self._guiPort = str(PythonDebuggerUI.GetAvailablePort())
+            self._debuggerBreakPort = str(PythonDebuggerUI.GetAvailablePort())
+        except RuntimeError as e:
+            self._debuggerPort = '0'
+            self._guiPort = '0'
+            self._debuggerBreakPort = '0'
+        self._debuggerHost = self._guiHost = utils.profile_get("DebuggerHostName", consts.DEFAULT_HOST)
         BaseDebuggerUI.__init__(self, parent, debugger,run_parameter)
         self._run_parameter = run_parameter
         self._autoContinue = autoContinue
@@ -556,13 +562,14 @@ class PythonDebuggerUI(BaseDebuggerUI):
         interpreter = self._run_parameter.Interpreter
         script_path = os.path.dirname(debuggerharness.__file__)
         if debuggerharness.__file__.find('.pyc') == -1:
-            print ("Starting debugger on these ports: %s, %s, %s" % (str(self._debuggerPort) , str(self._guiPort) , str(self._debuggerBreakPort)))
+            utils.get_logger().info("Starting debugger on these ports: %s, %s, %s" ,self._debuggerPort , self._guiPort , self._debuggerBreakPort)
         
         if interpreter.IsV2():
             path = os.path.join(script_path,"debuggerharness.py")
         elif interpreter.IsV3():
             path = os.path.join(script_path,"debuggerharness3.py")
-        self._executor = PythonDebuggerExecutor(path, self._run_parameter,self, self._debuggerHost, \
+        if int(self._debuggerPort) != 0:
+            self._executor = PythonDebuggerExecutor(path, self._run_parameter,self, self._debuggerHost, \
                                                 self._debuggerPort, self._debuggerBreakPort, self._guiHost, self._guiPort, self._run_parameter.FilePath, callbackOnExit=self.ExecutorFinished)
         self.evt_stdtext_binding = GetApp().bind(executor.EVT_UPDATE_STDTEXT, self.AppendText,True)
         self.evt_stdterr_binding = GetApp().bind(executor.EVT_UPDATE_ERRTEXT, self.AppendErrorText,True)
@@ -577,8 +584,9 @@ class PythonDebuggerUI(BaseDebuggerUI):
         startIn = self._run_parameter.StartupPath
         environment = self._run_parameter.Environment
         self._callback.Start()
-        self._executor.Execute()
-        self._callback.WaitForRPC()
+        if self._executor is not None:
+            self._executor.Execute()
+            self._callback.WaitForRPC()
 
 
     def StopExecution(self):
@@ -848,7 +856,14 @@ class RequestHandlerThread(threading.Thread):
         self._keepGoing = True
         self._queue = queue
         self._address = address
-        self._server = AGXMLRPCServer(self._address,logRequests=0)
+        self._server = None
+        #连接rpc调试服务器
+        try:
+            self._server = AGXMLRPCServer(self._address,logRequests=0)
+        except Exception as e:
+            #连接调试服务器失败
+            messagebox.showerror(_('Error'),_('Connect Debugger server fail.%s')%str(e))
+            return
         self._server.register_function(self.interaction)
         self._server.register_function(self.quit)
         self._server.register_function(self.dummyOperation)
@@ -858,7 +873,7 @@ class RequestHandlerThread(threading.Thread):
         if _VERBOSE: print ("RequestHandlerThread on fileno %s" % str(self._server.fileno()))
 
     def run(self):
-        while self._keepGoing:
+        while self._keepGoing and self._server:
             try:
                 self._server.handle_request()
             except:

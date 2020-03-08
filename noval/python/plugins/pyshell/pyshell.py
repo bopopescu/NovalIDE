@@ -333,14 +333,26 @@ class ShellText(PythonText):
             self._submit_input(submittable_text)
 
     def _extract_submittable_input(self, input_text, tail):
-        i = 0
-        while True:
-            if i >= len(input_text):
-                return input_text
-            elif input_text[i] == "\n":
-                return input_text[: i + 1]
+        if get_runner().is_waiting_toplevel_command():
+            if input_text.endswith("\n"):
+                if input_text.strip().startswith("%") or input_text.strip().startswith("!"):
+                    # if several magic command are submitted, then take only first
+                    return input_text[: input_text.index("\n") + 1]
+                elif self._code_is_ready_for_submission(input_text, tail):
+                    return input_text
+                else:
+                    return None
             else:
-                i += 1
+                return None
+        elif get_runner().is_running():
+            i = 0
+            while True:
+                if i >= len(input_text):
+                    return None
+                elif input_text[i] == "\n":
+                    return input_text[: i + 1]
+                else:
+                    i += 1
         return None
 
     def _code_is_ready_for_submission(self, source, tail=""):

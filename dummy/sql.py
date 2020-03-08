@@ -12,6 +12,7 @@ CREATE_USER_TABLE_SQL = '''
         email varchar (300),
         password text,
         is_pro BOOLEAN default 0,
+        token varchar (500),
         created_time datetime default (datetime('now', 'localtime'))
     )
 '''

@@ -32,7 +32,10 @@ class OutputReaderThread(threading.Thread):
         self._keepGoing = True
         self._lineCount = 0
         #每行允许输出的最大字符数
-        self._max_line_length = 1000
+        self._max_line_length = sys.maxsize
+        #限制行字符个数
+        if utils.profile_get_int("LimitLineLength",True):
+            self._max_line_length = utils.profile_get_int("MaxLineLength", 1000)
         self._accumulate = accumulate
         self._callbackOnExit = callbackOnExit
         self.setDaemon(True)
@@ -162,7 +165,7 @@ class TerminalExecutor(object):
         command = self.GetExecuteCommand()
         utils.get_logger().debug("start run executable: %s in terminal",command)
         startIn = self.GetStartupPath()
-        terminal.run_in_terminal(command,startIn,self._run_parameter.Environment,keep_open=False,pause=True,title="abc",overwrite_env=False)
+        terminal.run_in_terminal(command,startIn,self._run_parameter.Environment,keep_open=False,pause=utils.profile_get_int("KeepTerminalPause",True),title="abc",overwrite_env=False)
 
     def GetExecPath(self):
         return self._path

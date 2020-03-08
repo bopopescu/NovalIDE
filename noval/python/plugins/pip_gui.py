@@ -39,6 +39,7 @@ import noval.editor.text as texteditor
 import noval.util.urlutils as urlutils
 import noval.preference as preference
 import inspect
+import noval.auth.login as login
 
 #找回pip工具的url地址
 PIP_INSTALLER_URL = "https://bootstrap.pypa.io/get-pip.py"
@@ -503,12 +504,12 @@ class PipDialog(ui_base.CommonModaldialog):
     def NotFoundPackage(self,name):
         pass
         
-    def write(self,s, tag=None):
+    def write(self,s, tag=None,index="end"):
         if tag is None:
             tags = ()
         else:
             tags = (tag,)
-        self.info_text.direct_insert("end", s, tags)
+        self.info_text.direct_insert(index, s, tags)
         
     def write_att(self,caption, value, value_tag=None):
         self.write(caption + ": ", "caption")
@@ -777,11 +778,9 @@ class PluginsPipDialog(PipDialog):
         self.info_text.direct_insert("end", _("Install from Server\n"), ("caption",))
         self.info_text.direct_insert(
             "end",
-            _(
-                "If you don't know where to get the plugin from, "
-                + "then most likely you'll want to search the plugin Package Index. "
-                + "Start by entering the name of the plugin in the search box above and pressing ENTER.\n\n"
-            ),
+            _("If you don't know where to get the plugin from, ")
+            + _("then most likely you'll want to search the plugin Package Index. ")
+            + _("Start by entering the name of the plugin in the search box above and pressing ENTER.\n\n"),
         )
 
         self.info_text.direct_insert("end", _("Install from local file\n"), ("caption",))
@@ -796,7 +795,7 @@ class PluginsPipDialog(PipDialog):
 
         self.info_text.direct_insert("end", _("Upgrade or uninstall\n"), ("caption",))
         self.info_text.direct_insert(
-            "end", _("Start by selecting the package from the left.\n\n")
+            "end", _("Start by selecting the plugin from the left.\n\n")
         )
         #显示插件安装目录
         if self._get_target_directory():
@@ -805,10 +804,8 @@ class PluginsPipDialog(PipDialog):
 
             self.info_text.direct_insert(
                 "end",
-                _(
-                    "This dialog lists all available plugins,"
-                    + " but allows upgrading and uninstalling only plugins from "
-                ),
+                _("This dialog lists all available plugins,")
+                + _(" but allows upgrading and uninstalling only plugins from "),
             )
             #插件有2个安装目录
             target_directorys = self._get_target_directory()
@@ -820,10 +817,8 @@ class PluginsPipDialog(PipDialog):
             self.info_text.direct_insert("end",target_directorys[1], ("url"))
             self.info_text.direct_insert(
                 "end",
-                _(
-                    ". New plugin will be also installed into this directory."
-                    + " Other locations must be managed by alternative means."
-                ),
+                _(". New plugin will be also installed into the user directory default.")
+                + _(" if you want to install to other location,Please go to Tools->Options...->Misc->Plugin"),
             )
 
         self._select_list_item(0)
@@ -846,7 +841,8 @@ class PluginsPipDialog(PipDialog):
         self.installled_var.set(_("All Plugins:"))
         self.ShowNameList(names)
         #显示第一个包名
-        self._start_show_package_info(names[0])
+        if names:
+            self._start_show_package_info(names[0])
         
     def ShowAvailablePlugins(self,names):
         self.installled_var.set(_("Available Plugins:"))
@@ -1058,6 +1054,11 @@ class PluginsPipDialog(PipDialog):
         self._plugin_configuration_changed = True
         enable_label_text = _("Enabled")
         disable_label_text = _("Disabled")
+        #找到state标签的位置
+        state_index = self.info_text.search(_("State")+":","1.0",stopindex=tk.END)
+        line,col = self.info_text.get_line_col(state_index)
+        col += len(_("State"))
+        col += 2
         if self.enabled_button["text"] == enable_label_text:
             self.enabled_button["text"] = disable_label_text
             #启用插件
@@ -1065,9 +1066,13 @@ class PluginsPipDialog(PipDialog):
             #执行插件的一些启用操作
             GetApp().GetPluginManager().EnablePluginByName(package_data['name'])
             #更改插件的状态显示
-            del_len = len(disable_label_text) + 2
-            self.info_text.direct_delete("end-%dc"%del_len,"end")
-            self.write(enable_label_text+ "\n")
+            col += len(disable_label_text)
+            del_len = len(disable_label_text)
+            #删除旧状态
+            index = "%d.%d"%(line,col)
+            self.info_text.direct_delete("%d.%d-%dc"%(line,col,del_len),index)
+            #插入新的状态
+            self.write(enable_label_text,index=index)
         else:
             self.enabled_button["text"] = enable_label_text
             #禁止插件
@@ -1075,14 +1080,23 @@ class PluginsPipDialog(PipDialog):
             #执行插件的一些禁止操作
             GetApp().GetPluginManager().DisablePluginByName(package_data['name'])
             #更改插件的状态显示
-            del_len = len(enable_label_text) + 2
-            self.info_text.direct_delete("end-%dc"%del_len,"end")
-            self.write(disable_label_text + "\n")
+            col += len(enable_label_text)
+            del_len = len(enable_label_text)
+            index = "%d.%d"%(line,col)
+            self.info_text.direct_delete("%d.%d-%dc"%(line,col,del_len),index)
+            self.write(disable_label_text,index=index)
 
     def _confirm_install(self, package_data):
         '''
             确认是否安装插件
         '''
+        #插件是否需要登录
+        if package_data.get('login_required',False) and not GetApp().is_login:
+            messagebox.showinfo(GetApp().GetAppName(),_('Plugin %s require login')%package_data['name'])
+            login.LoginDialog(self).ShowModal()
+            #用户未登录成功
+            if not GetApp().is_login:
+                return False
         try:
             plugin_path = self.GetInstallPluginPath(package_data['name'])
         except Exception as e:
@@ -1100,6 +1114,9 @@ class PluginsPipDialog(PipDialog):
             except:
                 messagebox.showerror(GetApp().GetAppName(),_("Remove faile:%s fail") % dest_egg_path)
                 return False
+        #检查插件是否免费或者是否付费,如果需要付费而未付款则不允许安装
+        if not ui_utils.check_plugin_free_or_payed(package_data):
+            return False
         #检查软件的版本是否是插件要求的最低版本
         return not self._conflicts_with_application_version(package_data)
 
@@ -1190,10 +1207,15 @@ class PluginsPipDialog(PipDialog):
             self.enabled_button.grid(row=0, column=2)
         else:
             self.enabled_button.grid_remove()
-        #调试版本时显示插件下载次数
-        if GetApp().GetDebug() and data and error_code is None:
+        if data and error_code is None:
             self.write_att(_("Installs"), str(data['down_amount']))
-            
+        #调试版本时显示插件是否免费
+        if GetApp().GetDebug() and data and error_code is None:
+            if data['free']:
+                self.write_att(_("Free"), _("Yes"))
+            else:
+                self.write_att(_("Free"), _("No"))
+                self.write_att(_("Price"), str(data['price']))
             
 class PyPiPipDialog(PipDialog):
     
@@ -1229,11 +1251,9 @@ class PyPiPipDialog(PipDialog):
             self.info_text.direct_insert("end", _("Install from PyPI\n"), ("caption",))
             self.info_text.direct_insert(
                 "end",
-                _(
-                    "If you don't know where to get the package from, "
-                    + "then most likely you'll want to search the Python Package Index. "
-                    + "Start by entering the name of the package in the search box above and pressing ENTER.\n\n"
-                ),
+                _("If you don't know where to get the package from, ")
+                + _("then most likely you'll want to search the Python Package Index. ")
+                + _("Start by entering the name of the package in the search box above and pressing ENTER.\n\n"),
             )
 
             self.info_text.direct_insert("end", _("Install from requirements file\n"), ("caption",))
@@ -1268,18 +1288,14 @@ class PyPiPipDialog(PipDialog):
 
                 self.info_text.direct_insert(
                     "end",
-                    _(
-                        "This dialog lists all available packages,"
-                        + " but allows upgrading and uninstalling only packages from "
-                    ),
+                    _("This dialog lists all available packages,")
+                    + _(" but allows upgrading and uninstalling only packages from "),
                 )
                 self.info_text.direct_insert("end", self._get_target_directory(), ("url"))
                 self.info_text.direct_insert(
                     "end",
-                    _(
-                        ". New packages will be also installed into this directory."
-                        + " Other locations must be managed by alternative means."
-                    ),
+                    _(". New packages will be also installed into this directory.")
+                    + _(" Other locations must be managed by alternative means."),
                 )
 
         self._select_list_item(0)
@@ -1399,6 +1415,8 @@ class PyPiPipDialog(PipDialog):
             return None
 
     def _get_interpreter(self):
+        if len(interpretermanager.InterpreterManager().interpreters) == 0:
+            return None
         return interpretermanager.InterpreterManager().interpreters[self.interprterChoice.current()]
 
     def _should_install_to_site_packages(self):
@@ -1427,7 +1445,10 @@ class PyPiPipDialog(PipDialog):
     def _targets_virtual_environment(self):
         # https://stackoverflow.com/a/42580137/261181
         #获取当前解释器是否虚拟解释器
-        return self._get_interpreter().IsVirtual()
+        current_interpreter = self._get_interpreter()
+        if current_interpreter is None:
+            return False
+        return current_interpreter.IsVirtual()
         
     def GetInstallArgs(self,file_or_packagename,is_requirements_file=False):
         args = []

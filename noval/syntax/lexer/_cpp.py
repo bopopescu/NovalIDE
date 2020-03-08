@@ -19,7 +19,7 @@ import noval.editor.code as codeeditor
 import noval.imageutils as imageutils
 import _c
 from noval.syntax.pat import *
-    
+
 
 #-----------------------------------------------------------------------------#
 
@@ -52,10 +52,10 @@ class SyntaxColorer(_c.SyntaxColorer):
         if value in ("class",):
             m1 = self.idprog.match(chars, match_end)
             if m1:
-                a, b = m1.span(1)
+                id_match_start, id_match_end = m1.span(1)
                 self.text.tag_add("definition",
-                             head + "+%dc" % match_start,
-                             head + "+%dc" % match_end)
+                             head + "+%dc" % id_match_start,
+                             head + "+%dc" % id_match_end)
 
     def _config_tags(self):
         _c.SyntaxColorer._config_tags(self)
@@ -64,11 +64,11 @@ class SyntaxColorer(_c.SyntaxColorer):
         })
 
 class SyntaxLexer(syndata.BaseLexer):
-    """SyntaxData object for Python""" 
+    """SyntaxData object for Python"""
     #---- Syntax Style Specs ----#
-    SYNTAX_ITEMS = [ 
+    SYNTAX_ITEMS = [
     ]
-                 
+
     def __init__(self):
         lang_id = lang.RegisterNewLangId("ID_LANG_CPP")
         syndata.BaseLexer.__init__(self,lang_id)
@@ -76,10 +76,10 @@ class SyntaxLexer(syndata.BaseLexer):
     def GetSyntaxSpec(self):
         """Syntax Specifications """
         return SYNTAX_ITEMS
-        
+
     def GetDescription(self):
         return _('C++ Source File')
-        
+
     def GetExt(self):
         return "cc c++ cpp cxx hh h++ hpp hxx"
 
@@ -89,29 +89,29 @@ class SyntaxLexer(syndata.BaseLexer):
 
     def GetShowName(self):
         return "C/C++"
-        
+
     def GetDefaultExt(self):
         return "cpp"
-        
+
     def GetDocTypeName(self):
         return "C++ Document"
-        
+
     def GetViewTypeName(self):
         return _("C++ Editor")
-        
+
     def GetDocTypeClass(self):
         return codeeditor.CodeDocument
-        
+
     def GetViewTypeClass(self):
         return codeeditor.CodeView
-        
+
     def GetDocIcon(self):
         return imageutils.load_image("","file/cpp.png")
-        
+
     def GetSampleCode(self):
         sample_file_path = os.path.join(appdirs.get_app_data_location(),"sample","cpp.sample")
         return self.GetSampleCodeFromFile(sample_file_path)
-        
+
     def GetCommentTemplate(self):
         return '''//******************************************************************************
 // Name: {File}

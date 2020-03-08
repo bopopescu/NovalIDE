@@ -36,8 +36,9 @@ class FileHistory(hiscache.CycleCache):
         
     def AddFileToHistory(self, file_path):
         #检查文件路径是否在历史文件列表中,如果存在则删除
-        if self.CheckFileExists(file_path):
-            self._list.remove(file_path)
+        index = self.GetHistoryFileIndex(file_path)
+        if index != -1:
+            del self._list[index]
         self.PutPath(file_path)
         #按照文件顺序重新构建历史文件列表菜单
         self.RebuildFilesMenu()
@@ -109,11 +110,11 @@ class FileHistory(hiscache.CycleCache):
     def OpenFile(self,n):
         GetApp().OpenMRUFile(n)
         
-    def CheckFileExists(self,path):
-        for item in self._list:
+    def GetHistoryFileIndex(self,path):
+        for i,item in enumerate(self._list):
             if parserutils.ComparePath(item,path):
-                return True
-        return False
+                return i
+        return -1
         
     def GetHistoryFile(self,i):
         assert(i >=0 and i < len(self._list))
@@ -596,3 +597,53 @@ def CheckFileExtension(filename,external):
                 GetApp().ShowPluginsDlg(plugin_names)
     except:
         pass
+
+def check_plugin_free_or_payed(plugin,installed=False):
+    '''
+        检查插件是否需要收费并且是否付费
+    '''
+    
+    def pop_error(data):
+        if data is None:
+            messagebox.showerror(GetApp().GetAppName(),_("could not connect to server"))
+                
+    user_id = UserDataDb().GetUserId()
+    if type(plugin) == str:
+        api_addr = '%s/member/get_plugin' % (UserDataDb.HOST_SERVER_ADDR)
+        plugin_data = utils.RequestData(api_addr,method='get',arg={'name':plugin})
+    else:
+        plugin_data = plugin
+    if not plugin_data:
+        pop_error(plugin_data)
+        return False
+    plugin_name = plugin_data['name']
+    plugin_id = plugin_data['id']
+    free = int(plugin_data['free'])
+    #插件是否免费
+    if not free:
+        #查询用户是否付款
+        api_addr = '%s/member/get_payment' % (UserDataDb.HOST_SERVER_ADDR)
+        data = urlutils.RequestData(api_addr,arg = {'member_id':user_id,'plugin_id':plugin_id})
+        if not data:
+            pop_error(data)
+            return False
+        payed = int(data['payed'])
+        price = plugin_data.get('price',None)
+        #用户没有付款而且插件存在价格,弹出付款二维码
+        if not payed and price:
+            ok = messagebox.askokcancel(GetApp().GetAppName(),_("You need to pay %d ¥ to use '%s' plugin")%(price,plugin_name))
+            if ok:
+                #这里弹出付款二维码
+                return True
+            #如果插件已安装并未付款则提示用户插件将被禁止
+            elif installed:
+                ret = messagebox.askquestion(GetApp().GetAppName(),_("The plugin will disabled if you don't pay,Are you sure to disable this plugin?"))
+                if ret:
+                    GetApp().GetPluginManager().DisablePlugin(plugin_name)
+                    return False
+                else:
+                    #这里弹出付款二维码
+                    return True
+            else:
+                return False
+    return True

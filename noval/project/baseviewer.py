@@ -1204,6 +1204,7 @@ class ProjectView(misc.AlarmEventView):
         if dlg.ShowModal() == constants.ID_OK:
             if self.GetDocument().GetCommandProcessor().Submit(projectcommand.ProjectAddFilesCommand(self.GetDocument(), [dlg.file_path], folderPath=folderPath)):
                 self._prject_browser.OpenSelection()
+                self.OnRename()
 
     def OnAddFolder(self):
         if self.GetDocument():
@@ -2149,7 +2150,7 @@ class ProjectOptionsPanel(ui_utils.BaseConfigurationPanel):
         
 
         self.createProjectIntellisenseDatabase_chkvar = tk.IntVar(value=utils.profile_get_int("CreateProjectIntellisenseDatabase", True))
-        createProjectIntellisenseDatabaseCheckBox = ttk.Checkbutton(self, text=_("Generate intellisense database of project automaticlly"),variable=self.createProjectIntellisenseDatabase_chkvar)
+        createProjectIntellisenseDatabaseCheckBox = ttk.Checkbutton(self, text=_("Generate and Load intellisense database of project automaticlly"),variable=self.createProjectIntellisenseDatabase_chkvar)
         createProjectIntellisenseDatabaseCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
         
         btn = ttk.Button(self,text=_("File Filters"),command=self.Filter)

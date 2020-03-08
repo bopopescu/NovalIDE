@@ -39,7 +39,7 @@
         <Template>
         <Icon Large="noval/tool/bmp_source/template/xml.bmp" Small="noval/bmp_source/template/xml-small.bmp"/>
         <Ext>.xml</Ext>
-        <Content> noval/tool/data/template/XmlFile.tar.bz2 </Content>
+        <Content> noval/data/template/XmlFile.tar.bz2 </Content>
         <DefaultName>XmlFile.xml</DefaultName>
         <Name>XML文档</Name>
         <Description>一个包含申明的可扩展标记文件</Description>
@@ -129,7 +129,7 @@
         <Template>
         <Icon Large="noval/tool/bmp_source/template/xml.bmp" Small="noval/tool/bmp_source/template/xml-small.bmp"/>
         <Ext>.xml</Ext>
-        <Content> noval/tool/data/template/XmlFile.tar.bz2 </Content>
+        <Content> noval/data/template/XmlFile.tar.bz2 </Content>
         <DefaultName>XmlFile.xml</DefaultName>
         <Name>XML File</Name>
         <Description>a simple xml file</Description>

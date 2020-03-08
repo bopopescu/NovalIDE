@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 __author__ = "Cody Precord <cprecord@editra.org>"
 __svnid__ = "$Id: calc.py 850 2009-05-01 00:24:27Z CodyPrecord $"
@@ -40,6 +41,7 @@ import threading
 import time
 import noval.util.urlutils as urlutils
 import random
+import noval.python.project.runconfig as runconfig
         
 def GetInterpreterScriptPath(interpreter,is_user_site=False):
     if is_user_site:
@@ -92,40 +94,6 @@ class DjangoProjectDocument(PythonProjectDocument):
         if run_parameter.Interpreter.IsBuiltIn:
             raise RuntimeError(_('Builtin Interpreter is not support to run django project'))
 
-    def GetPyinstallerRunParameter(self,filetoRun=None):
-        python_run_parameter = PythonProjectDocument.GetRunParameter(self,filetoRun)
-        if python_run_parameter is None:
-            return None
-            
-        pyinstaller_run_parameter = PyinstallerRunconfig(python_run_parameter.Interpreter,python_run_parameter.FilePath,'',python_run_parameter.Environment,python_run_parameter.StartupPath,python_run_parameter.Project)
-        return pyinstaller_run_parameter
-
-    def RunIndebugger(self):
-        pyinstaller_run_parameter = self.GetPyinstallerRunParameter()
-        if pyinstaller_run_parameter is None:
-            return
-        self.BuildDebugIndebugger(pyinstaller_run_parameter)
-
-    def RunInterminal(self,filetoRun=None):
-        pyinstaller_run_parameter = self.GetPyinstallerRunParameter(filetoRun)
-        if pyinstaller_run_parameter is None:
-            return
-        self.BuildRunterminal(pyinstaller_run_parameter)
-        
-    def DebugRunTarget(self,run_parameter):
-        target_exe_path = self.GetTargetPath()
-
-    def BuildDebugIndebugger(self,run_parameter,finish_stopped=False):
-        self.CheckIsbuiltinInterpreter(run_parameter)
-        fileToRun = run_parameter.filepath
-        shortFile = os.path.basename(fileToRun)
-        view = GetApp().MainFrame.GetCommonView("Output")
-        view.SetRunParameter(run_parameter)
-        view.GetOutputview().SetTraceLog(True)
-        view.CreateExecutor(source="Build",finish_stopped=finish_stopped)
-        view.EnableToolbar()
-        view.Execute()
-
     def NewRunConfiguration(self,main_module_file,configuration_name,build_args,interpreter_name,file_configuration_list=[]):
         file_configuration = runconfiguration.FileConfiguration(self,main_module_file)
         file_configuration_list.append(configuration_name)
@@ -142,23 +110,43 @@ class DjangoProjectDocument(PythonProjectDocument):
         run_configuration = runconfiguration.RunConfiguration(configuration_name,**args)
         run_configuration.SaveConfiguration()
         
+    def SaveDebugRunConfiguration(self,debug_argument='runserver 127.0.0.1:${SERVER_PORT} --noreload',run_arguments='runserver 0.0.0.0:8000'):
+        configuration_list = []
+        self.NewRunConfiguration(self.GetModel().StartupFile,"run_web_server",run_arguments,self.GetModel().interpreter.name,configuration_list)
+        self.NewRunConfiguration(self.GetModel().StartupFile,"debug_web_server",debug_argument,self.GetModel().interpreter.name,configuration_list)
+        startup_dir = os.path.dirname(self.GetModel().StartupFile.filePath)
+        prefix = startup_dir.replace(self.GetPath(),"").lstrip(os.sep)
+        if prefix != "":
+           prefix =  prefix + "|"
+        self.SaveRunConfiguration(configuration_list,prefix=prefix)
+        
     def SaveRunConfiguration(self,file_configuration_list,prefix=""):
         configuration_list = [prefix + "manage.py/" + configuration_name for configuration_name in file_configuration_list]
         utils.profile_set(self.GetKey() + "/ConfigurationList",configuration_list)
         utils.profile_set(self.GetKey()  + "/RunConfigurationName",configuration_list[-1])
-        
 
     def Debug(self):
-        available_port = random.randint(40000,60000)
-        variablesutils.GetProjectVariableManager().AddVariable('SERVER_PORT',available_port,replace_exist=True)
-        threading.Thread(target=self.StartWeb,args=(available_port,),daemon=True).start()
+        self.DebugWeb()
         PythonProjectDocument.Debug(self)
         
-    def StartWeb(self,available_port):
+    def RunWithoutDebug(self,filetoRun=None):
+        self.DebugWeb()
+        PythonProjectDocument.RunWithoutDebug(self)
+        
+    def DebugWeb(self,break_debug=False):
+        available_port = random.randint(40000,60000)
+        variablesutils.GetProjectVariableManager().AddVariable('SERVER_PORT',available_port,replace_exist=True)
+        threading.Thread(target=self.StartWeb,args=(available_port,break_debug),daemon=True).start()
+        
+    def BreakintoDebugger(self,filetoRun=None):
+        self.DebugWeb(break_debug=True)
+        PythonProjectDocument.BreakintoDebugger(self,filetoRun)
+        
+    def StartWeb(self,available_port,break_debug):
         st = time.time()
         while True:
             end = time.time()
-            if end - st > 60:
+            if end - st > 60 and not break_debug:
                 break
             time.sleep(0.5)
             url_addr = "http://127.0.0.1:%d"%available_port
@@ -175,7 +163,52 @@ class DjangoProjectDocument(PythonProjectDocument):
             return configuration_name_list[1]
         else:
             return configuration_name_list[0]
+            
+
+    def NewApp(self,app_name):
+        interpreter = self.GetandSetProjectDocInterpreter()
+        if not interpreter:
+            return
+        startup_file = self.GetandSetProjectStartupfile()
+        work_dir = self.GetPath()
+        p = utils.create_process(interpreter.Path,'%s startapp %s'%(startup_file.filePath,app_name),cwd=work_dir)
+        p.wait()
+        app_path = os.path.join(work_dir,app_name)
+        view_path = os.path.join(app_path,'views.py')
+        models_path = os.path.join(app_path,'models.py')
+        apps_path = os.path.join(app_path,'apps.py')
+        admin_path = os.path.join(app_path,'admin.py')
+        test_path = os.path.join(app_path,'tests.py')
+        init_path = os.path.join(app_path,'__init__.py')
+        self.GetCommandProcessor().Submit(command.ProjectAddFilesCommand(self,[view_path,models_path,apps_path,admin_path,test_path,init_path],app_name))
         
+
+    def RunIndebugger(self):
+        django_run_parameter = self.GetDjangoRunconfig(is_debug=True)
+        self.DebugIndebugger(django_run_parameter)
+
+    def RunInterminal(self,filetoRun=None):
+        django_run_parameter = self.GetDjangoRunconfig()
+        self.Runterminal(django_run_parameter)
+        
+    def Runterminal(self,run_parameter):
+        self.CheckIsbuiltinInterpreter(run_parameter)
+        self.RunScript(run_parameter)
+
+    def DebugIndebugger(self,run_parameter):
+        self.CheckIsbuiltinInterpreter(run_parameter)
+        self.DebugRunScript(run_parameter)
+        
+    def GetDjangoRunconfig(self,is_debug=False):
+        interpreter = self.GetandSetProjectDocInterpreter()
+        self.GetandSetProjectStartupfile()
+        startup_file = self.GetModel().StartupFile
+        port = utils.profile_get_int(self.GetFileKey(startup_file) + "/WebDefaultPort",8000)
+        if not is_debug:
+            arg = "runserver 0.0.0.0:%d"%port
+        else:
+            arg = "runserver 127.0.0.1:%d --noreload"%port
+        return runconfig.PythonRunconfig(interpreter,startup_file.filePath,arg,project=self)
         
 class DjangoProjectTemplate(PythonProjectTemplate):
     
@@ -193,6 +226,10 @@ class DjangoProjectTemplate(PythonProjectTemplate):
                 icon = imageutils.getProjectIcon())
         GetApp().GetDocumentManager().DisassociateTemplate(projectTemplate)
         return projectTemplate
+        
+    def GetPropertiPages(self):
+        return PythonProjectTemplate.GetPropertiPages(self) + [("Django option","root","djangokit.django.DjangoInformationPanel")]
+
 
 class DjangoProjectNameLocationPage(BasePythonProjectNameLocationPage):
 
@@ -214,12 +251,58 @@ class DjangoInformationPanel(pyutils.PythonBaseConfigurationPanel):
     
     def __init__(self,parent,item,current_project,**kwargs):
         pyutils.PythonBaseConfigurationPanel.__init__(self,parent,current_project)
-        self.columnconfigure(1, weight=1)
+        self.columnconfigure(0, weight=1)
         self.current_project = current_project
         self.item = item
+        self.is_wizard = kwargs.get('is_wizard',False)
+        sizer_frame = ttk.Frame(self)
+        sizer_frame.grid(column=0, row=1, sticky="nsew")
+        
+        sizer_frame.columnconfigure(1, weight=1)
+        if self.is_wizard:
+            ttk.Label(sizer_frame,text=_('Default app:')).grid(column=0, row=0, sticky="nsew",padx=(0,consts.DEFAUT_CONTRL_PAD_X),pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+            self.default_app_var = tk.StringVar()
+            self.app_entry = ttk.Entry(sizer_frame,textvariable=self.default_app_var)
+            self.app_entry.grid(column=1, row=0, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y,0),padx=(0,consts.DEFAUT_CONTRL_PAD_X))
+            row_index = 1
+        else:
+            row_index = 0
+        ttk.Label(sizer_frame,text=_('Web Default Port:')).grid(column=0, row=row_index, sticky="nsew",padx=(0,consts.DEFAUT_CONTRL_PAD_X),pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        self.port_var = tk.IntVar(value=8000)
+        
+        #验证端口文本控件输入是否合法,端口只能输入数字
+        validate_cmd = self.register(self.validatePortInput)
+        self.port_entry = ttk.Entry(sizer_frame,validate = 'key', validatecommand = (validate_cmd, '%P'),textvariable=self.port_var)
+        self.port_entry.grid(column=1, row=row_index, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y,0),padx=(0,consts.DEFAUT_CONTRL_PAD_X))
+        
+        row_index += 1
+        ttk.Label(sizer_frame,text=_('Debug server arguments:')).grid(column=0, row=row_index, sticky="nsew",padx=(0,consts.DEFAUT_CONTRL_PAD_X),pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        self.debug_arguments_var = tk.StringVar(value='runserver 127.0.0.1:${SERVER_PORT} --noreload')
+        self.debug_arguments_entry = ttk.Entry(sizer_frame,textvariable=self.debug_arguments_var)
+        self.debug_arguments_entry.grid(column=1, row=row_index, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y,0),padx=(0,consts.DEFAUT_CONTRL_PAD_X))
+        
+        row_index += 1
+        ttk.Label(sizer_frame,text=_('Run server arguments:')).grid(column=0, row=row_index, sticky="nsew",padx=(0,consts.DEFAUT_CONTRL_PAD_X),pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        self.run_arguments_var = tk.StringVar(value='runserver 0.0.0.0:8000')
+        self.run_arguments_entry = ttk.Entry(sizer_frame,textvariable=self.run_arguments_var)
+        self.run_arguments_entry.grid(column=1, row=row_index, sticky="nsew",pady=(consts.DEFAUT_CONTRL_PAD_Y,0),padx=(0,consts.DEFAUT_CONTRL_PAD_X))
+        
+    def validatePortInput(self,contents):
+        if not contents.isdigit():
+            self.port_entry.bell()
+            return False
+        return True
+        
             
     def OnOK(self,optionsDialog=None):
-        return True
+        if self.port_var.get() >= 1 and self.port_var.get() <= 65535:
+            doc = self.GetCurrentProject()
+            startup_file = doc.GetModel().StartupFile
+            doc.SaveDebugRunConfiguration(self.debug_arguments_var.get(),self.run_arguments_var.get())
+            utils.profile_set(doc.GetFileKey(startup_file) + "/WebDefaultPort",self.port_var.get())
+            return True
+        messagebox.showerror(_('Error'),_('invalid port'))
+        return False
         
     def GetCurrentProject(self):
         if self.current_project is None:
@@ -241,13 +324,16 @@ class DjangoInformationPage(projectwizard.BitmapTitledContainerWizardPage):
         self.can_finish = True
         
     def CreateContent(self,content_frame,**kwargs):
-        self.information_panel = DjangoInformationPanel(content_frame,None,None)
+        self.information_panel = DjangoInformationPanel(content_frame,None,None,**{'is_wizard':True})
         self.information_panel.grid(column=0, row=1, sticky="nsew")
 
     def Finish(self):
         interpreter = self.GetInterpreter()
         if not CheckDjango(interpreter,parent=self) or interpreter is None:
             return False
+            
+
+            
         django_tool_path = GetDjangoToolPath(interpreter)
         projName = self.GetPrev().name_var.get().strip()
         args = "startproject %s"%projName
@@ -271,11 +357,12 @@ class DjangoInformationPage(projectwizard.BitmapTitledContainerWizardPage):
         doc.GetCommandProcessor().Submit(command.ProjectAddFilesCommand(doc,[urls_path,settings_path,wsgi_path,init_path],projName))
         doc.GetCommandProcessor().Submit(command.ProjectAddFilesCommand(doc,[startup_path],None))
         view.SetProjectStartupFile()
-        startup_file = doc.GetModel().StartupFile
-        configuration_list = []
-        doc.NewRunConfiguration(startup_file,"run_web_server",'runserver 0.0.0.0:8000',doc.GetModel().interpreter.name,configuration_list)
-        doc.NewRunConfiguration(startup_file,"debug_web_server",'runserver 127.0.0.1:${SERVER_PORT} --noreload',doc.GetModel().interpreter.name,configuration_list)
-        doc.SaveRunConfiguration(configuration_list)
+        
+        if not self.information_panel.OnOK():
+            return False
+        default_app = self.information_panel.default_app_var.get().strip()
+        if default_app != "":
+            doc.NewApp(default_app)
         return True
 
     def GetInterpreter(self):

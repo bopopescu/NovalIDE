@@ -37,10 +37,9 @@ NovalIDE是一款开源，跨平台，而且免费的国产多功能，轻便的
 
 ### 源码依赖包
 
-- Python2.7.11 [Windows下载地址](https://www.python.org/ftp/python/2.7.11/python-2.7.11.msi)
-- Python3.6.4 [Windows下载地址](https://www.python.org/ftp/python/3.6.4/python-3.6.4.exe)
+- Python3.6.4及以上 [Windows下载地址](https://www.python.org/ftp/python/3.6.4/python-3.6.4.exe)
 - tkinter(8.5.5以上)
-- pywin32(only windows) [Windows下载地址](https://github.com/mhammond/pywin32/releases/download/b223/pywin32-223.win32-py2.7.exe)
+- pywin32(only windows)
 - pyinstaller
 - wmi(only windows)
 - psutil
@@ -55,7 +54,7 @@ NovalIDE是一款开源，跨平台，而且免费的国产多功能，轻便的
 - **源码运行**
 
 ```
-下载Python2.7或者python3.6，以及pywin32，pyinstaller安装包，下载地址见上。
+下载python3.6，以及pywin32，pyinstaller安装包，下载地址见上。
 git clone https://gitee.com/wekay/NovalIDE.git
 cd NovalIDE
 

@@ -456,7 +456,7 @@ class ClassDefScope(NodeScope):
 
     def GetMember(self,name):
         fix_name = self.MakeFixName(name)
-        if fix_name == "":
+        if fix_name == "" or fix_name == "self":
             return [self]
         return self.FindScopeInChildScopes(fix_name)
     #class arg tip is the arg tip of class __init__ method

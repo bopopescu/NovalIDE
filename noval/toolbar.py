@@ -65,7 +65,7 @@ class ToolBar(ui_base.DockFrame):
 
     def IsDefaultShown(self):
         toolbar_key = self.GetToolbarKey()
-        return utils.profile_get_int(toolbar_key,False)
+        return utils.profile_get_int(toolbar_key,True)
         
     def GetToolbarKey(self):
         return consts.FRAME_VIEW_VISIBLE_KEY % "toolbar"

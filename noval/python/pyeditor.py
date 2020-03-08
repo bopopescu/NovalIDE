@@ -289,7 +289,6 @@ class PythonView(codeeditor.CodeView):
         for linenum in breakpoints.get(self.GetDocument().GetFilename(),[]):
             self.DeleteBpMark(linenum,delete_master_bp=False)
             self.bp_margin.image_create("%d.0"%linenum,image=self._text_frame.bp_bmp)
-            
 
     def ToogleBreakpoint(self,lineno):
         '''
@@ -304,7 +303,53 @@ class PythonView(codeeditor.CodeView):
                 GetApp().MainFrame.GetView(consts.BREAKPOINTS_TAB_NAME).ToogleBreakpoint(lineno,self.GetDocument().GetFilename())
         except tk.TclError:
             utils.exception("on_bp_click")
+            
+    def GetAutoCompleteKeywordList(self, context, hint,line):
+        line,col = self.GetCtrl().GetCurrentPos()
+        last_char = self.GetCtrl().GetCharAt(line,col-1)
+        word = self.GetCtrl().GetTypeWord(line,col-1)
+        if (not word and not last_char) or (word and word == context):
+            return codeeditor.CodeView.GetAutoCompleteKeywordList(self,context,hint,line)
+        else:
+            return self.GetCtrl().GetAutoCompletions(context,hint,last_char)
+
+    def GetAutoCompleteHint(self):
+        """
+            如果输入内容是abc则返回abc,abc
+            如果输入内容是os.path.j,则返回os.path,j
+        """
+        line,col = self.GetCtrl().GetCurrentPos()
+        if line == 0 and col == 0:
+            return None, None
+        if self.GetCtrl().GetCharAt(line,col) == PythonCtrl.TYPE_POINT_WORD:
+            col = col - 1
+            hint = None
+        else:
+            hint = ''
+            
+        validLetters = self.GetCtrl().DEFAULT_WORD_CHARS + PythonCtrl.TYPE_POINT_WORD
+        word = ''
+        while (True):
+            col = col - 1
+            if col < 0:
+                break
+            char = self.GetCtrl().GetCharAt(line,col)
+            if char not in validLetters:
+                break
+            word = char + word
+            
+        context = word
         
+        if hint is not None:            
+            lastDot = word.rfind(PythonCtrl.TYPE_POINT_WORD)
+            if lastDot != -1:
+                context = word[0:lastDot]
+                hint = word[lastDot+1:]
+            else:
+                hint = word
+        #自动完成根据context来弹出列表框内容,hint表示初始选中以hint开头的内容
+        return context, hint
+            
 
 class PythonCtrl(codeeditor.CodeCtrl):
     TYPE_POINT_WORD = "."
@@ -313,13 +358,12 @@ class PythonCtrl(codeeditor.CodeCtrl):
 
     def __init__(self, master=None, cnf={}, **kw):
         codeeditor.CodeCtrl.__init__(self, master, cnf=cnf, **kw)
-        self.bind("<KeyPress>", self.OnChar, True)
         #鼠标放在文本上方移动,显示文本的提示文档信息
         self.tag_bind("motion", "<Motion>", self.OnDwellStart)
         
     def OnDwellStart(self,event):
         #是否启用智能提示以及是否鼠标悬停显示文档提示
-        if not utils.profile_get_int("UseSmartTips", True) or not utils.profile_get_int("ShowDocumentTips", True):
+        if not utils.profile_get_int("ShowDocumentTips", True):
             return
         mouse_index = self.index("@%d,%d" % (event.x, event.y))
         pos = self.get_line_col(mouse_index)
@@ -333,16 +377,29 @@ class PythonCtrl(codeeditor.CodeCtrl):
             doc_view = GetApp().GetDocumentManager().GetCurrentView()
             if not isinstance(doc_view,PythonView):
                 return
-            module_scope = doc_view.ModuleScope
-            scope_founds = []
-            if module_scope is not None:
-                scope = module_scope.FindScope(line)
-                scope_founds = scope.GetDefinitions(dwellword)
-            if scope_founds:
-                scope_found = scope_founds[0]
-                doc = scope_found.GetDoc()
-                if doc is not None:
-                    self.CallTipShow(pos, doc)
+            #调试器运行时是否鼠标悬停时显示内存变量值
+            if pythondebugger.BaseDebuggerUI.DebuggerRunning() and utils.profile_get_int("ShowTipValueWhenDebugging",True):
+                if not GetApp().GetDebugger()._debugger_ui._toolEnabled:
+                    return
+                watch_obj = watchs.Watch.CreateWatch(dwellword,dwellword)
+                nodeList = GetApp().GetDebugger()._debugger_ui.framesTab.stackFrameTab.GetWatchList(watch_obj)
+                if len(nodeList) == 1:
+                    watchValue = nodeList[0].childNodes[0].getAttribute("value")
+                    watchType = nodeList[0].childNodes[0].getAttribute("type")
+                    #不显示未知类型的值
+                    if watchType != consts.DEBUG_UNKNOWN_VALUE_TYPE:
+                        self.CallTipShow(pos, dwellword + ":" + watchValue)
+            else:
+                module_scope = doc_view.ModuleScope
+                scope_founds = []
+                if module_scope is not None:
+                    scope = module_scope.FindScope(line)
+                    scope_founds = scope.GetDefinitions(dwellword)
+                if scope_founds:
+                    scope_found = scope_founds[0]
+                    doc = scope_found.GetDoc()
+                    if doc is not None:
+                        self.CallTipShow(pos, doc)
 
     def CreatePopupMenu(self):
         codeeditor.CodeCtrl.CreatePopupMenu(self)
@@ -592,43 +649,89 @@ class PythonCtrl(codeeditor.CodeCtrl):
         return False,''
                 
     def OnChar(self,event):
-        self.HandlerInput(event.char)
-
-    def HandlerInput(self,char):
-        if not utils.profile_get_int("UseSmartTips", True):
-            return
+        return self.HandlerInput(event)
+        
+    def GetAutoCompletions(self,context,hint,last_char):
         pos = self.GetCurrentPos()
         pos = pos[0],pos[1]-1
-        #输入(符号,弹出文档提示信息
-        if char == "(":
-            self.GetArgTip(pos)
         #输入dot(.)符号,列出成员
-        elif char == self.TYPE_POINT_WORD:
-            self.ListMembers(pos)
+        if last_char == self.TYPE_POINT_WORD:
+            text = self.GetTypeWord(pos[0],pos[1])
+            return self.ListMembers(pos,text)
         #输入空格提示导入信息
-        elif char == self.TYPE_BLANK_WORD:
+        elif last_char == self.TYPE_BLANK_WORD:
             #输入的是否from xx import 这样的句式
             ret,name = self.IsFromImportType(pos)
             if ret:
                 member_list = intellisence.IntellisenceManager().GetMemberList(name)
                 if member_list == []:
-                    return
+                    return [],0
                 member_list.insert(0,"*")
-                self.AutoCompShow(0, member_list)
+                return member_list,0
             #输入的是from或者import这样的句式
             elif self.IsImportType(pos) or self.IsFromType(pos):
                 import_list = intellisence.IntellisenceManager().GetImportList()
                 #import_list.extend(self.GetCurdirImports())
                 import_list = parserutils.py_sorted(import_list,parserutils.CmpMember)
-                if import_list == []:
-                    return
-                self.AutoCompShow(0, import_list)
+                return import_list,0
             #输入from xxx后自动完成输入import关键字
             elif self.IsFromplusType(pos):
                 self.AddText(self.TYPE_BLANK_WORD)
                 self.AutoCompShow(0, [self.TYPE_IMPORT_WORD])
                 #输入from xx import后接着弹出后面的提示信息
-                self.HandlerInput(self.TYPE_BLANK_WORD)        
+                return self.GetAutoCompletions("","",self.TYPE_BLANK_WORD)
+            else:
+                return [],0
+        elif last_char not in self.DEFAULT_WORD_CHARS:
+            return [],0
+        else:
+            member_list,repLen = self.ListMembers(pos,context)
+            self.AutoCompShow(repLen, member_list,auto_insert=False)
+            if self.autocompleter is not None:
+                self.autocompleter.ShowHintCompletions(hint)
+            return [],0
+
+    def HandlerInput(self,event):
+        #是否启用代码自动完成
+        if not utils.profile_get_int("UseAutoCompletion", True):
+            return
+        char = event.char
+        #只有启用代码自动完成增强版功能时才能边输入边提示
+        if char and char in self.DEFAULT_WORD_CHARS and not self.AutoCompActive() and utils.profile_get_int("UseEnhancedAutoCompletion", False):
+            current_view = GetApp().GetDocumentManager().GetCurrentView()
+            GetApp().event_generate(constants.AUTO_COMPLETION_INPUT_EVT,view=current_view,char=char)
+        elif char in [self.TYPE_BLANK_WORD,self.TYPE_POINT_WORD]:
+            completions,replaceLen = self.GetAutoCompletions("","",char)
+            self.insert("insert", char)
+            self.AutoCompShow(replaceLen, completions)
+            return "break"
+        else:
+            #输入非asc字符时关闭自动完成列表框
+            if not char in self.DEFAULT_WORD_CHARS:
+                self.AutoCompHide()
+            pos = self.GetCurrentPos()
+            pos = pos[0],pos[1]-1
+            #输入(符号,弹出文档提示信息
+            if char == "(":
+                self.GetArgTip(pos)
+                self.insert("insert", '()')
+                return "break"
+            elif char == "'":
+                if self.GetCharAt(pos[0],pos[1]) == "'" and self.GetCharAt(pos[0],pos[1]-1) == "'":
+                    #插入成双的单三引号
+                    self.insert("insert","'''")
+                else:
+                    #插入成双的单引号
+                    return codeeditor.CodeCtrl.OnChar(self,event)
+            elif char == '"':
+                if self.GetCharAt(pos[0],pos[1]) == '"' and self.GetCharAt(pos[0],pos[1]-1) == '"':
+                    #插入成双的双三引号
+                    self.insert("insert",'"""')
+                else:
+                    #插入成双的双引号
+                    return codeeditor.CodeCtrl.OnChar(self,event)
+            else:
+                return codeeditor.CodeCtrl.OnChar(self,event)
 
     def GetCurdirImports(self):
         cur_project = wx.GetApp().GetService(project.ProjectEditor.ProjectService).GetView().GetDocument()
@@ -670,28 +773,31 @@ class PythonCtrl(codeeditor.CodeCtrl):
             return
         self.CallTipShow(pos,tip)
 
-    def ListMembers(self,pos):
-        text = self.GetTypeWord(pos[0],pos[1])
+    def ListMembers(self,pos,text):
         line = pos[0]
         module_scope = GetApp().GetDocumentManager().GetCurrentView().ModuleScope
         if module_scope is None:
-            return
+            return [],0
         scope = module_scope.FindScope(line+1)
-        found_scopes = scope.FindNameScopes(text)
+        found_top_scopes = scope.FindNameScopes(text)
         member_list = []
-        if found_scopes:
-            scope_found = found_scopes[0]
-            if scope_found.Parent is not None and isinstance(scope_found.Node,nodeast.ImportNode):
-                member_list = scope_found.GetImportMemberList(text)
+        if found_top_scopes:
+            scope_top_found = found_top_scopes[0]
+            if scope_top_found.Parent is not None and isinstance(scope_top_found.Node,nodeast.ImportNode):
+                member_list = scope_top_found.GetImportMemberList(text)
             else:
-                if scope.IsClassMethodScope() and scope.Parent == scope_found:
-                    member_list = scope_found.GetClassMemberList()
+                if scope.IsClassMethodScope() and scope.Parent == scope_top_found:
+                    member_list = scope_top_found.GetClassMemberList()
                 else:
-                    member_list = scope_found.GetMemberList()
+                    #这里查找的顶层的范围,需要查找精确的子范围
+                    scope_founds = scope_top_found.GetMember(text)
+                    if scope_founds:
+                        scope_found = scope_founds[0]
+                        member_list = scope_found.GetMemberList()
         member_list = parserutils.py_sorted(member_list,parserutils.CmpMember)
         if member_list == []:
-            return
-        self.AutoCompShow(0, member_list)
+            return [],0
+        return member_list,0
 
     def IsCaretLocateInWord(self,pos=None):
         if pos == None:
@@ -768,6 +874,8 @@ class PythonCtrl(codeeditor.CodeCtrl):
         '''
             回车键自动缩进文本
         '''
+        #回车时关闭鼠标提示信息
+        self.CallTipHide()
         #是否启用自动缩进
         if not self.AutoCompActive() and utils.profile_get_int("AutoIndent", True):
             self.DoIndent()
@@ -775,3 +883,30 @@ class PythonCtrl(codeeditor.CodeCtrl):
             return "break"
         else:
             return codeeditor.CodeCtrl.perform_return(self,event)
+            
+    def perform_smart_backspace(self, event):
+        codeeditor.CodeCtrl.perform_smart_backspace(self,event)
+        #退格时关闭文档提示
+        self.CallTipHide()
+        #退格时完成代码提示
+        #只有启用代码自动完成增强版功能时才能边退格边提示
+        if utils.profile_get_int("UseAutoCompletion", True) and not self.AutoCompActive() and utils.profile_get_int("UseEnhancedAutoCompletion", False):
+            current_view = GetApp().GetDocumentManager().GetCurrentView()
+            GetApp().event_generate(constants.AUTO_COMPLETION_BACKSPACE_EVT,view=current_view)
+        return "break"
+        
+    def IsEditDisabled(self):
+        '''
+            调试器运行时是否允许编辑代码文件,新建文件除外
+        '''
+        doc_view = GetApp().GetDocumentManager().GetCurrentView()
+        if doc_view and doc_view.GetDocument() and isinstance(doc_view,codeeditor.CodeView) and utils.profile_get_int("DISABLE_EDIT_WHEN_DEBUGGER_RUNNING",True) and \
+                pythondebugger.BaseDebuggerUI.DebuggerRunning() and not doc_view.GetDocument().IsNewDocument:
+            return True
+        return False
+        
+    def is_read_only(self):
+        if self.IsEditDisabled():
+            return True
+        return codeeditor.CodeCtrl.is_read_only(self)
+        

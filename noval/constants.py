@@ -181,6 +181,7 @@ ID_GOTO_OFFICIAL_WEB            = NewId()
 ID_GOTO_PYTHON_WEB              = NewId()
 ID_FEEDBACK                     = NewId()
 ID_ABOUT                        = NewId()
+ID_REGISTER_LOGOUT              = NewId()
     
     
 #Document popup Menu IDs    
@@ -236,3 +237,6 @@ FILE_SAVED_EVT = "EvtFileSaved"
 
 #双击文件视图文件夹事件
 DOUBLECLICKPATH_EVT = "EvtDoubleClickPath"
+
+AUTO_COMPLETION_BACKSPACE_EVT = "AutoCompletionBackSpace"
+AUTO_COMPLETION_INPUT_EVT = "AutoCompletionInput"

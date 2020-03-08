@@ -56,9 +56,9 @@ class OutputView(OutputRunCommandUI):
             submenu.Append(NewId(),_("Build"),handler=self.Build) 
             submenu.Append(NewId(),_("Rebuild"),handler=self.Rebuild)
             submenu.Append(NewId(),_("Clean temporary files"),handler=self.Clean)
-            submenu.Append(NewId(),_("Run in debugger"),handler=self.Run)
-            submenu.Append(NewId(),_("Run in terminal"),handler=None)
-            submenu.Append(NewId(),_("Configuration"),handler=None)
+            submenu.Append(NewId(),_("Run in debugger"),handler=self.RunIndebugger)
+            submenu.Append(NewId(),_("Run in terminal"),handler=self.RunInterminal)
+            submenu.Append(NewId(),_("Configuration"),handler=self.ShowPyinstallerConfiguration)
             
     def Convertto(self):
         project_doc = self.GetProjectDocument()

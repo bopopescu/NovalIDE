@@ -612,6 +612,13 @@ class PluginManager(object):
         for pdata in self._pdata.values():
             plugins[pdata.GetClass()] = pdata.GetInstance()
         return plugins
+        
+    def GetPlugin(self,plugin_name):
+        pdata = self.GetPluginData()
+        for plugin in pdata:
+            if plugin.GetName().lower() == plugin_name.lower():
+                return plugin
+        return None
 
     def FindPluginByegg(self,egg_path):
         '''

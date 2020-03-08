@@ -26,6 +26,7 @@ import queue as Queue
 import io as cStringIO
 import importlib
 
+_lock = threading.Lock()
 
 if sys.platform.startswith("win"):
     ####import win32api
@@ -35,7 +36,7 @@ else:
     
 _VERBOSE = False
 _DEBUG_DEBUGGER = False
-
+DEBUG_UNKNOWN_VALUE_TYPE = 'Unknown'
 class BaseStdIn:
     
     def readline(self, *args, **kwargs):
@@ -434,16 +435,17 @@ class DebuggerHarness(object):
         self._adb.clear_break(fileName, lineNo)
         return ""
 
-    def add_watch(self,  name,  text, frame_message, run_once): 
-        if len(frame_message) > 0:
-            frame = self.message_frame_dict[frame_message] 
-            try:
-                item = eval(text, frame.f_globals, frame.f_locals)
-                return self.get_watch_document(item, name)
-            except: 
-                tp, val, tb = sys.exc_info()
-                return self.get_exception_document(name,tp, val, tb) 
-        return ""
+    def add_watch(self,  name,  text, frame_message, run_once):
+        with _lock:
+            if len(frame_message) > 0:
+                frame = self.message_frame_dict[frame_message] 
+                try:
+                    item = eval(text, frame.f_globals, frame.f_locals)
+                    return self.get_watch_document(item, name)
+                except: 
+                    tp, val, tb = sys.exc_info()
+                    return self.get_exception_document(name,tp, val, tb) 
+            return ""
         
     def execute_in_frame(self, frame_message, command):
         frame = self.message_frame_dict[frame_message]
@@ -566,6 +568,7 @@ class DebuggerHarness(object):
         top_element = doc.documentElement
         item_node = doc.createElement("dict_nv_element")  
         item_node.setAttribute('value', wholeStack)
+        item_node.setAttribute('type', DEBUG_UNKNOWN_VALUE_TYPE)
         item_node.setAttribute('name', str(name))    
         top_element.appendChild(item_node)
         return self.wrapAndCompress(doc.toxml())
@@ -625,17 +628,20 @@ class DebuggerHarness(object):
 
     def addNode(self, parent_node, name, item, document):
         item_node = document.createElement("dict_nv_element")  
-        item_node.setAttribute('value', self.saferepr(item))
+        value,value_type = self.saferepr(item)
+        item_node.setAttribute('value',value)
+        item_node.setAttribute('type',value_type)
         item_node.setAttribute('name', str(name))    
         introVal = str(self.canIntrospect(item))
         item_node.setAttribute('intro', str(introVal))
         parent_node.appendChild(item_node)
-        
              
     def addTupleOrList(self, top_node, name, tupple, doc, ply):
         tupleNode = doc.createElement('tuple')
         tupleNode.setAttribute('name', str(name))
-        tupleNode.setAttribute('value', self.saferepr(tupple)) 
+        value,value_type = self.saferepr(tupple)
+        tupleNode.setAttribute('value',value)
+        tupleNode.setAttribute('type',value_type)
         top_node.appendChild(tupleNode)
         count = 0
         for item in tupple:
@@ -645,7 +651,9 @@ class DebuggerHarness(object):
     def addDictAttr(self, root_node, name, thing, document, ply):
         dict_node = document.createElement('thing') 
         dict_node.setAttribute('name', name)
-        dict_node.setAttribute('value', self.saferepr(thing))
+        value,value_type = self.saferepr(thing)
+        dict_node.setAttribute('value',value)
+        dict_node.setAttribute('type',value_type)
         root_node.appendChild(dict_node)
         self.addDict(dict_node, '', thing.__dict__, document, ply) # Not decreminting ply
             
@@ -653,7 +661,9 @@ class DebuggerHarness(object):
         if name != '':
             dict_node = document.createElement('dict') 
             dict_node.setAttribute('name', name)
-            dict_node.setAttribute('value', self.saferepr(dict))
+            value,value_type = self.saferepr(dict)
+            dict_node.setAttribute('value',value)
+            dict_node.setAttribute('type',value_type)
             root_node.appendChild(dict_node)
         else:
             dict_node = root_node
@@ -671,7 +681,9 @@ class DebuggerHarness(object):
     def addClass(self, root_node, name, class_item, document, ply):
          item_node = document.createElement('class') 
          item_node.setAttribute('name', str(name)) 
-         item_node.setAttribute('value', self.saferepr(class_item))
+         value,value_type = self.saferepr(class_item)
+         item_node.setAttribute('value',value)
+         item_node.setAttribute('type',value_type)
          root_node.appendChild(item_node)
          try:
              if hasattr(class_item, '__dict__'):
@@ -711,8 +723,10 @@ class DebuggerHarness(object):
          
     def addModule(self, root_node, name, module_item, document, ply):
          item_node = document.createElement('module') 
-         item_node.setAttribute('name', str(name)) 
-         item_node.setAttribute('value', self.saferepr(module_item))
+         item_node.setAttribute('name', str(name))
+         value,value_type = self.saferepr(module_item)
+         item_node.setAttribute('value',value)
+         item_node.setAttribute('type',value_type)
          root_node.appendChild(item_node)
          try:
              if hasattr(module_item, '__file__'):
@@ -785,14 +799,15 @@ class DebuggerHarness(object):
    
     def saferepr(self, thing):
         try:
+            value_type = str(type(thing))
             try:
-                return repr(thing)
+                return repr(thing),value_type
             except:
-                return str(type(thing))
+                return value_type,value_type
         except:
             tp, val, tb = sys.exc_info()
             #traceback.print_exception(tp, val, tb)
-            return repr(val)
+            return repr(val),DEBUG_UNKNOWN_VALUE_TYPE
                     
     # The debugger calls this method when it reaches a breakpoint.
     def interaction(self, message, frame, info):

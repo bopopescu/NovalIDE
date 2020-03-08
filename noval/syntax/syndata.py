@@ -7,8 +7,6 @@ import time
 
 class BaseLexer(object):
     """Syntax data container object base class"""
-    
-    SYNTAX_ITEMS = []
     def __init__(self, langid):
         object.__init__(self)
         # Attributes
@@ -195,13 +193,13 @@ class BaseSyntaxcolorer:
     def notify_range(self, index1, index2=None):
         self.text.tag_add("TODO", index1, index2)
         if self.after_id:
-            utils.get_logger().debug("colorizing already scheduled")
+            utils.get_logger().debug("colorizing already scheduled")
             return
         if self.colorizing:
             self.stop_colorizing = True
-            utils.get_logger().debug("stop colorizing")
+            utils.get_logger().debug("stop colorizing")
         if self.allow_colorizing:
-            utils.get_logger().debug("schedule colorizing")
+            utils.get_logger().debug("schedule colorizing")
             self.after_id = self.text.after(1, self.recolorize)
         #不高亮语法,删除所有tag
         else:
@@ -210,7 +208,7 @@ class BaseSyntaxcolorer:
     def recolorize(self):
         self.after_id = None
         if not self.allow_colorizing:
-            utils.get_logger().debug("auto colorizing is off")
+            utils.get_logger().debug("auto colorizing is off")
             return
         if self.colorizing:
             utils.get_logger().debug("already colorizing")
@@ -218,12 +216,12 @@ class BaseSyntaxcolorer:
         try:
             self.stop_colorizing = False
             self.colorizing = True
-            utils.get_logger().debug("colorizing...")
+            utils.get_logger().debug("colorizing...")
             self._update_coloring()
         finally:
             self.colorizing = False
         if self.allow_colorizing and self.text.tag_nextrange("TODO", "1.0"):
-            utils.get_logger().debug("reschedule colorizing")
+            utils.get_logger().debug("reschedule colorizing")
             self.after_id = self.text.after(1, self.recolorize)
 
     @utils.compute_run_time
@@ -278,7 +276,7 @@ class BaseSyntaxcolorer:
                     # in case update tells us to leave.
                     self.text.tag_add("TODO", next)
                 if self.stop_colorizing:
-                    utils.get_logger().debug("colorizing stopped")
+                    utils.get_logger().debug("colorizing stopped")
                     return
         self.text.after(1,self.text.update)
 

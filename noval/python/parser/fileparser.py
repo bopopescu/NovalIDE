@@ -7,6 +7,9 @@ import sys
 import utils
 import pickle
 import codeparser
+import logging
+
+parser_logger = logging.getLogger('codefile.parser')
 
 def is_package_dir(dir_name):
     package_file = "__init__.py"
@@ -14,7 +17,7 @@ def is_package_dir(dir_name):
         return True
     return False
 
-def get_package_childs(module_path):
+def get_package_childs(module_path,path_list):
     module_dir = os.path.dirname(module_path)
     file_name = os.path.basename(module_path)
     assert(file_name == "__init__.py")
@@ -30,7 +33,7 @@ def get_package_childs(module_path):
             continue
         if os.path.isfile(file_path_name):
             module_name = '.'.join(os.path.basename(file_name).split('.')[0:-1])
-            full_module_name,_ = utils.get_relative_name(file_path_name)
+            full_module_name,_ = utils.get_relative_name(file_path_name,path_list)
         else:
             module_name = file_name
             file_path_name = os.path.join(file_path_name,"__init__.py")
@@ -55,6 +58,7 @@ class FiledumpParser(codeparser.CodebaseParser):
         self.force_update = force_update
         self.module_path = module_path
         self.raise_parse_error = False
+        self.path_list = path_list
 
     def ParsefileContent(self,filepath,content,encoding=None):
         node = codeparser.CodebaseParser.ParsefileContent(self,filepath,content,encoding)
@@ -129,26 +133,26 @@ class FiledumpParser(codeparser.CodebaseParser):
 
     def Dump(self):
         if self.top_module_name == "":
-            return
+            return False
         dest_file_name = os.path.join(self.output,self.top_module_name)
         self.member_file_path = dest_file_name + config.MEMBERS_FILE_EXTENSION
         if os.path.exists(self.member_file_path) and not self.force_update:
-            #print (self.module_path,'has been already analyzed')
-            return
+            parser_logger.debug('%s has been already analyzed',self.module_path)
+            return False
 
         doc = None
         try:
             module_d = self.Parsefile(self.module_path)
         except Exception as e:
-            print ('parse file %s error' %self.module_path)
+            parser_logger.debug('parse file %s error',self.module_path)
             if self.raise_parse_error:
                 tp,val,tb = sys.exc_info()
                 import traceback
                 traceback.print_exception(tp, val, tb)
-            return
+            return False
         #如果是包,则将文件夹下的所有python模块作为其儿子
         if self.is_package:
-            module_childs = get_package_childs(self.module_path)
+            module_childs = get_package_childs(self.module_path,self.path_list)
             module_d['childs'].extend(module_childs)
         else:
             #处理sys modules中的模块,如果类似os.path这样的模块,这样需要添加到os模块的儿子中
@@ -173,6 +177,7 @@ class FiledumpParser(codeparser.CodebaseParser):
                 o2.write(name)
                 o2.write('\n')
                 name_sets.add(name)
+        return True
     
     def FindModuleMembersFile(self,module_name):
         if not module_name:

@@ -21,6 +21,14 @@ class PythonProjectDocument(ProjectDocument):
         ProjectDocument.__init__(self,model)
         self.db_loader = sched.ProjectDatabaseLoader(self)
         
+    def OnOpenDocument(self, filePath):
+        if not ProjectDocument.OnOpenDocument(self,filePath):
+            return False
+        #加载项目文档后分析并加载智能提示数据,软件启动加载项目时不要分析
+        if utils.profile_get_int('CreateProjectIntellisenseDatabase',True) and not GetApp().MainFrame.GetProjectView().IsLoading:
+            GetApp().MainFrame.GetProjectView().Rundoc(self)
+        return True
+        
     @staticmethod
     def GetProjectModel():
         return pyprojectlib.PythonProject()
@@ -42,12 +50,7 @@ class PythonProjectDocument(ProjectDocument):
         if run_configuration_name:
             file_configuration = runconfiguration.FileConfiguration(self,run_file)
             run_configuration = file_configuration.LoadConfiguration(run_configuration_name)
-            try:
-                return run_configuration.GetRunParameter()
-            except PromptErrorException as e:
-                wx.MessageBox(e.msg,_("Error"),wx.OK|wx.ICON_ERROR)
-                return None
-            
+            return run_configuration.GetRunParameter()
         #再获取通过运行菜单->配置参数和环境变量显示的对话框里面设置的运行文件参数
         use_argument = utils.profile_get_int(self.GetFileKey(run_file,"UseArgument"),True)
         if use_argument:
@@ -196,7 +199,7 @@ class PythonProjectDocument(ProjectDocument):
        
 
     def RunWithoutDebug(self,filetoRun=None):
-        run_parameter = self.GetRunParameter(filetoRun)
+        run_parameter = self.GetRunParameter(filetoRun,is_debug=True)
         if run_parameter is None:
             return
         run_parameter.IsBreakPointDebug = False
@@ -294,7 +297,7 @@ class PythonProjectDocument(ProjectDocument):
         if run_parameter.Interpreter.IsBuiltIn:
             messagebox.showinfo(GetApp().GetAppName(),_("Builtin interpreter does not support this operation."))
             return
-        host = utils.profile_get("DebuggerHostName", DEFAULT_HOST)
+        host = utils.profile_get("DebuggerHostName", consts.DEFAULT_HOST)
         if not host:
             wx.MessageBox(_("No debugger host set. Please go to Tools->Options->Debugger and set one."), _("No Debugger Host"))
             return

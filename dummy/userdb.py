@@ -65,7 +65,7 @@ else:
 class UserDataDb(BaseDb):
     
     USER_DATA_DB_NAME = "data.db"
-    DB_VERSION = "1.0.2"
+    DB_VERSION = "1.0.3"
     ###HOST_SERVER_ADDR = 'http://127.0.0.1:8000'
     HOST_SERVER_ADDR = 'http://www.novalide.com'
     ####HOST_SERVER_ADDR = 'http://47.105.90.123:8080/'
@@ -228,3 +228,17 @@ class UserDataDb(BaseDb):
         sql = "select * from user"
         result = self.fetchone(sql)
         return result
+        
+    def GetToken(self):
+        info = self.GetUserInfo()
+        if not info:
+            return None
+        return info[10]
+        
+    def UpdateUserInfo(self,**kwargs):
+        if self.user_id is None:
+            self.GetUser()
+        update_sql = '''
+            update user set email='%s', user_name='%s', token='%s' where id=%d
+        ''' % (kwargs.get('email'),kwargs.get('user_name'),kwargs.get('token',''),self.user_id)
+        self.update(update_sql)

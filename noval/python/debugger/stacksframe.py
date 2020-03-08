@@ -2,7 +2,7 @@
 from noval import GetApp,_,NewId
 import noval.iface as iface
 import noval.plugin as plugin
-from tkinter import ttk
+from tkinter import ttk,messagebox
 import tkinter as tk
 import noval.ttkwidgets.treeviewframe as treeviewframe
 import noval.python.debugger.watchs as watchs
@@ -13,6 +13,7 @@ import bz2
 from xml.dom.minidom import parseString
 import noval.consts as consts
 from noval.python.debugger.commandui import BaseDebuggerUI
+import threading
 
 class StackFrameTab(ttk.Frame,watchs.CommonWatcher):
     """description of class"""
@@ -42,6 +43,8 @@ class StackFrameTab(ttk.Frame,watchs.CommonWatcher):
         self.tree.bind("<<TreeviewOpen>>", self.IntrospectCallback)
         self.tree.bind("<3>", self.OnRightClick, True)
         self.menu = None
+        self.lock = threading.Lock()
+        self.is_watching = False
         
     def ListItemSelected(self, event):
         self.PopulateTreeFromFrameMessage(self.frameValue.get())
@@ -192,13 +195,23 @@ class StackFrameTab(ttk.Frame,watchs.CommonWatcher):
         '''
             从断点调试服务器中获取监视的值
         '''
-        frameNode = self._stack[int(self.currentItem)]
-        message = frameNode.getAttribute("message")
-        binType = GetApp().GetDebugger()._debugger_ui.framesTab.add_watch(message, watch_obj)
-        xmldoc = bz2.decompress(binType.data)
-        domDoc = parseString(xmldoc)
-        nodeList = domDoc.getElementsByTagName('watch')
-        return nodeList
+        with self.lock:
+            if self.is_watching:
+                return []
+            frameNode = self._stack[int(self.currentItem)]
+            message = frameNode.getAttribute("message")
+            try:
+                self.is_watching = True
+                binType = GetApp().GetDebugger()._debugger_ui.framesTab.add_watch(message, watch_obj)
+            except Exception as e:
+                utils.get_logger().exception('watch exception:')
+               # messagebox.showerror(_('Debug Error'),str(e),parent=GetApp().GetTopWindow())
+                return []
+            xmldoc = bz2.decompress(binType.data)
+            domDoc = parseString(xmldoc)
+            nodeList = domDoc.getElementsByTagName('watch')
+            self.is_watching = False
+            return nodeList
 
 class StackframeViewLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)

@@ -46,6 +46,8 @@ class BuiltinNode(AbstractAst):
         self._is_built_in = is_built_in
         self._name = name
         self._doc = doc
+        self._line = -1
+        self._col = -1
         
     @property
     def Name(self):
@@ -79,12 +81,22 @@ class BuiltinNode(AbstractAst):
     @property
     def Doc(self):
         return self._doc
+        
+    @property
+    def Line(self):
+        return self._line
+    
+    @property
+    def Col(self):
+        return self._col
             
 class Module(BuiltinNode):
     
     def __init__(self,name,path,doc,is_built_in = False):
         super(Module,self).__init__(name,config.NODE_MODULE_TYPE,None,doc,is_built_in)
         self._path = path
+        self._line = 0
+        self._col = 0
         
     @property
     def Path(self):
@@ -107,14 +119,6 @@ class Node(BuiltinNode):
         super(Node,self).__init__(name,type,parent,doc,is_built_in)
         self._line = line
         self._col = col
-        
-    @property
-    def Line(self):
-        return self._line
-    
-    @property
-    def Col(self):
-        return self._col
         
 class ArgNode(Node):
     def __init__(self,name,line,col,is_default=False,is_var=False,is_kw=False,parent=None):

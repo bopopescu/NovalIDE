@@ -68,7 +68,6 @@ class ProjectTreeCtrl(ttk.Treeview):
         self.entryPopup = None
         
         self.bind("<Escape>", self.EndLabel)
-        self.bind("<<TreeviewSelect>>", self.OnItemSelect)
         self.bind("<Button-1>", self.FinishLabel)
         
     def SelectItem(self,node):
@@ -122,9 +121,6 @@ class ProjectTreeCtrl(ttk.Treeview):
             return None
         return childs[0]
         
-    def OnItemSelect(self,event):
-        self.FinishLabel(event)
-        
     def EndLabel(self,event):
         if not self.is_edit_state or self.entryPopup is None:
             return
@@ -140,7 +136,11 @@ class ProjectTreeCtrl(ttk.Treeview):
         
     def EditLabel(self,item):
         self.is_edit_state = True
-        x,y,width,height = self.bbox(item)
+        item_box = self.bbox(item)
+        if not item_box:
+            self.see(item)
+            return
+        x,y,width,height = item_box
         # y-axis offset
         pady = height // 2
         # place Entry popup properly         
@@ -815,7 +815,6 @@ class BaseProjectbrowser(ttk.Frame):
         #检查节点文件或文件夹是否存在
         for child in self.GetView()._treeCtrl.get_children(item):
             item_path = self.GetItemPath(child)
-            print (item_path)
             if not os.path.exists(item_path):
                 self.GetView()._treeCtrl.delete(child)
         if 0 == add_count:
@@ -918,3 +917,19 @@ class BaseProjectbrowser(ttk.Frame):
         
     def GetOpenProjects(self):
         return self.GetView().Documents
+        
+    def GetReferenceProjects(self,doc_or_path,ensure_open=False):
+        if isinstance(doc_or_path,str):
+            doc = GetApp().GetDocumentManager().GetDocument(doc_or_path)
+            if doc is None:
+                return []
+        else:
+            doc = doc_or_path
+        ref_project_names = utils.profile_get(doc.GetKey() + "/ReferenceProjects",[])
+        if not ensure_open or not ref_project_names:
+            return ref_project_names
+        ref_docs = []
+        for pj_doc in self.GetView().Documents:
+            if pj_doc.GetFilename() in ref_project_names:
+                ref_docs.append(pj_doc)
+        return ref_docs

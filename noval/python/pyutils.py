@@ -312,6 +312,8 @@ class PythonBaseConfigurationPanel(ui_utils.BaseConfigurationPanel):
             return
         else:
             project_view = self.current_project_document.GetFirstView()
+            if project_view._treeCtrl.GetRootItem() == item:
+                return
             self.select_project_file = project_view._GetItemFile(item)
             if not fileutils.is_python_file(self.select_project_file):
                 self.DisableUI(self)

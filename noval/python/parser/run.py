@@ -9,6 +9,12 @@ import time
 import functools
 import multiprocessing
 import datetime
+import importlib
+import glob
+import faulthandler
+import logging
+
+logger = logging.getLogger("novalide.intellisense.run")
         
 def SaveLastUpdateTime(database_location):
     with open(os.path.join(database_location,config.UPDATE_FILE),"w") as f:
@@ -52,13 +58,14 @@ def generate_intelligent_data_by_pool(out_path,new_database_version):
     pool = multiprocessing.Pool(processes=min(max_pool_count,len(sys_path_list)))
     future_list = []
     for path in sys_path_list:
-        print ('start parse path data',path)
+        logger.info('start parse path %s data',path)
         pool.apply_async(scan_sys_path,(path,dest_path,need_renew_database))
     pool.close()
     pool.join()
     process_sys_modules(dest_path)
     if need_renew_database:
         utils.SaveDatabaseVersion(dest_path,new_database_version)
+    update_intelliense_database(dest_path)
     SaveLastUpdateTime(dest_path)
     
 def get_unfinished_modules(outpath):
@@ -138,20 +145,71 @@ def generate_intelligent_data(out_path,new_database_version):
     for i,path in enumerate(sys_path_list):
         sys_path_list[i] = os.path.abspath(path)
     for path in sys_path_list:
-        print ('start parse path data',path)
+        logger.info('start parse path %s data',path)
         scan_sys_path(path,dest_path,need_renew_database)
     process_sys_modules(dest_path)
     if need_renew_database:
         SaveDatabaseVersion(dest_path,new_database_version)
+        
+def update_intelliense_database(dest_path):
+    
+    def delete_file(filepath):
+        try:
+            os.remove(filepath)
+        except:
+            pass
+    delete_file_count = 0
+    for filepath in glob.glob(os.path.join(dest_path,"*" + config.MEMBERS_FILE_EXTENSION)):
+        filename = os.path.basename(filepath)
+        module_name = '.'.join(filename.split(".")[0:-1])
+        try:
+            spec = importlib.util.find_spec(module_name)
+            logger.debug('module %s file %s spec is %s',module_name,filepath,spec)
+        except ImportError as msg:
+            if msg.name is not None and module_name.find(msg.name) != -1:
+                logger.info("module %s not found,delete intelliense file %s",module_name,filepath)
+                delete_file(filepath)
+                delete_file(os.path.join(dest_path,module_name + config.MEMBERLIST_FILE_EXTENSION))
+                delete_file_count += 1
+            else:
+                logger.info("find module %s error:%s",module_name,msg)
+            continue
+        except Exception as e:
+            continue
+        if spec is None:
+            logger.info("module %s not found,delete intelliense file %s",module_name,filepath)
+            delete_file(filepath)
+            delete_file(os.path.join(dest_path,module_name + config.MEMBERLIST_FILE_EXTENSION))
+            delete_file_count += 1
+            continue
+    logger.info('delete total %d intelliense files',delete_file_count)
     
 if __name__ == "__main__":
-    ###generate_builtin_data("./")
+    logger.propagate = False
+    logFormatter = logging.Formatter("%(levelname)s: %(message)s")
     start_time = time.time()
     out_path = sys.argv[1]
     new_database_version = sys.argv[2]
+    debug = int(sys.argv[3])
+    utils.MakeDirs(out_path)
+    file_handler = logging.FileHandler(
+        os.path.join(out_path, "backend.log"), encoding="UTF-8", mode="w"
+    )
+    file_handler.setFormatter(logFormatter)
+    logger.addHandler(file_handler)
+    if debug:
+        file_handler.setLevel(logging.DEBUG)
+        logger.setLevel(logging.DEBUG)
+    else:
+        file_handler.setLevel(logging.INFO)
+        logger.setLevel(logging.INFO)
+    fault_out = open(os.path.join(out_path, "backend_faults.log"), mode="w")
+    faulthandler.enable(fault_out)
+    
+    
     #generate_intelligent_data(out_path,new_database_version)
     generate_intelligent_data_by_pool(out_path,new_database_version)
     end_time = time.time()
     elapse = end_time - start_time
-    print ('elapse time:',elapse,'s')
-    print ('end............')
+    logger.info('elapse time:%.2fs',elapse)
+    logger.info('end............')

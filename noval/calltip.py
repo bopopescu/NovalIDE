@@ -12,8 +12,6 @@ class CalltipBox(ttk.Frame):
             master=self, text="Aaappiiiii"
         )
         self.doc_label.pack(fill="both",expand=1)
-        #单击文本框时,关闭智能提示
-        self.text.bind("<1>", self.on_text_click)
         # for cases when Listbox gets focus
         #按Esc建关闭智能提示
         self.doc_label.bind("<Escape>", self._close)
@@ -84,6 +82,6 @@ class CalltipBox(ttk.Frame):
         self.place_forget()
         self.text.focus_set()
 
-    def on_text_click(self, event=None):
+    def close(self):
         if self._is_visible():
             self._close()
