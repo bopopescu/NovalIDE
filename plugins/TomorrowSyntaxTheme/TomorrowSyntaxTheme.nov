@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<noval:project xmlns:noval="http://www.novalide.com/noval.xsd" version="13" name="TomorrowSyntaxTheme" id="2D900DDE-5518-11EA-9CA3-0024D6F9EA3D">
+  <noval:file filePath="./tomorrowsyntaxtheme/__init__.py" logicalFolder="tomorrowsyntaxtheme"/>
+  <noval:file filePath="./setup.py"/>
+  <noval:file filePath="./tomorrowsyntaxtheme/tomorrow_syntax_theme.py" logicalFolder="tomorrowsyntaxtheme"/>
+  <noval:_runinfo>
+    <noval:DocumentTemplate>pypi.pypi.PyPIProjectTemplate</noval:DocumentTemplate>
+    <noval:StartupFile>setup.py</noval:StartupFile>
+  </noval:_runinfo>
+  <noval:interpreter name="3.6-32" version="3.6.4rc1" path="C:\Users\wukan\AppData\Local\Programs\Python\Python36-32\python.exe"/>
+</noval:project>
