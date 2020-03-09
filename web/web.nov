@@ -140,8 +140,16 @@
   <noval:file filePath="./pypi/logger.conf" logicalFolder="pypi"/>
   <noval:file filePath="./src/util/errors.py" logicalFolder="src/util"/>
   <noval:file filePath="./update_plugin.py"/>
+  <noval:file filePath="./pypi/ttt.py" logicalFolder="pypi"/>
+  <noval:file filePath="./src/util/mailutils.py" logicalFolder="src/util"/>
+  <noval:file filePath="./src/util/sendmail.py" logicalFolder="src/util"/>
+  <noval:file filePath="./src/web/settings_logging.py" logicalFolder="src/web"/>
+  <noval:file filePath="./src/web/settings_redis.py" logicalFolder="src/web"/>
+  <noval:file filePath="./src/web/__pycache__/..." logicalFolder="src/web/__pycache__"/>
+  <noval:file filePath="./src/member/const.py" logicalFolder="src/member"/>
   <noval:_runinfo>
-    <noval:DocumentTemplate>noval.python.project.viewer.PythonProjectTemplate</noval:DocumentTemplate>
+    <noval:DocumentTemplate>djangokit.django.DjangoProjectTemplate</noval:DocumentTemplate>
+    <noval:StartupFile>src\manage.py</noval:StartupFile>
   </noval:_runinfo>
   <noval:interpreter name="2.7" version="2.7.11" path="C:\Python27\python.exe"/>
 </noval:project>
