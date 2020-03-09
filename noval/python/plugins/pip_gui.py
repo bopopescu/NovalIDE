@@ -39,7 +39,7 @@ import noval.editor.text as texteditor
 import noval.util.urlutils as urlutils
 import noval.preference as preference
 import inspect
-import noval.auth.login as login
+import noval.auth.register as register
 
 #找回pip工具的url地址
 PIP_INSTALLER_URL = "https://bootstrap.pypa.io/get-pip.py"
@@ -976,14 +976,18 @@ class PluginsPipDialog(PipDialog):
         #linux系统下有可能是python3.x解释器,只能加载python3.x的插件,故需要将插件的python版本改成3.x的
         else:
             #如果python3不是3.6版本则需要更改egg文件名,改之后的插件也是可以加载的
-            if utils.is_py3_plus() and sys.version_info.minor != 6:
-                egg_file_name = os.path.basename(egg_path)
-                egg_py_version = self.GetEggPyVersion(egg_file_name)
-                #将egg文件名的py版本号替换成sys版本号
-                new_egg_name = egg_file_name.replace("py%s"%egg_py_version,"3.%d"%sys.version_info.minor)
-                #新的egg文件名
-                dest_egg_path = os.path.join(plugin_path,new_egg_name)
-                shutil.move(egg_path,dest_egg_path)
+            if utils.is_py3_plus():
+                if sys.version_info.minor != 6:
+                    egg_file_name = os.path.basename(egg_path)
+                    egg_py_version = self.GetEggPyVersion(egg_file_name)
+                    #将egg文件名的py版本号替换成sys版本号
+                    new_egg_name = egg_file_name.replace("py%s"%egg_py_version,"3.%d"%sys.version_info.minor)
+                    #新的egg文件名
+                    dest_egg_path = os.path.join(plugin_path,new_egg_name)
+                    shutil.move(egg_path,dest_egg_path)
+                #如果是3.6版本则不用更改egg文件名,直接拷贝即可
+                else:
+                    shutil.move(egg_path,plugin_path)
             
         #执行插件的安装操作,需要在插件里面执行
         GetApp().GetPluginManager().LoadPluginByName(name)
@@ -1092,8 +1096,8 @@ class PluginsPipDialog(PipDialog):
         '''
         #插件是否需要登录
         if package_data.get('login_required',False) and not GetApp().is_login:
-            messagebox.showinfo(GetApp().GetAppName(),_('Plugin %s require login')%package_data['name'])
-            login.LoginDialog(self).ShowModal()
+            messagebox.showinfo(GetApp().GetAppName(),_('You need register an account and login if you want to install plugin "%s"')%package_data['name'])
+            register.RegisterDialog(self).ShowModal()
             #用户未登录成功
             if not GetApp().is_login:
                 return False
@@ -1115,7 +1119,8 @@ class PluginsPipDialog(PipDialog):
                 messagebox.showerror(GetApp().GetAppName(),_("Remove faile:%s fail") % dest_egg_path)
                 return False
         #检查插件是否免费或者是否付费,如果需要付费而未付款则不允许安装
-        if not ui_utils.check_plugin_free_or_payed(package_data):
+        #本地安装的插件不用检查插件是否需要付费
+        if not package_data.get('local',False) and not ui_utils.check_plugin_free_or_payed(package_data):
             return False
         #检查软件的版本是否是插件要求的最低版本
         return not self._conflicts_with_application_version(package_data)
@@ -1175,7 +1180,8 @@ class PluginsPipDialog(PipDialog):
             messagebox.showerror(GetApp().GetAppName(),_("invalid plugin"),parent=self)
             return
         plugin_name = plugin_data.GetName()
-        if not self._confirm_install({'name':plugin_name,'path':os.path.basename(filename),'app_version':plugin_data.Instance.GetMinVersion()}):
+        #设置为本地安装插件
+        if not self._confirm_install({'local':True,'name':plugin_name,'path':os.path.basename(filename),'app_version':plugin_data.Instance.GetMinVersion()}):
             return
             
         #必须要删除插件实例化对象

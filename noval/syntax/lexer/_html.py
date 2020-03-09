@@ -83,7 +83,7 @@ class SyntaxLexer(syndata.BaseLexer):
         return _('HTML File')
         
     def GetExt(self):
-        return "html"
+        return "html htm shtm shtml xhtml"
 
     def GetCommentPattern(self):
         """Returns a list of characters used to comment a block of code """

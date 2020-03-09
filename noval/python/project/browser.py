@@ -143,7 +143,7 @@ class ProjectBrowser(BaseProjectbrowser):
 
     def _InitCommands(self):
         BaseProjectbrowser._InitCommands(self)
-        GetApp().InsertCommand(constants.ID_ADD_FOLDER,constants.ID_ADD_PACKAGE_FOLDER,_("&Project"),_("New Package Folder"),image=GetApp().GetImage("project/python/package.png"),\
+        GetApp().InsertCommand(constants.ID_ADD_FOLDER,constants.ID_ADD_PACKAGE_FOLDER,_("&Project"),_("New Package"),image=GetApp().GetImage("project/python/package.png"),\
                                handler=lambda:self.ProcessEvent(constants.ID_ADD_PACKAGE_FOLDER),tester=lambda:self.GetView().UpdateUI(constants.ID_ADD_PACKAGE_FOLDER))
         
     def GetPopupFolderItemIds(self):

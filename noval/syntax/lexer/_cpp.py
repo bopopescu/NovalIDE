@@ -65,17 +65,9 @@ class SyntaxColorer(_c.SyntaxColorer):
 
 class SyntaxLexer(syndata.BaseLexer):
     """SyntaxData object for Python"""
-    #---- Syntax Style Specs ----#
-    SYNTAX_ITEMS = [
-    ]
-
     def __init__(self):
         lang_id = lang.RegisterNewLangId("ID_LANG_CPP")
         syndata.BaseLexer.__init__(self,lang_id)
-
-    def GetSyntaxSpec(self):
-        """Syntax Specifications """
-        return SYNTAX_ITEMS
 
     def GetDescription(self):
         return _('C++ Source File')

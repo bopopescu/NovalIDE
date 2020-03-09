@@ -4,7 +4,7 @@
   <noval:file filePath="./setup.py"/>
   <noval:file filePath="./tomorrowsyntaxtheme/tomorrow_syntax_theme.py" logicalFolder="tomorrowsyntaxtheme"/>
   <noval:_runinfo>
-    <noval:DocumentTemplate>pypi.pypi.PyPIProjectTemplate</noval:DocumentTemplate>
+    <noval:DocumentTemplate>pypi.pypi.NovalPluginProjectTemplate</noval:DocumentTemplate>
     <noval:StartupFile>setup.py</noval:StartupFile>
   </noval:_runinfo>
   <noval:interpreter name="3.6-32" version="3.6.4rc1" path="C:\Users\wukan\AppData\Local\Programs\Python\Python36-32\python.exe"/>

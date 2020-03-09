@@ -559,6 +559,7 @@ Version 1.2.2 -------------2020-2-25
 - 添加tomorrow风格的语法主题插件
 - 添加对xml,html,css,javascript语言的语法高亮支持
 - 修复python脚本对definition元素的语法高亮
-
+- 修复linux下面解释器版本3.6时无法安装插件的BUG
+- 更新pypi插件,发布插件到服务器需要注册并登陆
 
 

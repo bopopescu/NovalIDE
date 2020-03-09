@@ -58,7 +58,7 @@ class SyntaxLexer(syndata.BaseLexer):
         return _('XML File')
         
     def GetExt(self):
-        return "xml"
+        return "axl dtd plist rdf svg xml xrc xsd xsl xslt xul"
 
     def GetCommentPattern(self):
         """Returns a list of characters used to comment a block of code """

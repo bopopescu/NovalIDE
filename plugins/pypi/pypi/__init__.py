@@ -33,6 +33,7 @@ import noval.python.pyutils as pyutils
 from dummy.userdb import UserDataDb
 import noval.python.interpreter.pythonpackages as pythonpackages
 import noval.menu as tkmenu
+import noval.auth.register as register
 # Local imports
 #-----------------------------------------------------------------------------#
 
@@ -153,6 +154,10 @@ class PyPi(plugin.Plugin):
                 data[key] = line.replace(flag,"").strip()
         interpreter = self.GetProjectDocument().GetProjectDocInterpreter()
         if not interpreter:
+            return
+        if not GetApp().is_login:
+            messagebox.showinfo(GetApp().GetAppName(),_('You need register an account and login if you want to publish plugin to web server'))
+            register.RegisterDialog(GetApp()).ShowModal()
             return
         startup_file = self.GetProjectDocument().GetProjectStartupFile()
         project_path = self.GetProjectPath()
@@ -329,4 +334,4 @@ class PyPi(plugin.Plugin):
         terminal.run_in_terminal(command,self.GetProjectPath(),keep_open=False,pause=True,title="abc",overwrite_env=False)
         
     def GetMinVersion(self):
-        return '1.1.9'
+        return '1.2.1'
