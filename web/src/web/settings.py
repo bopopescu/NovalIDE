@@ -16,6 +16,7 @@ import sys
 
 
 from web.settings_logging import *
+from web.settings_redis import *
 UNITTEST = ('test' in sys.argv) or (os.environ.get('DJANGO_UNITTEST') is not None)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -153,3 +154,16 @@ MONGODBS = {
         'port': 27017,
     },
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST_USER = 'NovalIDE'
+EMAIL_USE_SSL = True
+EMAIL_HOST = 'smtp.mxhichina.com'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = 'kan.wu@genetalks.com'
+EMAIL_HOST_PASSWORD = 'wekay_89730387'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+#缓存激活码以及验证码过期时间
+ACTIVATE_CODE_TIMEOUT = 600

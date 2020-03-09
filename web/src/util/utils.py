@@ -10,6 +10,9 @@ from mongoengine.queryset import QuerySet
 from django.conf import settings
 import logging
 from errors import *
+from django.core.cache import get_cache
+from django.contrib.sessions.backends.cache import KEY_PREFIX
+import member.const as const 
 
 logger = logging.getLogger('logsite')
 
@@ -145,3 +148,53 @@ def CompareAppVersion(new_version,old_version):
     if CalcVersionValue(new_version) <= CalcVersionValue(old_version):
         return 0
     return 1
+    
+def get_session_or_token(request):
+    '''
+        获取缓存中的sesson token存储的用户数据
+    '''
+    token = request.REQUEST.get('token',None)
+    if token is not None:
+        cache = get_cache(settings.SESSION_REDIS_CACHE)
+        cache_key = KEY_PREFIX + token
+        session_data = cache.get(cache_key)
+        if session_data is None:
+            return {
+                const.IS_LOGINED_KEY:False,
+                const.MEMBER_ID_KEY:None
+            }
+        return session_data
+    return request.session
+    
+
+def member_logout(request):
+    '''
+        删除缓存中的sesson token存储的用户数据
+    '''
+    token = request.REQUEST.get('token',None)
+    if token is not None:
+        cache = get_cache(settings.SESSION_REDIS_CACHE)
+        cache_key = KEY_PREFIX + token
+        cache.delete(cache_key)
+        
+
+def is_member_logined(request):
+    '''
+        通过token检测用户是否已经登录,如果已经登录则自动登录
+    '''
+    session = get_session_or_token(request)
+    is_logined = session.get(const.IS_LOGINED_KEY)
+    return is_logined
+
+def member_login(request, member):
+    '''
+        用户登录成功后在缓存中保存session token
+    '''
+    request.session[const.IS_LOGINED_KEY] = True
+    request.session[const.MEMBER_ID_KEY] = member.id
+    request.session.save()
+    #设置登录时间
+    member.login_at = datetime.datetime.utcnow()
+    member.save()
+    #us = UserSession(member_id=str(member.id), session_id=request.session.session_key)
+    #us.save()

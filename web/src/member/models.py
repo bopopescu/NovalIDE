@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
+import hashlib
+import random
 #from django.db import models
 import datetime
-
+import const
 # Create your models here.
 from mongoengine import Document,StringField,EmailField,ObjectIdField,DateTimeField,BooleanField,ListField,IntField,FloatField
 
 class Member(Document):
     user_name = StringField(max_length=100)
+    #加盐后的密码
     password = StringField(max_length=32)
+    #密码盐
     password_salt = StringField(max_length=8)
     email = EmailField(max_length=100)
     phone = StringField(max_length=11)
@@ -17,12 +20,33 @@ class Member(Document):
     os_bit  = StringField(max_length=50)
     os_name = StringField(max_length=200)
     app_version = StringField(max_length=30)
+    #用户创建时间,未激活
     created_at = DateTimeField(requred=True,default=datetime.datetime.utcnow)
+    #是否激活
+    activated = BooleanField(default=False)
+    #用户登录时间
+    login_at = DateTimeField()
     
     meta = {
         'db_alias':'members'
     }
-
+    
+    def save_salt(self):
+        if self.password:
+            #生成密码盐字符串
+            self.password_salt = "".join(random.sample(const.SALT_SOURCE, 8))
+            #连同原始MD5密码和盐一起再用MD5加密一次
+            self.password = self.encode_password(self.password)
+            self.save()
+                
+    def encode_password(self,password):
+        return hashlib.md5(password + self.password_salt).hexdigest()
+        
+    def check_passord(self,password):
+        '''
+            检查原始MD5密码再次加密后是否和数据库保存的密码是否一致
+        '''
+        return self.password == self.encode_password(password)
 
 class MemberData(Document):
     user_id = ObjectIdField(required=True)
@@ -104,6 +128,8 @@ class PluginPackage(PyPackage):
     member_id = ObjectIdField(required=True)
     #插件是否免费
     free = BooleanField(default=True)
+    #是否需要用户登录才能下载插件
+    login_required = BooleanField(default=False)
     #插件的价格,一次付费永久有效
     price = FloatField()
     #查看次数
@@ -130,6 +156,7 @@ class Payments(Document):
     plugin_id = ObjectIdField(required=True,unique_with=('member_id',))
     plugin_version = StringField(required=True,max_length=100)
     created_at = DateTimeField(requred=True,default=datetime.datetime.utcnow)
+    price = FloatField()
     meta = {
         'db_alias':'plugins'
     }

@@ -8,13 +8,15 @@ from django.conf import settings
 import logging
 import datetime
 from django.views.decorators.csrf import csrf_exempt
-from django.http import StreamingHttpResponse
+from django.http import StreamingHttpResponse,HttpResponse
 import ConfigParser
 from util.utils import *
 from util.errors import *
 import sys
 import pymongo
 import mongoengine
+from util.sendmail import *
+from redis_cache import get_redis_connection
 
 logger = logging.getLogger('logsite')
 
@@ -216,9 +218,114 @@ def download_plugin(request):
     
 @require_http_methods(['GET'])
 def login(request):
+    '''
+        登录
+    '''
+    token = request.REQUEST.get('token')
+    #如果传递了token,直接检查token是否已登录
+    if token is not None:
+        is_login = is_member_logined(request)
+        if not is_login:
+            return json_response(code=INVALID_LOGIN_TOKEN)
+        else:
+            return json_response()
+    email = request.REQUEST.get('email')
+    password = request.REQUEST.get('password')
+    member = Member.objects(email=email).first()
+    if member is None:
+        return json_response(code=EMAIL_NOT_EXIST)
+    if not member.check_passord(password):
+        return json_response(code=PASSWORD_NOT_CORRECT)
+    #登录成功在缓存中创建session token
+    member_login(request, member)
+    return json_response(token = request.session.session_key,**dict(member.to_mongo()))
+    
+@require_http_methods(['POST'])
+def logout(request):
+    '''
+        注销
+    '''
+    member_logout(request)
+    return json_response()
+    
+@require_http_methods(['POST'])
+def register(request):
+    '''
+        注册
+    '''
+    email = request.REQUEST.get('email')
+    password = request.REQUEST.get('password')
+    member_id = request.REQUEST.get('member_id',None)
+    phone = request.REQUEST.get('phone')
+    member = Member.objects(email=email).first()
+    if member is not None and member.activated:
+        return json_response(code=USER_ALREADY_REGISTERED)
+    member = Member.objects(id=member_id).first()
+    if member is None or not member_id:
+        return json_response(code=USER_NOT_EXIST)
+    if member.activated:
+        return json_response(code=USER_ALREADY_REGISTERED)
+    data = {
+        'email':email,
+        'member_id':member_id,
+        'password':password,
+        'phone':phone,
+        'username': request.REQUEST.get('username')
+    }
+    #发送注册激活邮件
+    sendto_email(email,**data)
+    return json_response()
+    
+@require_http_methods(['POST'])
+def send_verification_code(request):
+    '''
+        发送验证码
+    '''
+    email = request.REQUEST.get('email')
+    #发送验证码邮件
+    sendto_email(email,send_type=sendtype_verificationcode,**{'email':email})
+    return json_response()
+    
+@require_http_methods(['GET'])
+def activate(request,code):
+    '''
+        激活
+    '''
+    conn = get_redis_connection(settings.SESSION_REDIS_CACHE)
+    data_str = conn.get(activate_code_key%code)
+    if not data_str:
+        return HttpResponse(GetCodeMessage(INVALID_ACTIVATE_URL))
+    data = json.loads(data_str)
+    email = data.get('email')
+    member = Member.objects(id=data.get('member_id')).first()
+    if not member:
+        return HttpResponse(code=USER_NOT_EXIST)
+    member.activated = True
+    member.email = email
+    member.password = data.get('password')
+    member.phone = data.get('phone')
+    member.user_name = data.get('username')
+    member.save_salt()
+    return HttpResponse('activate success')
+
+@require_http_methods(['POST'])
+def forget_password(request):
+    '''
+        找回密码
+    '''
+    conn = get_redis_connection(settings.SESSION_REDIS_CACHE)
     code = request.REQUEST.get('code')
-    print code
-    return json_response(auth_code=code)
+    password = request.REQUEST.get('password')
+    data_str = conn.get(activate_code_key%code)
+    if not data_str:
+        return json_response(code=ERROR_VERIFICATION_CODE)
+    data = json.loads(data_str)
+    email = data.get('email')
+    member.activated = True
+    member.email = email
+    member.password = password
+    member.save()
+    return json_response()
     
 @require_http_methods(['GET'])
 def get_mail(request):

@@ -31,7 +31,9 @@ urlpatterns = [
     url(r'^member/get_update', member.views.get_update_info),
     #下载软件
     url(r'^member/download_app', member.views.download_app),
+    url(r'^member/register', member.views.register),
     url(r'^member/login', member.views.login),
+    url(r'^member/logout', member.views.logout),
     url(r'^member/get_mail', member.views.get_mail),
     #获取所有pypi包
     url(r'^member/get_pypi_packages', member.views.get_pypi_packages),
@@ -51,6 +53,8 @@ urlpatterns = [
     url(r'^member/payment', member.views.payment),
     #检查客户端软件是否需要强制更新
     url(r'^member/check_force_update', member.views.check_force_update),
+    url(r'^member/activate/(?P<code>.*)$', member.views.activate),
+    url(r'^member/send_verification_code', member.views.send_verification_code),
     #set static media file path url pattern,should start with /media
     #静态资源
     url(r"^media/(?P<path>.*)$", "django.views.static.serve", {"document_root": settings.MEDIA_ROOT,}),
