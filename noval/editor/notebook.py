@@ -443,8 +443,10 @@ class EditorNotebook(ui_base.ClosableNotebook):
         if editor is not None:
             text_view = editor.GetView()
             cname = text_view.GetDocument().GetFilename()
-            cline = text_view.GetCtrl().GetCurrentLine()
-            ccol = text_view.GetCtrl().GetCurrentColumn()
+            if hasattr(text_view,'GetCtrl'):
+                cline = text_view.GetCtrl().GetCurrentLine()
+                ccol = text_view.GetCtrl().GetCurrentColumn()
+                
         if docposition.DocMgr.CanNavigateNext():
             fname, line,col = docposition.DocMgr.GetNextNaviPos()
             if (fname, line,col) == (cname, cline,ccol):
@@ -470,8 +472,9 @@ class EditorNotebook(ui_base.ClosableNotebook):
         if editor is not None:
             text_view = editor.GetView()
             cname = text_view.GetDocument().GetFilename()
-            cline = text_view.GetCtrl().GetCurrentLine()
-            ccol = text_view.GetCtrl().GetCurrentColumn()
+            if hasattr(text_view,'GetCtrl'):
+                cline = text_view.GetCtrl().GetCurrentLine()
+                ccol = text_view.GetCtrl().GetCurrentColumn()
 
         if docposition.DocMgr.CanNavigatePrev():
             fname, line,col = docposition.DocMgr.GetPreviousNaviPos()
@@ -518,7 +521,8 @@ class EditorNotebook(ui_base.ClosableNotebook):
         lexer = syntax.SyntaxThemeManager().GetLexer(langid)
         comment_template = lexer.GetCommentTemplate()
         if comment_template is not None:
-            comment_template_content = comment_template.format(File=file_name,Author=variablesutils.GetProjectVariableManager().GetVariable('USER'),Date=now_time.date(),Year=now_time.date().year)
+            comment_template_content = comment_template.format(File=file_name,Author=variablesutils.GetProjectVariableManager().GetVariable('USER'),\
+                                        Date=now_time.date(),Year=now_time.date().year,Licence=variablesutils.GetProjectVariableManager().GetVariable('Licence'))
             text_view.GetCtrl().GotoPos(0,0)
             text_view.AddText(comment_template_content)
             

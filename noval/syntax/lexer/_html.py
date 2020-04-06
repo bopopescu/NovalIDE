@@ -60,7 +60,7 @@ SGML_KEYWORDS = "ELEMENT DOCTYPE ATTLIST ENTITY NOTATION"
 
 def make_pat(kw_list):
     kw = get_keyword_pat(kw_list)
-    pat = _xml.make_pat()
+    pat = _xml.make_pat(is_html=True)
     return pat + "|" + kw
 
 KW_LIST = HTML_TAGS.split() + SGML_KEYWORDS.split()
@@ -85,7 +85,7 @@ class SyntaxLexer(syndata.BaseLexer):
     def GetExt(self):
         return "html htm shtm shtml xhtml"
 
-    def GetCommentPattern(self):
+    def GetDefaultCommentPattern(self):
         """Returns a list of characters used to comment a block of code """
         return [u'<!--', u'-->']
 

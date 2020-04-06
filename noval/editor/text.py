@@ -651,9 +651,15 @@ class TextCtrl(ui_base.TweakableText):
         #是否高亮当前行
         self.bind("<<CursorMove>>", self._tag_current_line, True)
         self.bind("<<TextChange>>", self._tag_current_line, True)
+        self.bind("<Button-1>",self.KillFocus)
         if tag_current_line:
             self._tag_current_line()
             
+    def KillFocus(self,event=None):
+        """Fix CEF focus issues (#255). See also FocusHandler.OnGotFocus."""
+        #修复CEF控件焦点导致鼠标离开后text控件无法捕获键盘输入的BUG
+        self.focus_force()
+        
     def GetEol(self):
         return self.eol
         

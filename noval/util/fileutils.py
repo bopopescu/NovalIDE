@@ -440,11 +440,20 @@ def open_file_directory(file_path):
             #选中指定对象.如果使用"/select",则父目录被打开,并选中指定对象,请注意命令中"/select"参数后面的逗号
             subprocess.Popen(["explorer", "/select," + file_path])
     else:
-        try:
-            subprocess.Popen(["nautilus", file_path])
-        except Exception as e:
-            ret = -1
-            err_msg = str(e)
+        #dde-file-manager是深度系统的文件管理器
+        dde_file_manager = "dde-file-manager"
+        managers = ["nautilus",dde_file_manager,"xdg-open"]
+        for manager in managers:
+            try:
+                if manager == dde_file_manager:
+                    subprocess.Popen([manager, os.path.dirname(file_path)])
+                else:
+                    subprocess.Popen([manager, file_path])
+                ret = 0
+                break
+            except Exception as e:
+                ret = -1
+                err_msg = str(e)
             
     if ret != 0:
         raise RuntimeError(err_msg)

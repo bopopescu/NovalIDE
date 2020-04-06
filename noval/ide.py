@@ -172,6 +172,7 @@ class IDEApplication(core.App):
         self.CreateLexerTemplates()
         self.LoadLexerTemplates()
         self.SetDefaultIcon(imageutils.get_default_icon())
+        self.InitConfigs()
         self._InitFonts()
         
         #默认菜单id列表,这些菜单在没有任何可编辑文本窗口时菜单处于灰色状态
@@ -209,6 +210,12 @@ class IDEApplication(core.App):
         self.bind("<<UpdateAppearance>>", self.EventTextChange, True)
         self.bind("<FocusIn>", self._on_focus_in, True)
         return True
+        
+    def InitConfigs(self):
+        '''
+            初始化配置文件信息
+        '''
+        utils.write_cofig_value('virtual_env','pip_source_path',"http://pypi.douban.com/simple")
         
     #统计插件加载时间
     @utils.compute_run_time
@@ -826,6 +833,8 @@ class IDEApplication(core.App):
         docposition.DocMgr.WriteBook()
         #保存插件信息
         self._pluginmgr.WritePluginConfig()
+        #程序退出时通知所有插件退出
+        self._pluginmgr.Exit()
         core.App.Quit(self)
 
     @misc.update_toolbar

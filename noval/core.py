@@ -535,6 +535,7 @@ class DocManager(object):
         """
         descrs = strutils.gen_file_filters()
         #注意这里最好不要设置initialdir,会自动选择上一次打开的目录
+        #支持同时选择多个文件
         paths = filedialog.askopenfilename(
                 master=GetApp(),
                 filetypes=descrs,
@@ -635,13 +636,14 @@ class DocManager(object):
     def CreateTemplateDocument(self, template,path, flags=0):
         #the document has been opened,switch to the document view
         if path and flags & DOC_OPEN_ONCE:
-            found_view = self.GetDocument(path)
-            if found_view:
+            found_doc = self.GetDocument(path)
+            if found_doc:
+                found_view = found_doc.GetFirstView()
                 if found_view and found_view.GetFrame() and not (flags & DOC_NO_VIEW):
                     found_view.GetFrame().SetFocus()  # Not in wxWindows code but useful nonetheless
                     if hasattr(found_view.GetFrame(), "IsIconized") and found_view.GetFrame().IsIconized():  # Not in wxWindows code but useful nonetheless
                         found_view.GetFrame().Iconize(False)
-                return None
+                return found_doc
                 
         doc = template.CreateDocument(path, flags)
         if doc:
@@ -653,7 +655,9 @@ class DocManager(object):
                 if frame:
                     frame.Destroy() # DeleteAllViews doesn't get rid of the frame, so we'll explicitly destroy it.
                 return None
-            self.AddFileToHistory(path)
+            #不可见文件模板不能加入历史文件列表
+            if not (template.GetFlags() & TEMPLATE_INVISIBLE):
+                self.AddFileToHistory(path)
         return doc
         
 
@@ -723,6 +727,7 @@ class DocManager(object):
             temp = self.FindTemplateForPath(path)
             path_templates = [(temp,path),]
         else:
+            #同时选择了多个文件路径
             path_templates = self.SelectDocumentPath(templates, path, flags)
             
         ret_docs = []
@@ -1227,7 +1232,7 @@ class DocTemplate(object):
         return self._icon
 
 
-    def SetIcon(self, flags):
+    def SetIcon(self, icon):
         """
         Sets the icon.  This method has been added to wxPython and is not
         in wxWindows.

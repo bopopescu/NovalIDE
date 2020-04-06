@@ -133,7 +133,10 @@ class DocTabbedParentFrame(ttk.Frame):
         """
         template = panel.GetView().GetDocument().GetDocumentTemplate()
         img = template.GetIcon()
-        self._editor_notebook.add(panel, text=title,image=img,compound=tk.LEFT)
+        d = dict(text=title,compound=tk.LEFT)
+        if img is not None:
+            d.update(dict(image=img))    
+        self._editor_notebook.add(panel,**d)
        # windowMenuService = wx.GetApp().GetService(wx.lib.pydocview.WindowMenuService)
         #if windowMenuService:
          #   windowMenuService.BuildWindowMenu(wx.GetApp().GetTopWindow())  # build file menu list when we open a file

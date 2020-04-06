@@ -293,7 +293,8 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
                 else:
                     python_path = os.path.join(location,"bin/python")
                 try:
-                    interpreter = interpretermanager.InterpreterAdmin(self._interpreters).AddPythonInterpreter(python_path,name)
+                    #添加python3虚拟解释器时,解释器路径是指向原解释器的链接,故路径是一样的,需要排除这种情况
+                    interpreter = interpretermanager.InterpreterAdmin(self._interpreters).AddPythonInterpreter(python_path,name,is_virtual_env=True)
                     self.AnalyseAddInterpreter(interpreter)
                 except RuntimeError as e:
                     messagebox.showerror(_("Error"),str(e),parent=self)
@@ -322,7 +323,10 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
         else:
             virtualenv_name = "virtualenv"
         python_location = os.path.dirname(interpreter.Path)
-        virtualenv_path_list = [os.path.join(python_location,"Scripts",virtualenv_name),os.path.join(python_location,virtualenv_name)]
+        #模块有可能安装在解释器user路径下
+        python_user_location = os.path.dirname(interpreter.GetUserLibPath())
+        virtualenv_path_list = [os.path.join(python_location,"Scripts",virtualenv_name),\
+                    os.path.join(python_location,virtualenv_name),os.path.join(python_user_location,"Scripts",virtualenv_name)]
         for virtualenv_path in virtualenv_path_list:
             if os.path.exists(virtualenv_path):
                 return virtualenv_path
@@ -342,14 +346,25 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
         progress_dlg.call_back = progress_dlg.AppendMsg
         #如果没有安装virtualenv工具,需要先安装后,安装后需要使用这个工具来创建python虚拟环境
         if not 'virtualenv' in interpreter.Packages:
+            #从配置文件获取pip源配置路径
+            pip_source_path = utils.get_config_value('virtual_env','pip_source_path',default_value=pythonpackages.InstallPackagesDialog.SOURCE_LIST[6])
             progress_dlg.msg = "install virtualenv package..."
-            command = strutils.emphasis_path(interpreter.GetPipPath()) + " install --user virtualenv"
+            #尽量使用国内pip源安装virtualenv工具包
+            command = strutils.emphasis_path(interpreter.GetPipPath()) + " install --user virtualenv -i %s --trusted-host %s"%(pip_source_path,pythonpackages.url_parse_host(pip_source_path))
+            utils.get_logger().info('install virtualenv tool command is %s',command)
             if not progress_dlg.KeepGoing:
                 utils.get_logger().warning('user stop install virtualenv tool')
                 return
             self.ExecCommandAndOutput(command,progress_dlg)
+        virtual_env_path = self.GetVirtualEnvPath(interpreter)
+        if not os.path.exists(virtual_env_path):
+            messagebox.showerror(_('Error'),_("Can not get virtualenv tool path"),parent=self)
+            utils.get_logger().error('virtualenv tool path %s is not exist',virtual_env_path)
+            return
         #开始使用virtualenv工具创建虚拟解释器环境
-        command = strutils.emphasis_path(self.GetVirtualEnvPath(interpreter)) + " " + strutils.emphasis_path(location)
+        utils.get_logger().info('virtualenv tool path is %s',virtual_env_path)
+        command = strutils.emphasis_path(virtual_env_path) + " " + strutils.emphasis_path(location)
+        utils.get_logger().info('install virtual interpreter command is %s',command)
         if not sysutils.is_windows():
             root = not self.IsLocationWritable(location)
             if root:

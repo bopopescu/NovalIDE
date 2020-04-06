@@ -3,7 +3,11 @@ import noval.iface as iface
 import noval.plugin as plugin
 import noval.util.utils as utils
 import noval.constants as constants
+from tkinter import ttk
 
+class CodeSnippetView(ttk.Frame):
+    def __init__(self,master):
+        ttk.Frame.__init__(self,master)
 
 class CodeSnippetPlugin(plugin.Plugin):
     """Simple Programmer's Calculator"""
@@ -11,6 +15,7 @@ class CodeSnippetPlugin(plugin.Plugin):
     def PlugIt(self, parent):
         """Hook the calculator into the menu and bind the event"""
         utils.get_logger().info("Installing CodeSnippet plugin")
+        GetApp().MainFrame.AddView("CodeSnippet",CodeSnippetView, _("CodeSnippet"), "e")
         
 
     def GetMinVersion(self):

@@ -113,7 +113,7 @@ class SyntaxLexer(syndata.BaseLexer):
     def GetExt(self):
         return "py pyw"
 
-    def GetCommentPattern(self):
+    def GetDefaultCommentPattern(self):
         """Returns a list of characters used to comment a block of code """
         return [u'#']
 
@@ -151,7 +151,7 @@ class SyntaxLexer(syndata.BaseLexer):
 #
 # Created:     {Date}
 # Copyright:   (c) {Author} {Year}
-# Licence:     <your licence>
+# Licence:     {Licence}
 #-------------------------------------------------------------------------------
 '''
     def GetColorClass(self):

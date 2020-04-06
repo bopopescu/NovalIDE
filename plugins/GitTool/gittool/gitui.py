@@ -17,6 +17,14 @@ import shutil
 import noval.project.importfiles as importfiles
 import noval.util.strutils as strutils
 
+def GetAskPassPath():
+    path = resource_filename(__name__,'')
+    if utils.is_windows():
+        ask_pass_path = os.path.join(path,"askpass/dist/askpass.exe")
+    else:
+        ask_pass_path = os.path.join(path,"askpass/askpass.py")
+    return ask_pass_path
+
 def SetVariablevar(prefix,variable):
     path = filedialog.askdirectory()
     if path:
@@ -255,12 +263,8 @@ class RepositorySourcePage(projectwizard.BitmapTitledContainerWizardPage):
         utils.create_process(command,'',cwd=project_path)
         command = "git remote show origin"
         env = copy.copy(os.environ)
-        path = resource_filename(__name__,'')
-        if utils.is_windows():
-            ask_path = os.path.join(path,"askpass/dist/askpass.exe")
-        else:
-            ask_path = os.path.join(path,"askpass/askpass.py")
-        env.update(dict(GIT_ASKPASS=ask_path))
+        ask_pass_path = GetAskPassPath()
+        env.update(dict(GIT_ASKPASS=ask_pass_path))
         reader = OutputReader()
         reader.call_back = reader.Read
         OutputReader.branch_flag = 0

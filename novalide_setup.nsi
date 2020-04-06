@@ -2,7 +2,7 @@
 
 ; 安装程序初始定义常量
 !define PRODUCT_NAME "NovalIDE"
-!define PRODUCT_VERSION "1.2.1"
+!define PRODUCT_VERSION "1.2.2"
 !define PRODUCT_PUBLISHER "wukan"
 !define PRODUCT_WEB_SITE "http://www.genetalks.com"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\NovalIDE.exe"
@@ -247,13 +247,6 @@ Section Uninstall
   RMDir /r "$INSTDIR\win32com"
 
   RMDir "$INSTDIR"
-/*******************************************
-  Delete "$APPDATA\NovalIDE\intellisence\*.*"
-  RMDir "$APPDATA\NovalIDE\intellisence\builtins\2"
-  RMDir "$APPDATA\NovalIDE\intellisence\builtins\3"
-  RMDir "$APPDATA\NovalIDE\intellisence\builtins"
-  RMDir /r "$APPDATA\NovalIDE\intellisence"
-*******************************************/
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
   DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
   SetAutoClose true

@@ -34,8 +34,8 @@ class ImageView(core.View):
         self._ctrl = None
 
     def OnCreate(self, doc, flags):
-        self.img = Image.open(doc.GetFilename())
         try:
+            self.img = Image.open(doc.GetFilename())
             self._bitmap = ImageTk.PhotoImage(self.img)
         except Exception as e:
             messagebox.showerror(_("Open Image File"),_("Error loading '%s'. %s") % (doc.GetPrintableName(), e))

@@ -15,8 +15,12 @@ class BaseLexer(object):
         self.style_items = []
 
     @property
-    def CommentPattern(self):
-        return self.GetCommentPattern()
+    def DefaultCommentPattern(self):
+        return self.GetDefaultCommentPattern()
+        
+    @property
+    def CommentPatterns(self):
+        return self.GetCommentPatterns()
 
     @property
     def Keywords(self):
@@ -28,12 +32,23 @@ class BaseLexer(object):
 
     #---- Interface Methods ----#
 
-    def GetCommentPattern(self):
-        """Get the comment pattern
-        @return: list of strings ['/*', '*/']
-
+    def GetDefaultCommentPattern(self):
+        """获取默认注释方式
+        返回注释符号的列表
+        如果列表只有一个元素,说明是行注释
+        如果是列表有2个元素,说明是块注释
+        一个语言可能有多种注释方式,这里返回优先使用的注释方式
         """
         return list()
+        
+    def GetCommentPatterns(self):
+        """获取语言所有的注释方式嵌套列表
+        如果列表只有一个元素,说明是行注释
+        如果是列表有2个元素,说明是块注释
+        一个语言可能有多种注释方式,这里返回所有的注释方式列表
+        列表为嵌套列表
+        """
+        return [self.DefaultCommentPattern(),]
 
     def GetKeywords(self):
         """Get the Keyword List(s)
@@ -45,6 +60,7 @@ class BaseLexer(object):
     def GetLangId(self):
         """Get the language id
         @return: int
+        
 
         """
         return self._langid

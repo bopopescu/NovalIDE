@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2020-03-09 10:02+0800\n"
+"POT-Creation-Date: 2020-03-15 09:44+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -52,83 +52,83 @@ msgid ""
 "want to save?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/core.py:740
-#: G:/work/project/Noval/noval/core.py:1838
-#: G:/work/project/Noval/noval/core.py:1853
+#: G:/work/project/Noval/noval/core.py:745
+#: G:/work/project/Noval/noval/core.py:1843
+#: G:/work/project/Noval/noval/core.py:1858
 #: G:/work/project/Noval/noval/project/document.py:152
 #: G:/work/project/Noval/noval/project/variables.py:194
 #: G:/work/project/Noval/noval/python/interpreter/environment.py:89
 #: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:444
 #: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:446
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1345
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1350
 #: G:/work/project/Noval/noval/ui_utils.py:445
 msgid "Warning"
 msgstr ""
 
-#: G:/work/project/Noval/noval/core.py:742
+#: G:/work/project/Noval/noval/core.py:747
 #: G:/work/project/Noval/noval/editor/text.py:534
 msgid "Reload.."
 msgstr ""
 
-#: G:/work/project/Noval/noval/core.py:742
+#: G:/work/project/Noval/noval/core.py:747
 #: G:/work/project/Noval/noval/editor/text.py:534
 #, python-format
 msgid "File \"%s\" has already been modified outside,Do You Want to reload it?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/core.py:745
+#: G:/work/project/Noval/noval/core.py:750
 #, python-format
 msgid "Couldn't reload '%s'.  Unable to close current '%s'."
 msgstr ""
 
-#: G:/work/project/Noval/noval/core.py:973
+#: G:/work/project/Noval/noval/core.py:978
 msgid "Select a document view:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/core.py:974
+#: G:/work/project/Noval/noval/core.py:979
 msgid "Views"
 msgstr ""
 
-#: G:/work/project/Noval/noval/core.py:1062
+#: G:/work/project/Noval/noval/core.py:1067
 #, python-format
 msgid "Untitled %d"
 msgstr ""
 
-#: G:/work/project/Noval/noval/core.py:1606
+#: G:/work/project/Noval/noval/core.py:1611
 msgid "Application"
 msgstr ""
 
-#: G:/work/project/Noval/noval/core.py:1608
-#: G:/work/project/Noval/noval/core.py:1840
+#: G:/work/project/Noval/noval/core.py:1613
+#: G:/work/project/Noval/noval/core.py:1845
 #, python-format
 msgid ""
 "'%s' has been modified outside of %s.  Overwrite '%s' with current "
 "changes?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/core.py:1671
-#: G:/work/project/Noval/noval/core.py:1736
-#: G:/work/project/Noval/noval/core.py:2318
+#: G:/work/project/Noval/noval/core.py:1676
+#: G:/work/project/Noval/noval/core.py:1741
+#: G:/work/project/Noval/noval/core.py:2323
 #: G:/work/project/Noval/noval/editor/text.py:159
 #: G:/work/project/Noval/noval/editor/text.py:256
-#: G:/work/project/Noval/noval/ide.py:844
-#: G:/work/project/Noval/noval/project/basebrowser.py:419
+#: G:/work/project/Noval/noval/ide.py:846
+#: G:/work/project/Noval/noval/project/basebrowser.py:423
 #: G:/work/project/Noval/noval/project/document.py:199
 #: G:/work/project/Noval/noval/project/document.py:215
-#: G:/work/project/Noval/noval/python/debugger/output.py:38
+#: G:/work/project/Noval/noval/python/debugger/output.py:61
 msgid "File Error"
 msgstr ""
 
-#: G:/work/project/Noval/noval/core.py:1810
+#: G:/work/project/Noval/noval/core.py:1815
 msgid "Untitled"
 msgstr ""
 
-#: G:/work/project/Noval/noval/core.py:1855
+#: G:/work/project/Noval/noval/core.py:1860
 #, python-format
 msgid "Save changes to '%s'?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/core.py:2319
+#: G:/work/project/Noval/noval/core.py:2324
 #: G:/work/project/Noval/noval/editor/text.py:274
 #, python-format
 msgid "Could not open '%s':  %s"
@@ -157,21 +157,21 @@ msgstr ""
 #: G:/work/project/Noval/noval/editor/notebook.py:397
 #: G:/work/project/Noval/noval/editor/notebook.py:405
 #: G:/work/project/Noval/noval/editor/notebook.py:407
-#: G:/work/project/Noval/noval/frame.py:185
-#: G:/work/project/Noval/noval/frame.py:187
-#: G:/work/project/Noval/noval/frame.py:275
+#: G:/work/project/Noval/noval/frame.py:188
+#: G:/work/project/Noval/noval/frame.py:190
+#: G:/work/project/Noval/noval/frame.py:278
 #: G:/work/project/Noval/noval/ide.py:548
-#: G:/work/project/Noval/noval/ide.py:1006
+#: G:/work/project/Noval/noval/ide.py:1008
 #: G:/work/project/Noval/noval/menu.py:771
 #: G:/work/project/Noval/noval/python/plugins/outline.py:247
 msgid "&View"
 msgstr ""
 
-#: G:/work/project/Noval/noval/frame.py:185
+#: G:/work/project/Noval/noval/frame.py:188
 msgid "&Toolbar"
 msgstr ""
 
-#: G:/work/project/Noval/noval/frame.py:187
+#: G:/work/project/Noval/noval/frame.py:190
 msgid "&Status Bar"
 msgstr ""
 
@@ -183,46 +183,46 @@ msgstr ""
 #: G:/work/project/Noval/noval/editor/notebook.py:346
 #: G:/work/project/Noval/noval/editor/notebook.py:348
 #: G:/work/project/Noval/noval/editor/notebook.py:404
-#: G:/work/project/Noval/noval/frame.py:194
-#: G:/work/project/Noval/noval/frame.py:195
-#: G:/work/project/Noval/noval/frame.py:196
 #: G:/work/project/Noval/noval/frame.py:197
 #: G:/work/project/Noval/noval/frame.py:198
+#: G:/work/project/Noval/noval/frame.py:199
 #: G:/work/project/Noval/noval/frame.py:200
-#: G:/work/project/Noval/noval/frame.py:202
+#: G:/work/project/Noval/noval/frame.py:201
+#: G:/work/project/Noval/noval/frame.py:203
+#: G:/work/project/Noval/noval/frame.py:205
 #: G:/work/project/Noval/noval/menu.py:768
 #: G:/work/project/Noval/noval/python/pyide.py:56
 #: G:/work/project/Noval/noval/python/pyide.py:62
 msgid "&Edit"
 msgstr ""
 
-#: G:/work/project/Noval/noval/frame.py:194
+#: G:/work/project/Noval/noval/frame.py:197
 #: G:/work/project/Noval/noval/project/command.py:220
 msgid "&Undo"
 msgstr ""
 
-#: G:/work/project/Noval/noval/frame.py:195
+#: G:/work/project/Noval/noval/frame.py:198
 #: G:/work/project/Noval/noval/project/command.py:224
 msgid "&Redo"
 msgstr ""
 
-#: G:/work/project/Noval/noval/frame.py:196
+#: G:/work/project/Noval/noval/frame.py:199
 msgid "&Cut"
 msgstr ""
 
-#: G:/work/project/Noval/noval/frame.py:197
+#: G:/work/project/Noval/noval/frame.py:200
 msgid "&Copy"
 msgstr ""
 
-#: G:/work/project/Noval/noval/frame.py:198
+#: G:/work/project/Noval/noval/frame.py:201
 msgid "&Paste"
 msgstr ""
 
-#: G:/work/project/Noval/noval/frame.py:200
+#: G:/work/project/Noval/noval/frame.py:203
 msgid "&Delete"
 msgstr ""
 
-#: G:/work/project/Noval/noval/frame.py:202
+#: G:/work/project/Noval/noval/frame.py:205
 msgid "Select A&ll"
 msgstr ""
 
@@ -433,13 +433,13 @@ msgid "Logs"
 msgstr ""
 
 #: G:/work/project/Noval/noval/find/findresult.py:77
-#: G:/work/project/Noval/noval/ide.py:846
-#: G:/work/project/Noval/noval/python/debugger/output.py:38
+#: G:/work/project/Noval/noval/ide.py:848
+#: G:/work/project/Noval/noval/python/debugger/output.py:61
 #, python-format
 msgid "The file '%s' doesn't exist and couldn't be opened!"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ide.py:1008
+#: G:/work/project/Noval/noval/ide.py:1010
 msgid "&Application Look"
 msgstr ""
 
@@ -464,31 +464,31 @@ msgid "&Format"
 msgstr ""
 
 #: G:/work/project/Noval/noval/menu.py:777
-#: G:/work/project/Noval/noval/project/basebrowser.py:542
-#: G:/work/project/Noval/noval/project/basebrowser.py:543
-#: G:/work/project/Noval/noval/project/basebrowser.py:544
-#: G:/work/project/Noval/noval/project/basebrowser.py:545
-#: G:/work/project/Noval/noval/project/basebrowser.py:546
-#: G:/work/project/Noval/noval/project/basebrowser.py:547
-#: G:/work/project/Noval/noval/project/basebrowser.py:548
-#: G:/work/project/Noval/noval/project/basebrowser.py:549
-#: G:/work/project/Noval/noval/project/basebrowser.py:550
-#: G:/work/project/Noval/noval/project/basebrowser.py:551
-#: G:/work/project/Noval/noval/project/basebrowser.py:552
-#: G:/work/project/Noval/noval/project/basebrowser.py:554
-#: G:/work/project/Noval/noval/project/basebrowser.py:555
-#: G:/work/project/Noval/noval/project/basebrowser.py:557
-#: G:/work/project/Noval/noval/project/basebrowser.py:558
-#: G:/work/project/Noval/noval/project/basebrowser.py:692
+#: G:/work/project/Noval/noval/project/basebrowser.py:634
+#: G:/work/project/Noval/noval/project/basebrowser.py:635
+#: G:/work/project/Noval/noval/project/basebrowser.py:636
+#: G:/work/project/Noval/noval/project/basebrowser.py:637
+#: G:/work/project/Noval/noval/project/basebrowser.py:638
+#: G:/work/project/Noval/noval/project/basebrowser.py:639
+#: G:/work/project/Noval/noval/project/basebrowser.py:640
+#: G:/work/project/Noval/noval/project/basebrowser.py:641
+#: G:/work/project/Noval/noval/project/basebrowser.py:642
+#: G:/work/project/Noval/noval/project/basebrowser.py:643
+#: G:/work/project/Noval/noval/project/basebrowser.py:644
+#: G:/work/project/Noval/noval/project/basebrowser.py:646
+#: G:/work/project/Noval/noval/project/basebrowser.py:647
+#: G:/work/project/Noval/noval/project/basebrowser.py:649
+#: G:/work/project/Noval/noval/project/basebrowser.py:650
+#: G:/work/project/Noval/noval/project/basebrowser.py:785
 #: G:/work/project/Noval/noval/python/project/browser.py:146
 msgid "&Project"
 msgstr ""
 
-#: G:/work/project/Noval/noval/plugin.py:702
+#: G:/work/project/Noval/noval/plugin.py:719
 msgid "No Description Available"
 msgstr ""
 
-#: G:/work/project/Noval/noval/plugin.py:703
+#: G:/work/project/Noval/noval/plugin.py:720
 msgid "Unknown"
 msgstr ""
 
@@ -550,15 +550,15 @@ msgstr ""
 #: G:/work/project/Noval/noval/find/findindir.py:651
 #: G:/work/project/Noval/noval/project/wizard.py:41
 #: G:/work/project/Noval/noval/ui_base.py:983
-#: G:/work/project/Noval/noval/ui_base.py:1056
+#: G:/work/project/Noval/noval/ui_base.py:1060
 msgid "Cancel"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_base.py:1038
+#: G:/work/project/Noval/noval/ui_base.py:1042
 msgid "New Document"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_base.py:1038
+#: G:/work/project/Noval/noval/ui_base.py:1042
 msgid "Select a document type:"
 msgstr ""
 
@@ -616,6 +616,7 @@ msgstr ""
 msgid "Key"
 msgstr ""
 
+#: G:/work/project/Noval/noval/project/openwith.py:58
 #: G:/work/project/Noval/noval/ui_constants.py:19
 msgid "Default"
 msgstr ""
@@ -744,15 +745,15 @@ msgstr ""
 msgid "Password:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:590
+#: G:/work/project/Noval/noval/ui_utils.py:592
 msgid "an external system editor"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:592
+#: G:/work/project/Noval/noval/ui_utils.py:594
 msgid "a internal text editor"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:593
+#: G:/work/project/Noval/noval/ui_utils.py:595
 #, python-format
 msgid ""
 "Your '*%s' file was opened in %s ,Better editor support is available on "
@@ -763,16 +764,16 @@ msgstr ""
 #: G:/work/project/Noval/noval/auth/register.py:76
 #: G:/work/project/Noval/noval/plugins/update.py:28
 #: G:/work/project/Noval/noval/plugins/update.py:105
-#: G:/work/project/Noval/noval/ui_utils.py:608
+#: G:/work/project/Noval/noval/ui_utils.py:610
 msgid "could not connect to server"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:634
+#: G:/work/project/Noval/noval/ui_utils.py:636
 #, python-format
 msgid "You need to pay %d ¥ to use '%s' plugin"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_utils.py:640
+#: G:/work/project/Noval/noval/ui_utils.py:642
 msgid ""
 "The plugin will disabled if you don't pay,Are you sure to disable this "
 "plugin?"
@@ -930,7 +931,7 @@ msgstr ""
 
 #: G:/work/project/Noval/noval/editor/notebook.py:227
 #: G:/work/project/Noval/noval/plugins/fileview.py:307
-#: G:/work/project/Noval/noval/project/basebrowser.py:638
+#: G:/work/project/Noval/noval/project/basebrowser.py:731
 #: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:249
 msgid "Open Path in Explorer"
 msgstr ""
@@ -1118,92 +1119,92 @@ msgid ""
 " it in Editor?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1338
+#: G:/work/project/Noval/noval/editor/text.py:1345
 msgid "Convert tabs to spaces?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1339
+#: G:/work/project/Noval/noval/editor/text.py:1346
 msgid ""
 "NovalIDE (according to Python recommendation) uses spaces for "
 "indentation, "
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1340
+#: G:/work/project/Noval/noval/editor/text.py:1347
 #, python-format
 msgid "but the text you are about to insert/open contains %d tab characters. "
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1341
+#: G:/work/project/Noval/noval/editor/text.py:1348
 msgid ""
 "To avoid confusion, it's better to convert them into spaces (unless you "
 "know they should be kept as tabs).\n"
 "\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1342
+#: G:/work/project/Noval/noval/editor/text.py:1349
 #, python-format
 msgid ""
 "Do you want me to replace each tab with %d spaces?\n"
 "\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1504
+#: G:/work/project/Noval/noval/editor/text.py:1511
 msgid "Wrap words inside text area"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1513
+#: G:/work/project/Noval/noval/editor/text.py:1520
 msgid "Show right edge"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1517
+#: G:/work/project/Noval/noval/editor/text.py:1524
 msgid "Show line numbers"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1521
+#: G:/work/project/Noval/noval/editor/text.py:1528
 msgid "Highlight Caret Line"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1525
+#: G:/work/project/Noval/noval/editor/text.py:1532
 msgid "Highlight parentheses"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1529
+#: G:/work/project/Noval/noval/editor/text.py:1536
 msgid "Highlight syntax elements"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1545
+#: G:/work/project/Noval/noval/editor/text.py:1552
 msgid "Warn when text contains Tabs"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1549
+#: G:/work/project/Noval/noval/editor/text.py:1556
 msgid "Edge Guide Width:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1558
+#: G:/work/project/Noval/noval/editor/text.py:1565
 msgid "Auto Indent"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1561
+#: G:/work/project/Noval/noval/editor/text.py:1568
 msgid "Smart tips"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1563
+#: G:/work/project/Noval/noval/editor/text.py:1570
 msgid "Auto-Completion"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1566
+#: G:/work/project/Noval/noval/editor/text.py:1573
 msgid "Use Enhanced Auto-Completion"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1570
+#: G:/work/project/Noval/noval/editor/text.py:1577
 msgid "Allow code completion with tab-key"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1574
+#: G:/work/project/Noval/noval/editor/text.py:1581
 msgid "Show tips when mouse hover over word"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1660
+#: G:/work/project/Noval/noval/editor/text.py:1667
 msgid ""
 "You need to install 'AutoCompletion' plugin if you want to use enhanced "
 "auto-completion"
@@ -1410,8 +1411,8 @@ msgid "&Refresh"
 msgstr ""
 
 #: G:/work/project/Noval/noval/plugins/fileview.py:306
-#: G:/work/project/Noval/noval/project/basebrowser.py:639
-#: G:/work/project/Noval/noval/project/basebrowser.py:669
+#: G:/work/project/Noval/noval/project/basebrowser.py:732
+#: G:/work/project/Noval/noval/project/basebrowser.py:762
 msgid "Open Command Prompt here..."
 msgstr ""
 
@@ -1545,16 +1546,16 @@ msgstr ""
 msgid "Print"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:323
+#: G:/work/project/Noval/noval/project/basebrowser.py:324
 #: G:/work/project/Noval/noval/project/baseviewer.py:883
 msgid "Projects"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:381
+#: G:/work/project/Noval/noval/project/basebrowser.py:383
 msgid "File Not Found"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:382
+#: G:/work/project/Noval/noval/project/basebrowser.py:384
 #, python-format
 msgid ""
 "The file '%s' was not found in '%s'.\n"
@@ -1562,27 +1563,32 @@ msgid ""
 "Would you like to browse for the file?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:391
+#: G:/work/project/Noval/noval/project/basebrowser.py:393
 msgid "Choose a file"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:542
+#: G:/work/project/Noval/noval/project/basebrowser.py:440
+#, python-format
+msgid "The document \"%s\" is already open,Do you want to close it?"
+msgstr ""
+
+#: G:/work/project/Noval/noval/project/basebrowser.py:634
 msgid "New Project"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:543
+#: G:/work/project/Noval/noval/project/basebrowser.py:635
 msgid "Open Project"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:544
+#: G:/work/project/Noval/noval/project/basebrowser.py:636
 msgid "Close Project"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:545
+#: G:/work/project/Noval/noval/project/basebrowser.py:637
 msgid "Save Project"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:546
+#: G:/work/project/Noval/noval/project/basebrowser.py:638
 #: G:/work/project/Noval/noval/project/baseviewer.py:1696
 #: G:/work/project/Noval/noval/project/baseviewer.py:1705
 #: G:/work/project/Noval/noval/project/baseviewer.py:1712
@@ -1590,80 +1596,84 @@ msgstr ""
 msgid "Delete Project"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:547
+#: G:/work/project/Noval/noval/project/basebrowser.py:639
 msgid "Clean Project"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:548
+#: G:/work/project/Noval/noval/project/basebrowser.py:640
 msgid "Archive Project"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:549
+#: G:/work/project/Noval/noval/project/basebrowser.py:641
 msgid "Import Files..."
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:550
+#: G:/work/project/Noval/noval/project/basebrowser.py:642
 msgid "Add &Files to Project..."
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:551
+#: G:/work/project/Noval/noval/project/basebrowser.py:643
 msgid "Add Directory Files to Project..."
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:552
+#: G:/work/project/Noval/noval/project/basebrowser.py:644
 msgid "&Add Active File to Project..."
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:554
+#: G:/work/project/Noval/noval/project/basebrowser.py:646
 msgid "New File"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:555
+#: G:/work/project/Noval/noval/project/basebrowser.py:647
 msgid "New Folder"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:557
+#: G:/work/project/Noval/noval/project/basebrowser.py:649
 msgid "Project Properties"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:558
+#: G:/work/project/Noval/noval/project/basebrowser.py:650
 msgid "Open Project Path in Explorer"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:625
+#: G:/work/project/Noval/noval/project/basebrowser.py:717
 msgid "&Open"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:629
-#: G:/work/project/Noval/noval/project/basebrowser.py:648
-#: G:/work/project/Noval/noval/project/basebrowser.py:668
+#: G:/work/project/Noval/noval/project/basebrowser.py:718
+msgid "&Open With..."
+msgstr ""
+
+#: G:/work/project/Noval/noval/project/basebrowser.py:722
+#: G:/work/project/Noval/noval/project/basebrowser.py:741
+#: G:/work/project/Noval/noval/project/basebrowser.py:761
 msgid "&Rename"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:630
-#: G:/work/project/Noval/noval/project/basebrowser.py:649
+#: G:/work/project/Noval/noval/project/basebrowser.py:723
+#: G:/work/project/Noval/noval/project/basebrowser.py:742
 msgid "Remove from Project"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:637
+#: G:/work/project/Noval/noval/project/basebrowser.py:730
 msgid "&Properties"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:640
-#: G:/work/project/Noval/noval/project/basebrowser.py:670
+#: G:/work/project/Noval/noval/project/basebrowser.py:733
+#: G:/work/project/Noval/noval/project/basebrowser.py:763
 msgid "Copy Full Path"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:650
-#: G:/work/project/Noval/noval/project/basebrowser.py:667
+#: G:/work/project/Noval/noval/project/basebrowser.py:743
+#: G:/work/project/Noval/noval/project/basebrowser.py:760
 msgid "&Refresh folder"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:821
+#: G:/work/project/Noval/noval/project/basebrowser.py:917
 msgid "there is not files to add"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/basebrowser.py:823
+#: G:/work/project/Noval/noval/project/basebrowser.py:919
 #, python-format
 msgid "total add %d files to project"
 msgstr ""
@@ -1986,81 +1996,72 @@ msgstr ""
 msgid "Deletes files from disk not belonging to project"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/baseviewer.py:1861
-msgid "Editor Selection"
-msgstr ""
-
-#: G:/work/project/Noval/noval/project/baseviewer.py:1866
-#, python-format
-msgid "The document \"%s\" is already open,Do you want to close it?"
-msgstr ""
-
-#: G:/work/project/Noval/noval/project/baseviewer.py:2035
+#: G:/work/project/Noval/noval/project/baseviewer.py:1980
 msgid "Reload Project.."
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/baseviewer.py:2035
+#: G:/work/project/Noval/noval/project/baseviewer.py:1980
 #, python-format
 msgid ""
 "Project File \"%s\" has already been modified outside,Do you want to "
 "reload It?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/baseviewer.py:2042
+#: G:/work/project/Noval/noval/project/baseviewer.py:1987
 msgid "Project not exist.."
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/baseviewer.py:2042
+#: G:/work/project/Noval/noval/project/baseviewer.py:1987
 #, python-format
 msgid ""
 "Project File \"%s\" has already been moved or deleted outside,Do you want"
 " to close this Project?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/baseviewer.py:2067
+#: G:/work/project/Noval/noval/project/baseviewer.py:2012
 msgid "Current document is already in the project"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/baseviewer.py:2084
+#: G:/work/project/Noval/noval/project/baseviewer.py:2029
 msgid "Project file is already opened"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/baseviewer.py:2119
+#: G:/work/project/Noval/noval/project/baseviewer.py:2064
 #: G:/work/project/Noval/noval/project/importfiles.py:123
 msgid "There is no available project yet."
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/baseviewer.py:2135
+#: G:/work/project/Noval/noval/project/baseviewer.py:2080
 msgid "Remember open projects"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/baseviewer.py:2139
+#: G:/work/project/Noval/noval/project/baseviewer.py:2084
 msgid "Warn when run and save modify project files"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/baseviewer.py:2143
+#: G:/work/project/Noval/noval/project/baseviewer.py:2088
 msgid "Load folder state when open project"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/baseviewer.py:2148
+#: G:/work/project/Noval/noval/project/baseviewer.py:2093
 msgid "Prompt warning when project analyzer version is deprecated"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/baseviewer.py:2153
+#: G:/work/project/Noval/noval/project/baseviewer.py:2098
 msgid "Generate and Load intellisense database of project automaticlly"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/baseviewer.py:2156
+#: G:/work/project/Noval/noval/project/baseviewer.py:2101
 #: G:/work/project/Noval/noval/project/importfiles.py:86
 #: G:/work/project/Noval/noval/project/importfiles.py:418
 msgid "File Filters"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/baseviewer.py:2158
+#: G:/work/project/Noval/noval/project/baseviewer.py:2103
 msgid "set filter file extentions when refresh project folder"
 msgstr ""
 
-#: G:/work/project/Noval/noval/project/baseviewer.py:2183
+#: G:/work/project/Noval/noval/project/baseviewer.py:2128
 msgid "Document Options"
 msgstr ""
 
@@ -2347,6 +2348,26 @@ msgstr ""
 msgid "Load Template File Error.%s"
 msgstr ""
 
+#: G:/work/project/Noval/noval/project/openwith.py:30
+msgid "Editor Selection"
+msgstr ""
+
+#: G:/work/project/Noval/noval/project/openwith.py:35
+msgid "Choose an editor you want to open"
+msgstr ""
+
+#: G:/work/project/Noval/noval/project/openwith.py:67
+msgid "Use this editor for all files named"
+msgstr ""
+
+#: G:/work/project/Noval/noval/project/openwith.py:71
+msgid "Use it for all files with extension"
+msgstr ""
+
+#: G:/work/project/Noval/noval/project/openwith.py:99
+msgid "Please choose one editor"
+msgstr ""
+
 #: G:/work/project/Noval/noval/project/output.py:106
 #: G:/work/project/Noval/noval/python/debugger/debugger.py:360
 msgid "Word Wrap"
@@ -2520,12 +2541,12 @@ msgstr ""
 msgid "&Add to Watch"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/pyeditor.py:820
+#: G:/work/project/Noval/noval/python/pyeditor.py:835
 #: G:/work/project/Noval/noval/python/pyide.py:56
 msgid "Goto Definition"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/pyeditor.py:820
+#: G:/work/project/Noval/noval/python/pyeditor.py:835
 msgid "Cannot find definition"
 msgstr ""
 
@@ -3095,7 +3116,7 @@ msgid "Intellisence database location"
 msgstr ""
 
 #: G:/work/project/Noval/noval/python/interpreter/gerneralconfiguration.py:73
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1315
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1320
 #: G:/work/project/Noval/noval/python/project/pages/debugrun.py:235
 #: G:/work/project/Noval/noval/python/project/pages/pythoninterpreter.py:20
 #: G:/work/project/Noval/noval/python/project/viewer.py:84
@@ -3298,12 +3319,12 @@ msgstr ""
 msgid "No default interpreter selected, application may not run normal!"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:384
+#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:385
 #, python-format
 msgid "%s is not a valid interpreter path"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:387
+#: G:/work/project/Noval/noval/python/interpreter/interpretermanager.py:388
 msgid "interpreter have already exist"
 msgstr ""
 
@@ -3802,19 +3823,19 @@ msgid ""
 msgstr ""
 
 #: G:/work/project/Noval/noval/python/plugins/pip_gui.py:786
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1273
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1278
 msgid "Install from local file\n"
 msgstr ""
 
 #: G:/work/project/Noval/noval/python/plugins/pip_gui.py:787
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1266
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1274
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1271
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1279
 msgid "Click "
 msgstr ""
 
 #: G:/work/project/Noval/noval/python/plugins/pip_gui.py:788
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1267
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1275
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1272
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1280
 msgid "here"
 msgstr ""
 
@@ -3825,7 +3846,7 @@ msgid ""
 msgstr ""
 
 #: G:/work/project/Noval/noval/python/plugins/pip_gui.py:796
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1283
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1288
 msgid "Upgrade or uninstall\n"
 msgstr ""
 
@@ -3836,7 +3857,7 @@ msgid ""
 msgstr ""
 
 #: G:/work/project/Noval/noval/python/plugins/pip_gui.py:802
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1289
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1294
 msgid "Target:  "
 msgstr ""
 
@@ -3879,14 +3900,14 @@ msgid "Could not find the plugin from Server.\n"
 msgstr ""
 
 #: G:/work/project/Noval/noval/python/plugins/pip_gui.py:857
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1334
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1339
 msgid ""
 "\n"
 "Please check your spelling!"
 msgstr ""
 
 #: G:/work/project/Noval/noval/python/plugins/pip_gui.py:857
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1334
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1339
 msgid ""
 "\n"
 "You need to enter "
@@ -4002,144 +4023,148 @@ msgstr ""
 msgid "Price"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1245
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1250
 msgid ""
 "With current interpreter you can only browse the packages here.\n"
 "Use 'Tools → Plugin Manager' for installing, upgrading or uninstalling.\n"
 "\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1252
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1257
 msgid "Packages' directory\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1257
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1262
 msgid "Install from PyPI\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1260
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1265
 msgid "If you don't know where to get the package from, "
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1261
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1266
 msgid "then most likely you'll want to search the Python Package Index. "
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1262
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1267
 msgid ""
 "Start by entering the name of the package in the search box above and "
 "pressing ENTER.\n"
 "\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1265
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1270
 msgid "Install from requirements file\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1270
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1275
 msgid ""
 " to locate requirements.txt file and install the packages specified in "
 "it.\n"
 "\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1278
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1283
 msgid ""
 " to locate and install the package file (usually with .whl, .tar.gz or "
 ".zip extension).\n"
 "\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1285
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1290
 msgid ""
 "Start by selecting the package from the left.\n"
 "\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1291
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1296
 msgid "virtual environment\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1293
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1298
 msgid "user site-packages\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1297
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1302
 msgid "This dialog lists all available packages,"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1298
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1303
 msgid " but allows upgrading and uninstalling only packages from "
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1303
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1308
 msgid ". New packages will be also installed into this directory."
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1304
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1309
 msgid " Other locations must be managed by alternative means."
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1322
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1327
 msgid "refresh"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1331
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1336
 msgid "Could not find the package from PyPI."
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1335
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1340
 msgid "exact package name"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1342
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1347
 msgid "Searched Packages:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1345
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1350
 #, python-format
 msgid "The resuls count is tool much!trim to %d"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1405
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1410
 msgid "NB!\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1506
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1511
 msgid "Really uninstall?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1507
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1512
 msgid ""
 "Package '{}' is required for installing and uninstalling other packages.\n"
 "\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1510
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1515
 msgid "Are you sure you want to uninstall it?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1662
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1667
 msgid "Default plugin directory:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1665
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1670
 msgid "User directory"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1666
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1671
 msgid "System directory"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1669
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1674
 msgid "Enable plugin after install it"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1696
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1678
+msgid "Search plugin market When open unsupported file extension"
+msgstr ""
+
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1706
 msgid "Plugin Manager"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1698
+#: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1708
 msgid "fetching plugin from server..."
 msgstr ""
 
@@ -4446,15 +4471,15 @@ msgstr ""
 msgid "C++ Source File"
 msgstr ""
 
-#: G:/work/project/Noval/noval/syntax/lexer/_cpp.py:92
+#: G:/work/project/Noval/noval/syntax/lexer/_cpp.py:98
 msgid "C++ Editor"
 msgstr ""
 
-#: G:/work/project/Noval/noval/syntax/lexer/_css.py:58
+#: G:/work/project/Noval/noval/syntax/lexer/_css.py:106
 msgid "StyleSheet"
 msgstr ""
 
-#: G:/work/project/Noval/noval/syntax/lexer/_css.py:77
+#: G:/work/project/Noval/noval/syntax/lexer/_css.py:125
 msgid "StyleSheet Editor"
 msgstr ""
 
@@ -4482,11 +4507,11 @@ msgstr ""
 msgid "JavaScript Editor"
 msgstr ""
 
-#: G:/work/project/Noval/noval/syntax/lexer/_xml.py:58
+#: G:/work/project/Noval/noval/syntax/lexer/_xml.py:61
 msgid "XML File"
 msgstr ""
 
-#: G:/work/project/Noval/noval/syntax/lexer/_xml.py:77
+#: G:/work/project/Noval/noval/syntax/lexer/_xml.py:80
 msgid "XML Editor"
 msgstr ""
 

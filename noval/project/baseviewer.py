@@ -1844,77 +1844,22 @@ class ProjectView(misc.AlarmEventView):
             (child, cookie) = self._treeCtrl.GetNextChild(parentItem, cookie)
 
     def GetOpenDocumentTemplate(self,project_file):
+        '''
+            获取项目文件的打开方式模板
+        '''
         template = None
         document_template_name = utils.profile_get(self.GetDocument().GetFileKey(project_file,"Open"),"")
         filename = os.path.basename(project_file.filePath)
         if not document_template_name:
+            #是否存在以文件名方式打开的模板
             document_template_name = utils.profile_get("Open/filenames/%s" % filename,"")
             if not document_template_name:
+                #是否存在以扩展名方式打开的模板
                 document_template_name = utils.profile_get("Open/extensions/%s" % strutils.get_file_extension(filename),"")
         if document_template_name:
-            template = wx.GetApp().GetDocumentManager().FindTemplateForDocumentType(document_template_name)
+            template = GetApp().GetDocumentManager().FindTemplateForDocumentType(document_template_name)
         return template
         
-    def OnOpenSelectionWith(self, event):
-        item_file = self._GetItemFile(self._treeCtrl.GetSingleSelectItem())
-        selected_file_path = item_file.filePath
-        dlg = ProjectUI.EditorSelectionDialog(wx.GetApp().GetTopWindow(),-1,_("Editor Selection"),item_file,self.GetDocument())
-        dlg.CenterOnParent()
-        if dlg.ShowModal() == wx.ID_OK:
-            found_view = utils.GetOpenView(selected_file_path)
-            if found_view:
-                ret = wx.MessageBox(_("The document \"%s\" is already open,Do you want to close it?") %selected_file_path,style=wx.YES_NO|wx.ICON_QUESTION)
-                if ret == wx.YES:
-                    found_view.Close()
-                    document = found_view.GetDocument()
-                    if document in self.GetDocumentManager().GetDocuments():
-                        document.Destroy()
-                    frame = found_view.GetFrame()
-                    if frame:
-                        frame.Destroy()
-                else:
-                    return
-            doc = self.GetDocumentManager().CreateTemplateDocument(dlg.selected_template,selected_file_path, wx.lib.docview.DOC_SILENT)
-            if doc is not None and dlg._is_changed and utils.GetOpenView(selected_file_path):
-                iconIndex = self._treeCtrl.GetTemplateIconIndex(dlg.selected_template)
-                if dlg.OpenwithMode == dlg.OPEN_WITH_FILE_PATH:
-                    utils.ProfileSet(self.GetDocument().GetFileKey(item_file,"Open"),\
-                                     dlg.selected_template.GetDocumentName())
-                    file_template = wx.GetApp().GetDocumentManager().FindTemplateForPath(selected_file_path)
-                    if file_template != dlg.selected_template:
-                        item = self._treeCtrl.GetSelections()[0]
-                        if iconIndex != -1:
-                            self._treeCtrl.SetItemImage(item, iconIndex, wx.TreeItemIcon_Normal)
-                            self._treeCtrl.SetItemImage(item, iconIndex, wx.TreeItemIcon_Expanded)
-                        
-                elif dlg.OpenwithMode == dlg.OPEN_WITH_FILE_NAME:
-                    filename = os.path.basename(selected_file_path)
-                    utils.ProfileSet("Open/filenames/%s" % filename,dlg.selected_template.GetDocumentName())
-                    if iconIndex != -1:
-                        self.ChangeItemsImageWithFilename(self._treeCtrl.GetRootItem(),filename,iconIndex)
-                elif dlg.OpenwithMode == dlg.OPEN_WITH_FILE_EXTENSION:
-                    extension = strutils.GetFileExt(os.path.basename(selected_file_path))
-                    utils.ProfileSet("Open/extensions/%s" % extension,dlg.selected_template.GetDocumentName())
-                    if iconIndex != -1:
-                        self.ChangeItemsImageWithExtension(self._treeCtrl.GetRootItem(),extension,iconIndex)
-                else:
-                    assert(False)
-        dlg.Destroy()
-        
-
-    def ChangeItemsImageWithFilename(self,parent_item,filename,icon_index):
-        if parent_item is None:
-            return
-        (item, cookie) = self._treeCtrl.GetFirstChild(parent_item)
-        while item:
-            if self._IsItemFile(item):
-                file_name = self._treeCtrl.GetItemText(item)
-                if file_name == filename:
-                    self._treeCtrl.SetItemImage(item, icon_index, wx.TreeItemIcon_Normal)
-                    self._treeCtrl.SetItemImage(item, icon_index, wx.TreeItemIcon_Expanded)
-            self.ChangeItemsImageWithFilename(item,filename,icon_index)
-            (item, cookie) = self._treeCtrl.GetNextChild(parent_item, cookie)
-
     #----------------------------------------------------------------------------
     # Convenience methods
     #----------------------------------------------------------------------------

@@ -29,6 +29,14 @@ import noval.util.fileutils as fileutils
 from dummy.userdb import UserDataDb
 import noval.ui_utils as ui_utils
 
+def url_parse_host(url):
+    '''
+        解析url中的host
+    '''
+    parts = urlparse(url)
+    host = parts.netloc
+    return host
+
 def get_package_versions(name):
     '''
     '''
@@ -298,8 +306,7 @@ class InstallPackagesDialog(CommonManagePackagesDialog):
             
         if self.SOURCE_NAME_LIST[self._pipSourceCombo.current()] != self.SOURCE_NAME_LIST[0]:
             command += " -i " + self.SOURCE_LIST[self._pipSourceCombo.current()]
-            parts = urlparse(self.SOURCE_LIST[self._pipSourceCombo.current()])
-            host = parts.netloc
+            host = url_parse_host(self.SOURCE_LIST[self._pipSourceCombo.current()])
             command += " --trusted-host " + host
             
         utils.get_logger().info("install command is %s",command)

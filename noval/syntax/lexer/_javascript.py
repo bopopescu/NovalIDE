@@ -71,9 +71,15 @@ class SyntaxLexer(syndata.BaseLexer):
     def GetExt(self):
         return "js"
 
-    def GetCommentPattern(self):
+    def GetDefaultCommentPattern(self):
         """Returns a list of characters used to comment a block of code """
         return [u'//']
+        
+    def GetCommentPatterns(self):
+        """
+            js注释有2种,行注释和块注释
+        """
+        return [self.DefaultCommentPattern(),['/*','*/']]
 
     def GetShowName(self):
         return "JavaScript"
@@ -95,10 +101,6 @@ class SyntaxLexer(syndata.BaseLexer):
         
     def GetDocIcon(self):
         return imageutils.load_image("","file/javascript.png")
-        
-    def GetSampleCode(self):
-        sample_file_path = os.path.join(appdirs.get_app_data_location(),"sample","xml.sample")
-        return self.GetSampleCodeFromFile(sample_file_path)
         
     def GetColorClass(self):
         return SyntaxColorer

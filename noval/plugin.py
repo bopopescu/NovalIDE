@@ -166,6 +166,12 @@ class Plugin(six.with_metaclass(PluginMeta, object)):
 
     def UninstallHook(self):
         ''''''
+        
+    def CanUninstall(self):
+        '''
+            是否允许插件卸载,默认允许
+        '''
+        return True
 
     def EnableHook(self):
         ''''''
@@ -185,6 +191,16 @@ class Plugin(six.with_metaclass(PluginMeta, object)):
         @return: bool
 
         """
+        return False
+        
+    def HookExit(self):
+        ''''''
+        #插件退出
+        
+    def MatchPlatform(self):
+        '''
+            插件是否需要区分操作系统,默认是各种操作系统使用同一个插件文件
+        '''
         return False
 
 #-----------------------------------------------------------------------------#
@@ -612,6 +628,13 @@ class PluginManager(object):
         for pdata in self._pdata.values():
             plugins[pdata.GetClass()] = pdata.GetInstance()
         return plugins
+        
+    def Exit(self):
+        '''
+            通知所有插件退出
+        '''
+        for key,plugin_instance in self.GetPlugins().items():
+            plugin_instance.HookExit()
         
     def GetPlugin(self,plugin_name):
         pdata = self.GetPluginData()

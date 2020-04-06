@@ -33,7 +33,7 @@ class SyntaxLexer(_c.SyntaxLexer):
     def GetExt(self):
         return "h"
 
-    def GetCommentPattern(self):
+    def GetDefaultCommentPattern(self):
         """Returns a list of characters used to comment a block of code """
         return [u'/*',u'*/']
 

@@ -715,18 +715,33 @@ class PythonCtrl(codeeditor.CodeCtrl):
             if char == "(":
                 self.GetArgTip(pos)
                 self.insert("insert", '()')
+                self.GotoPos(pos[0],pos[1]+2)
                 return "break"
             elif char == "'":
+                #如果单引号前面有2个单引号,插入单三引号
                 if self.GetCharAt(pos[0],pos[1]) == "'" and self.GetCharAt(pos[0],pos[1]-1) == "'":
+                   #插入成双的单三引号
+                    self.insert("insert","'''")
+                    self.GotoPos(pos[0],pos[1]+1)
+                #如果单引号前后面各有1个单引号,也插入单三引号
+                elif self.GetCharAt(pos[0],pos[1]) == "'" and self.GetCharAt(pos[0],pos[1]+1) == "'":
                     #插入成双的单三引号
                     self.insert("insert","'''")
+                    self.GotoPos(pos[0],pos[1]+2)
                 else:
                     #插入成双的单引号
                     return codeeditor.CodeCtrl.OnChar(self,event)
             elif char == '"':
+                #如果双引号前面有2个单引号,插入双三引号
                 if self.GetCharAt(pos[0],pos[1]) == '"' and self.GetCharAt(pos[0],pos[1]-1) == '"':
                     #插入成双的双三引号
                     self.insert("insert",'"""')
+                    self.GotoPos(pos[0],pos[1]+1)
+                #如果双引号前后面各有1个双引号,也插入双三引号
+                elif self.GetCharAt(pos[0],pos[1]) == '"' and self.GetCharAt(pos[0],pos[1]+1) == '"':
+                    #插入成双的双三引号
+                    self.insert("insert",'"""')
+                    self.GotoPos(pos[0],pos[1]+2)
                 else:
                     #插入成双的双引号
                     return codeeditor.CodeCtrl.OnChar(self,event)

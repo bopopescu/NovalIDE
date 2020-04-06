@@ -9,6 +9,7 @@ __author__ = "Cody Precord"
 __version__ = "0.6"
 
 #-----------------------------------------------------------------------------#
+import sys
 from noval import _,GetApp,NewId
 import noval.iface as iface
 import noval.plugin as plugin
@@ -191,6 +192,11 @@ class PyPi(plugin.Plugin):
                 instance = cls(GetApp().GetPluginManager())
                 free = instance.GetFree()
                 assert(type(free) == bool)
+                #是否禁止插件卸载
+                data['disable_uninstall'] = not int(instance.CanUninstall())
+                data['match_platform'] = instance.MatchPlatform()
+                #操作系统名称,防止插件区分操作系统
+                data['os_name'] = sys.platform
                 data['free'] = int(free)
                 price = None
                 if not free:

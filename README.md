@@ -29,6 +29,8 @@ NovalIDE是一款开源，跨平台，而且免费的国产多功能，轻便的
 - [对一款优秀国产Python IDE---NovalIDE的体验](https://my.oschina.net/u/3728672/blog/1817030)
 - [Linux如何安装NovalIDE](https://my.oschina.net/u/3728672/blog/1831452)
 - [再体验国产最好的Python IDE之NovalIDE](https://my.oschina.net/u/3728672/blog/3125055)
+- [也评一款轻量好用的ide:NovalIDE](https://blog.csdn.net/weixin_41102672/article/details/104716291)
+- [国产开发工具NovalIDE](https://mp.weixin.qq.com/s?__biz=MjM5NDcxMDQzNA==&mid=2247484035&idx=1&sn=c3850d4cfe69981e3fd8c54e9c5eb710&chksm=a682d44e91f55d5888dad0b93dafa9187d0457883e852b49257abe9c163417e45b2ba5ea03c3&mpshare=1&scene=1&srcid=03097fyonpD2itt8KVkulOis&sharer_sharetime=1583723932040&sharer_shareid=520973c84f026e66e7ec93c13eb3129a&key=9be9032765bbfbbefa11fed11940f2508f5e9c67b9cce265d565998acfe8b40e4e73d845d52942a6f54f5dedce2fdad207249e5326a29265e6f18dd580bec9e59d98fe903e61d9c9da792f175a7f716f&ascene=1&uin=Nzc2Njk5MzI0&devicetype=Windows+7&version=6208006f&lang=zh_CN&exportkey=A8Gh3VCBZ2AxrNmxY%2B%2BXyK8%3D&pass_ticket=4f%2BTd0L9WM5wsbcYeGG5XygO5wlXZ%2BV89O52qIlEhFFlZFU%2BihOP3ZPRqHR%2F3rIn)
 
 软件概貌: ![NovalIDE_Screen](noval/bmp_source/images/banner_01.png)
 

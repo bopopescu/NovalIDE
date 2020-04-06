@@ -31,7 +31,7 @@
         <Template>
         <Icon Large="noval/tool/bmp_source/template/html.bmp" Small="noval/bmp_source/template/html-small.bmp"/>
         <Ext>.html</Ext>
-        <Content> noval/tool/data/template/HtmlFile.tar.bz2 </Content>
+        <Content> noval/data/template/HtmlFile.tar.bz2 </Content>
         <DefaultName>WebPage.html</DefaultName>
         <Name>HTML文档</Name>
         <Description>一个包含html客户端代码的页面</Description>
@@ -57,7 +57,7 @@
         <Template>
         <Icon Large="noval/tool/bmp_source/template/js.bmp" Small="noval/bmp_source/template/js-small.bmp"/>
         <Ext>.js</Ext>
-        <Content> noval/tool/data/template/JavaScript.tar.bz2 </Content>
+        <Content> noval/data/template/JavaScript.tar.bz2 </Content>
         <DefaultName>JavaScript.js</DefaultName>
         <Name>JavaScrip脚本</Name>
         <Description>一个包含JavaScript代码的脚本</Description>
@@ -137,7 +137,7 @@
         <Template>
         <Icon Large="noval/tool/bmp_source/template/ini.bmp" Small="noval/tool/bmp_source/template/ini-small.bmp"/>
         <Ext>.css</Ext>
-        <Content> noval/tool/data/template/Stylesheet.tar.bz2 </Content>
+        <Content> noval/data/template/Stylesheet.tar.bz2 </Content>
         <DefaultName>Stylesheet.css</DefaultName>
         <Name>Style Sheet</Name>
         <Description>A cascading style sheet used for rich HTML style definitions</Description>
@@ -147,7 +147,7 @@
         <Template>
         <Icon Large="noval/tool/bmp_source/template/js.bmp" Small="noval/tool/bmp_source/template/js-small.bmp"/>
         <Ext>.js</Ext>
-        <Content> noval/tool/data/template/JavaScript.tar.bz2 </Content>
+        <Content> noval/data/template/JavaScript.tar.bz2 </Content>
         <DefaultName>JavaScript.js</DefaultName>
         <Name>JavaScript</Name>
         <Description>A script file containing JavaScript code</Description>

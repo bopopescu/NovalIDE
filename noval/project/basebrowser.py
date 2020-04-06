@@ -22,6 +22,7 @@ import noval.project.document as projectdocument
 import noval.ui_utils as ui_utils
 import noval.syntax.syntax as syntax
 import noval.project.command as projectcommand
+import noval.project.openwith as openwith
 
 class EntryPopup(tk.Entry):
 
@@ -181,15 +182,15 @@ class ProjectTreeCtrl(ttk.Treeview):
         #如果是虚拟文件,则不创建树节点
         if filename == consts.DUMMY_NODE_TEXT:
             return None
-            
+        #查找项目文件是否有另外的打开方式模板
         template = GetApp().MainFrame.GetView(consts.PROJECT_VIEW_NAME).GetView().GetOpenDocumentTemplate(file)
         found = False
+        #如果没有则使用项目文件扩展名对应的默认模板
         if template is None:
             template = GetApp().GetDocumentManager().FindTemplateForPath(filename)
         file_image = self.GetTemplateIcon(template)
         #valus参数必须用tuple类型,不能用str类型,否则会数据存储错误
         item = self.insert(parent, "end", text=filename, image=file_image,values=(file.filePath,))
-   #     self.set(item, "path", file.filePath)
         return item
 
     def AddFolder(self, folderPath):
@@ -371,6 +372,7 @@ class BaseProjectbrowser(ttk.Frame):
         try:
             item = selections[0]
             filepath = self.GetView()._GetItemFilePath(item)
+            #项目文件的打开方式模板
             file_template = None
             if filepath:
                 #标准化文件路径
@@ -400,9 +402,13 @@ class BaseProjectbrowser(ttk.Frame):
                         return
                 else:        
                     project_file = self.GetItemFile(item)
+                    #获取项目文件的打开方式模板
                     file_template = self.GetView().GetOpenDocumentTemplate(project_file)
+                #如果存在项目文件的打开方式模板,则以打开方式模板打开项目文件
                 if file_template:
-                    doc = GetApp().GetDocumentManager().CreateTemplateDocument(file_template,filepath, wx.lib.docview.DOC_SILENT|wx.lib.docview.DOC_OPEN_ONCE)
+                    doc = GetApp().GetDocumentManager().CreateTemplateDocument(file_template,filepath, core.DOC_SILENT|core.DOC_OPEN_ONCE)
+                    docs = [doc]
+                #否则以扩展名默认模板打开项目文件
                 else:
                     docs = GetApp().GetDocumentManager().CreateDocument(filepath, core.DOC_SILENT|core.DOC_OPEN_ONCE)
                 if not docs and filepath.endswith(consts.PROJECT_EXTENSION):  # project already open
@@ -411,8 +417,6 @@ class BaseProjectbrowser(ttk.Frame):
                     baseviewer.AddProjectMapping(docs[0])
                     #检查文件扩展名是否有对应的文件扩展插件
                     ui_utils.CheckFileExtension(filepath,False)
-                        
-
         except IOError as e:
             msgTitle = wx.GetApp().GetAppName()
             if not msgTitle:
@@ -421,6 +425,93 @@ class BaseProjectbrowser(ttk.Frame):
                           msgTitle,
                           wx.OK | wx.ICON_EXCLAMATION,
                           self.GetFrame())
+                          
+    def OpenSelectionWith(self):
+        '''
+            用户选择打开方式来打开项目文件
+        '''
+        item = self.tree.selection()[0]
+        item_file = self.GetItemFile(item)
+        selected_file_path = item_file.filePath
+        dlg = openwith.EditorSelectionDlg(GetApp().GetTopWindow(),item_file,self.GetView().GetDocument())
+        if dlg.ShowModal() == constants.ID_OK:
+            found_doc = GetApp().GetDocumentManager().GetDocument(selected_file_path)
+            if found_doc:
+                ret = messagebox.askyesno(GetApp().GetAppName(),_("The document \"%s\" is already open,Do you want to close it?") %selected_file_path)
+                if ret == True:
+                    found_view = found_doc.GetFirstView()
+                    found_view.Close()
+                    if found_doc in GetApp().GetDocumentManager().GetDocuments():
+                        found_doc.Destroy()
+                    frame = found_view.GetFrame()
+                    if frame:
+                        frame.Destroy()
+                else:
+                    return
+            doc = GetApp().GetDocumentManager().CreateTemplateDocument(dlg.selected_template,selected_file_path, core.DOC_SILENT)
+            #用户更改了打开方式
+            if doc is not None and dlg._is_changed and GetApp().GetDocumentManager().GetDocument(selected_file_path):
+                #打开方式的模板图标
+                template_icon = dlg.selected_template.GetIcon()
+                if dlg.Openwith == dlg.OPEN_WITH_PATH:
+                    utils.profile_set(self.GetView().GetDocument().GetFileKey(item_file,"Open"),dlg.selected_template.GetDocumentName())
+                    file_template = GetApp().GetDocumentManager().FindTemplateForPath(selected_file_path)
+                    if file_template != dlg.selected_template:
+                        if template_icon is not None:
+                            #更改文件item的模板图标
+                            self.GetView()._treeCtrl.item(item,image=template_icon)
+                #以所有文件名方式打开
+                elif dlg.Openwith == dlg.OPEN_WITH_NAME:
+                    filename = os.path.basename(selected_file_path)
+                    #保存文件名对应的模板
+                    utils.profile_set("Open/filenames/%s" % filename,dlg.selected_template.GetDocumentName())
+                    if template_icon is not None:
+                        #批量更改所有文件名的图标
+                        self.ChangeItemsImageWithFilename(self.GetView()._treeCtrl.GetRootItem(),filename,template_icon)
+                #以所有扩展名方式打开
+                elif dlg.Openwith == dlg.OPEN_WITH_EXTENSION:
+                    extension = strutils.get_file_extension(os.path.basename(selected_file_path))
+                    #保存扩展名对应的模板
+                    utils.profile_set("Open/extensions/%s" % extension,dlg.selected_template.GetDocumentName())
+                    if template_icon is not None:
+                        #批量更改所有扩展名的图标
+                        self.ChangeItemsImageWithExtension(self.GetView()._treeCtrl.GetRootItem(),extension,template_icon)
+                else:
+                    assert(False)
+                    
+    def ChangeItemsImageWithFilename(self,parent_item,filename,template_icon):
+        '''
+            所有项目文件的文件名匹配的均批量修改图标
+        '''
+        if parent_item is None:
+            return
+        tree_ctrl = self.GetView()._treeCtrl
+        childs = tree_ctrl.get_children(parent_item)
+        for child_item in childs:
+            if self.GetView()._IsItemFile(child_item):
+                file_name = tree_ctrl.item(child_item,"text")
+                #匹配文件名
+                if file_name == filename:
+                    tree_ctrl.item(child_item,image=template_icon)
+            #递归更改图标
+            self.ChangeItemsImageWithFilename(child_item,filename,template_icon)
+        
+    def ChangeItemsImageWithExtension(self,parent_item,extension,template_icon):
+        '''
+            所有项目文件的扩展名匹配的均批量修改图标
+        '''
+        if parent_item is None:
+            return
+        tree_ctrl = self.GetView()._treeCtrl
+        childs = tree_ctrl.get_children(parent_item)
+        for child_item in childs:
+            if self.GetView()._IsItemFile(child_item):
+                file_name = tree_ctrl.item(child_item,"text")
+                #匹配扩展名
+                if strutils.get_file_extension(file_name) == extension:
+                    tree_ctrl.item(child_item,image=template_icon)
+            #递归更改图标
+            self.ChangeItemsImageWithExtension(child_item,extension,template_icon)
             
     def GetView(self):
         return self._view
@@ -623,6 +714,7 @@ class BaseProjectbrowser(ttk.Frame):
     def GetPopupFileMenu(self,item):
         menu = tkmenu.PopupMenu(self,**misc.get_style_configuration("Menu"))
         menu.Append(constants.ID_OPEN_SELECTION, _("&Open"),handler=lambda:self.ProcessEvent(constants.ID_OPEN_SELECTION))
+        menu.Append(constants.ID_OPEN_SELECTION_WITH, _("&Open With..."), handler=lambda:self.ProcessEvent(constants.ID_OPEN_SELECTION_WITH))
         common_item_ids = [None,consts.ID_UNDO,consts.ID_REDO,consts.ID_CUT,consts.ID_COPY,consts.ID_PASTE,consts.ID_CLEAR,None,consts.ID_SELECTALL]
         self.GetCommonItemsMenu(menu,common_item_ids)
         
@@ -752,6 +844,9 @@ class BaseProjectbrowser(ttk.Frame):
             return True
         elif id == constants.ID_OPEN_SELECTION:
             self.OpenSelection()
+            return True
+        elif id == constants.ID_OPEN_SELECTION_WITH:
+            self.OpenSelectionWith()
             return True
         elif id == constants.ID_PROPERTIES:
             self.OnProperties()

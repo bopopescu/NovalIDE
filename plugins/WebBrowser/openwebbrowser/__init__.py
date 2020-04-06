@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+import sys
 from noval import _,GetApp,NewId
 import noval.iface as iface
 import noval.plugin as plugin
@@ -9,21 +11,27 @@ import noval.imageutils as imageutils
 from dummy.userdb import UserDataDb
 import tkinter as tk
 from tkinter import ttk
-from cefpython3 import cefpython as cef
 import noval.toolbar as toolbar
-from pkg_resources import resource_filename
 try:
     import tkSimpleDialog
 except ImportError:
     import tkinter.simpledialog as tkSimpleDialog
+import ctypes
+from pkg_resources import resource_filename
+import threading
 
-WindowUtils = cef.WindowUtils()
+pkg_path = resource_filename(__name__,'')
+if utils.is_windows():
+    sys.path.append(pkg_path)
+utils.get_logger().info('pkg path is %s',pkg_path)
+from cefpython3 import cefpython as cef
 IMAGE_EXT = ".png" if tk.TkVersion > 8.5 else ".gif"
 
 INTERNAL_WEB_BROWSER = 16
 APPLICATION_STARTUP_PAGE = 32
 
 IS_CEF_INITIALIZED = False
+SET_CIENT_HANDLER_MSG = "set_cient_handler"
 
 class WebDocument(core.Document):
     def OnOpenDocument(self, filename):
@@ -58,7 +66,7 @@ class FocusHandler(object):
         """Fix CEF focus issues (#255). Call browser frame's focus_set
            to get rid of type cursor in url entry widget."""
         utils.get_logger().debug("FocusHandler.OnGotFocus")
-        self.browser_frame.focus_set()
+        #self.browser_frame.focus_set()
         
 class BrowserFrame(ttk.Frame):
 
@@ -73,20 +81,43 @@ class BrowserFrame(ttk.Frame):
         self.bind("<FocusOut>", self.on_focus_out)
         self.bind("<Configure>", self.on_configure)
         self.focus_set()
+        GetApp().bind(SET_CIENT_HANDLER_MSG,self.SetClientHandler,True)
         
     def SetUrl(self,url):
         self.url = url
-
-    def embed_browser(self):
+        
+    def SetClientHandler(self,event):
+        self.browser.SetClientHandler(LoadHandler(self))
+        self.browser.SetClientHandler(FocusHandler(self))
+        
+    def CreateBrowserAsync(self,window_info,url):
+        self.browser = cef.CreateBrowserSync(window_info,
+                                             url=url)
+        assert self.browser
+        GetApp().event_generate(SET_CIENT_HANDLER_MSG)
+        #在UI线程创建browser不使用消息循环,只有在单线程时才使用
+        #self.message_loop_work()
+        
+    def embed_browser_sync(self):
+        '''
+            这是在单线程中创建cef浏览器对象
+        '''
         window_info = cef.WindowInfo()
         rect = [0, 0, self.winfo_width(), self.winfo_height()]
         window_info.SetAsChild(self.get_window_handle(), rect)
         self.browser = cef.CreateBrowserSync(window_info,
                                              url=self.url)
         assert self.browser
-        self.browser.SetClientHandler(LoadHandler(self))
-        self.browser.SetClientHandler(FocusHandler(self))
+        self.SetClientHandler()
+        #消息循环
         self.message_loop_work()
+
+    def embed_browser(self):
+        window_info = cef.WindowInfo()
+        rect = [0, 0, self.winfo_width(), self.winfo_height()]
+        window_info.SetAsChild(self.get_window_handle(), rect)
+        #设置以UI线程来创建浏览器,void cef.PostTask(线程，funcName, [params...]),传入funcName函数的参数不能是关键字
+        cef.PostTask(cef.TID_UI, self.CreateBrowserAsync, window_info, self.url)
 
     def get_window_handle(self):
         if self.winfo_id() > 0:
@@ -100,7 +131,12 @@ class BrowserFrame(ttk.Frame):
 
     def on_configure(self, _):
         if not self.browser:
-            self.embed_browser()
+            #windows系统使用UI线程来创建浏览器
+            if utils.is_windows():
+                self.embed_browser()
+            else:
+                #linux系统使用单线程来创建浏览器
+                self.embed_browser_sync()
 
     def on_root_configure(self):
         # Root <Configure> event will be called when top window is moved
@@ -110,7 +146,9 @@ class BrowserFrame(ttk.Frame):
     def on_mainframe_configure(self, width, height):
         if self.browser:
             if utils.is_windows():
-                WindowUtils.OnSize(self.get_window_handle(), 0, 0, 0)
+               ctypes.windll.user32.SetWindowPos(
+                    self.browser.GetWindowHandle(), 0,
+                    0, 0, width, height, 0x0002)
             elif utils.is_linux():
                 self.browser.SetBounds(0, 0, width, height)
             self.browser.NotifyMoveOrResizeStarted()
@@ -145,8 +183,18 @@ class WebView(core.View):
         self.browser_frame = None
         self.navigation_bar = None
         self.start_url = ''
+        self.zoom_level = 0
         if not IS_CEF_INITIALIZED:
-            cef.Initialize()
+            settings = {
+                'multi_threaded_message_loop':True
+            }
+            if utils.is_windows():
+                settings.update({
+                    "locales_dir_path": os.path.join(pkg_path,"cefpython3","locales"),
+                    "browser_subprocess_path": os.path.join(pkg_path,"cefpython3","subprocess.exe"),
+                    "resources_dir_path":os.path.join(pkg_path,"cefpython3",'resources')
+                    })
+            cef.Initialize(settings=settings)
             IS_CEF_INITIALIZED = True
         
     def OnClose(self, deleteWindow = True):
@@ -170,7 +218,9 @@ class WebView(core.View):
         template.SetIcon(template_icon)
         frame.bind("<Configure>", self.on_configure)
         browser_row = 0
-        if flags & INTERNAL_WEB_BROWSER:
+        if not (flags & APPLICATION_STARTUP_PAGE) and not (flags & INTERNAL_WEB_BROWSER):
+            self.start_url = doc.GetFilename()
+        if not (flags & APPLICATION_STARTUP_PAGE):
             self.navigation_bar = NavigationBar(frame,self)
             self.navigation_bar.grid(row=0, column=0,
                                      sticky=(tk.N + tk.S + tk.E + tk.W))
@@ -209,7 +259,13 @@ class WebView(core.View):
         return None
         
     def ZoomView(self,delta=0):
-        pass
+        if self.zoom_level >= 15 and delta > 0:
+            return
+        elif self.zoom_level <= -10 and delta < 0:
+            return
+        self.zoom_level += delta
+        if self.browser_frame:
+            self.get_browser().SetZoomLevel(self.zoom_level)
 
 class WebBrowserPlugin(plugin.Plugin):
     """plugin description here..."""
@@ -244,8 +300,12 @@ class WebBrowserPlugin(plugin.Plugin):
         
     def GotoStartupPage(self):
         webViewTemplate = GetApp().GetDocumentManager().FindTemplateForTestPath(".com")
-        doc = GetApp().GetDocumentManager().CreateTemplateDocument(webViewTemplate,_("Startup Page"), core.DOC_SILENT|core.DOC_OPEN_ONCE|APPLICATION_STARTUP_PAGE)
-        doc.GetFirstView().LoadUrl(r'D:\env\project\Noval\template.xml')
+        doc = GetApp().GetDocumentManager().CreateTemplateDocument(webViewTemplate,_("Start Page"), core.DOC_SILENT|core.DOC_OPEN_ONCE|APPLICATION_STARTUP_PAGE)
+        t = threading.Thread(target=self.OpenStartupPage,args=(doc,))
+        t.start()
+        
+    def OpenStartupPage(self,doc):
+        doc.GetFirstView().LoadUrl(r'G:\work\project\Noval\template.xml')
 
     def GetMinVersion(self):
         """Override in subclasses to return the minimum version of novalide that
@@ -253,6 +313,7 @@ class WebBrowserPlugin(plugin.Plugin):
         version of novalide.
         @return: version str
         """
+        return "1.2.2"
 
     def InstallHook(self):
         """Override in subclasses to allow the plugin to be loaded
@@ -261,6 +322,9 @@ class WebBrowserPlugin(plugin.Plugin):
 
         """
         pass
+        
+    def CanUninstall(self):
+        return False
 
     def UninstallHook(self):
         pass
@@ -278,7 +342,16 @@ class WebBrowserPlugin(plugin.Plugin):
         pass
         
     def HookExit(self):
-        cef.Shutdown()
+        ''''''
+        cef.PostTask(cef.TID_UI, cef.Shutdown)
+        
+    def MatchPlatform(self):
+        '''
+            这里插件需要区分windows版本和linux版本
+            windows版本把cef包需要打包进去
+            linux版本不需要打包进去,直接在用户电脑上安装
+        '''
+        return True
     
 class NavigationBar(toolbar.ToolBar):
     
@@ -298,8 +371,7 @@ class NavigationBar(toolbar.ToolBar):
         self.stop_image = None
 
         toolbar.ToolBar.__init__(self, master)
-        path = resource_filename(__name__,'')
-        resources = os.path.join(path, "resources")
+        resources = os.path.join(pkg_path, "resources")
         
         go_png = os.path.join(resources, "go"+IMAGE_EXT)
         if os.path.exists(go_png):

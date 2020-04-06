@@ -1,4 +1,5 @@
 from noval import _,GetApp,NewId
+import os
 import noval.iface as iface
 import noval.plugin as plugin
 import noval.util.utils as utils
@@ -17,6 +18,7 @@ import tkinter as tk
 import noval.editor.text as texteditor
 import noval.ttkwidgets.textframe as textframe
 from tkinter import ttk,messagebox
+import copy
 
 class RepositoryAddrDialog(ui_base.CommonModaldialog):
     def __init__(self,master,face_ui):
@@ -245,7 +247,7 @@ class GitToolPlugin(plugin.Plugin):
         version of novalide.
         @return: version str
         """
-        return "1.2.1"
+        return "1.2.2"
 
     def InstallHook(self):
         """Override in subclasses to allow the plugin to be loaded
@@ -269,6 +271,14 @@ class GitToolPlugin(plugin.Plugin):
         
     def GetPrice(self):
         pass
+        
+    def MatchPlatform(self):
+        '''
+            这里插件需要区分windows版本和linux版本
+            windows版本把adkpass.exe包需要打包进去
+            linux版本把可执行脚本adkpass.py包需要打包进去
+        '''
+        return True
     
     def AppenRootMenu(self, event):
         self.current_branch = self.GetBranch()
@@ -313,7 +323,7 @@ class GitToolPlugin(plugin.Plugin):
     def GetCommandOutput(self,command):
         output = utils.GetCommandOutput('git status',cwd=self.GetProjectDocument().GetPath())
         if output == '':
-           	output = utils.GetCommandOutput('git status',cwd=self.GetProjectDocument().GetPath(),encoding='utf-8')
+            output = utils.GetCommandOutput('git status',cwd=self.GetProjectDocument().GetPath(),encoding='utf-8')
         return output
         
     def CheckoutCommitFiles(self):
@@ -338,7 +348,7 @@ class GitToolPlugin(plugin.Plugin):
             messagebox.showinfo(_('Error'),_('pull fail:%s')%(error))
         
     def Push(self):
-        error,output,returncode = self.CallGitProcess("git push origin %s"%self.current_branch)
+        error,output,returncode = self.CallGitProcess("git push origin %s"%self.current_branch,ask_pass=True)
         if returncode != 0:
             messagebox.showerror(_('Push fail'),error)
             return
@@ -439,13 +449,21 @@ class GitToolPlugin(plugin.Plugin):
     def Pushfile(self):
         self.Push()
         
-    def CallGitProcess(self,command):
+    def CallGitProcess(self,command,ask_pass=False):
         utils.get_logger().debug('git command is %s,length is:%d',command,len(command))
         if len(command) >= self.MAX_COMMAND_LINE_LENGTH:
             return "command line length exceed limit....","",-1
-        p = subprocess.Popen(command,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,cwd=self.GetProjectDocument().GetPath())
+        env = copy.copy(os.environ)
+        if ask_pass:
+            ask_pass_path = gitui.GetAskPassPath()
+            env.update(dict(GIT_ASKPASS=ask_pass_path))
+        p = subprocess.Popen(command,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,\
+                            cwd=self.GetProjectDocument().GetPath(),env=env)
         error = str(p.stderr.read(),encoding = utils.get_default_encoding())
-        output = str(p.stdout.read(),encoding = utils.get_default_encoding())
+        try:
+            output = str(p.stdout.read(),encoding = utils.get_default_encoding())
+        except:
+            output = str(p.stdout.read(),encoding = 'utf-8')
         p.wait()
         return error,output,p.returncode
         

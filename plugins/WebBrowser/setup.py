@@ -1,7 +1,14 @@
 # -*- coding: utf-8 -*-
 from distutils.core import setup
 from setuptools import find_packages
+import platform
 
+data_files = {
+    'openwebbrowser':['resources/*.png']
+}
+
+if platform.system() == "Windows":
+    data_files['openwebbrowser'].extend(['cefpython3/resources/*.pak','cefpython3/locales/*.pak','cefpython3/*.*'])
 
 setup(name='OpenWebBrowser',
         version='1.0',
@@ -13,7 +20,7 @@ setup(name='OpenWebBrowser',
         packages=find_packages(),
         install_requires=[],
         zip_safe=False,
-        package_data={'openwebbrowser':['resources/*.png']},
+        package_data=data_files,
         data_files = [],
         classifiers=[
             

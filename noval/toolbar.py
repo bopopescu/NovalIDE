@@ -62,6 +62,7 @@ class ToolBar(ui_base.DockFrame):
         if accelerator:
             tooltip_text += " (" + accelerator + ")"
         misc.create_tooltip(button, tooltip_text)
+        return button
 
     def IsDefaultShown(self):
         toolbar_key = self.GetToolbarKey()
@@ -81,11 +82,12 @@ class ToolBar(ui_base.DockFrame):
                     else:
                         button["state"] = tk.NORMAL
         
-    def AddCombox(self,pos=-1):
+    def AddCombox(self,pos=-1,state='readonly'):
         group_frame = self.CreateSlave()
         combo = ttk.Combobox(group_frame)
         self.SetControlPos(-1,combo,pos)
-        combo.state(['readonly'])
+        if state is not None:
+            combo.state([state])
         return combo
 
     def AddLabel(self,text,pos=-1):

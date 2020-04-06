@@ -124,16 +124,41 @@ def get_app_version():
     else:
         version = "Version Unknown - %s not found" % versionFilepath
     return version
-    
-def get_lang_config():
-    config_path = os.path.join(mainModuleDir,"config.ini")
-    if not os.path.exists(config_path):
-        return -1
         
-    if is_py2():
-        from ConfigParser import ConfigParser
-    elif is_py3_plus():
-        from configparser import ConfigParser
+if is_py2():
+    from ConfigParser import ConfigParser
+elif is_py3_plus():
+    from configparser import ConfigParser
+
+def get_lang_config():
+    return int(get_config_value('IDE','Language',default_value=-1))
+    
+def get_config_path():
+    return os.path.join(mainModuleDir,"config.ini")
+    
+def get_config_value(section,key,default_value=None):
+    '''
+        读取配置文件的属性值
+    '''
+    config_path = get_config_path()
+    if not os.path.exists(config_path):
+        return default_value
+
     cfg = ConfigParser()
     cfg.read(config_path)
-    return int(cfg.get('IDE','Language'))
+    return cfg.get(section,key)
+
+def write_cofig_value(section,key,value):
+    '''
+        初始化配置文件的属性值
+    '''
+    config_path = get_config_path()
+    cfg = ConfigParser()
+    if os.path.exists(config_path):
+        cfg.read(config_path)
+    if not cfg.has_section(section):
+        cfg.add_section(section)
+    if not cfg.has_option(section,key):
+        cfg.set(section, key,value)
+        with open(config_path,"w+") as f:
+            cfg.write(f) 

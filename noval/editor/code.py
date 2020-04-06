@@ -106,7 +106,7 @@ class CodeView(texteditor.TextView):
         
     def comment_region(self):
         lexer = self.GetCtrl().GetLangLexer()
-        comment_pattern_list = lexer.GetCommentPattern()
+        comment_pattern_list = lexer.GetDefaultCommentPattern()
         if 0 == len(comment_pattern_list):
             return
             
@@ -129,7 +129,7 @@ class CodeView(texteditor.TextView):
     def uncomment_region(self):
         
         lexer = self.GetCtrl().GetLangLexer()
-        comment_pattern_list = lexer.GetCommentPattern()
+        comment_pattern_list = lexer.GetDefaultCommentPattern()
         if 0 == len(comment_pattern_list):
             return
             
@@ -138,15 +138,19 @@ class CodeView(texteditor.TextView):
             comment_block = True
             
         head, tail, chars, lines = self.GetCtrl()._get_region()
+        #注释符号的长度
+        comment_char_length = len(comment_pattern_list[0])
         for pos in range(len(lines)):
             line = lines[pos]
             if not line:
                 continue
             if not comment_block:
-                if line[:2] == comment_pattern_list[0]*2:
-                    line = line[2:]
-                elif line[:1] == comment_pattern_list[0]:
-                    line = line[1:]
+                #起始2个注释符
+                if line[:2*comment_char_length] == comment_pattern_list[0]*2:
+                    line = line[2*comment_char_length:]
+                #起始1个注释符
+                elif line[:comment_char_length] == comment_pattern_list[0]:
+                    line = line[comment_char_length:]
             lines[pos] = line
         self.GetCtrl()._set_region(head, tail, chars, lines)
         
@@ -194,6 +198,7 @@ class CodeCtrl(texteditor.SyntaxTextCtrl):
         self.CallTipHide()
         #关闭自动完成列表框
         self.AutoCompHide()
+        self.KillFocus()
 
     def CreatePopupMenu(self):
         texteditor.TextCtrl.CreatePopupMenu(self)
@@ -313,20 +318,31 @@ class CodeCtrl(texteditor.SyntaxTextCtrl):
         return self.autocompleter._is_visible()
 
     def OnChar(self,event):
+        '''
+            插入成双的符合对,并且光标置于一对符合的中间
+        '''
+        pos = self.GetCurrentPos()
         if event.char == "(":
             self.insert("insert", '()')
+            self.GotoPos(pos[0],pos[1]+1)
             return "break"
         elif event.char == "'":
             #插入成双的单引号
             self.insert("insert", "'")
+            self.GotoPos(pos[0],pos[1])
+            #单引号字符是一样的不需要返回"break"
         elif event.char == '"':
             #插入成双的双引号
             self.insert("insert", '"')
+            self.GotoPos(pos[0],pos[1])
+            #双引号字符是一样的不需要返回"break"
         elif event.char == "[":
             self.insert("insert", '[]')
+            self.GotoPos(pos[0],pos[1]+1)
             return "break"
         elif event.char == "{":
             self.insert("insert", '{}')
+            self.GotoPos(pos[0],pos[1]+1)
             return "break"
         else:
             return None

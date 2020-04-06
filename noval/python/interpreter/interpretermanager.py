@@ -370,20 +370,22 @@ class InterpreterAdmin():
     def __init__(self,interpreters):
         self.interpreters = interpreters
 
-    def CheckInterpreterExist(self,interpreter):
+    def CheckInterpreterExist(self,interpreter,is_virtual_env=False):
         for kb in self.interpreters:
             if kb.Name.lower() == interpreter.Name.lower():
                 return True
-            elif strutils.is_sample_file(kb.Path,interpreter.Path):
+            #解释器路径有可能不存在了
+            #虚拟解释器的路径有可能是原解释器的一个链接,导致2者路径相同,需要排除添加虚拟解释器的情况
+            elif os.path.exists(kb.Path) and strutils.is_sample_file(kb.Path,interpreter.Path) and not is_virtual_env:
                 return True
         return False
 
-    def AddPythonInterpreter(self,interpreter_path,name):
+    def AddPythonInterpreter(self,interpreter_path,name,is_virtual_env=False):
         interpreter = pythoninterpreter.PythonInterpreter(name,interpreter_path)
         if not interpreter.IsValidInterpreter:
             raise RuntimeError(_("%s is not a valid interpreter path") % interpreter_path)
         interpreter.Name = name
-        if self.CheckInterpreterExist(interpreter):
+        if self.CheckInterpreterExist(interpreter,is_virtual_env):
             raise RuntimeError(_("interpreter have already exist"))
         self.interpreters.append(interpreter)
         #first interpreter should be the default interpreter by default

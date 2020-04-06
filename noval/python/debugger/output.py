@@ -12,9 +12,28 @@ class DebugOutputctrl(CommonOutputctrl):
         # Looking for a stack trace line.
         line, col = self.GetCurrentLineColumn()
         lineText = self.GetLineText(line)
+        #python程序崩溃有3种错误方式
+        #1:主程序报错
+        #2:线程报错
+        #3:语法错误
+        
+        #这是线程错误格式
+        #Thread 0x00001704 (most recent call first):
+        #  File "D:\env\project\Noval\noval\launcher.py", line 33 in run
+        
+        #这是主程序报错格式
+        #Traceback (most recent call last):
+        # File "D:\env\project\Noval\noval\ui_base.py", line 572, in _dispatch_tk_operation
+        
+        #这是语法错误格式
+        #File "D:\env\project\Noval\tests\test_utils.py", line 15
+        
         fileBegin = lineText.find("File \"")
         fileEnd = lineText.find("\", line ")
+        #主程序错误
         lineEnd = lineText.find(", in ")
+        #线程错误
+        lineEnd2 = lineText.find(" in ")
         if lineText == "\n" or  fileBegin == -1 or fileEnd == -1:
             # Check the line before the one that was clicked on
             lineNumber = self.GetCurrentLine()
@@ -24,6 +43,7 @@ class DebugOutputctrl(CommonOutputctrl):
             fileBegin = lineText.find("File \"")
             fileEnd = lineText.find("\", line ")
             lineEnd = lineText.find(", in ")
+            lineEnd2 = lineText.find(" in ")
             if lineText == "\n" or  fileBegin == -1 or fileEnd == -1:
                 return
 
@@ -31,7 +51,10 @@ class DebugOutputctrl(CommonOutputctrl):
         if filename == "<string>" :
             return
         if -1 == lineEnd:
-            lineNum = int(lineText[fileEnd + 8:])
+            if -1 == lineEnd2:
+                lineNum = int(lineText[fileEnd + 8:])
+            else:
+               lineNum = int(lineText[fileEnd + 8:lineEnd2]) 
         else:
             lineNum = int(lineText[fileEnd + 8:lineEnd])
         if filename and not os.path.exists(filename):

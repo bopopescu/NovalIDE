@@ -1222,6 +1222,17 @@ class PluginsPipDialog(PipDialog):
             else:
                 self.write_att(_("Free"), _("No"))
                 self.write_att(_("Price"), str(data['price']))
+        #是否禁止卸载插件
+        if data.get('disable_uninstall',False):
+            self.uninstall_button['state'] = tk.DISABLED
+        else:
+            self.uninstall_button['state'] = tk.NORMAL
+            
+        #是否禁止安装插件
+        if data.get('disabled',False):
+            self.install_button['state'] = tk.DISABLED
+        else:
+            self.install_button['state'] = tk.NORMAL
             
 class PyPiPipDialog(PipDialog):
     
@@ -1667,7 +1678,11 @@ class PluginOptionPanel(ui_utils.CommonOptionPanel):
         sbox.pack(fill=tk.X)
         self._enablePluginCheckVar = tk.IntVar(value=utils.profile_get_int("ENABLE_INSTALL_PLUGIN", True))
         enablePluginCheckBox = ttk.Checkbutton(self.panel,text=_("Enable plugin after install it"),variable=self._enablePluginCheckVar)
-        enablePluginCheckBox.pack(fill=tk.X,pady=consts.DEFAUT_CONTRL_PAD_Y)
+        enablePluginCheckBox.pack(fill=tk.X,pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
+        
+        self._enablecheckFileExtensionVar = tk.IntVar(value=utils.profile_get_int("CHECK_FILE_EXTENSION_PLUGIN", True))
+        enablecheckFileExtensionCheckBox = ttk.Checkbutton(self.panel,text=_("Search plugin market When open unsupported file extension"),variable=self._enablecheckFileExtensionVar)
+        enablecheckFileExtensionCheckBox.pack(fill=tk.X,pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
 
     def OnOK(self, optionsDialog):
         plugin_install_path = ''
@@ -1677,6 +1692,7 @@ class PluginOptionPanel(ui_utils.CommonOptionPanel):
             plugin_install_path = utils.get_sys_plugin_path()
         utils.profile_set("PluginInstallPath", plugin_install_path)
         utils.profile_set("ENABLE_INSTALL_PLUGIN", self._enablePluginCheckVar.get())
+        utils.profile_set("CHECK_FILE_EXTENSION_PLUGIN", self._enablecheckFileExtensionVar.get())
         return True
         
     def GetPluginInstallpath(self):

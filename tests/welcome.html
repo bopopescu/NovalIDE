@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>welcome</title>
+    <meta name="renderer" content="webkit">
+	<style type="text/css">
+		body {
+			background-color: #222;
+			color: #bbb;
+			line-height: 1.5;
+		}
+		a{ color: cornflowerblue; }
+		.monaco-workbench .welcomePageContainer {
+			align-items: center;
+			display: flex;
+			justify-content: center;
+			min-width: 100%;
+			min-height: 100%;
+		}
+
+		.monaco-workbench .welcomePage {
+			width: 90%;
+			max-width: 1200px;
+			font-size: 10px;
+		}
+
+		.monaco-workbench .welcomePage .row {
+			display: flex;
+			flex-flow: row;
+		}
+
+		.monaco-workbench .welcomePage .row .section {
+			overflow: hidden;
+		}
+
+		.monaco-workbench .welcomePage .row .splash {
+			overflow: hidden;
+		}
+
+		.monaco-workbench .welcomePage .row .commands {
+			overflow: hidden;
+		}
+
+		.monaco-workbench .welcomePage .row .commands .list {
+			overflow: hidden;
+		}
+
+		.monaco-workbench .welcomePage p {
+			font-size: 1.3em;
+		}
+
+		.monaco-workbench .welcomePage .keyboard {
+			font-family: "Lucida Grande", sans-serif;/* Keyboard shortcuts */
+		}
+
+		.monaco-workbench .welcomePage a {
+			text-decoration: none;
+		}
+
+		.monaco-workbench .welcomePage a:focus {
+			outline: 1px solid -webkit-focus-ring-color;
+			outline-offset: -1px;
+		}
+
+		.monaco-workbench .welcomePage h1 {
+			padding: 0;
+			margin: 0;
+			border: none;
+			font-weight: normal;
+			font-size: 3.6em;
+			white-space: nowrap;
+            
+		}
+        h1, h2{ color: #ccc; }
+        h3{ color: #fff; }
+
+		.monaco-workbench .welcomePage .title {
+			margin-top: 1em;
+			margin-bottom: 1em;
+			flex: 1 100%;
+		}
+
+		.monaco-workbench .welcomePage .subtitle {
+			margin-top: .8em;
+			font-size: 2.6em;
+			display: block;
+            color: #aaa;
+		}
+
+		.hc-black .monaco-workbench .welcomePage .subtitle {
+			font-weight: 200;
+		}
+
+		.monaco-workbench .welcomePage .splash,
+		.monaco-workbench .welcomePage .commands {
+			flex: 1 1 0;
+		}
+
+		.monaco-workbench .welcomePage h2 {
+			font-weight: 200;
+			margin-top: 17px;
+			margin-bottom: 5px;
+			font-size: 1.9em;
+			line-height: initial;
+		}
+
+		.monaco-workbench .welcomePage .splash .section {
+			margin-bottom: 5em;
+		}
+
+		.monaco-workbench .welcomePage .splash ul {
+			margin: 0;
+			font-size: 1.3em;
+			list-style: none;
+			padding: 0;
+		}
+
+		.monaco-workbench .welcomePage .splash li {
+			min-width: 0;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.monaco-workbench .welcomePage.emptyRecent .splash .recent .list {
+			display: none;
+		}
+		.monaco-workbench .welcomePage .splash .recent .none {
+			display: none;
+		}
+		.monaco-workbench .welcomePage.emptyRecent .splash .recent .none {
+			display: initial;
+		}
+
+		.monaco-workbench .welcomePage .splash .recent li.moreRecent {
+			margin-top: 5px;
+		}
+
+		.monaco-workbench .welcomePage .splash .recent .path {
+			padding-left: 1em;
+		}
+
+		.monaco-workbench .welcomePage .splash .title,
+		.monaco-workbench .welcomePage .splash .showOnStartup {
+			min-width: 0;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.monaco-workbench .welcomePage .splash .showOnStartup > .checkbox {
+			vertical-align: bottom;
+		}
+
+		.monaco-workbench .welcomePage .commands .list {
+			list-style: none;
+			padding: 0;
+		}
+		.monaco-workbench .welcomePage .commands .item {
+			margin: 7px 0px;
+
+		}
+		.monaco-workbench .welcomePage .commands .item button {
+			margin: 1px;
+			padding: 12px 10px;
+			width: calc(100% - 2px);
+			height: 5em;
+			font-size: 1.3em;
+			text-align: left;
+			cursor: pointer;
+			white-space: nowrap;
+			font-family: inherit;
+			color: #ccc;
+            background-color: #111;
+            opacity:0.6;
+            filter:alpha(opacity=60);
+
+		}
+        .monaco-workbench .welcomePage .commands .item button:hover{
+            background-color: #333;
+        }
+
+		.monaco-workbench .welcomePage .commands .item button > span {
+			display: inline-block;
+			width:100%;
+			min-width: 0;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+            color: #aaa;
+		}
+
+		.monaco-workbench .welcomePage .commands .item button h3 {
+			font-weight: normal;
+			font-size: 1em;
+			margin: 0;
+			margin-bottom: .25em;
+			min-width: 0;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.monaco-workbench .welcomePage .commands .item button {
+			border: none;
+		}
+
+		.hc-black .monaco-workbench .welcomePage .commands .item button > h3 {
+			font-weight: bold;
+		}
+
+		.monaco-workbench .welcomePage .commands .item button:focus {
+			outline-style: solid;
+			outline-width: 1px;
+		}
+
+		.hc-black .monaco-workbench .welcomePage .commands .item button {
+			border-width: 1px;
+			border-style: solid;
+		}
+
+		.hc-black .monaco-workbench .welcomePage .commands .item button:hover {
+			outline-width: 1px;
+			outline-style: dashed;
+			outline-offset: -5px;
+		}
+
+		.monaco-workbench .welcomePage .commands .item button .enabledExtension {
+			display: none;
+		}
+		.monaco-workbench .welcomePage .commands .item button .installExtension.installed {
+			display: none;
+		}
+		.monaco-workbench .welcomePage .commands .item button .enabledExtension.installed {
+			display: inline;
+		}
+
+		.monaco-workbench .welcomePageContainer.max-height-685px .title {
+			display: none;
+		}
+
+		.file-icons-enabled .show-file-icons .vs_code_welcome_page-name-file-icon.file-icon::before {
+			content: ' ';
+			background-image: url('../../code-icon.svg');
+		}
+
+		.monaco-workbench .welcomePage .mac-only,
+		.monaco-workbench .welcomePage .windows-only,
+		.monaco-workbench .welcomePage .linux-only {
+			display: none;
+		}
+		.monaco-workbench.mac .welcomePage .mac-only {
+			display: initial;
+		}
+		.monaco-workbench.windows .welcomePage .windows-only {
+			display: initial;
+		}
+		.monaco-workbench.linux .welcomePage .linux-only {
+			display: initial;
+		}
+		.monaco-workbench.mac .welcomePage li.mac-only {
+			display: list-item;
+		}
+		.monaco-workbench.windows .welcomePage li.windows-only {
+			display: list-item;
+		}
+		.monaco-workbench.linux .welcomePage li.linux-only {
+			display: list-item;
+		}
+
+    </style>
+</head>
+<body>
+<div class="monaco-workbench windows">
+	<div class="welcomePageContainer">
+		<div class="welcomePage">
+			<div class="title">
+				<h1 class="caption">NovalIDE</h1>
+				<p class="subtitle detail">Editing evolved</p>
+			</div>
+			<div class="row">
+				<div class="splash">
+					<div class="section start">
+						<h2 class="caption">Start</h2>
+						<ul>
+							<li><a href=New file</a></li>
+							<li class="mac-only"><a href="command:workbench.action.files.openFileFolder">Open folder...</a></li>
+							<li class="windows-only linux-only"><a href="command:workbench.action.files.openFolder">Open folder...</a></li>
+							<li><a href="command:workbench.action.addRootFolder">Add workspace folder...</a></li>
+						</ul>
+					</div>
+					<div class="section recent">
+						<h2 class="caption">Recent</h2>
+						<ul class="list">
+							<!-- Filled programmatically -->
+							<li class="moreRecent"><a href="command:workbench.action.openRecent">More...</a><span class="path detail if_shortcut" data-command="workbench.action.openRecent">(<span class="shortcut" data-command="workbench.action.openRecent"></span>)</span></li>
+						</ul>
+						<p class="none detail">No recent folders</p>
+					</div>
+					<div class="section help">
+						<h2 class="caption">Help</h2>
+						<ul>
+							<li class="keybindingsReferenceLink"><a href="command:workbench.action.keybindingsReference">Printable keyboard cheatsheet</a></li>
+							<li><a href="command:workbench.action.openIntroductoryVideosUrl">Introductory videos</a></li>
+							<li><a href="command:workbench.action.openTipsAndTricksUrl">Tips and Tricks</a></li>
+							<li><a href="command:workbench.action.openDocumentationUrl">Product documentation</a></li>
+							<li><a href="https://github.com/Microsoft/vscode">GitHub repository</a></li>
+							<li><a href="http://stackoverflow.com/questions/tagged/vscode?sort=votes&pageSize=50">Stack Overflow</a></li>
+							<li><a href="command:workbench.action.openNewsletterSignupUrl">Join our Newsletter</a></li>
+						</ul>
+					</div>
+					<p class="showOnStartup"><input type="checkbox" id="showOnStartup" class="checkbox"> <label class="caption" for="showOnStartup">Show welcome page on startup</label></p>
+				</div>
+				<div class="commands">
+					<div class="section customize">
+						<h2 class="caption">Customize</h2>
+						<div class="list">
+							<div class="item showLanguageExtensions"><button role="group" data-href="command:workbench.extensions.action.showLanguageExtensions"><h3 class="caption">Tools and languages</h3> <span class="detail">Install support for {0} and {1}
+			.replace('{0}', `<span class="extensionPackList"></span>`)
+			.replace('{1}', `<a href="command:workbench.extensions.action.showLanguageExtensions" title="Show more language extensions">more</a>`)}
+							</span></button></div>
+							<div class="item showRecommendedKeymapExtensions"><button role="group" data-href="command:workbench.extensions.action.showRecommendedKeymapExtensions"><h3 class="caption">Settings and keybindings</h3> <span class="detail">${escape(localize('welcomePage.installKeymapExtension', "Install the settings and keyboard shortcuts of {0} and {1}"))
+			.replace('{0}', `<span class="keymapList"></span>`)
+			.replace('{1}', `<a href="command:workbench.extensions.action.showRecommendedKeymapExtensions" title="${localize('welcomePage.showKeymapExtensions', "Show other keymap extensions")}">${escape(localize('welcomePage.others', "others"))}</a>`)}
+							</span></button></div>
+							<div class="item selectTheme"><button data-href="command:workbench.action.selectTheme"><h3 class="caption">Color theme</h3> <span class="detail">${escape(localize('welcomePage.colorThemeDescription', "Make the editor and your code look the way you love"))}</span></button></div>
+						</div>
+					</div>
+					<div class="section learn">
+						<h2 class="caption">Learn</h2>
+						<div class="list">
+							<div class="item showCommands"><button data-href="command:workbench.action.showCommands"><h3 class="caption">Find and run all commands</h3> <span class="detail">${escape(localize('welcomePage.showCommandsDescription', "Rapidly access and search commands from the Command Palette ({0})")).replace('{0}', '<span class="shortcut" data-command="workbench.action.showCommands"></span>')}</span></button></div>
+							<div class="item showInterfaceOverview"><button data-href="command:workbench.action.showInterfaceOverview"><h3 class="caption">Interface overview</h3> <span class="detail">${escape(localize('welcomePage.interfaceOverviewDescription', "Get a visual overlay highlighting the major components of the UI"))}</span></button></div>
+							<div class="item showInteractivePlayground"><button data-href="command:workbench.action.showInteractivePlayground"><h3 class="caption">Interactive playground</h3> <span class="detail">${escape(localize('welcomePage.interactivePlaygroundDescription', "Try out essential editor features in a short walkthrough"))}</span></button></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

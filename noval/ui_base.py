@@ -940,6 +940,10 @@ class CommonModaldialog(CommonDialog):
             focused_widget.event_generate("<Leave>")
         #隐藏最小化按钮
         self.transient(self.master)
+        if utils.is_linux():
+            #linux下经常出现这样的错误:'_tkinter.TclError: grab failed: window not viewable'
+            #在grab_set调用之前调用wait_visibility可以避免这个错误
+            self.wait_visibility()
         self.grab_set()
         self.lift()
         self.focus_set()
@@ -1002,7 +1006,9 @@ class SingleChoiceDialog(CommonModaldialog):
         v = tk.StringVar()
         #设置listbox的高度最小为5个文本,最多为10个的大小
         #如果数量过得时可以设置滚动条,默认不显示滚动条
-      #  self.listbox = tk.Listbox(self.main_frame,listvariable=v,height=max(min(len(choices),10),5))
+        #大于10个则显示滚动条
+        if len(choices) >= 10:
+            show_scrollbar = True
         listview = listboxframe.ListboxFrame(self.main_frame,show_scrollbar=show_scrollbar,listvariable=v,height=max(min(len(choices),10),5))
         self.listbox = listview.listbox
         #listbox双击事件,设置双击等价于点击ok按钮
@@ -1011,6 +1017,8 @@ class SingleChoiceDialog(CommonModaldialog):
         if selection == -1:
             selection = 0
         self.listbox.selection_set(selection)
+        #使选中项可见
+        self.listbox.see(selection)
         listview.pack(expand=1, fill="x",padx=consts.DEFAUT_CONTRL_PAD_X)
         
         separator = ttk.Separator (self.main_frame, orient = tk.HORIZONTAL)

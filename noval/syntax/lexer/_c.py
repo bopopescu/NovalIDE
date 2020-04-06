@@ -62,7 +62,7 @@ class SyntaxColorer(syndata.BaseSyntaxcolorer):
 
     def _config_tags(self):
         self.tagdefs.update({
-	    "stdin",
+        "stdin",
         })
 
     def AddTag(self,head,match_start,match_end,key,value,chars):
@@ -83,7 +83,7 @@ class SyntaxLexer(syndata.BaseLexer):
     def GetExt(self):
         return "c"
 
-    def GetCommentPattern(self):
+    def GetDefaultCommentPattern(self):
         """Returns a list of characters used to comment a block of code """
         return [u'/*',u'*/']
 
@@ -115,7 +115,7 @@ class SyntaxLexer(syndata.BaseLexer):
 * Author: {Author}
 * Created: {Date}
 * Description:
-* Licence:     <your licence>
+* Licence:     {Licence}
 ********************************************************************************/
 '''
     def GetColorClass(self):

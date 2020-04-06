@@ -82,13 +82,14 @@ class VariablesManager():
     @classmethod
     def GetGlobalVariables(cls,**kwargs):
         d = cls.EmumSystemEnviroment()
-        d.update(kwargs)
         d["Platform"] = sys.platform
         d["ApplicationName"] = GetApp().GetAppName()
         d["ApplicationPath"] = sys.executable
         d["InstallPath"] = utils.get_app_path()
         if not 'USER' in d:
             d['USER'] = getpass.getuser()
+        d['Licence'] = '<your licence>'
+        d.update(kwargs)
         return d
         
     def AddVariable(self,name,value,replace_exist=False):
@@ -104,14 +105,14 @@ class NewVariableDialog(ui_base.CommonModaldialog):
         ttk.Label(row, text=_("Name")+ ":").pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
         self.name_var = tk.StringVar()
         key_ctrl = ttk.Entry(row,textvariable=self.name_var)
-        key_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        key_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x",expand=1)
         row.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         
         row = ttk.Frame(self.main_frame)
         ttk.Label(row, text=_("Value:")).pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
         self.value_var = tk.StringVar()
         value_ctrl = ttk.Entry(row,textvariable=self.value_var)
-        value_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        value_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x",expand=1)
         row.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         self.AddokcancelButton()
 

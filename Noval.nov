@@ -461,6 +461,17 @@
   <noval:file filePath="./noval/syntax/lexer/_html.py" logicalFolder="noval/syntax/lexer"/>
   <noval:file filePath="./noval/syntax/lexer/_javascript.py" logicalFolder="noval/syntax/lexer"/>
   <noval:file filePath="./noval/syntax/lexer/_xml.py" logicalFolder="noval/syntax/lexer"/>
+  <noval:file filePath="./tests/test_cef.py" logicalFolder="tests"/>
+  <noval:file filePath="./tests/resources/..." logicalFolder="tests/resources"/>
+  <noval:file filePath="./tests/resources/back.png" logicalFolder="tests/resources"/>
+  <noval:file filePath="./tests/resources/forward.png" logicalFolder="tests/resources"/>
+  <noval:file filePath="./tests/resources/go.png" logicalFolder="tests/resources"/>
+  <noval:file filePath="./tests/resources/reload.png" logicalFolder="tests/resources"/>
+  <noval:file filePath="./tests/resources/stop.png" logicalFolder="tests/resources"/>
+  <noval:file filePath="./tests/test_tk_cef.py" logicalFolder="tests"/>
+  <noval:file filePath="./tests/start-page.htm" logicalFolder="tests"/>
+  <noval:file filePath="./noval/project/openwith.py" logicalFolder="noval/project"/>
+  <noval:file filePath="./tests/test_decompress.py" logicalFolder="tests"/>
   <noval:_runinfo>
     <noval:DocumentTemplate>pyinstaller.pyinstall.PyinstallerProjectTemplate</noval:DocumentTemplate>
     <noval:StartupFile>NovalIDE.py</noval:StartupFile>

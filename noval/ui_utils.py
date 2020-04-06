@@ -341,14 +341,14 @@ class EnvironmentVariableDialog(ui_base.CommonModaldialog):
         ttk.Label(row, text=_("Key: ")).pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
         self.key_var = tk.StringVar()
         key_ctrl = ttk.Entry(row,textvariable=self.key_var)
-        key_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        key_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x",expand=1)
         row.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         
         row = ttk.Frame(self.main_frame)
         ttk.Label(row, text=_("Value:")).pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
         self.value_var = tk.StringVar()
         value_ctrl = ttk.Entry(row,textvariable=self.value_var)
-        value_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x")
+        value_ctrl.pack(side=tk.LEFT,padx=(0,consts.DEFAUT_CONTRL_PAD_X),fill="x",expand=1)
         row.pack(padx=(consts.DEFAUT_CONTRL_PAD_X,0),fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
         self.AddokcancelButton()
         
@@ -577,6 +577,8 @@ def CheckFileExtension(filename,external):
     '''
         检查软件是否支持该文件扩展名,如果不支持则从服务器上查找是否有对应的文件扩展插件
     '''
+    if not utils.profile_get_int("CHECK_FILE_EXTENSION_PLUGIN", True):
+        return
     file_extension = strutils.get_file_extension(filename,has_dot=True)
     for lexer in syntax.SyntaxThemeManager().Lexers:
         if lexer.ContainExt(file_extension):

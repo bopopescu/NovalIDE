@@ -20,13 +20,16 @@ import noval.editor.code as codeeditor
 import noval.imageutils as imageutils
 #-----------------------------------------------------------------------------#
 #-----------------------------------------------------------------------------#
-def make_pat():
+def make_pat(is_html=False):
     cregx = stringprefix + r"<!--((?!(-->)).)*(-->)?"
     comment = matches_any("comment", [cregx])
     xml_tag = matches_any("stderr",[r"<\w+>",r"</\w+>",r'(?<=<\?)xml',\
                     r'<\w+\s+',r'/>',r'(?<=")>',r'<\w+/>'])
     attr = matches_any("builtin",[r'\b\w+(?==")'])
-    declaration = matches_any("value",[r'<\?',r'\?>'])
+    if is_html:
+        declaration = matches_any("value",[r'<!',r'(?<=html)>'])
+    else:
+        declaration = matches_any("value",[r'<\?',r'\?>'])
     dqstring = get_dqstring_pat()
     string = matches_any("string", [dqstring])
     return comment + "|" + xml_tag + "|" + attr + "|" + declaration + "|"+ string +\
@@ -60,7 +63,7 @@ class SyntaxLexer(syndata.BaseLexer):
     def GetExt(self):
         return "axl dtd plist rdf svg xml xrc xsd xsl xslt xul"
 
-    def GetCommentPattern(self):
+    def GetDefaultCommentPattern(self):
         """Returns a list of characters used to comment a block of code """
         return [u'<!--', u'-->']
 

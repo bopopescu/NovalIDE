@@ -75,9 +75,15 @@ class SyntaxLexer(syndata.BaseLexer):
     def GetExt(self):
         return "cc c++ cpp cxx hh h++ hpp hxx"
 
-    def GetCommentPattern(self):
-        """Returns a list of characters used to comment a block of code """
+    def GetDefaultCommentPattern(self):
+        """c++有2种注释方式,这里默认使用行注释方式"""
         return [u'//']
+        
+    def GetCommentPatterns(self):
+        """
+            c++注释有2种,行注释和块注释
+        """
+        return [self.DefaultCommentPattern(),['/*','*/']]
 
     def GetShowName(self):
         return "C/C++"
@@ -111,7 +117,7 @@ class SyntaxLexer(syndata.BaseLexer):
 // Author: {Author}
 // Created: {Date}
 // Description:
-// Licence:     <your licence>
+// Licence:     {Licence}
 //******************************************************************************
 '''
     def GetColorClass(self):
