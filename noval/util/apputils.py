@@ -146,6 +146,8 @@ def get_config_value(section,key,default_value=None):
 
     cfg = ConfigParser()
     cfg.read(config_path)
+    if not cfg.has_option(section,key):
+        return default_value
     return cfg.get(section,key)
 
 def write_cofig_value(section,key,value):
