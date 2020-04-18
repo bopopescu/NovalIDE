@@ -759,10 +759,11 @@ class PipDialog(ui_base.CommonModaldialog):
         )
 
 class PluginsPipDialog(PipDialog):
-    def __init__(self, master,package_count,message):
+    MESSAGE = {'msg':''}
+    def __init__(self, master,package_count):
         self._install_plugins = {}
         self._uninstall_plugins = set()
-        PipDialog.__init__(self, master,package_count,message['msg'])
+        PipDialog.__init__(self, master,package_count,self.MESSAGE['msg'])
         #插件配置是否改变,如果改变关闭对话框时提示用户需要重启软件才能生效
         self._plugin_configuration_changed = False
 
@@ -964,15 +965,24 @@ class PluginsPipDialog(PipDialog):
         trim_name = egg_name[i:]
         return trim_name.replace("py","").replace(".egg","")
         
-    def InstallEgg(self,name,egg_path,version):
-        plugin_path = self.GetInstallPluginPath(name)
-        if utils.is_windows():
+    def InstallEgg(self,name,egg_path,version,local=False):
+        
+        def copy_or_move_egg(src_path,dest_path):
             #将下载的插件文件移至插件目录下
             try:
-                shutil.move(egg_path,plugin_path)
+                #如果是本地安装egg插件,则使用拷贝方式
+                if local:
+                    shutil.copy(src_path,dest_path)
+                #如果是从服务器安装egg插件,则使用剪切方式
+                else:
+                    shutil.move(src_path,dest_path)
             except Exception as e:
                 messagebox.showerror(_("Error"),str(e))
                 return False
+            
+        plugin_path = self.GetInstallPluginPath(name)
+        if utils.is_windows():
+            copy_or_move_egg(egg_path,plugin_path)
         #linux系统下有可能是python3.x解释器,只能加载python3.x的插件,故需要将插件的python版本改成3.x的
         else:
             #如果python3不是3.6版本则需要更改egg文件名,改之后的插件也是可以加载的
@@ -984,10 +994,10 @@ class PluginsPipDialog(PipDialog):
                     new_egg_name = egg_file_name.replace("py%s"%egg_py_version,"3.%d"%sys.version_info.minor)
                     #新的egg文件名
                     dest_egg_path = os.path.join(plugin_path,new_egg_name)
-                    shutil.move(egg_path,dest_egg_path)
+                    copy_or_move_egg(egg_path,dest_egg_path)
                 #如果是3.6版本则不用更改egg文件名,直接拷贝即可
                 else:
-                    shutil.move(egg_path,plugin_path)
+                    copy_or_move_egg(egg_path,plugin_path)
             
         #执行插件的安装操作,需要在插件里面执行
         GetApp().GetPluginManager().LoadPluginByName(name)
@@ -1187,14 +1197,10 @@ class PluginsPipDialog(PipDialog):
         #必须要删除插件实例化对象
         instance = plugin_data.GetInstance()
         module = inspect.getmodule(instance)
-        #安装插件之前必须删除临时插件模块信息,否则插件加载的时候会报如下错误:
+        #调用egg.activate()会报如下警告,是因为本地egg文件和插件目录下的egg文件重复加载了,不影响程序正常运行
+        #安装插件后重启软件即可
         #UserWarning: Module xxxxx was already imported from xxxxxx\__init__.py, but c:\users\administrator\appdata\roaming\novalidedebug\plugins\xxxxx.egg is being added to sys.path
-        del sys.modules[module.__name__]
-        #删除插件实例
-        del instance
-        #删除插件导入模块
-        del module
-        self.InstallEgg(plugin_name,filename,plugin_data.GetVersion())
+        self.InstallEgg(plugin_name,filename,plugin_data.GetVersion(),local=True)
         self._start_update_list(plugin_name)
         messagebox.showinfo(GetApp().GetAppName(),_("Install plugin '%s' success") % plugin_name)
         
@@ -1222,11 +1228,15 @@ class PluginsPipDialog(PipDialog):
             else:
                 self.write_att(_("Free"), _("No"))
                 self.write_att(_("Price"), str(data['price']))
-        #是否禁止卸载插件
-        if data.get('disable_uninstall',False):
-            self.uninstall_button['state'] = tk.DISABLED
-        else:
-            self.uninstall_button['state'] = tk.NORMAL
+                
+        if not GetApp().GetDebug():
+            #是否禁止卸载插件,调试模式时总是允许卸载插件
+            if data.get('disable_uninstall',False):
+                self.uninstall_button['state'] = tk.DISABLED
+                self.enabled_button['state'] = tk.DISABLED
+            else:
+                self.uninstall_button['state'] = tk.NORMAL
+                self.enabled_button['state'] = tk.NORMAL
             
         #是否禁止安装插件
         if data.get('disabled',False):
@@ -1711,27 +1721,26 @@ class PluginManagerGUI(plugin.Plugin):
         tools_menu = menuBar.GetToolsMenu()
         mitem = tools_menu.InsertBefore(constants.ID_PREFERENCES,constants.ID_PLUGIN,_("Plugin Manager"), 
                                   ("Plugin Manager GUI"),handler=self.ShowPluginManagerDlg,img=GetApp().GetImage("plugin.png"))
-        self.message = {'msg':_("fetching plugin from server...")}
+        PluginsPipDialog.MESSAGE = {'msg':_("fetching plugin from server...")}
         self.plugin_dlg = None
         preference.PreferenceManager().AddOptionsPanelClass("Misc","Plugin",PluginOptionPanel)
         self.GetPlugins()
         
         GetApp().bind("ShowInstallPluginsDlg",self.ShowInstallPluginsDlg,True)
         
-    def ShowPluginManagerDlg(self):
-        self.plugin_dlg = PluginsPipDialog(self.parent,package_count=0,message=self.message)
+    def ShowPluginManagerDlg(self,plugin_names =[]):
+        self.plugin_dlg = PluginsPipDialog(self.parent,package_count=0)
+        if plugin_names:
+            self.plugin_dlg.ShowAvailablePlugins(plugin_names)
         self.plugin_dlg.ShowModal()
         self.plugin_dlg = None
         
     def ShowInstallPluginsDlg(self,event):
         plugin_names = event.get('plugin_names')
-        self.plugin_dlg = PluginsPipDialog(self.parent,package_count=0,message=self.message)
-        self.plugin_dlg.ShowAvailablePlugins(plugin_names)
-        self.plugin_dlg.ShowModal()
-        self.plugin_dlg = None
+        self.ShowPluginManagerDlg(plugin_names)
         
     def GetPlugins(self):
-        GetAllPlugins(None,self.message,self.plugin_dlg,aync=True)
+        GetAllPlugins(None,PluginsPipDialog.MESSAGE,self.plugin_dlg,aync=True)
    #     t = threading.Thread(target=GetAllPlugins,args=(None,self.message))
         #daemon表示后台线程,即程序不用等待子线程才退出
     #    t.daemon = True

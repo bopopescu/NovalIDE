@@ -9,6 +9,7 @@ import noval.auth.forget as forget
 import noval.auth.validation as validation
 from dummy.userdb import UserDataDb
 import noval.util.urlutils as urlutils
+import noval.util.md5 as md5_util
 
 class LoginDialog(ui_base.CommonModaldialog):
     '''
@@ -61,7 +62,7 @@ class LoginDialog(ui_base.CommonModaldialog):
             return
         api_addr = '%s/member/login' % (UserDataDb.HOST_SERVER_ADDR)
         #将原始裸密码用MD5加密,在服务端还要MD5再加密一次
-        password = validation.get_str_md5(self.password_var.get())
+        password = md5_util.get_str_md5(self.password_var.get())
         data = urlutils.RequestData(api_addr,method='get',arg = {'password':password,'email':self.email_var.get()})
         if data and data['code'] == 0:
             messagebox.showinfo(GetApp().GetAppName(),_('Login success'))

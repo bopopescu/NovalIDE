@@ -196,6 +196,7 @@ class Plugin(six.with_metaclass(PluginMeta, object)):
     def HookExit(self):
         ''''''
         #插件退出
+        return True
         
     def MatchPlatform(self):
         '''
@@ -634,7 +635,9 @@ class PluginManager(object):
             通知所有插件退出
         '''
         for key,plugin_instance in self.GetPlugins().items():
-            plugin_instance.HookExit()
+            if not plugin_instance.HookExit():
+                return False
+        return True
         
     def GetPlugin(self,plugin_name):
         pdata = self.GetPluginData()
@@ -709,7 +712,7 @@ class PluginManager(object):
                         self.LOG.info("[pluginmgr][info] Skip reloading: %s" % name)
                         continue
                 except Exception as e:
-                    self.LOG.error("[pluginmgr][err] Couldn't Load %s: %s" % (name, e))
+                    self.LOG.exception("[pluginmgr][err] Couldn't Load %s: %s" % (name, e))
                 else:
                     try:
                         # Only initialize plugins that haven't already been

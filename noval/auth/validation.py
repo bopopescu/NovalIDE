@@ -5,14 +5,6 @@ import os,sys
 from tkinter import messagebox
 import re
 
-def get_str_md5(content):
-    '''
-        将字符串用MD5加密
-    '''
-    m0 = hashlib.md5()
-    m0.update(content.encode('utf-8'))
-    return m0.hexdigest()
-
 def check_username(username):
     if username.strip() == "":
         messagebox.showinfo(GetApp().GetAppName(),_('username could not empty'))

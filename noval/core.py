@@ -417,7 +417,10 @@ class DocManager(object):
         self._currentView = None
         self._lastActiveView = None
         self._maxDocsOpen = 10000
+        #存储历史文件对象
         self._fileHistory = None
+        #存储历史项目对象
+        self._projectHistory = None
         self._templates = []
         self._docs = []
         self._lastDirectory = ""
@@ -493,13 +496,6 @@ class DocManager(object):
                 break
         return foundDoc
 
-    def OnCreateFileHistory(self):
-        """
-        A hook to allow a derived class to create a different type of file
-        history. Called from Initialize.
-        """
-        self._fileHistory = wx.FileHistory()
-
     def GetCurrentView(self):
         """
         Returns the currently active view.
@@ -568,7 +564,10 @@ class DocManager(object):
         enableMRU = utils.profile_get_int(consts.ENABLE_MRU_KEY, True)
         if enableMRU:
             self._fileHistory = ui_utils.FileHistory(maxFiles=max_files,idBase=ID_MRU_FILE1)
-            
+        #获取配置最大历史项目个数
+        max_project_files = utils.profile_get_int(consts.RECENTPROJECT_LENGTH_KEY,consts.DEFAULT_MRU_PROJECT_NUM)
+        self._projectHistory = ui_utils.ProjectHistory(maxFiles=max_project_files)
+    
     def SelectDocumentType(self, temps, sort=False):
         """
         Returns a document template by asking the user (if there is more than
@@ -835,7 +834,11 @@ class DocManager(object):
         Adds a file to the file history list, if we have a pointer to an
         appropriate file menu.
         """
-        if self._fileHistory is not None:
+        #项目文件添加到历史项目列表
+        if self._projectHistory is not None and strutils.get_file_extension(fileName) == consts.PROJECT_SHORT_EXTENSION:
+            self._projectHistory.AddFileToHistory(fileName)
+        #非项目文件添加到历史文件列表
+        elif self._fileHistory is not None:
             self._fileHistory.AddFileToHistory(fileName)
 
 
@@ -853,7 +856,12 @@ class DocManager(object):
         Returns the file history.
         """
         return self._fileHistory
-
+        
+    def GetProjectHistory(self):
+        """
+        Returns the file history.
+        """
+        return self._projectHistory
 
     def GetHistoryFile(self, i):
         """
@@ -889,19 +897,24 @@ class DocManager(object):
 
     def FileHistoryLoad(self, config):
         """
-        Loads the file history from a config object.
+            加载历史文件列表和历史项目列表.
         """
         if self._fileHistory is not None:
             self._fileHistory.Load(config)
 
+        if self._projectHistory is not None:
+            self._projectHistory.Load(config)
+
 
     def FileHistorySave(self, config):
         """
-        Saves the file history into a config object. This must be called
-        explicitly by the application.
+            保存历史文件列表和历史项目列表.
         """
         if self._fileHistory:
             self._fileHistory.Save(config)
+            
+        if self._projectHistory:
+            self._projectHistory.Save(config)
             
 
     def FileHistoryAddFilesToMenu(self, menu=None):

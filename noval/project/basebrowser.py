@@ -77,11 +77,13 @@ class ProjectTreeCtrl(ttk.Treeview):
         
     def BuildLookupIcon(self):
         if 0 == len(self._iconLookup):
-            templates = GetApp().GetDocumentManager().GetTemplates()
-            for template in templates:
-                icon = template.GetIcon()
-                self._iconLookup[template] = icon
+            self.RebuildLookupIcon()
         
+    def RebuildLookupIcon(self):
+        templates = GetApp().GetDocumentManager().GetTemplates()
+        for template in templates:
+            icon = template.GetIcon()
+            self._iconLookup[template] = icon
         
     #设置项目启动文件节点为粗体
     def SetItemBold(self,node,bold=True):
@@ -648,13 +650,15 @@ class BaseProjectbrowser(ttk.Frame):
         GetApp().AddCommand(constants.ID_PROPERTIES,_("&Project"),_("Project Properties"),self.OnProjectProperties,image=GetApp().GetImage("project/properties.png"),tester=lambda:self.GetView().UpdateUI(constants.ID_PROPERTIES))
         GetApp().AddCommand(constants.ID_OPEN_FOLDER_PATH,_("&Project"),_("Open Project Path in Explorer"),handler=self.OpenProjectPath,tester=lambda:self.GetView().UpdateUI(constants.ID_OPEN_FOLDER_PATH))
 
+    @utils.call_after_with_arg(1)
     def NewProject(self):
         '''
             新建项目
         '''
         template = GetApp().GetDocumentManager().FindTemplateForTestPath(consts.PROJECT_EXTENSION)
         template.CreateDocument("", flags = core.DOC_NEW)
-                
+    
+    @utils.call_after_with_arg(1)        
     def OpenProject(self):
         '''
             打开项目

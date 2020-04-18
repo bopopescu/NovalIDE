@@ -4,11 +4,8 @@ from setuptools import find_packages
 import platform
 
 data_files = {
-    'openwebbrowser':['resources/*.png']
+    'openwebbrowser':['resources/*.png','feeds.json']
 }
-
-if platform.system() == "Windows":
-    data_files['openwebbrowser'].extend(['cefpython3/resources/*.pak','cefpython3/locales/*.pak','cefpython3/*.*'])
 
 setup(name='OpenWebBrowser',
         version='1.0',

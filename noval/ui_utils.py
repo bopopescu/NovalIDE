@@ -30,6 +30,7 @@ class FileHistory(hiscache.CycleCache):
         hiscache.CycleCache.__init__(self,size=maxFiles,trim=hiscache.CycleCache.TRIM_LAST,add=hiscache.CycleCache.ADD_FIRST)
         self._menu = None
         self._id_base = idBase
+        self._disable_load_project = True
         
     def GetMaxFiles(self):
         return self._size
@@ -56,7 +57,10 @@ class FileHistory(hiscache.CycleCache):
             key = "%s/file%d" % (consts.RECENT_FILES_KEY,index)
             path = config.Read(key)
             if path:
-                paths.append(path)
+                #项目文件不要添加到历史文件列表中
+                if not (self._disable_load_project and strutils.get_file_extension(path) \
+                        == consts.PROJECT_SHORT_EXTENSION):
+                    paths.append(path)
                 index += 1
             else:
                 break
@@ -119,6 +123,62 @@ class FileHistory(hiscache.CycleCache):
     def GetHistoryFile(self,i):
         assert(i >=0 and i < len(self._list))
         return self._list[i]
+
+class ProjectHistory(hiscache.CycleCache):
+    '''
+        记录历史项目列表,在起始页显示
+    '''
+    def __init__(self, maxFiles):
+        hiscache.CycleCache.__init__(self,size=maxFiles,trim=hiscache.CycleCache.TRIM_LAST,add=hiscache.CycleCache.ADD_FIRST)
+        
+    def GetMaxFiles(self):
+        return self._size
+        
+    def AddFileToHistory(self, file_path):
+        assert(strutils.get_file_extension(file_path) == consts.PROJECT_SHORT_EXTENSION)
+        #检查文件路径是否在历史文件列表中,如果存在则删除
+        index = self.GetHistoryFileIndex(file_path)
+        if index != -1:
+            del self._list[index]
+        self.PutPath(file_path)
+        
+    def Load(self,config):
+        index = 1
+        paths = []
+        while True:
+            key = "%s/file%d" % (consts.RECENT_PROJECTS_KEY,index)
+            path = config.Read(key)
+            if path:
+                paths.append(path)
+                index += 1
+            else:
+                break
+        #务必按照倒序加载文件列表
+        for path in paths[::-1]:
+            self.PutPath(path)
+            
+    def PutPath(self,path):
+        if self.GetCurrentSize() >= self._size:
+            utils.get_logger().debug('history project list size %d is greater then max list size %d,will trim the last file item',self.GetCurrentSize(),self._size)
+        #这里超过文件限制,会删除最后一个文件
+        self.PutItem(path)
+
+    def Save(self,config):
+        for i,item in enumerate(self._list):
+            config.Write("%s/file%d" % (consts.RECENT_PROJECTS_KEY,i+1),item)
+            
+        if utils.is_linux():
+            config.Save()
+            
+    def GetHistoryFile(self,i):
+        assert(i >=0 and i < len(self._list))
+        return self._list[i]
+        
+    def GetHistoryFileIndex(self,path):
+        for i,item in enumerate(self._list):
+            if parserutils.ComparePath(item,path):
+                return i
+        return -1
 
 class EncodingDeclareDialog(ui_base.CommonModaldialog):
     def __init__(self,parent):

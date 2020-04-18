@@ -292,11 +292,11 @@ def compute_run_time(func):
     '''
     def wrapped_func(*args,**kwargs):
         start = time.clock()
-        func(*args,**kwargs)
+        ret = func(*args,**kwargs)
         end = time.clock()
         elapse = end - start
         get_logger().info("%s elapse %.3f seconds" % (func.__name__,end-start))
-
+        return ret
     return wrapped_func
     
 def GetCommandOutput(command,read_error=False,cwd=None,encoding = get_default_encoding()):

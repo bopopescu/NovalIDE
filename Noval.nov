@@ -472,6 +472,7 @@
   <noval:file filePath="./tests/start-page.htm" logicalFolder="tests"/>
   <noval:file filePath="./noval/project/openwith.py" logicalFolder="noval/project"/>
   <noval:file filePath="./tests/test_decompress.py" logicalFolder="tests"/>
+  <noval:file filePath="./noval/util/md5.py" logicalFolder="noval/util"/>
   <noval:_runinfo>
     <noval:DocumentTemplate>pyinstaller.pyinstall.PyinstallerProjectTemplate</noval:DocumentTemplate>
     <noval:StartupFile>NovalIDE.py</noval:StartupFile>

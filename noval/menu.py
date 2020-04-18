@@ -792,7 +792,11 @@ class MenubarMixin:
         
     @staticmethod
     def FormatMenuName(menu_name):
-        if menu_name.find("&") != -1:
+        #如果有2个&保留一个
+        if menu_name.find("&&") != -1:
+            menu_name = menu_name.replace("&&","&")
+        #如果只有一个&替换为空字符串
+        elif menu_name.find("&") != -1:
             menu_name = menu_name.replace("&","")
         return menu_name
         

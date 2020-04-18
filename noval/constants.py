@@ -238,5 +238,7 @@ FILE_SAVED_EVT = "EvtFileSaved"
 #双击文件视图文件夹事件
 DOUBLECLICKPATH_EVT = "EvtDoubleClickPath"
 
+CHANGE_APPLICATION_LOOK_EVT = "EvtChangeApplicationLook"
+
 AUTO_COMPLETION_BACKSPACE_EVT = "AutoCompletionBackSpace"
 AUTO_COMPLETION_INPUT_EVT = "AutoCompletionInput"

@@ -22,7 +22,7 @@ class FileDownloader(object):
     '''
         下载文件公用类
     '''
-    def __init__(self,file_length,file_name,req,call_back=None):
+    def __init__(self,file_length,file_name,req,call_back=None,show_progress_dlg=True):
         self._file_size = file_length
         self._file_name = file_name
         self._req = req
@@ -31,6 +31,8 @@ class FileDownloader(object):
         self._is_dowloading = False
         #进度条对话框
         self.progress_dlg = None
+        #是否显示进度条对话框
+        self._show_progress_dlg = show_progress_dlg
     
     def StartDownload(self):
         
@@ -45,8 +47,9 @@ class FileDownloader(object):
             dirutils.MakeDirs(download_tmp_path)
             
         self._is_dowloading = True
-        #1秒后才显示进度条对话框,如果在此时间内下载文件已经完成,则不会显示下载进度条对话框
-        GetApp().MainFrame.after(1000,self.ShowDownloadProgressDialog)
+        if self._show_progress_dlg:
+            #1秒后才显示进度条对话框,如果在此时间内下载文件已经完成,则不会显示下载进度条对话框
+            GetApp().MainFrame.after(1000,self.ShowDownloadProgressDialog)
         download_file_path = os.path.join(download_tmp_path,self._file_name)
         try:
             self.DownloadFile(download_file_path,callback=DownloadCallBack,err_callback=self.DestoryDialog)
@@ -103,7 +106,7 @@ class FileDownloader(object):
         #下载完成调用回调函数
         callback()
 
-def download_file(download_url,call_back=None,**payload):
+def download_file(download_url,call_back=None,show_progress_dlg=True,**payload):
     '''
         下载文件公用函数
         download_url:下载地址
@@ -126,5 +129,5 @@ def download_file(download_url,call_back=None,**payload):
         file_length = req.headers['Content-Length']
         content_disposition = req.headers['Content-Disposition']
         file_name = content_disposition[content_disposition.find(";") + 1:].replace("filename=","").replace("\"","")
-        file_downloader = FileDownloader(file_length,file_name,req,call_back)
+        file_downloader = FileDownloader(file_length,file_name,req,call_back,show_progress_dlg)
         file_downloader.StartDownload()

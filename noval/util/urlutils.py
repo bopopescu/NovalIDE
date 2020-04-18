@@ -2,6 +2,7 @@
 import requests
 from concurrent import futures
 import atexit
+import noval.consts as consts
 
 #删除注册全局退出函数,否则会在程序退出时等待ThreadPoolExecutor异步线程执行完才退出,导致程序卡死
 try:
@@ -11,11 +12,17 @@ except:
 
 def RequestData(addr,arg={},method='get',timeout = None,to_json=True):
     '''
+        http请求通用接口,支持post,delete,get方法
+        stream:是否返回字节流
+        to_json:是否返回json字典
     '''
     params = {}
     try:
         if timeout is not None:
             params['timeout'] = timeout
+        else:
+            #如果未设置连接超时时间,使用默认设置的超时时间
+            params['timeout'] = consts.DEFAULT_URL_REQUEST_TIMEOUT
         req = None
         if method == 'get':
             params['params'] = arg

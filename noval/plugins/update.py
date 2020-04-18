@@ -18,9 +18,25 @@ import threading
 import shutil
 import noval.ui_utils as ui_utils
 
-def check_plugins(ignore_error = False):
+#一次性获取所有插件信息的方式,只需调用一次api接口
+QUERY_ALL_PLUGINS = 0
+#依次查询每个插件的信息,需要调用多次api接口
+QUERY_PLUGIN_SEQUENCE = 1
+
+@utils.compute_run_time
+def get_server_plugins():
+    api_addr = '%s/api/plugin' % (UserDataDb.HOST_SERVER_ADDR)
+    return utils.RequestData(api_addr,method='get')    
+
+def check_plugins(ignore_error = False,query_plugin_way = QUERY_ALL_PLUGINS):
     '''
         检查插件更新信息
+        query_plugin_way:查询插件信息的方式
+        QUERY_ALL_PLUGINS:表示一次性获取所有插件的信息,优点是只需查询一次api接口,
+        缺点是如果插件比较多的时候,会导致返回信息量很大
+        QUERY_PLUGIN_SEQUENCE:表示依次查询单个插件的信息,优点是返回的数据信息量比较小,
+        缺点是要多次查询api接口
+        默认使用QUERY_ALL_PLUGINS方式,后续如果插件很多的话,考虑切换第二种方式
     '''
     def pop_error(data):
         if data is None:
@@ -49,13 +65,22 @@ def check_plugins(ignore_error = False):
         GetApp().GetPluginManager().LoadPluginByName(plugin_name)
         messagebox.showinfo(GetApp().GetAppName(),_("Update plugin '%s' success") % plugin_name)
         
-    user_id = UserDataDb().GetUserId()
     check_plugin_update = utils.profile_get_int("CheckPluginUpdate", True)
+    plugin_datas = {}
+    #获取所有插件信息
+    if query_plugin_way == QUERY_ALL_PLUGINS:
+        ret_data = get_server_plugins()
+        if ret_data:
+            plugin_datas = ret_data.get('plugins')
     for plugin_class,dist in GetApp().GetPluginManager().GetPluginDistros().items():
         plugin_version = dist.version
         plugin_name = dist.key
-        api_addr = '%s/member/get_plugin' % (UserDataDb.HOST_SERVER_ADDR)
-        plugin_data = utils.RequestData(api_addr,method='get',arg={'name':plugin_name})
+        if not plugin_datas:
+            #调用api接口查询每个插件的信息
+            api_addr = '%s/member/get_plugin' % (UserDataDb.HOST_SERVER_ADDR)
+            plugin_data = utils.RequestData(api_addr,method='get',arg={'name':plugin_name})
+        else:
+            plugin_data = plugin_datas.get(plugin_name,{})
         if not plugin_data:
             pop_error(plugin_data)
             return
@@ -70,7 +95,7 @@ def check_plugins(ignore_error = False):
             log = utils.get_logger().info
         log("plugin %s version is %s latest verison is %s",plugin_name,plugin_version,plugin_data['version'])
         #如果服务器插件收费而且用户未付费,强制检查更新
-        if GetApp().GetPluginManager().GetPlugin(plugin_name).IsEnabled() and not ui_utils.check_plugin_free_or_payed(plugin_name,installed=True):
+        if GetApp().GetPluginManager().GetPlugin(plugin_name).IsEnabled() and not ui_utils.check_plugin_free_or_payed(plugin_data,installed=True):
             check_plugin_update = True
         #比较安装插件版本和服务器上的插件版本是否一致
         if check_plugin_update  and parserutils.CompareCommonVersion(plugin_data['version'],plugin_version):
@@ -93,30 +118,35 @@ def check_plugins(ignore_error = False):
                 downutils.download_file(download_url,call_back=after_update_download,**payload)
             #插件更新太多,每次只提示一个更新即可
             break
-
+          
+@utils.call_after_with_arg(1)  
+def UpdateApp(app_version):
+    download_url = '%s/member/download_app' % (UserDataDb.HOST_SERVER_ADDR)
+    payload = dict(new_version = app_version,lang = GetApp().locale.GetLanguageCanonicalName(),os_name=sys.platform)
+    #下载程序文件
+    downutils.download_file(download_url,call_back=Install,**payload)
+    
 def CheckAppUpdate(ignore_error = False):
-    api_addr = '%s/member/get_update' % (UserDataDb.HOST_SERVER_ADDR)
-    #获取语言的类似en_US,zh_CN这样的名称
-    lang = GetApp().locale.GetLanguageCanonicalName()
+    api_addr = '%s/api/update/app' % (UserDataDb.HOST_SERVER_ADDR)
     app_version = apputils.get_app_version()
-    data = urlutils.RequestData(api_addr,arg = {'app_version':app_version,'lang':lang})
+    data = urlutils.RequestData(api_addr,arg = {'app_version':app_version})
     if data is None:
         if not ignore_error:
             messagebox.showerror(GetApp().GetAppName(),_("could not connect to server"))
         return
+    CheckAppupdateInfo(data,ignore_error)
+    
+def CheckAppupdateInfo(data,ignore_error=False):
     #no update
     if data['code'] == 0:
         if not ignore_error:
-            messagebox.showinfo(GetApp().GetAppName(),data['message'])
+            messagebox.showinfo(GetApp().GetAppName(),_("this is the lastest version"))
     #have update
     elif data['code'] == 1:
-        ret = messagebox.askyesno(_("Update Available"),data['message'])
+        new_version = data['new_version']
+        ret = messagebox.askyesno(_("Update Available"),_("this lastest version '%s' is available,do you want to download and update it?") % new_version)
         if ret:
-            new_version = data['new_version']
-            download_url = '%s/member/download_app' % (UserDataDb.HOST_SERVER_ADDR)
-            payload = dict(new_version = new_version,lang = lang,os_name=sys.platform)
-            #下载程序文件
-            downutils.download_file(download_url,call_back=Install,**payload)
+            UpdateApp(new_version)
     #other error
     else:
         if not ignore_error:
@@ -141,39 +171,24 @@ def Install(app_path):
         #wait a moment to avoid single instance limit
         subprocess.Popen("/bin/sleep 2;%s" % app_startup_path,shell=True)
     GetApp().Quit()
-    
-
-def CheckForceupdate():
-    '''
-        某些版本太老了,需要强制更新
-    '''
-    app_version = apputils.get_app_version()
-    check_url = '%s/member/check_force_update' % (UserDataDb.HOST_SERVER_ADDR)
-    try:
-        req = urlutils.RequestData(check_url,arg={'app_version':app_version})
-        return req.get('force_update',False)
-    except:
-        return False
 
 class UpdateLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)
     def Load(self):
-        #是否需要强制更新
-        force_update = CheckForceupdate()
         GetApp().InsertCommand(constants.ID_GOTO_OFFICIAL_WEB,constants.ID_CHECK_UPDATE,_("&Help"),_("&Check for Updates"),\
-                    handler=lambda:self.CheckUpdate(ignore_error=False,check_plugin_update=False),pos="before")
-        if utils.profile_get_int(consts.CHECK_UPDATE_ATSTARTUP_KEY, True) or force_update:
-            self.CheckUpdateAfter()
+                    handler=lambda:self.CheckAppUpdate(ignore_error=False),pos="before")
+        self.CheckPluginUpdateAfter()
             
     @utils.call_after_with_arg(1000)
-    def CheckUpdateAfter(self,ignore_error=True,check_plugin_update=True):
+    def CheckPluginUpdateAfter(self,ignore_error=True):
         #tkinter不支持多线程,要想试用多线程必须设置函数或方法为after模式
-        t = threading.Thread(target=self.CheckUpdate,args=(ignore_error,check_plugin_update))
+        t = threading.Thread(target=self.CheckPluginUpdate,args=(ignore_error,))
         #设置为后台线程,防止退出程序时卡死
         t.daemon = True
         t.start()
 
-    def CheckUpdate(self,ignore_error=True,check_plugin_update=True):
+    def CheckAppUpdate(self,ignore_error=True):
         CheckAppUpdate(ignore_error)
-        if check_plugin_update:
-            check_plugins(ignore_error)
+            
+    def CheckPluginUpdate(self,ignore_error=True):
+        check_plugins(ignore_error)

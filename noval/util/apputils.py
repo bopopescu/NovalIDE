@@ -161,6 +161,6 @@ def write_cofig_value(section,key,value):
     if not cfg.has_section(section):
         cfg.add_section(section)
     if not cfg.has_option(section,key):
-        cfg.set(section, key,value)
+        cfg.set(section, key,str(value))
         with open(config_path,"w+") as f:
             cfg.write(f) 

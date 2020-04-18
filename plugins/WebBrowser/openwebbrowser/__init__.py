@@ -5,12 +5,14 @@ import noval.iface as iface
 import noval.plugin as plugin
 import noval.util.utils as utils
 import noval.constants as constants
+import noval.consts as consts
+import noval.util.strutils as strutils
 import os
 import noval.core as core
 import noval.imageutils as imageutils
 from dummy.userdb import UserDataDb
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk,messagebox
 import noval.toolbar as toolbar
 try:
     import tkSimpleDialog
@@ -19,12 +21,61 @@ except ImportError:
 import ctypes
 from pkg_resources import resource_filename
 import threading
+import base64
+from openwebbrowser.welcome_html_code import *
+from bs4 import BeautifulSoup,Tag
+import noval.ui_utils as ui_utils
+import noval.preference as preference
+import webbrowser
+import noval.util.urlutils as urlutils
+import noval.plugins.update as update
+import noval.util.downutils as downutils
+import noval.util.fileutils as fileutils
+from noval.python.plugins.pip_gui import PluginsPipDialog
+import json
 
+cache_path = os.path.join(utils.get_user_data_path(),"download")
 pkg_path = resource_filename(__name__,'')
 if utils.is_windows():
-    sys.path.append(pkg_path)
-utils.get_logger().info('pkg path is %s',pkg_path)
-from cefpython3 import cefpython as cef
+    sys.path.append(cache_path)
+#utils.get_logger().info('pkg path is %s',pkg_path)
+try:
+    from cefpython3 import cefpython as cef
+except:
+    pass
+    
+IS_INSTALLING_CEF = False
+    
+def InstallCef():
+    global IS_INSTALLING_CEF
+    if utils.is_windows():
+        def finish_download(zip_path):
+            global IS_INSTALLING_CEF
+            utils.update_statusbar(_('start unzip cefpython3 component'))
+            try:
+                fileutils.unzip(zip_path,cache_path)
+                utils.update_statusbar(_('unzip cefpython3 component finished'))
+                utils.update_statusbar(_('install cefpython3 component success...'))
+            except:
+                utils.update_statusbar(_('unzip cefpython3 component failed'))
+                utils.update_statusbar(_('install cefpython3 component failed...'))
+                messagebox.showerror(_("Error"),_('install cefpython3 component failed,Please wait for next launch to install it'))
+            finally:
+                IS_INSTALLING_CEF = False
+            
+        download_url = '%s/api/download' % (UserDataDb.HOST_SERVER_ADDR)
+        payload = dict(tool='cefpython3-v66.0.egg')
+        utils.update_statusbar(_('start install cefpython3 component...'))
+        IS_INSTALLING_CEF = True
+        downutils.download_file(download_url,call_back=finish_download,show_progress_dlg=False,**payload)
+    else:
+        IS_INSTALLING_CEF = True
+        
+def CheckCef():
+    try:
+        from cefpython3 import cefpython as cef
+    except:
+        InstallCef()
 IMAGE_EXT = ".png" if tk.TkVersion > 8.5 else ".gif"
 
 INTERNAL_WEB_BROWSER = 16
@@ -32,6 +83,56 @@ APPLICATION_STARTUP_PAGE = 32
 
 IS_CEF_INITIALIZED = False
 SET_CIENT_HANDLER_MSG = "set_cient_handler"
+
+APP_UPDATE_COMMAND = 'command:workbench.action.app.update'
+FEEDS_OPEN_URL_COMMAND = 'command:workbench.action.feeds.openurl'
+
+class StartupOptionPanel(ui_utils.CommonOptionPanel):
+    """
+    """
+    def __init__(self, parent):
+        ui_utils.CommonOptionPanel.__init__(self, parent)
+        self._showWelcomePageVar = tk.IntVar(value=utils.profile_get_int(consts.SHOW_WELCOME_PAGE_KEY, True))
+        showWelcomePageCheckBox = ttk.Checkbutton(self.panel,text=_("Show start page on startup"),variable=self._showWelcomePageVar)
+        showWelcomePageCheckBox.pack(fill=tk.X)
+        
+        row = ttk.Frame(self.panel)
+        self.mru_var = tk.IntVar(value=utils.profile_get_int(consts.RECENTPROJECT_LENGTH_KEY,consts.DEFAULT_MRU_PROJECT_NUM))
+        #验证历史文件个数文本控件输入是否合法
+        validate_cmd = self.register(self.validateMRUInput)
+        self.mru_project_ctrl = ttk.Entry(row,validate = 'key', textvariable=self.mru_var,validatecommand = (validate_cmd, '%P'))
+        ttk.Label(row, text=_("Project History length on start page") + "(%d-%d): " % \
+                                                            (1,consts.MAX_MRU_PROJECT_LIMIT)).pack(side=tk.LEFT)
+        self.mru_project_ctrl.pack(side=tk.LEFT)
+        row.pack(fill="x",pady=(0,consts.DEFAUT_CONTRL_PAD_Y))
+
+    def OnOK(self, optionsDialog):
+        utils.profile_set(consts.SHOW_WELCOME_PAGE_KEY, self._showWelcomePageVar.get())
+        utils.profile_set(consts.RECENTPROJECT_LENGTH_KEY,self.mru_var.get())
+        return True
+        
+    def validateMRUInput(self,contents):
+        if not contents.isdigit():
+            self.mru_project_ctrl.bell()
+            return False
+        return True
+        
+def html_to_data_uri(html, js_callback=None):
+    # This function is called in two ways:
+    # 1. From Python: in this case value is returned
+    # 2. From Javascript: in this case value cannot be returned because
+    #    inter-process messaging is asynchronous, so must return value
+    #    by calling js_callback.
+    html = html.encode("utf-8", "replace")
+    b64 = base64.b64encode(html).decode("utf-8", "replace")
+    ret = "data:text/html;base64,{data}".format(data=b64)
+    if js_callback:
+        js_print(js_callback.GetFrame().GetBrowser(),
+                 "Python", "html_to_data_uri",
+                 "Called from Javascript. Will call Javascript callback now.")
+        js_callback.Call(ret)
+    else:
+        return ret
 
 class WebDocument(core.Document):
     def OnOpenDocument(self, filename):
@@ -67,6 +168,35 @@ class FocusHandler(object):
            to get rid of type cursor in url entry widget."""
         utils.get_logger().debug("FocusHandler.OnGotFocus")
         #self.browser_frame.focus_set()
+    
+@utils.call_after_with_arg(1) 
+def ShowPluginManagerDlg():
+    plugin_dlg = PluginsPipDialog(GetApp().GetTopWindow(),package_count=0)
+    plugin_dlg.ShowModal()
+        
+class Command(object):
+    def action(self, msg):
+        if msg == 'command:workbench.action.project.openProject':
+            GetApp().MainFrame.GetProjectView().OpenProject()
+        elif msg == 'command:workbench.action.project.newProject':
+            GetApp().MainFrame.GetProjectView().NewProject()
+        elif msg == "command:workbench.action.help.register_or_login":
+            GetApp().Registerorlogin()
+        elif msg == "command:workbench.action.help.ManagePlugins":
+            ShowPluginManagerDlg()
+        elif msg.find(APP_UPDATE_COMMAND) != -1:
+            app_version = msg.replace(APP_UPDATE_COMMAND+":","")
+            update.UpdateApp(app_version)
+        elif msg.find(FEEDS_OPEN_URL_COMMAND) != -1:
+            url,feed_id = msg.replace(FEEDS_OPEN_URL_COMMAND+":","").split('|')
+            webbrowser.open(url)
+            api_addr = '%s/api/feed/open' % (UserDataDb.HOST_SERVER_ADDR)
+            urlutils.RequestData(api_addr,method="post",arg = {'feed_id':feed_id})        
+        elif msg == "command:workbench.action.help.openCodeRepositoryURL":
+            webbrowser.open("https://gitee.com/wekay/NovalIDE")
+        else:
+            project_path = msg.split(':')[-1].replace('/',os.sep).replace('|',":")
+            GetApp().GetDocumentManager().CreateDocument(project_path, core.DOC_SILENT)
         
 class BrowserFrame(ttk.Frame):
 
@@ -95,8 +225,11 @@ class BrowserFrame(ttk.Frame):
                                              url=url)
         assert self.browser
         GetApp().event_generate(SET_CIENT_HANDLER_MSG)
+        
+        js = cef.JavascriptBindings()
+        js.SetObject('Command', Command())
+        self.browser.SetJavascriptBindings(js)
         #在UI线程创建browser不使用消息循环,只有在单线程时才使用
-        #self.message_loop_work()
         
     def embed_browser_sync(self):
         '''
@@ -186,13 +319,14 @@ class WebView(core.View):
         self.zoom_level = 0
         if not IS_CEF_INITIALIZED:
             settings = {
-                'multi_threaded_message_loop':True
+                'multi_threaded_message_loop':True,
+                'locale':GetApp().locale.GetLanguageCanonicalName()
             }
             if utils.is_windows():
                 settings.update({
-                    "locales_dir_path": os.path.join(pkg_path,"cefpython3","locales"),
-                    "browser_subprocess_path": os.path.join(pkg_path,"cefpython3","subprocess.exe"),
-                    "resources_dir_path":os.path.join(pkg_path,"cefpython3",'resources')
+                    "locales_dir_path": os.path.join(cache_path,"cefpython3","locales"),
+                    "browser_subprocess_path": os.path.join(cache_path,"cefpython3","subprocess.exe"),
+                    "resources_dir_path":os.path.join(cache_path,"cefpython3",'resources')
                     })
             cef.Initialize(settings=settings)
             IS_CEF_INITIALIZED = True
@@ -270,7 +404,12 @@ class WebView(core.View):
 class WebBrowserPlugin(plugin.Plugin):
     """plugin description here..."""
     ID_WEB_BROWSER = NewId()
+    ID_SHOW_WELCOME_PAGE = NewId()
     plugin.Implements(iface.MainWindowI)
+    NEWS = "news"
+    LEARN = "learn"
+    DEFAULT_NEWS_NUM = 3
+    DEFAULT_LEARN_NUM = 3
     def PlugIt(self, parent):
         """Hook the calculator into the menu and bind the event"""
         utils.get_logger().info("Installing WebBrowser plugin")
@@ -286,8 +425,61 @@ class WebBrowserPlugin(plugin.Plugin):
                 core.TEMPLATE_INVISIBLE,
                 icon = imageutils.load_image("","web.png"))
         GetApp().GetDocumentManager().AssociateTemplate(webViewTemplate)
-        GetApp().InsertCommand(constants.ID_PLUGIN,self.ID_WEB_BROWSER,_("&Tools"),_("&Web Browser"),handler=self.GotoDefaultWebsite,pos="before")
-        self.GotoStartupPage()
+        GetApp().MainFrame.GetProjectView(False).tree.RebuildLookupIcon()
+        GetApp().InsertCommand(constants.ID_PLUGIN,self.ID_WEB_BROWSER,_("&Tools"),_("&Web Browser"),handler=self.GotoDefaultWebsite,pos="before",\
+                               image=webViewTemplate.GetIcon())
+        GetApp().bind(constants.CHANGE_APPLICATION_LOOK_EVT, self.UpdateWelcomeTheme,True)
+        image_path = os.path.join(pkg_path, "resources","start.png")
+        GetApp().InsertCommand(constants.ID_CHECK_UPDATE,self.ID_SHOW_WELCOME_PAGE,_("&Help"),_("Start Page"),handler=self.ShowWelcomePage,pos="before",\
+                               image=GetApp().GetImage(image_path))
+        preference.PreferenceManager().AddOptionsPanelClass(preference.ENVIRONMENT_OPTION_NAME,"Start Page",StartupOptionPanel)
+        self.is_initialized = True
+        self.app_update_params = {'has_new':False}
+        self.feeds = []
+        CheckCef()
+        
+    def InitNum(self):
+        self.number = {
+            self.NEWS:0,
+            self.LEARN:0
+        }
+        if self.app_update_params['has_new']:
+            self.number[self.NEWS] += 1
+        
+    def LoadNews(self):
+        self.CheckAppUpdate(self.app_update_params)
+        self.GetFeeds()
+        if len(self.feeds) < (self.DEFAULT_NEWS_NUM + self.DEFAULT_LEARN_NUM):
+            data = self.LoadDefaultFeeds()
+            self.feeds.extend(data)
+        
+    def LoadDefaultFeeds(self):
+        feeds_file = os.path.join(pkg_path,"feeds.json")
+        try:
+            with open(feeds_file) as f:
+                return json.load(f)
+        except:
+            pass
+        
+    def LoadNewsAsync(self):
+        t = threading.Thread(target=self.LoadNews)
+        t.start()
+                
+    def UpdateWelcomeTheme(self,event):
+        if self.is_initialized:
+            if utils.profile_get_int(consts.SHOW_WELCOME_PAGE_KEY, True):
+                self.GotoStartupPage(event.get('theme'),self.is_initialized)
+            else:
+                self.LoadNewsAsync()
+                
+            self.is_initialized = False
+        else:
+            start_doc = GetApp().GetDocumentManager().GetDocument(_("Start Page"))
+            if start_doc:
+                self.LoadStartupPage(start_doc,theme)
+        
+    def ShowWelcomePage(self):
+        self.GotoStartupPage(GetApp().theme_value.get())
         
     def GotoDefaultWebsite(self):
         self.GotoWebView(UserDataDb.HOST_SERVER_ADDR)
@@ -298,14 +490,89 @@ class WebBrowserPlugin(plugin.Plugin):
         if doc:
             doc.GetFirstView().LoadUrl(web_addr)
         
-    def GotoStartupPage(self):
+    def GotoStartupPage(self,theme,is_initialized=False):
         webViewTemplate = GetApp().GetDocumentManager().FindTemplateForTestPath(".com")
         doc = GetApp().GetDocumentManager().CreateTemplateDocument(webViewTemplate,_("Start Page"), core.DOC_SILENT|core.DOC_OPEN_ONCE|APPLICATION_STARTUP_PAGE)
-        t = threading.Thread(target=self.OpenStartupPage,args=(doc,))
+        self.LoadStartupPage(doc,theme,is_initialized)
+        
+    def LoadStartupPage(self,doc,theme,is_initialized=False):
+        t = threading.Thread(target=self.OpenStartupPage,args=(doc,theme,is_initialized))
         t.start()
         
-    def OpenStartupPage(self,doc):
-        doc.GetFirstView().LoadUrl(r'G:\work\project\Noval\template.xml')
+    def LoadRecentProjects(self):
+        recent_projects = []
+        projectHistory = GetApp().GetDocumentManager().GetProjectHistory()
+        file_size = projectHistory.GetCurrentSize()
+        for i in range(file_size):
+            path = projectHistory.GetHistoryFile(i)
+            recent_projects.append(path)
+        return recent_projects
+        
+    def GetFeeds(self):
+        api_addr = '%s/api/feed/items' % (UserDataDb.HOST_SERVER_ADDR)
+        app_version = utils.get_app_version()
+        data = urlutils.RequestData(api_addr,arg = {'app_version':app_version})
+        if data is None:
+            return
+        self.feeds = data['feeds']
+        
+    def CreateFeedNews(self,sp):
+        for feed in self.feeds:
+            click_event = "Command.action('%s:%s|%s')"%(FEEDS_OPEN_URL_COMMAND,feed['url'],feed['id'])
+            div = self.CreateNews(feed['title'],feed['subcontent'],click_event)
+            if feed['category'] == self.NEWS and self.number[self.NEWS] < self.DEFAULT_NEWS_NUM:
+                news = sp.div.find(class_="section news")
+                l = news.find(class_="list")
+                l.append(div)
+                self.number[self.NEWS] += 1
+            elif feed['category'] == self.LEARN and self.number[self.LEARN] < self.DEFAULT_LEARN_NUM:
+                learn = sp.div.find(class_="section learn")
+                l = learn.find(class_="list")
+                l.append(div)
+                self.number[self.LEARN] += 1
+        
+    def CreateNews(self,title,subcontent,click_event):
+        div = Tag(name='div',attrs={'class':'item showLanguageExtensions'})
+        btn = Tag(name='button',attrs={'role':'group','data-href':"command:workbench.extensions.action.showLanguageExtensions",'onclick':click_event})
+        h3 = Tag(name="h3",attrs={'class':'caption'})
+        h3.string = title
+        span = Tag(name="span",attrs={'class':'detail'})
+        span.string = subcontent
+        div.append(btn)
+        btn.append(h3)
+        btn.append(span)
+        return div
+        
+    def OpenStartupPage(self,doc,theme,is_initialized):
+        if is_initialized:
+            self.LoadNews()
+        self.InitNum()
+        recent_projects = self.LoadRecentProjects()
+        sp = BeautifulSoup(html_code, 'html.parser')
+        if recent_projects == []:
+            t = 'welcomePage emptyRecent'
+            p = sp.div.find(class_="welcomePage")
+            p.attrs['class'] = t
+        else:
+            p1 = sp.div.find(class_="section recent")
+            p2 = p1.find(class_="list")
+            for recent_project in recent_projects:
+                recent_project_path = recent_project.replace(":","|").replace("\\",'/')
+                li = Tag(name='li',attrs={'class':'path'})
+                a = Tag(name='a',attrs={'href':'javascript:void(0)','title':recent_project,'onclick':"Command.action('command:workbench.action.project.openRecentProject:%s')"%recent_project_path})
+                a.string = os.path.basename(recent_project)
+                li.append(a)
+                p2.insert(1,li)
+        if self.app_update_params['has_new']:
+            click_event = "Command.action('%s:%s')"%(APP_UPDATE_COMMAND,self.app_update_params['app_version'])
+            div = self.CreateNews(self.app_update_params['title'],self.app_update_params['subcontent'],click_event)
+            news = sp.div.find(class_="section news")
+            l = news.find(class_="list")
+            l.append(div)
+        self.CreateFeedNews(sp)
+        html_code2 = sp.prettify()
+        welcome_html_url = html_to_data_uri(html_code2)
+        doc.GetFirstView().LoadUrl(welcome_html_url)
 
     def GetMinVersion(self):
         """Override in subclasses to return the minimum version of novalide that
@@ -313,7 +580,7 @@ class WebBrowserPlugin(plugin.Plugin):
         version of novalide.
         @return: version str
         """
-        return "1.2.2"
+        return "1.2.3"
 
     def InstallHook(self):
         """Override in subclasses to allow the plugin to be loaded
@@ -321,7 +588,7 @@ class WebBrowserPlugin(plugin.Plugin):
         @return: None
 
         """
-        pass
+        CheckCef()
         
     def CanUninstall(self):
         return False
@@ -343,15 +610,35 @@ class WebBrowserPlugin(plugin.Plugin):
         
     def HookExit(self):
         ''''''
-        cef.PostTask(cef.TID_UI, cef.Shutdown)
+        if IS_INSTALLING_CEF:
+            messagebox.showinfo(GetApp().GetAppName(),_('Application is installing cef component.Please wait for a monment to exit!'))
+            return False
+        try:
+            cef.PostTask(cef.TID_UI, cef.Shutdown)
+        finally:
+            return True
         
-    def MatchPlatform(self):
-        '''
-            这里插件需要区分windows版本和linux版本
-            windows版本把cef包需要打包进去
-            linux版本不需要打包进去,直接在用户电脑上安装
-        '''
-        return True
+    def CheckAppUpdate(self,params={}):
+        api_addr = '%s/api/update/app' % (UserDataDb.HOST_SERVER_ADDR)
+        app_version = utils.get_app_version()
+        data = urlutils.RequestData(api_addr,arg = {'app_version':app_version})
+        if data is None:
+            return
+        force_show_welcome = data['force_show_welcome']
+        if force_show_welcome and not utils.profile_get_int(consts.SHOW_WELCOME_PAGE_KEY, True):
+            utils.profile_set(consts.SHOW_WELCOME_PAGE_KEY, True)
+        #have update
+        if data['code'] == 1:
+            new_version = data['new_version']
+            update_msg = data['update_msg']
+            msg =  _("this lastest version '%s' is available,click here to update it") % new_version
+            params['has_new'] = True
+            params['title'] = msg
+            params['subcontent'] = update_msg
+            params['app_version'] = new_version
+            if not utils.profile_get_int(consts.SHOW_WELCOME_PAGE_KEY, True):
+                update.CheckAppupdateInfo(data)
+    
     
 class NavigationBar(toolbar.ToolBar):
     

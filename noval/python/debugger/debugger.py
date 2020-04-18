@@ -427,10 +427,16 @@ class OutputOptionsPanel(ui_utils.CommonOptionPanel):
             messagebox.showinfo(GetApp().GetAppName(),_('Max line length must greater then 500'))
             return False
         utils.profile_set('MaxLineLength',self.max_line_length_var.get())
-        
         utils.profile_set('StandardOutputColor',self.output_label.cget("background"))
         utils.profile_set('StandardErrorColor',self.error_label.cget("background"))
         utils.profile_set('StandardInputColor',self.input_label.cget("background"))
+        views = GetApp().MainFrame.GetViews()
+        #将输出颜色设置应用到所有输出窗口
+        for view_name in views:
+            if view_name.find("Debugger") != -1:
+                view = views[view_name]
+                instance = view["instance"]
+                instance.GetOutputCtrl().UpdateConfigure()
         return True
         
 class RunOptionsPanel(ui_utils.CommonOptionPanel):

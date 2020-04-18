@@ -98,18 +98,13 @@ class GeneralOptionPanel(ui_utils.BaseConfigurationPanel):
         
        # self._showTipsCheckBox = wx.CheckBox(self, -1, _("Show tips at start up"))
         #self._showTipsCheckBox.SetValue(config.ReadInt("ShowTipAtStartup", True))
-        self.checkupdate_var = tk.IntVar(value=utils.profile_get_int(consts.CHECK_UPDATE_ATSTARTUP_KEY, True))
-        chkUpdateCheckBox = ttk.Checkbutton(self, text=_("Check update at start up"),variable=self.checkupdate_var)
-        chkUpdateCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
-        
         self.check_plugin_update_var = tk.IntVar(value=utils.profile_get_int("CheckPluginUpdate", True))
         chkplugin_UpdateCheckBox = ttk.Checkbutton(self, text=_("Check plugin update at start up"),variable=self.check_plugin_update_var)
-        chkplugin_UpdateCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
+        chkplugin_UpdateCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))
 
-        if GetApp().GetDebug():
-            self.auto_login_var = tk.IntVar(value=utils.profile_get_int("StartupAutoLogin", False))
-            autoLoginCheckBox = ttk.Checkbutton(self, text=_("Auto login at start up"),variable=self.auto_login_var)
-            autoLoginCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
+        self.auto_login_var = tk.IntVar(value=utils.profile_get_int("StartupAutoLogin", False))
+        autoLoginCheckBox = ttk.Checkbutton(self, text=_("Auto login at start up"),variable=self.auto_login_var)
+        autoLoginCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x")
 
         row = ttk.Frame(self)
         self.lang_list = GetLangList()
@@ -184,7 +179,6 @@ class GeneralOptionPanel(ui_utils.BaseConfigurationPanel):
             return False
             
        # utils.WriteInt("ShowTipAtStartup", self._showTipsCheckBox.GetValue())
-        utils.profile_set(consts.CHECK_UPDATE_ATSTARTUP_KEY, self.checkupdate_var.get())
         if self.GetLangId() != self.lang_id:
             messagebox.showinfo(_("Language Options"),_("Language changes will not appear until the application is restarted."),parent=self)
             utils.profile_set(consts.LANGUANGE_ID_KEY,self.GetLangId())
@@ -192,8 +186,7 @@ class GeneralOptionPanel(ui_utils.BaseConfigurationPanel):
         utils.profile_set(consts.ENABLE_MRU_KEY,self.enablemru_var.get())
         utils.profile_set("RedirectTkException",self.redirect_output_var.get())
         utils.profile_set("CheckPluginUpdate",self.check_plugin_update_var.get())
-        if GetApp().GetDebug():
-            utils.profile_set("StartupAutoLogin",self.auto_login_var.get())
+        utils.profile_set("StartupAutoLogin",self.auto_login_var.get())
         return True
 
     def GetIcon(self):

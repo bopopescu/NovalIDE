@@ -9,6 +9,7 @@ import noval.auth.login as login
 import noval.auth.validation as validation
 from dummy.userdb import UserDataDb
 import noval.util.urlutils as urlutils
+import noval.util.md5 as md5_util
 
 class RegisterDialog(ui_base.CommonModaldialog):
     '''
@@ -64,7 +65,7 @@ class RegisterDialog(ui_base.CommonModaldialog):
             
         api_addr = '%s/member/register' % (UserDataDb.HOST_SERVER_ADDR)
         #将原始裸密码用MD5加密,在服务端还要MD5再加密一次
-        password = validation.get_str_md5(self.password_var.get())
+        password = md5_util.get_str_md5(self.password_var.get())
         member_id = UserDataDb().GetUserId()
         data = urlutils.RequestData(api_addr,method='post',arg = {'username':self.name_var.get(),\
                 'member_id':member_id,'password':password,'email':self.email_var.get(),'phone':self.phone_var.get()})

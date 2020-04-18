@@ -338,15 +338,15 @@ def unzip(zipfilepath, extractdir):
         filename = os.path.join(extractdir, info.filename)
         try:
             dir = os.path.dirname(filename)
-            logger.debug(fileutilsLogger, "Creating dir %s" % dir)
+            fileutilsLogger.debug("Creating dir %s" % dir)
             os.makedirs(dir) # do we have to worry about permissions?
         except:
             pass
         if os.path.isdir(filename):
             continue
-        logger.debug(fileutilsLogger,\
+        fileutilsLogger.debug(
                        ("Writing arcfile %s to %s" % (info.filename, filename)))
-        f = open(filename, "w")
+        f = open(filename, "wb")
         f.write(z.read(info.filename))
         f.close()
 
@@ -542,6 +542,8 @@ def is_file_path_hidden(path):
         return is_hidden
         
 def GetDirFiles(path,file_list,filters=[],rejects=[]):
+    if not os.path.exists(path):
+        return
     for f in os.listdir(path):
         file_path = os.path.join(path, f)
         if os.path.isfile(file_path):

@@ -37,12 +37,14 @@ FRAME_HEIGHT_KEY = "MDIFrameHeight"
 
 FRAME_VIEW_VISIBLE_KEY = "%sViewVisible"
 RECENT_FILES_KEY = "RecentFiles"
+RECENT_PROJECTS_KEY = "RecentProjects"
 CURRENT_PROJECT_KEY = "ProjectCurrent"
 PROJECT_DOCS_SAVED_KEY = "IsProjectSaveDocs"
 PROJECT_SAVE_DOCS_KEY  = "ProjectSavedDocs"
 ENABLE_MRU_KEY = "EnableMRU"
 MRU_LENGTH_KEY = "MRULength"
 LANGUANGE_ID_KEY = "LanguageId"
+SHOW_WELCOME_PAGE_KEY = 'ShowWelcomePage'
 
 
 DEFAULT_FONT_FAMILY = "Courier New"
@@ -77,6 +79,12 @@ TREE_VIEW_BOLD_FONT = "TreeviewBoldFont"
 DEFAULT_MRU_FILE_NUM = 9
 #最大历史文件个数
 MAX_MRU_FILE_LIMIT = 20
+
+#默认历史项目个数
+DEFAULT_MRU_PROJECT_NUM = 5
+#最大历史项目个数
+MAX_MRU_PROJECT_LIMIT = 10
+RECENTPROJECT_LENGTH_KEY = "RecentProjectLength"
 
 #状态栏显示的标签名称,行列以及文件编码
 STATUS_BAR_LABEL_LINE = "line"
@@ -134,3 +142,6 @@ DEFAULT_HOST = 'localhost'
 PORT_COUNT = 21
 
 DEBUG_UNKNOWN_VALUE_TYPE = 'Unknown'
+
+#默认url请求连接超时时间
+DEFAULT_URL_REQUEST_TIMEOUT = 10

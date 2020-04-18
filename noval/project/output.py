@@ -45,7 +45,13 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
             "io",
             font="IOFont",
         )
+        self.UpdateConfigure()
+        self._is_wrap = tk.IntVar(value=utils.profile_get_int("WordWrap",False))
+        self.SetWrap()
+        self.logs = {}
+        self.inputText = ""
         
+    def UpdateConfigure(self):
         self.tag_configure(
             "stdin",
             foreground=utils.profile_get("StandardInputColor","blue")
@@ -60,10 +66,6 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
             "stderr",
             foreground=utils.profile_get("StandardErrorColor","red")
         )
-        self._is_wrap = tk.IntVar(value=utils.profile_get_int("WordWrap",False))
-        self.SetWrap()
-        self.logs = {}
-        self.inputText = ""
         
     def perform_return(self, event):
         self._executor.WriteInput(self.inputText+"\n")

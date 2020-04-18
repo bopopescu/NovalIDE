@@ -215,8 +215,31 @@ class IDEApplication(core.App):
         '''
             初始化配置文件信息
         '''
-        utils.write_cofig_value('virtual_env','pip_source_path',"http://pypi.douban.com/simple")
+        default_pip_source = "http://pypi.douban.com/simple"
+        if utils.is_windows():
+            #windows使用注册表存储配置信息,写入配置文件的信息必须新生成配置文件
+            utils.write_cofig_value('virtual_env','pip_source_path',default_pip_source)
+        else:
+            #linux使用配置文件存储配置信息,故使用同一个配置文件,无需新创建一个配置文件
+            config = self.GetConfig()
+            config.Write('virtual_env/pip_source_path',default_pip_source)
+            
+    def InstallRequiredPlugins(self):
+        '''
+            启动软件安装必要的一些插件列表
+        '''
+        #必须安装开源谷歌浏览器插件及其组件cef
+        self.InstallPlugin('OpenWebBrowser')
         
+    def InstallPlugin(self,plugin_name):
+        '''
+            自动化后台静默安装插件,无需人工操作
+            如果插件已经安装会忽略
+        '''
+        plugin_dist = self.GetPluginManager().GetPluginDistro(plugin_name)
+        if plugin_dist is not None:
+            return
+
     #统计插件加载时间
     @utils.compute_run_time
     def InitPlugins(self):
@@ -285,8 +308,21 @@ class IDEApplication(core.App):
         dlg.ShowModal()
         
     def RegisterLogout(self):
+        '''
+            帮助菜单注册或登录接口,如果已经登录,则注销
+        '''
         if self.is_login:
             self.Logout()
+        else:
+            self.Register()
+            
+    @utils.call_after_with_arg(1)
+    def Registerorlogin(self):
+        '''
+            起始页注册或登录接口,如果已经登录,则不用重复登录
+        '''
+        if self.is_login:
+            messagebox.showinfo(self.GetAppName(),_('You have login into'),parent=self)
         else:
             self.Register()
             
@@ -559,8 +595,9 @@ class IDEApplication(core.App):
         self.AddCommand(constants.ID_OPEN_TERMINAL,_("&Tools"),_("&Open terminator..."),self.OpenTerminator,image="cmd.png")
         self.AddCommand(constants.ID_GOTO_OFFICIAL_WEB,_("&Help"),_("&Visit NovalIDE Website"),self.GotoWebsite)
         self.AddCommand(constants.ID_FEEDBACK,_("&Help"), _("Feedback"),self.Feedback)
-        if self.GetDebug():
-            self.AddCommand(constants.ID_REGISTER_LOGOUT,_("&Help"), _("Register/Login"),self.RegisterLogout) 
+        #注销/注册/登录菜单,如果已经登录则显示注销文本,否则显示注册&登录文本
+        #菜单文本需包含2个&,只要就可以不替换为空了
+        self.AddCommand(constants.ID_REGISTER_LOGOUT,_("&Help"), _("Register&&Login"),self.RegisterLogout) 
         
 
     def UpdateLoginState(self):
@@ -570,10 +607,12 @@ class IDEApplication(core.App):
         self.SetAppTitle()
         menu = self.Menubar.GetMenu(_("&Help"))
         i = menu.GetMenuIndex(constants.ID_REGISTER_LOGOUT)
+        #已经登录显示注销文本,
         if self.is_login:
             menu.entryconfigure(i,label=_("Logout"))
         else:
-            menu.entryconfigure(i,label=_("Register/Login"))
+            #否则显示注册&登录文本
+            menu.entryconfigure(i,label=_("Register&&Login"))
         
     def Run(self):
         '''
@@ -827,14 +866,15 @@ class IDEApplication(core.App):
         self.MainFrame.SaveLayout()
         
     def Quit(self):
+        #程序退出时通知所有插件退出
+        if not self._pluginmgr.Exit():
+            return
         self.update_idletasks()
         UserDataDb().RecordEnd()
         self.SaveLayout()
         docposition.DocMgr.WriteBook()
         #保存插件信息
         self._pluginmgr.WritePluginConfig()
-        #程序退出时通知所有插件退出
-        self._pluginmgr.Exit()
         core.App.Quit(self)
 
     @misc.update_toolbar
@@ -1003,6 +1043,7 @@ class IDEApplication(core.App):
        
         #这里需要更新字体大小,否则界面放大的时候对Treeview高度的放大有影响
         self.UpdateFonts()
+        self.event_generate(constants.CHANGE_APPLICATION_LOOK_EVT,theme=name)
         
     def get_usable_ui_theme_names(self):
         return sorted(
