@@ -77,6 +77,8 @@ class PyPi(plugin.Plugin):
         
     def AppenRootMenu(self, event):
         menu = event.get('menu')
+        if self.GetProjectDocument() is None:
+            return
         if self.GetProjectDocument().__class__.__name__ != "PyPIProjectDocument":
             submenu = menu.GetMenuByname(_("Convert to"))
             if not submenu:
@@ -194,7 +196,7 @@ class PyPi(plugin.Plugin):
                 assert(type(free) == bool)
                 #是否禁止插件卸载
                 data['disable_uninstall'] = not int(instance.CanUninstall())
-                data['match_platform'] = instance.MatchPlatform()
+                data['match_platform'] = int(instance.MatchPlatform())
                 #操作系统名称,防止插件区分操作系统
                 data['os_name'] = sys.platform
                 data['free'] = int(free)
@@ -233,7 +235,7 @@ class PyPi(plugin.Plugin):
             return
         utils.get_logger().debug('ret is %s',ret)
         #已有版本已经存在,提示用户是否强制替换
-        if ret['code'] == 1:
+        if ret['code'] == 10001:
             result = messagebox.askyesno(_('Publish to Server'),ret['message'].format(version=data['version'],name=data['name']),parent=self.parent)
             if result == False:
                 return
