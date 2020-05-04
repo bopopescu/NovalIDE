@@ -1,16 +1,38 @@
 [
     {
-        "title":"TIOBE 4 月排行榜：SQL 进入前十，Python 继续攀升",
-        "subcontent":"TIOBE 刚刚发布了 4 月编程语言排行榜。 Ruby 曾获得 2006 年 TIOBE “年度编程语言” ，并在 2008 年达到了热度巅峰，但之后就被新语言抢去了光芒，人气大幅下滑。但现在似乎正在重新受到关注，上个月排第九，这个月略有下降排第十。 Objective-C 下降很明显。原因是几年前苹果公司放弃了 Objective-C，并由其后继者 Swift 取而代之。 前 20 名中，涨幅最",
-        "url":"https://www.iteye.com/news/32958",
-        "category":"news",
-        "id":"5e93cac435e7e9377b3534fc"
+        "title":"PYPL：2019年9月编程语言排行榜 Python一枝独秀",
+        "subcontent":"PYPL 是非常流行的参考指标，其榜单数据的排名均是根据榜单对象在 Google 上相关的搜索频率进行统计排名，原始数据来自 Google Trends，也就是说某项语言或者某款 IDE 在 Google 上搜索频率越高，表示它越受欢迎",
+        "url":"http://www.199it.com/archives/933049.html",
+        "category":"news"
     },
     {
-        "id" : "5e93cac435e7e9377b3534fd",
         "title" : "全球开发者大调查：编程始于少年，Python 成最爱",
         "subcontent" : "原文：2018 Developer Skills Report 链接：https://research.hackerrank.com/developer-skills/2018/ 编译：言则 近日，编程竞赛网站 HackerRank 基于 39441 位开发者的调研数据，总结了 2018 年开发者在教育、技能和招聘实践中的各类流行趋势。HackerRank 在算法、数学、SQL、函数式编程",
         "url" : "https://www.iteye.com/news/32872",
+        "category" : "news"
+    },
+    {
+        "title" : "8个超好用的Python内置函数，提升效率必备",
+        "subcontent" : "python中有许多内置函数，不像print那么广为人知，但它们却异常的强大，用好了可以大大提高代码效率。",
+        "url" : "https://news.51cto.com/art/202004/614555.htm",
+        "category" : "learn"
+    },
+    {
+        "title" : "如何用 Python 从 0 开始创建一个区块链？",
+        "subcontent" : "在数字货币盛行的档口，比特币，这币那币到底值不值得信赖呢？也许你像很多人一样感到新奇，想接近它，但只因背后的区块链技术，阻断了向新领域尝试的步伐。不过，对于程序员来说，想真正搞懂比特币，搞懂区块链，可不是难题，因为他们能边玩边学",
+        "url" : "https://www.iteye.com/news/32907",
+        "category" : "learn"
+    },
+    {
+        "title" : "5 种使用 Python 代码轻松实现数据可视化的方法",
+        "subcontent" : "数据可视化是数据科学家工作中的重要组成部分。在项目的早期阶段，你通常会进行探索性数据分析（Exploratory Data Analysis，EDA）以获取对数据的一些理解。",
+        "url" : "https://www.iteye.com/news/32988",
+        "category" : "learn"
+    },
+    {
+        "title" : "做数据分析使用Python有哪些优势？",
+        "subcontent" : "有时候大家需要保存下载百度图片，但是在数量很大的情况下，一张一张地下载就显得很繁琐麻烦。那么，有没有一种方法可以把搜索到大量的百度图片直接下载到本地电脑中",
+        "url" : "https://news.51cto.com/art/202004/614555.htm",
         "category" : "news"
     }
 ]

@@ -19,7 +19,7 @@ try:
 except ImportError:
     import tkinter.simpledialog as tkSimpleDialog
 import ctypes
-from pkg_resources import resource_filename
+from pkg_resources import resource_filename,_manager
 import threading
 import base64
 from openwebbrowser.welcome_html_code import *
@@ -33,12 +33,13 @@ import noval.util.downutils as downutils
 import noval.util.fileutils as fileutils
 from noval.python.plugins.pip_gui import PluginsPipDialog
 import json
+import zipimport
 
-cache_path = os.path.join(utils.get_user_data_path(),"download")
+egg_path = 'cefpython3-66.0-py3.6.egg'
+cache_path = _manager.get_cache_path(egg_path, '')
 pkg_path = resource_filename(__name__,'')
 if utils.is_windows():
     sys.path.append(cache_path)
-#utils.get_logger().info('pkg path is %s',pkg_path)
 try:
     from cefpython3 import cefpython as cef
 except:
@@ -53,36 +54,49 @@ def InstallCef():
             global IS_INSTALLING_CEF
             utils.update_statusbar(_('start unzip cefpython3 component'))
             try:
-                fileutils.unzip(zip_path,cache_path)
+                z = zipimport.zipimporter(zip_path)
+                z.load_module("cefpython3")
+            except:
+                pass
+            finally:
+                IS_INSTALLING_CEF = False
+            if os.path.exists(cache_path):
                 utils.update_statusbar(_('unzip cefpython3 component finished'))
                 utils.update_statusbar(_('install cefpython3 component success...'))
-            except:
+            else:
                 utils.update_statusbar(_('unzip cefpython3 component failed'))
                 utils.update_statusbar(_('install cefpython3 component failed...'))
                 messagebox.showerror(_("Error"),_('install cefpython3 component failed,Please wait for next launch to install it'))
-            finally:
-                IS_INSTALLING_CEF = False
+
             
         download_url = '%s/api/download' % (UserDataDb.HOST_SERVER_ADDR)
-        payload = dict(tool='cefpython3-v66.0.egg')
-        utils.update_statusbar(_('start install cefpython3 component...'))
+        payload = dict(tool=egg_path)
+        utils.update_statusbar(_('installing cefpython3 component...'))
         IS_INSTALLING_CEF = True
-        downutils.download_file(download_url,call_back=finish_download,show_progress_dlg=False,**payload)
+        try:
+            downutils.download_file(download_url,call_back=finish_download,show_progress_dlg=False,**payload)
+        except:
+            IS_INSTALLING_CEF = False
+            utils.update_statusbar(_('install cefpython3 component failed...'))
     else:
         IS_INSTALLING_CEF = True
         
 def CheckCef():
     try:
         from cefpython3 import cefpython as cef
-    except:
+        return True
+    except ModuleNotFoundError:
         InstallCef()
+        return False
+    except:
+        utils.get_logger().exception('')
+        return False
 IMAGE_EXT = ".png" if tk.TkVersion > 8.5 else ".gif"
 
 INTERNAL_WEB_BROWSER = 16
 APPLICATION_STARTUP_PAGE = 32
 
 IS_CEF_INITIALIZED = False
-SET_CIENT_HANDLER_MSG = "set_cient_handler"
 
 APP_UPDATE_COMMAND = 'command:workbench.action.app.update'
 FEEDS_OPEN_URL_COMMAND = 'command:workbench.action.feeds.openurl'
@@ -173,6 +187,10 @@ class FocusHandler(object):
 def ShowPluginManagerDlg():
     plugin_dlg = PluginsPipDialog(GetApp().GetTopWindow(),package_count=0)
     plugin_dlg.ShowModal()
+    
+@utils.call_after_with_arg(1) 
+def ShowErrorMessageDialog(title,msg):
+    messagebox.showerror(title,msg)
         
 class Command(object):
     def action(self, msg):
@@ -190,13 +208,23 @@ class Command(object):
         elif msg.find(FEEDS_OPEN_URL_COMMAND) != -1:
             url,feed_id = msg.replace(FEEDS_OPEN_URL_COMMAND+":","").split('|')
             webbrowser.open(url)
+            if feed_id == "...":
+                return
             api_addr = '%s/api/feed/open' % (UserDataDb.HOST_SERVER_ADDR)
             urlutils.RequestData(api_addr,method="post",arg = {'feed_id':feed_id})        
         elif msg == "command:workbench.action.help.openCodeRepositoryURL":
             webbrowser.open("https://gitee.com/wekay/NovalIDE")
+        elif msg == "command:workbench.action.help.openDocumentationUrl":
+            webbrowser.open("https://wekay.gitee.io/novalide")
+        elif msg == "command:workbench.action.help.keybindingsReference":
+            webbrowser.open("http://www.novalide.com/media/document/shortcuts.pdf")
         else:
             project_path = msg.split(':')[-1].replace('/',os.sep).replace('|',":")
-            GetApp().GetDocumentManager().CreateDocument(project_path, core.DOC_SILENT)
+            if not os.path.exists(project_path):
+                GetApp().GetDocumentManager().RemoveProjectFromHistory(project_path)
+                ShowErrorMessageDialog(GetApp().GetAppName(),_("The project '%s' doesn't exist and couldn't be opened!") % project_path)
+            else:
+                GetApp().GetDocumentManager().CreateDocument(project_path, core.DOC_SILENT)
         
 class BrowserFrame(ttk.Frame):
 
@@ -211,12 +239,11 @@ class BrowserFrame(ttk.Frame):
         self.bind("<FocusOut>", self.on_focus_out)
         self.bind("<Configure>", self.on_configure)
         self.focus_set()
-        GetApp().bind(SET_CIENT_HANDLER_MSG,self.SetClientHandler,True)
         
     def SetUrl(self,url):
         self.url = url
         
-    def SetClientHandler(self,event):
+    def SetClientHandler(self):
         self.browser.SetClientHandler(LoadHandler(self))
         self.browser.SetClientHandler(FocusHandler(self))
         
@@ -224,8 +251,7 @@ class BrowserFrame(ttk.Frame):
         self.browser = cef.CreateBrowserSync(window_info,
                                              url=url)
         assert self.browser
-        GetApp().event_generate(SET_CIENT_HANDLER_MSG)
-        
+        self.SetClientHandler()
         js = cef.JavascriptBindings()
         js.SetObject('Command', Command())
         self.browser.SetJavascriptBindings(js)
@@ -413,6 +439,9 @@ class WebBrowserPlugin(plugin.Plugin):
     def PlugIt(self, parent):
         """Hook the calculator into the menu and bind the event"""
         utils.get_logger().info("Installing WebBrowser plugin")
+        if not CheckCef():
+            utils.get_logger().error("cefpython component is not success installled...")
+            return
         webViewTemplate = core.DocTemplate(GetApp().GetDocumentManager(),
                 _("WebView"),
                 "*.com;*.org",
@@ -436,7 +465,6 @@ class WebBrowserPlugin(plugin.Plugin):
         self.is_initialized = True
         self.app_update_params = {'has_new':False}
         self.feeds = []
-        CheckCef()
         
     def InitNum(self):
         self.number = {
@@ -447,11 +475,18 @@ class WebBrowserPlugin(plugin.Plugin):
             self.number[self.NEWS] += 1
         
     def LoadNews(self):
+        def add_id(d):
+            d.update({'id':'...'})
+            return d
+            
         self.CheckAppUpdate(self.app_update_params)
         self.GetFeeds()
+        utils.get_logger().info("get feeds count from sever is %d",len(self.feeds))
         if len(self.feeds) < (self.DEFAULT_NEWS_NUM + self.DEFAULT_LEARN_NUM):
             data = self.LoadDefaultFeeds()
+            data = list(map(add_id,data))
             self.feeds.extend(data)
+            utils.get_logger().info("get feeds count from sever is not enough,now feeds number is %d",len(self.feeds))
         
     def LoadDefaultFeeds(self):
         feeds_file = os.path.join(pkg_path,"feeds.json")
@@ -511,10 +546,13 @@ class WebBrowserPlugin(plugin.Plugin):
     def GetFeeds(self):
         api_addr = '%s/api/feed/items' % (UserDataDb.HOST_SERVER_ADDR)
         app_version = utils.get_app_version()
-        data = urlutils.RequestData(api_addr,arg = {'app_version':app_version})
+        utils.get_logger().info("start get feeds from sever ...")
+        data = urlutils.RequestData(api_addr,timeout=3,arg = {'app_version':app_version})
         if data is None:
+            utils.get_logger().error("get feeds from sever error....")
             return
         self.feeds = data['feeds']
+        utils.get_logger().info("get feeds from sever success....")
         
     def CreateFeedNews(self,sp):
         for feed in self.feeds:
@@ -608,25 +646,32 @@ class WebBrowserPlugin(plugin.Plugin):
     def GetPrice(self):
         pass
         
-    def HookExit(self):
+    def HookExit(self,exit):
         ''''''
-        if IS_INSTALLING_CEF:
-            messagebox.showinfo(GetApp().GetAppName(),_('Application is installing cef component.Please wait for a monment to exit!'))
-            return False
-        try:
-            cef.PostTask(cef.TID_UI, cef.Shutdown)
-        finally:
+        if not exit:
+            if IS_INSTALLING_CEF:
+                utils.update_statusbar(_('installing cefpython3 component...'))
+                messagebox.showinfo(GetApp().GetAppName(),_('Application is installing cef component.Please wait for a monment to exit!'))
+                return False
             return True
+        else:
+            try:
+                cef.PostTask(cef.TID_UI, cef.Shutdown)
+            finally:
+                return True
         
     def CheckAppUpdate(self,params={}):
         api_addr = '%s/api/update/app' % (UserDataDb.HOST_SERVER_ADDR)
         app_version = utils.get_app_version()
-        data = urlutils.RequestData(api_addr,arg = {'app_version':app_version})
+        utils.get_logger().info("start check app update info from server...")
+        data = urlutils.RequestData(api_addr,timeout=3,arg = {'app_version':app_version,'is_dev':int(utils.is_dev())})
         if data is None:
+            utils.get_logger().error("check app update info error from server...")
             return
         force_show_welcome = data['force_show_welcome']
         if force_show_welcome and not utils.profile_get_int(consts.SHOW_WELCOME_PAGE_KEY, True):
             utils.profile_set(consts.SHOW_WELCOME_PAGE_KEY, True)
+        utils.get_logger().info("check app update info success from server...")
         #have update
         if data['code'] == 1:
             new_version = data['new_version']
