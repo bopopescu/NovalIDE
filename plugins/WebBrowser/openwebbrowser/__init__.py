@@ -23,7 +23,7 @@ from pkg_resources import resource_filename,_manager
 import threading
 import base64
 from openwebbrowser.welcome_html_code import *
-from bs4 import BeautifulSoup,Tag
+from bs4 import Tag
 import noval.ui_utils as ui_utils
 import noval.preference as preference
 import webbrowser
@@ -34,6 +34,9 @@ import noval.util.fileutils as fileutils
 from noval.python.plugins.pip_gui import PluginsPipDialog
 import json
 import zipimport
+import noval.python.interpreter.pythonpackages as pythonpackages
+
+PLUGIN_INSTANCE = None
 
 egg_path = 'cefpython3-66.0-py3.6.egg'
 cache_path = _manager.get_cache_path(egg_path, '')
@@ -79,6 +82,9 @@ def InstallCef():
             IS_INSTALLING_CEF = False
             utils.update_statusbar(_('install cefpython3 component failed...'))
     else:
+        pip_source_path = utils.get_config_value('virtual_env','pip_source_path',default_value=pythonpackages.InstallPackagesDialog.SOURCE_LIST[6])
+        command = "%s -m pip install --user cefpython3 -i %s --trusted-host %s" % (sys.executable,pip_source_path,pythonpackages.url_parse_host(pip_source_path))
+        os.system(command)
         IS_INSTALLING_CEF = True
         
 def CheckCef():
@@ -161,6 +167,18 @@ class LoadHandler(object):
     def OnLoadStart(self, browser, **_):
         if self.browser_frame.web_view.navigation_bar:
             self.browser_frame.web_view.navigation_bar.set_url(browser.GetUrl())
+            
+    def OnLoadEnd(self,browser,**kwargs):
+        print (kwargs)
+        if not self.browser_frame.web_view.navigation_bar:
+            print ("load url end....")
+            if kwargs.get('http_code') == 200:
+                PLUGIN_INSTANCE.LoadAsync(self.browser_frame)
+        
+    def OnLoadError(self,browser,**kwargs):
+        print ("load url %s error...."%browser.GetUrl())
+        print (kwargs)
+        print ("-----------------------------")
 
 
 class FocusHandler(object):
@@ -255,7 +273,7 @@ class BrowserFrame(ttk.Frame):
         js = cef.JavascriptBindings()
         js.SetObject('Command', Command())
         self.browser.SetJavascriptBindings(js)
-        #在UI线程创建browser不使用消息循环,只有在单线程时才使用
+        
         
     def embed_browser_sync(self):
         '''
@@ -268,7 +286,11 @@ class BrowserFrame(ttk.Frame):
                                              url=self.url)
         assert self.browser
         self.SetClientHandler()
+        js = cef.JavascriptBindings()
+        js.SetObject('Command', Command())
+        self.browser.SetJavascriptBindings(js)
         #消息循环
+        #在UI线程创建browser不使用消息循环,只有在单线程时才使用
         self.message_loop_work()
 
     def embed_browser(self):
@@ -345,11 +367,11 @@ class WebView(core.View):
         self.zoom_level = 0
         if not IS_CEF_INITIALIZED:
             settings = {
-                'multi_threaded_message_loop':True,
                 'locale':GetApp().locale.GetLanguageCanonicalName()
             }
             if utils.is_windows():
                 settings.update({
+                    'multi_threaded_message_loop':True,
                     "locales_dir_path": os.path.join(cache_path,"cefpython3","locales"),
                     "browser_subprocess_path": os.path.join(cache_path,"cefpython3","subprocess.exe"),
                     "resources_dir_path":os.path.join(cache_path,"cefpython3",'resources')
@@ -442,6 +464,7 @@ class WebBrowserPlugin(plugin.Plugin):
         if not CheckCef():
             utils.get_logger().error("cefpython component is not success installled...")
             return
+        global PLUGIN_INSTANCE
         webViewTemplate = core.DocTemplate(GetApp().GetDocumentManager(),
                 _("WebView"),
                 "*.com;*.org",
@@ -458,6 +481,7 @@ class WebBrowserPlugin(plugin.Plugin):
         GetApp().InsertCommand(constants.ID_PLUGIN,self.ID_WEB_BROWSER,_("&Tools"),_("&Web Browser"),handler=self.GotoDefaultWebsite,pos="before",\
                                image=webViewTemplate.GetIcon())
         GetApp().bind(constants.CHANGE_APPLICATION_LOOK_EVT, self.UpdateWelcomeTheme,True)
+        PLUGIN_INSTANCE = self
         image_path = os.path.join(pkg_path, "resources","start.png")
         GetApp().InsertCommand(constants.ID_CHECK_UPDATE,self.ID_SHOW_WELCOME_PAGE,_("&Help"),_("Start Page"),handler=self.ShowWelcomePage,pos="before",\
                                image=GetApp().GetImage(image_path))
@@ -474,12 +498,12 @@ class WebBrowserPlugin(plugin.Plugin):
         if self.app_update_params['has_new']:
             self.number[self.NEWS] += 1
         
-    def LoadNews(self):
+    def LoadNews(self,frame):
         def add_id(d):
             d.update({'id':'...'})
             return d
             
-        self.CheckAppUpdate(self.app_update_params)
+        self.CheckAppUpdate(self.app_update_params,frame)
         self.GetFeeds()
         utils.get_logger().info("get feeds count from sever is %d",len(self.feeds))
         if len(self.feeds) < (self.DEFAULT_NEWS_NUM + self.DEFAULT_LEARN_NUM):
@@ -487,26 +511,30 @@ class WebBrowserPlugin(plugin.Plugin):
             data = list(map(add_id,data))
             self.feeds.extend(data)
             utils.get_logger().info("get feeds count from sever is not enough,now feeds number is %d",len(self.feeds))
+        self.CreateFeedNews(frame)
         
     def LoadDefaultFeeds(self):
         feeds_file = os.path.join(pkg_path,"feeds.json")
         try:
-            with open(feeds_file) as f:
+            with open(feeds_file,encoding="utf-8") as f:
                 return json.load(f)
         except:
-            pass
+            return []
         
-    def LoadNewsAsync(self):
-        t = threading.Thread(target=self.LoadNews)
+    def LoadAsync(self,frame):
+        self.InitNum()
+        self.LoadRecent(frame)
+        t = threading.Thread(target=self.LoadNews,args=(frame,))
         t.start()
                 
     def UpdateWelcomeTheme(self,event):
+        theme = event.get('theme')
         if self.is_initialized:
             if utils.profile_get_int(consts.SHOW_WELCOME_PAGE_KEY, True):
-                self.GotoStartupPage(event.get('theme'),self.is_initialized)
+                self.GotoStartupPage(theme)
             else:
-                self.LoadNewsAsync()
-                
+                t = threading.Thread(target=self.CheckAppUpdate,args=(self.app_update_params,))
+                t.start()
             self.is_initialized = False
         else:
             start_doc = GetApp().GetDocumentManager().GetDocument(_("Start Page"))
@@ -525,13 +553,13 @@ class WebBrowserPlugin(plugin.Plugin):
         if doc:
             doc.GetFirstView().LoadUrl(web_addr)
         
-    def GotoStartupPage(self,theme,is_initialized=False):
+    def GotoStartupPage(self,theme):
         webViewTemplate = GetApp().GetDocumentManager().FindTemplateForTestPath(".com")
         doc = GetApp().GetDocumentManager().CreateTemplateDocument(webViewTemplate,_("Start Page"), core.DOC_SILENT|core.DOC_OPEN_ONCE|APPLICATION_STARTUP_PAGE)
-        self.LoadStartupPage(doc,theme,is_initialized)
+        self.LoadStartupPage(doc,theme)
         
-    def LoadStartupPage(self,doc,theme,is_initialized=False):
-        t = threading.Thread(target=self.OpenStartupPage,args=(doc,theme,is_initialized))
+    def LoadStartupPage(self,doc,theme):
+        t = threading.Thread(target=self.OpenStartupPage,args=(doc,theme))
         t.start()
         
     def LoadRecentProjects(self):
@@ -542,6 +570,24 @@ class WebBrowserPlugin(plugin.Plugin):
             path = projectHistory.GetHistoryFile(i)
             recent_projects.append(path)
         return recent_projects
+        
+    def LoadRecent(self,frame):
+        recent_projects = self.LoadRecentProjects()
+        if recent_projects == []:
+            frame.browser.ExecuteFunction('SetEmptyProject')
+        else:
+            project_html_content = ''
+            for recent_project in recent_projects:
+                recent_project_path = recent_project.replace(":","|").replace("\\",'/')
+                li = Tag(name='li',attrs={'class':'path'})
+                a = Tag(name='a',attrs={'href':'javascript:void(0)','title':recent_project,'onclick':"Command.action('command:workbench.action.project.openRecentProject:%s')"%recent_project_path})
+                a.string = os.path.basename(recent_project)
+                li.append(a)
+                project_html_content += li.prettify()
+                project_html_content += "\n"
+            frame.browser.ExecuteFunction('LoadProjects', project_html_content)
+        if utils.is_windows():
+            frame.on_mainframe_configure(frame.winfo_width(),frame.winfo_height())
         
     def GetFeeds(self):
         api_addr = '%s/api/feed/items' % (UserDataDb.HOST_SERVER_ADDR)
@@ -554,20 +600,35 @@ class WebBrowserPlugin(plugin.Plugin):
         self.feeds = data['feeds']
         utils.get_logger().info("get feeds from sever success....")
         
-    def CreateFeedNews(self,sp):
+    def CreateFeedNews(self,frame):
+        news_html_content = ''
+        
+        if self.app_update_params['has_new']:
+            click_event = "Command.action('%s:%s')"%(APP_UPDATE_COMMAND,self.app_update_params['app_version'])
+            div = self.CreateNews(self.app_update_params['title'],self.app_update_params['subcontent'],click_event)
+            news_html_content += div.prettify()
+            news_html_content += "\n"
+            self.number[self.NEWS] += 1
+            
+        learn_html_content = ''
         for feed in self.feeds:
             click_event = "Command.action('%s:%s|%s')"%(FEEDS_OPEN_URL_COMMAND,feed['url'],feed['id'])
             div = self.CreateNews(feed['title'],feed['subcontent'],click_event)
             if feed['category'] == self.NEWS and self.number[self.NEWS] < self.DEFAULT_NEWS_NUM:
-                news = sp.div.find(class_="section news")
-                l = news.find(class_="list")
-                l.append(div)
+                news_html_content += div.prettify()
+                news_html_content += "\n"
                 self.number[self.NEWS] += 1
             elif feed['category'] == self.LEARN and self.number[self.LEARN] < self.DEFAULT_LEARN_NUM:
-                learn = sp.div.find(class_="section learn")
-                l = learn.find(class_="list")
-                l.append(div)
+                learn_html_content += div.prettify()
+                learn_html_content += "\n"
                 self.number[self.LEARN] += 1
+        if news_html_content:
+            frame.browser.ExecuteFunction('LoadNews', news_html_content)
+        if learn_html_content:
+            frame.browser.ExecuteFunction('LoadLearn', learn_html_content)
+        #必须显示调用该函数以避免js函数执行无法生效的BUG
+        if utils.is_windows():
+            frame.on_mainframe_configure(frame.winfo_width(),frame.winfo_height())
         
     def CreateNews(self,title,subcontent,click_event):
         div = Tag(name='div',attrs={'class':'item showLanguageExtensions'})
@@ -581,35 +642,8 @@ class WebBrowserPlugin(plugin.Plugin):
         btn.append(span)
         return div
         
-    def OpenStartupPage(self,doc,theme,is_initialized):
-        if is_initialized:
-            self.LoadNews()
-        self.InitNum()
-        recent_projects = self.LoadRecentProjects()
-        sp = BeautifulSoup(html_code, 'html.parser')
-        if recent_projects == []:
-            t = 'welcomePage emptyRecent'
-            p = sp.div.find(class_="welcomePage")
-            p.attrs['class'] = t
-        else:
-            p1 = sp.div.find(class_="section recent")
-            p2 = p1.find(class_="list")
-            for recent_project in recent_projects:
-                recent_project_path = recent_project.replace(":","|").replace("\\",'/')
-                li = Tag(name='li',attrs={'class':'path'})
-                a = Tag(name='a',attrs={'href':'javascript:void(0)','title':recent_project,'onclick':"Command.action('command:workbench.action.project.openRecentProject:%s')"%recent_project_path})
-                a.string = os.path.basename(recent_project)
-                li.append(a)
-                p2.insert(1,li)
-        if self.app_update_params['has_new']:
-            click_event = "Command.action('%s:%s')"%(APP_UPDATE_COMMAND,self.app_update_params['app_version'])
-            div = self.CreateNews(self.app_update_params['title'],self.app_update_params['subcontent'],click_event)
-            news = sp.div.find(class_="section news")
-            l = news.find(class_="list")
-            l.append(div)
-        self.CreateFeedNews(sp)
-        html_code2 = sp.prettify()
-        welcome_html_url = html_to_data_uri(html_code2)
+    def OpenStartupPage(self,doc,theme):
+        welcome_html_url = html_to_data_uri(html_code)
         doc.GetFirstView().LoadUrl(welcome_html_url)
 
     def GetMinVersion(self):
@@ -660,7 +694,7 @@ class WebBrowserPlugin(plugin.Plugin):
             finally:
                 return True
         
-    def CheckAppUpdate(self,params={}):
+    def CheckAppUpdate(self,params={},frame=None):
         api_addr = '%s/api/update/app' % (UserDataDb.HOST_SERVER_ADDR)
         app_version = utils.get_app_version()
         utils.get_logger().info("start check app update info from server...")
@@ -681,7 +715,7 @@ class WebBrowserPlugin(plugin.Plugin):
             params['title'] = msg
             params['subcontent'] = update_msg
             params['app_version'] = new_version
-            if not utils.profile_get_int(consts.SHOW_WELCOME_PAGE_KEY, True):
+            if frame is None:
                 update.CheckAppupdateInfo(data)
     
     

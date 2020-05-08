@@ -8,7 +8,7 @@ data_files = {
 }
 
 setup(name='OpenWebBrowser',
-        version='1.1',
+        version='1.2',
         description='''这是内部web浏览器''',
         author='wukan',
         author_email='wekay102200@sohu.com',

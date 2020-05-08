@@ -2,7 +2,7 @@ from noval import _,GetApp
 content_code = '''
 <div class="monaco-workbench windows">
     <div class="welcomePageContainer">
-        <div class="welcomePage">
+        <div class="welcomePage" id="welcome">
             <div class="row">
                 <div class="splash">
                     <div class="section start">
@@ -14,7 +14,7 @@ content_code = '''
                     </div>
                     <div class="section recent">
                         <h2 class="caption">{3}</h2>
-                        <ul class="list">
+                        <ul class="list" id="recent">
                         </ul>
                         <p class="none detail">{4}</p>
                     </div>
@@ -34,12 +34,14 @@ content_code = '''
                 <div class="commands">
                     <div class="section news">
                         <h2 class="caption">{6}</h2>
-                        <div class="list">
+                        <div class="list" id="news">
+                        <p class="none detail">{13}</p>
                         </div>
                     </div>
                     <div class="section learn">
                         <h2 class="caption">{7}</h2>
-                        <div class="list">
+                        <div class="list" id="learn">
+                        <p class="none detail">{13}</p>
                         </div>
                     </div>
                 </div>
@@ -48,4 +50,4 @@ content_code = '''
     </div>
 </div>
 '''.format(_('Start'),_('New project'),_('Open project...'),_('Recent'),_('No recent projects'),_('Help'),_('News'),_('Learn'),_('Code repository'),_('Register&Login'),_('Manage Plugins'),_("Product documentation"),\
-           "Printable keyboard cheatsheet")
+           _("Printable keyboard cheatsheet"),_("loading..."))

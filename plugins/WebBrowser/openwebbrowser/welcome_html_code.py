@@ -12,6 +12,22 @@ function NewProject() {
 function OpenProject() {
     Command.action('command:workbench.action.project.openProject');
 }
+
+function LoadNews(content) {
+    document.getElementById("news").innerHTML = content
+}
+
+function LoadLearn(content) {
+    document.getElementById("learn").innerHTML = content
+}
+
+function SetEmptyProject() {
+    document.getElementById("welcome").classList.add("emptyRecent")
+}
+
+function LoadProjects(content) {
+    document.getElementById("recent").innerHTML = content
+}
 '''
 
 html_code = '''
