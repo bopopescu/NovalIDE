@@ -916,6 +916,7 @@ class BaseProjectbrowser(ttk.Frame):
             item_path = self.GetItemPath(child)
             if not os.path.exists(item_path):
                 self.GetView()._treeCtrl.delete(child)
+                doc.GetCommandProcessor().Submit(projectcommand.ProjectRemoveFilesCommand(doc, [item_path]))
         if 0 == add_count:
             messagebox.showinfo(GetApp().GetAppName(),_("there is not files to add"))
         else:
@@ -1012,7 +1013,7 @@ class BaseProjectbrowser(ttk.Frame):
         return d
         
     def SaveProjectConfig(self):
-        self.GetView().WriteProjectConfig()
+        return self.GetView().WriteProjectConfig()
         
     def GetOpenProjects(self):
         return self.GetView().Documents

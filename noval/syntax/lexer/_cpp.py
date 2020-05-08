@@ -83,7 +83,7 @@ class SyntaxLexer(syndata.BaseLexer):
         """
             c++注释有2种,行注释和块注释
         """
-        return [self.DefaultCommentPattern(),['/*','*/']]
+        return [self.DefaultCommentPattern,['/*','*/']]
 
     def GetShowName(self):
         return "C/C++"

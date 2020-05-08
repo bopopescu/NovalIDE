@@ -175,6 +175,7 @@ ID_PREFERENCES                  = NewId()
     
 # Help Menu IDs 
 ID_OPEN_PYTHON_HELP             = NewId()
+ID_OPEN_DOCUMENTATION           = NewId()
 ID_TIPS_DAY                     = NewId()
 ID_CHECK_UPDATE                 = NewId()
 ID_GOTO_OFFICIAL_WEB            = NewId()

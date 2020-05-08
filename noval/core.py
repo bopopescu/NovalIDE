@@ -849,7 +849,15 @@ class DocManager(object):
         """
         if self._fileHistory:
             self._fileHistory.RemoveFileFromHistory(i)
+            
 
+    def RemoveProjectFromHistory(self, path):
+        """
+        Removes a file from the file history list, if we have a pointer to an
+        appropriate file menu.
+        """
+        if self._projectHistory:
+            self._projectHistory.RemoveFileFromHistory(path)
 
     def GetFileHistory(self):
         """

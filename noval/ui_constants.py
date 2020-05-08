@@ -33,3 +33,5 @@ _('Misc')
 _('Appearance')
 _('Plugin')
 _('Output')
+
+_('KeyBindings')

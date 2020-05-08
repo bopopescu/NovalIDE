@@ -53,6 +53,7 @@ class PyIDEApplication(ide.IDEApplication):
         if utils.is_windows():
             self.InsertCommand(consts.ID_FEEDBACK,constants.ID_OPEN_PYTHON_HELP,_("&Help"),_("&Python Help Document"),handler=self.OpenPythonHelpDocument,image=self.GetImage("pydoc.png"),pos="before")
             
+        self.InsertCommand(consts.ID_CHECK_UPDATE,constants.ID_OPEN_DOCUMENTATION,_("&Help"),_("Product documentation"),handler=self.OpenDocumentation,pos="before",image=self.GetImage("documentation.png"))
         self.AddCommand(constants.ID_GOTO_DEFINITION,_("&Edit"),_("Goto Definition"),self.GotoDefinition,default_tester=True,default_command=True)
         self.InsertCommand(consts.ID_FEEDBACK,constants.ID_GOTO_PYTHON_WEB,_("&Help"),_("&Python Website"),handler=self.GotoPythonWebsite,pos="before")
         #解释器菜单插入在插件管理菜单之前
@@ -83,6 +84,8 @@ class PyIDEApplication(ide.IDEApplication):
         
         self.LoadDefaultInterpreter()
         self.AddInterpreters()
+        #在加载解释器后发送安装必须插件的消息
+        self.event_generate("InstallRequiredPluginsMsg")
         self.intellisence_mananger = intellisence.IntellisenceManager()
         self.intellisence_mananger.generate_default_intellisence_data()
         return True
@@ -158,6 +161,7 @@ class PyIDEApplication(ide.IDEApplication):
         import noval.preference as preference
         import noval.python.interpreter.gerneralconfiguration as interpretergerneralconfiguration
         import noval.python.interpreter.interpreterconfigruation as interpreterconfigruation
+        import noval.keybinds as keybinds
         ide.IDEApplication.LoadDefaultPlugins(self)
         
         #添加Python语言仅有的首选项面板,在other面板之前
@@ -168,6 +172,7 @@ class PyIDEApplication(ide.IDEApplication):
         preference.PreferenceManager().AddOptionsPanelClass("Debug|Run","Output",pythondebugger.OutputOptionsPanel)
         preference.PreferenceManager().AddOptionsPanelClass("Debug|Run","Run",pythondebugger.RunOptionsPanel)
         
+        preference.PreferenceManager().AddOptionsPanelClass("Misc","KeyBindings",keybinds.KeybindOptionPanel)
         consts.DEFAULT_PLUGINS += ("noval.python.project.browser.ProjectViewLoader",)
         consts.DEFAULT_PLUGINS += ('noval.python.plugins.pyshell.pyshell.PyshellViewLoader',)
         #window面板在outline面板之前,故需在outline之前初始化
@@ -239,7 +244,10 @@ class PyIDEApplication(ide.IDEApplication):
         if prompt:
             messagebox.showinfo(self.GetAppName(),_("Please stop the debugger first!"),parent=self.GetTopWindow())
             self.SetCurrentInterpreter()
-
+            
+    def OpenDocumentation(self):
+        fileutils.startfile("https://wekay.gitee.io/novalide")
+        
     def OpenPythonHelpDocument(self):
         interpreter = self.GetCurrentInterpreter()
         if interpreter is None:

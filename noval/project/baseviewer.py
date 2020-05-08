@@ -584,7 +584,7 @@ class ProjectView(misc.AlarmEventView):
             for i in range(len(self._prject_browser.project_combox['values'])):
                 project_document = self._documents[i]
                 if not project_document.OnSaveModified():
-                    return
+                    return False
                 if project_document.GetDocumentSaved():  # Might be a new document and "No" selected to save it
                     projectFileNames.append(str(project_document.GetFilename()))
             config.Write(consts.PROJECT_SAVE_DOCS_KEY, projectFileNames.__repr__())
@@ -598,25 +598,13 @@ class ProjectView(misc.AlarmEventView):
                 config.Write(consts.CURRENT_PROJECT_KEY, document.GetFilename())
             else:
                 config.DeleteEntry(consts.CURRENT_PROJECT_KEY)
+        return True
 
     def OnClose(self, deleteWindow = True):
-        self.WriteProjectConfig()
-            
-        project = self.GetDocument()
-        if not project:
-            return True
-        if not project.Close():
-            return True
-
-        if not deleteWindow:
-            self.RemoveCurrentDocumentUpdate()
-        else:
-            # need this to accelerate closing down app if treeCtrl has lots of items
-            rootItem = self._treeCtrl.GetRootItem()
-            self._treeCtrl.DeleteChildren(rootItem)
-        
-
-        # We don't need to delete the window since it is a floater/embedded
+        '''
+            所有项目文档共用同一个视图,如果这里实关闭项目文档,会导致文档重复关闭
+            重复弹出文档保存提示框
+        '''
         return True
         
     def AddProgressFiles(self,newFilePaths,range_value,projectDoc,progress_ui,que):

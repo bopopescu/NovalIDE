@@ -19,6 +19,12 @@ import future.utils
 
 MAINMODULE_DIR = "NOVAL_MAINMODULE_DIR"
 
+#是否开发版本,在正式版本发行时需要设置为False,在内测版本时需要设置为True
+isDev = True
+
+def is_dev():
+    return isDev
+
 def is_windows():
     return os.name == 'nt'
     

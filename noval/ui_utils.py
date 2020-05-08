@@ -32,6 +32,10 @@ class FileHistory(hiscache.CycleCache):
         self._id_base = idBase
         self._disable_load_project = True
         
+    @property
+    def IdBase(self):
+        return self._id_base
+        
     def GetMaxFiles(self):
         return self._size
         
@@ -40,6 +44,7 @@ class FileHistory(hiscache.CycleCache):
         index = self.GetHistoryFileIndex(file_path)
         if index != -1:
             del self._list[index]
+        #打开文件总是放在历史文件列表最前面
         self.PutPath(file_path)
         #按照文件顺序重新构建历史文件列表菜单
         self.RebuildFilesMenu()
@@ -73,8 +78,24 @@ class FileHistory(hiscache.CycleCache):
             utils.get_logger().debug('history file list size %d is greater then max list size %d,will trim the last file item',self.GetCurrentSize(),self._size)
         #这里超过文件限制,会删除最后一个文件
         self.PutItem(path)
+        
+    def Clear(self,config):
+        '''
+            清空存储历史文件列表
+        '''
+        index = 1
+        while True:
+            key = "%s/file%d" % (consts.RECENT_FILES_KEY,index)
+            path = config.Read(key)
+            if path:
+                config.DeleteEntry(key)
+                index += 1
+            else:
+                break
 
     def Save(self,config):
+        #保存历史文件之前先要清空
+        self.Clear(config)
         for i,item in enumerate(self._list):
             config.Write("%s/file%d" % (consts.RECENT_FILES_KEY,i+1),item)
             
@@ -136,7 +157,7 @@ class ProjectHistory(hiscache.CycleCache):
         
     def AddFileToHistory(self, file_path):
         assert(strutils.get_file_extension(file_path) == consts.PROJECT_SHORT_EXTENSION)
-        #检查文件路径是否在历史文件列表中,如果存在则删除
+        #检查文件路径是否在历史项目列表中,如果存在则删除
         index = self.GetHistoryFileIndex(file_path)
         if index != -1:
             del self._list[index]
@@ -163,7 +184,23 @@ class ProjectHistory(hiscache.CycleCache):
         #这里超过文件限制,会删除最后一个文件
         self.PutItem(path)
 
+    def Clear(self,config):
+        '''
+            清空存储历史项目列表
+        '''
+        index = 1
+        while True:
+            key = "%s/file%d" % (consts.RECENT_PROJECTS_KEY,index)
+            path = config.Read(key)
+            if path:
+                config.DeleteEntry(key)
+                index += 1
+            else:
+                break
+
     def Save(self,config):
+        #保存历史项目之前先要清空
+        self.Clear(config)
         for i,item in enumerate(self._list):
             config.Write("%s/file%d" % (consts.RECENT_PROJECTS_KEY,i+1),item)
             
@@ -179,6 +216,12 @@ class ProjectHistory(hiscache.CycleCache):
             if parserutils.ComparePath(item,path):
                 return i
         return -1
+        
+    def RemoveFileFromHistory(self,path):
+        i = self.GetHistoryFileIndex(path)
+        if i == -1:
+            return
+        del self._list[i]
 
 class EncodingDeclareDialog(ui_base.CommonModaldialog):
     def __init__(self,parent):

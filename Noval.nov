@@ -455,7 +455,6 @@
   <noval:file filePath="./noval/auth/register.py" logicalFolder="noval/auth"/>
   <noval:file filePath="./noval/auth/login.py" logicalFolder="noval/auth"/>
   <noval:file filePath="./noval/auth/forget.py" logicalFolder="noval/auth"/>
-  <noval:file filePath="./noval/plugins/adv.py" logicalFolder="noval/plugins"/>
   <noval:file filePath="./noval/auth/validation.py" logicalFolder="noval/auth"/>
   <noval:file filePath="./noval/syntax/lexer/_css.py" logicalFolder="noval/syntax/lexer"/>
   <noval:file filePath="./noval/syntax/lexer/_html.py" logicalFolder="noval/syntax/lexer"/>
@@ -473,6 +472,8 @@
   <noval:file filePath="./noval/project/openwith.py" logicalFolder="noval/project"/>
   <noval:file filePath="./tests/test_decompress.py" logicalFolder="tests"/>
   <noval:file filePath="./noval/util/md5.py" logicalFolder="noval/util"/>
+  <noval:file filePath="./tests/test_extract_egg.py" logicalFolder="tests"/>
+  <noval:file filePath="./noval/keybinds.py" logicalFolder="noval"/>
   <noval:_runinfo>
     <noval:DocumentTemplate>pyinstaller.pyinstall.PyinstallerProjectTemplate</noval:DocumentTemplate>
     <noval:StartupFile>NovalIDE.py</noval:StartupFile>

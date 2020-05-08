@@ -574,6 +574,9 @@ def detect(byte_str):
     pre_read = 4096
     if not _Checker.IsUnicode(byte_str[0:pre_read]) and _Checker.IsBinaryBytes(byte_str[0:pre_read]):
         return {'encoding':'binary'}
+    #如果文本为空,强制返回ascii编码,否则下面执行会返回cp936编码
+    elif not byte_str:
+        return {'encoding':'ascii'}
     detector = chardet.UniversalDetector(chardet.enums.LanguageFilter.CHINESE)
     detector.feed(byte_str)
     return detector.close()

@@ -181,6 +181,9 @@ class DocTabbedParentFrame(ttk.Frame):
         self._editor_notebook.CloseAllWithoutDoc(closeall=True)
 
     def CloseWindows(self):
+        #退出程序之前保存项目配置
+        if not self.GetProjectView().SaveProjectConfig():
+            return False
         return True
 
     def _InitCommands(self):
@@ -275,7 +278,7 @@ class DocTabbedParentFrame(ttk.Frame):
                 self.ShowView(view_name,False,hidden=True)
                 
         if visible_in_menu:
-            GetApp().InsertCommand(consts.ID_VIEW_STATUSBAR,view_name,main_menu_name=_("&View"),command_label=label,handler=toggle_view_visibility,\
+            GetApp().InsertCommand(consts.ID_VIEW_STATUSBAR,NewId(),main_menu_name=_("&View"),command_label=label,handler=toggle_view_visibility,\
                             kind = consts.CHECK_MENU_ITEM_KIND,variable=visibility_flag)
         if create:
             self.ShowView(view_name,hidden = not is_visibile,**kwargs)
@@ -375,7 +378,6 @@ class DocTabbedParentFrame(ttk.Frame):
                 continue
             utils.profile_set(consts.FRAME_VIEW_VISIBLE_KEY % view_name,visibility_flag.get())
         utils.profile_set("LastPerspective",self._last_perspective)
-        self.GetProjectView().SaveProjectConfig()
             
     def IsViewShown(self,view_name):
         visibility_flag = self._views[view_name]['visibility_flag']

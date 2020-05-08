@@ -13,7 +13,7 @@
     尽量少在文件头部导入太多模块,会导致程序启动很慢
 '''
 import tkinter as tk
-from noval import core,imageutils,consts,_,Locale
+from noval import core,imageutils,consts,_,Locale,NewId
 import noval.python.parser.utils as parserutils
 from dummy.userdb import UserDataDb
 from noval.util import utils
@@ -224,22 +224,6 @@ class IDEApplication(core.App):
             config = self.GetConfig()
             config.Write('virtual_env/pip_source_path',default_pip_source)
             
-    def InstallRequiredPlugins(self):
-        '''
-            启动软件安装必要的一些插件列表
-        '''
-        #必须安装开源谷歌浏览器插件及其组件cef
-        self.InstallPlugin('OpenWebBrowser')
-        
-    def InstallPlugin(self,plugin_name):
-        '''
-            自动化后台静默安装插件,无需人工操作
-            如果插件已经安装会忽略
-        '''
-        plugin_dist = self.GetPluginManager().GetPluginDistro(plugin_name)
-        if plugin_dist is not None:
-            return
-
     #统计插件加载时间
     @utils.compute_run_time
     def InitPlugins(self):
@@ -478,7 +462,7 @@ class IDEApplication(core.App):
     def AddCommand(self,command_id,main_menu_name,command_label,handler,accelerator=None,image = None,include_in_toolbar = False,\
                    add_separator=False,kind=consts.NORMAL_MENU_ITEM_KIND,variable=None,tester=None,default_tester=False,\
                    default_command=False,skip_sequence_binding=False,extra_sequences=[],**extra_args):
-
+        assert(type(command_id) == int)
         main_menu = self._menu_bar.GetMenu(main_menu_name)
         self.AddMenuCommand(command_id,main_menu,command_label,handler,accelerator,image,include_in_toolbar,\
                             add_separator,kind,variable,tester,default_tester,default_command,skip_sequence_binding,\
@@ -488,6 +472,7 @@ class IDEApplication(core.App):
     def InsertCommand(self,refer_item_id,command_id,main_menu_name,command_label,handler,accelerator=None,image = None,\
                       add_separator=False,kind=consts.NORMAL_MENU_ITEM_KIND,variable=None,tester=None,pos="after"):
 
+        assert(type(command_id) == int)
         if image is not None and type(image) == str:
             image = self.GetImage(image)
         main_menu = self._menu_bar.GetMenu(main_menu_name)
@@ -513,6 +498,7 @@ class IDEApplication(core.App):
                 utils.get_logger().debug("Command %d execution denied",command_id)
                 if bell_when_denied:
                     self.bell()
+        assert(type(command_id) == int)
         #accelerator表示菜单上显示的快捷键,sequence表示tk内部绑定的真正快捷键组合,两者需要转换
         accelerator,sequence = self._menu_bar.keybinder.GetBinding(command_id,accelerator)
         #skip_sequence_binding表示是否全局绑定快捷键,对应某些快捷键tk内部已经绑定,无需再次绑定
@@ -841,6 +827,12 @@ class IDEApplication(core.App):
             return size
             
     def AllowClose(self):
+        #程序退出时问询所有插件是否可以退出
+        try:
+            if not self._pluginmgr.Exit(exit=False):
+                return False
+        except:
+            utils.get_logger().error("query plugin exit error...")
         #先询问是否允许关闭调试器
         if not self.GetDebuggerClass().CloseDebugger():
             return False
@@ -867,8 +859,11 @@ class IDEApplication(core.App):
         
     def Quit(self):
         #程序退出时通知所有插件退出
-        if not self._pluginmgr.Exit():
-            return
+        try:
+            if not self._pluginmgr.Exit():
+                return
+        except:
+            utils.get_logger().error("plugin exit error....")
         self.update_idletasks()
         UserDataDb().RecordEnd()
         self.SaveLayout()
@@ -1059,7 +1054,7 @@ class IDEApplication(core.App):
             for name in theme_names:
                 def apply_theme(name=name):
                     self._apply_ui_theme(name)
-                self.AddMenuCommand(name,theme_menu,command_label=name,handler=apply_theme,\
+                self.AddMenuCommand(NewId(),theme_menu,command_label=name,handler=apply_theme,\
                             kind = consts.RADIO_MENU_ITEM_KIND,variable=self.theme_value,value=name)
                             
     def Feedback(self):

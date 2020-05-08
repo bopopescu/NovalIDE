@@ -40,8 +40,11 @@ class AboutDialog(ui_base.CommonModaldialog):
         
         heading_font = tk.font.nametofont("TkHeadingFont").copy()
         heading_font.configure(size=19, weight="bold")
+        app_version = apputils.get_app_version()
+        if apputils.is_dev():
+            app_version += "dev"
         heading_label = ttk.Label(
-            self.main_frame, text=GetApp().GetAppName() + ' '  + apputils.get_app_version(), font=heading_font
+            self.main_frame, text=GetApp().GetAppName() + ' '  + app_version, font=heading_font
         )
         heading_label.grid()
         

@@ -85,8 +85,10 @@ class TextDocument(core.Document):
     def DoSave(self):
         if self._is_watched:
             self.file_watcher.StopWatchFile(self)
-        #should check document data encoding first before save document
+        #文件保存后可能会改变,需要再此检测文件编码
         self.file_encoding = self.DetectDocumentEncoding()
+        #在状态栏现实变化后的文件编码
+        GetApp().MainFrame.GetStatusBar().SetDocumentEncoding(self.file_encoding)
 
     def GetOpenDocument(self,filepath,exclude_self=True):
         '''

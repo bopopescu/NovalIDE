@@ -48,7 +48,7 @@ class BaseLexer(object):
         一个语言可能有多种注释方式,这里返回所有的注释方式列表
         列表为嵌套列表
         """
-        return [self.DefaultCommentPattern(),]
+        return [self.DefaultCommentPattern,]
 
     def GetKeywords(self):
         """Get the Keyword List(s)

@@ -193,9 +193,11 @@ class Plugin(six.with_metaclass(PluginMeta, object)):
         """
         return False
         
-    def HookExit(self):
+    def HookExit(self,exit):
         ''''''
         #插件退出
+        #exit为False表示程序退出之前问询插件是否可以退出
+        #exit为True表示程序真正退出
         return True
         
     def MatchPlatform(self):
@@ -630,12 +632,12 @@ class PluginManager(object):
             plugins[pdata.GetClass()] = pdata.GetInstance()
         return plugins
         
-    def Exit(self):
+    def Exit(self,exit=True):
         '''
             通知所有插件退出
         '''
         for key,plugin_instance in self.GetPlugins().items():
-            if not plugin_instance.HookExit():
+            if not plugin_instance.HookExit(exit):
                 return False
         return True
         

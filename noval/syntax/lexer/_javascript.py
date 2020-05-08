@@ -79,7 +79,7 @@ class SyntaxLexer(syndata.BaseLexer):
         """
             js注释有2种,行注释和块注释
         """
-        return [self.DefaultCommentPattern(),['/*','*/']]
+        return [self.DefaultCommentPattern,['/*','*/']]
 
     def GetShowName(self):
         return "JavaScript"

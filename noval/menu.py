@@ -19,20 +19,47 @@ import noval.util.utils as utils
 import copy
 import os
 import noval.misc as misc
+import json
+import noval.constants as constants
 
-MenuItem = collections.namedtuple("MenuItem", ["id","label","accelerator","image","tester"])
+#MenuItem = collections.namedtuple("MenuItem", ["id","label","accelerator","image","tester"])
 
+class MenuItem:
+    def __init__(self,id_,label,accelerator,image,tester):
+        self.id = id_
+        self.label = label
+        self.accelerator = accelerator
+        self.image = image
+        self.tester = tester
 
 class KeyBinder(object):
     """Class for managing keybinding configurations"""
     cprofile = None # Current Profile Name String
     key_binds = copy.copy(DEFAULT_KEY_BINDS) # Active Profile (dict)
-
+    KEY_BINDING_FILE = "keybinding.json"
     def __init__(self):
         """Create the KeyBinder object"""
         object.__init__(self)
         # Attributes
         self.cache = None
+        
+    def LoadCacheKeybinds(self):
+        '''
+            从配置文件中加载自定义快捷键配置
+        '''
+        self.GetCachedir()
+        key_binding_file = os.path.join(self.cache,self.KEY_BINDING_FILE)
+        if os.path.exists(key_binding_file):
+            try:
+                with open(key_binding_file) as f:
+                     data = json.load(f)
+                     binds = {}
+                     for key in data:
+                         binds[getattr(constants,key)] = data[key]
+                     #替换默认快捷键配置
+                     KeyBinder.key_binds = binds
+            except:
+                utils.get_logger().exception("")
         
     def GetCachedir(self):
         if self.cache is None:
@@ -314,6 +341,10 @@ class PopupMenu(tk.Menu):
         self._items = []
         self._submenus = []
         
+    @property
+    def SubMenus(self):
+        return self._submenus
+        
     def GetMenuData(self,id_,text,handler,img,accelerator,kind,variable,tester):
         text = MenubarMixin.FormatMenuName(text)
         menu_item = MenuItem(id_,text,accelerator,img,tester)
@@ -593,6 +624,9 @@ class PopupMenu(tk.Menu):
         
     def GetItemCount(self):
         return len(self._items)
+        
+    def GetItemByIndex(self,index):
+        return self._items[index]
 
     def delete(self,start,end="end"):
         if end == "end":
@@ -737,12 +771,17 @@ class MenubarMixin:
     keybinder = KeyBinder()
 
     def __init__(self):
+        self.keybinder.LoadCacheKeybinds()
         if GetApp().GetDebug():
             #调试模式时检查快捷键是否有冲突
             self.keybinder.CheckKeybindsConflict()
         #tkinter默认绑定了F10快捷键,需要先解绑F10才能重新绑定F10
         GetApp().unbind_all("<F10>")
         self._menus = []
+        
+    @property
+    def Menus(self):
+        return self._menus
 
     def GetMenuByName(self,menu_name):
         format_menu_name = self.FormatMenuName(menu_name)
@@ -810,8 +849,8 @@ class MenubarMixin:
                 return menu_info[0]
         raise RuntimeError("Couldn't find menu")
         
-    def GetMenuByIndex(self,menu_index):
-        return self._menus[menu_index]
+    def GetMenuByIndex(self,index):
+        return self._menus[index]
         
     def FindMenu(self,menu):
         for menu_info in self._menus:

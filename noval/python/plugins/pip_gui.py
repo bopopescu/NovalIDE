@@ -20,6 +20,7 @@ import noval.constants as constants
 import noval.util.utils as utils
 import noval.misc as misc
 import noval.ui_utils as ui_utils
+import noval.util.apputils as apputils
 import noval.ui_common as ui_common
 import noval.consts as consts
 from dummy.userdb import UserDataDb
@@ -40,6 +41,7 @@ import noval.util.urlutils as urlutils
 import noval.preference as preference
 import inspect
 import noval.auth.register as register
+import threading
 
 #找回pip工具的url地址
 PIP_INSTALLER_URL = "https://bootstrap.pypa.io/get-pip.py"
@@ -957,7 +959,8 @@ class PluginsPipDialog(PipDialog):
         parserutils.MakeDirs(plugin_path)
         return plugin_path
         
-    def GetEggPyVersion(self,egg_name):
+    @staticmethod
+    def GetEggPyVersion(egg_name):
         '''
             从egg文件名称中提取python版本号
         '''
@@ -965,42 +968,77 @@ class PluginsPipDialog(PipDialog):
         trim_name = egg_name[i:]
         return trim_name.replace("py","").replace(".egg","")
         
-    def InstallEgg(self,name,egg_path,version,local=False):
+    @staticmethod
+    def GetEggVersion(egg_name):
+        '''
+            从egg文件名称中提取插件版本号
+        '''
+        egg_version = egg_name.split("-")[1]
+        return egg_version
         
-        def copy_or_move_egg(src_path,dest_path):
+    @classmethod
+    def InstallEggtoPath(cls,name,egg_path,version,plugin_path,local=False):
+        
+        def copy_or_move_egg(src_egg_path,dest_to):
+            '''
+                src_egg_path:源egg文件路径
+                dest_to:egg文件目的目录
+            '''
             #将下载的插件文件移至插件目录下
             try:
                 #如果是本地安装egg插件,则使用拷贝方式
+                dest_egg_path = os.path.join(dest_to,os.path.basename(src_egg_path))
+                #如果插件文件存在先删除
+                if os.path.exists(dest_egg_path):
+                    os.remove(dest_egg_path)
                 if local:
-                    shutil.copy(src_path,dest_path)
+                    shutil.copy(src_egg_path,dest_to)
                 #如果是从服务器安装egg插件,则使用剪切方式
                 else:
-                    shutil.move(src_path,dest_path)
+                    shutil.move(src_egg_path,dest_to)
+                return True
             except Exception as e:
                 messagebox.showerror(_("Error"),str(e))
                 return False
             
-        plugin_path = self.GetInstallPluginPath(name)
         if utils.is_windows():
-            copy_or_move_egg(egg_path,plugin_path)
+            if not copy_or_move_egg(egg_path,plugin_path):
+                return False
         #linux系统下有可能是python3.x解释器,只能加载python3.x的插件,故需要将插件的python版本改成3.x的
         else:
             #如果python3不是3.6版本则需要更改egg文件名,改之后的插件也是可以加载的
             if utils.is_py3_plus():
                 if sys.version_info.minor != 6:
                     egg_file_name = os.path.basename(egg_path)
-                    egg_py_version = self.GetEggPyVersion(egg_file_name)
+                    egg_py_version = cls.GetEggPyVersion(egg_file_name)
                     #将egg文件名的py版本号替换成sys版本号
                     new_egg_name = egg_file_name.replace("py%s"%egg_py_version,"3.%d"%sys.version_info.minor)
                     #新的egg文件名
                     dest_egg_path = os.path.join(plugin_path,new_egg_name)
-                    copy_or_move_egg(egg_path,dest_egg_path)
+                    if not copy_or_move_egg(egg_path,dest_egg_path):
+                        return False
                 #如果是3.6版本则不用更改egg文件名,直接拷贝即可
                 else:
-                    copy_or_move_egg(egg_path,plugin_path)
+                    if not copy_or_move_egg(egg_path,plugin_path):
+                        return False
             
         #执行插件的安装操作,需要在插件里面执行
         GetApp().GetPluginManager().LoadPluginByName(name)
+        #安装插件后同时删除旧版本的egg文件
+        old_plugin = GetApp().GetPluginManager().GetPlugin(name)
+        if old_plugin and version != old_plugin.GetVersion():
+            dist = old_plugin.GetDist()
+            location = dist.location
+            try:
+                os.remove(location)
+            except:
+                pass
+        return True
+        
+    def InstallEgg(self,name,egg_path,version,local=False):
+        plugin_path = self.GetInstallPluginPath(name)
+        if not self.InstallEggtoPath(name,egg_path,version,plugin_path,local):
+            return False
         #必须重新加载后才能启用插件
         if utils.profile_get_int("ENABLE_INSTALL_PLUGIN", True):
             GetApp().GetPluginManager().EnablePlugin(name)
@@ -1029,7 +1067,11 @@ class PluginsPipDialog(PipDialog):
                 messagebox.showinfo(GetApp().GetAppName(),_("Install plugin '%s' success") % name)
             else:
                 messagebox.showerror(GetApp().GetAppName(),_("Install plugin '%s' fail") % name)
-            
+        name = package_data["name"]
+        self.InstallPlugin(package_data,after_download)
+        
+    @staticmethod
+    def InstallPlugin(package_data,call_back):
         name = package_data["name"]
         lang = GetApp().locale.GetLanguageCanonicalName()
         app_version = utils.get_app_version()
@@ -1037,7 +1079,7 @@ class PluginsPipDialog(PipDialog):
         payload = dict(new_version = package_data['version'],app_version = app_version,\
                     lang = lang,os_name=sys.platform,plugin_id=package_data['id'])
         #下载插件文件
-        downutils.download_file(download_url,call_back=after_download,**payload)
+        downutils.download_file(download_url,call_back=call_back,**payload)
         
     def GetInstallEggPath(self,name):
         """Get the path of the plugin
@@ -1713,6 +1755,10 @@ class PluginOptionPanel(ui_utils.CommonOptionPanel):
 
 class PluginManagerGUI(plugin.Plugin):
     plugin.Implements(iface.MainWindowI)
+    #一次性获取所有插件信息的方式,只需调用一次api接口
+    QUERY_ALL_PLUGINS = 0
+    #依次查询每个插件的信息,需要调用多次api接口
+    QUERY_PLUGIN_SEQUENCE = 1
     def PlugIt(self, parent):
         self.parent = parent
         utils.get_logger().info("load default plugin gui plugin")
@@ -1724,9 +1770,11 @@ class PluginManagerGUI(plugin.Plugin):
         PluginsPipDialog.MESSAGE = {'msg':_("fetching plugin from server...")}
         self.plugin_dlg = None
         preference.PreferenceManager().AddOptionsPanelClass("Misc","Plugin",PluginOptionPanel)
-        self.GetPlugins()
-        
+        #检查插件更新
+        self.CheckPlugins()
         GetApp().bind("ShowInstallPluginsDlg",self.ShowInstallPluginsDlg,True)
+        #在加载解释器后再安装必须的插件
+        GetApp().bind("InstallRequiredPluginsMsg",self.InstallRequiredPlugins,True)
         
     def ShowPluginManagerDlg(self,plugin_names =[]):
         self.plugin_dlg = PluginsPipDialog(self.parent,package_count=0)
@@ -1738,10 +1786,158 @@ class PluginManagerGUI(plugin.Plugin):
     def ShowInstallPluginsDlg(self,event):
         plugin_names = event.get('plugin_names')
         self.ShowPluginManagerDlg(plugin_names)
+
+    def InstallRequiredPlugins(self,event):
+        '''
+            启动软件安装必要的一些插件列表
+        '''
+        #必须安装开源谷歌浏览器插件及其组件cef
+        data = {
+            'id':'5e8ec64635e7e919a138ebf2',
+            'version':'1.1',
+            'name':'OpenWebBrowser'
+        }
+        self.InstallPlugin(data['name'],data)
         
+    def InstallPlugin(self,plugin_name,plugin_data):
+        '''
+            自动化后台静默安装插件,无需人工操作
+            如果插件已经安装会忽略
+        '''
+        def call_back_end(egg_path):
+            plugin_path = utils.get_user_plugin_path()
+            parserutils.MakeDirs(plugin_path)
+            if PluginsPipDialog.InstallEggtoPath(plugin_name,egg_path,plugin_data['version'],plugin_path):
+                GetApp().GetPluginManager().EnablePlugin(plugin_name)
+        plugin_dist = GetApp().GetPluginManager().GetPluginDistro(plugin_name)
+        if plugin_dist is not None:
+            return
+        PluginsPipDialog.InstallPlugin(plugin_data,call_back_end)
+                    
     def GetPlugins(self):
+        '''
+            这里只需要获取插件数量即可
+        '''
         GetAllPlugins(None,PluginsPipDialog.MESSAGE,self.plugin_dlg,aync=True)
    #     t = threading.Thread(target=GetAllPlugins,args=(None,self.message))
         #daemon表示后台线程,即程序不用等待子线程才退出
     #    t.daemon = True
      #   t.start()
+
+    def CheckPluginUpdate(self,ignore_error=True):
+        self.check_plugins(ignore_error)
+
+    @utils.call_after_with_arg(1000)
+    def CheckPlugins(self,ignore_error=True):
+        #tkinter不支持多线程,要想试用多线程必须设置函数或方法为after模式
+        t = threading.Thread(target=self.CheckPluginUpdate,args=(ignore_error,))
+        #设置为后台线程,防止退出程序时卡死
+        t.daemon = True
+        t.start()
+
+    @staticmethod
+    @utils.compute_run_time
+    def get_server_plugins():
+        api_addr = '%s/api/plugin' % (UserDataDb.HOST_SERVER_ADDR)
+        return utils.RequestData(api_addr,method='get')    
+    
+    @staticmethod
+    def check_plugins(ignore_error = False,query_plugin_way = QUERY_ALL_PLUGINS):
+        '''
+            检查插件更新信息
+            query_plugin_way:查询插件信息的方式
+            QUERY_ALL_PLUGINS:表示一次性获取所有插件的信息,优点是只需查询一次api接口,
+            缺点是如果插件比较多的时候,会导致返回信息量很大
+            QUERY_PLUGIN_SEQUENCE:表示依次查询单个插件的信息,优点是返回的数据信息量比较小,
+            缺点是要多次查询api接口
+            默认使用QUERY_ALL_PLUGINS方式,后续如果插件很多的话,考虑切换第二种方式
+        '''
+        def pop_error(data):
+            if data is None:
+                if not ignore_error:
+                    messagebox.showerror(GetApp().GetAppName(),_("could not connect to server"))
+                    
+        def after_update_download(egg_path):
+            '''
+                插件更新下载后回调函数
+            '''
+            plugin_path = os.path.dirname(dist.location)
+            #删除已经存在的旧版本否则会和新版本混在一起,有可能加载的是老版本
+            try:
+                os.remove(dist.location)
+                utils.get_logger().info("remove plugin %s old version %s file %s success",plugin_name,plugin_version,dist.location)
+                dest_egg_path = os.path.join(plugin_path,plugin_data['path'])
+                if os.path.exists(dest_egg_path):
+                    logger.error("plugin %s version %s dist egg path is exist when update it",plugin_name,plugin_data['version'],dest_egg_path)
+                    os.remove(dest_egg_path)
+            except:
+                messagebox.showerror(GetApp().GetAppName(),_("Remove faile:%s fail") % dist.location)
+                return
+            #将下载的插件文件移至插件目录下
+            shutil.move(egg_path,plugin_path)
+            #执行插件的安装操作,需要在插件里面执行
+            GetApp().GetPluginManager().LoadPluginByName(plugin_name)
+            messagebox.showinfo(GetApp().GetAppName(),_("Update plugin '%s' success") % plugin_name)
+            
+        plugin_datas = {}
+        #一次性获取所有插件信息
+        if query_plugin_way == PluginManagerGUI.QUERY_ALL_PLUGINS:
+            ret_data = PluginManagerGUI.get_server_plugins()
+            if ret_data:
+                plugin_datas = ret_data.get('plugins')
+                count = ret_data.get('count')
+                PluginsPipDialog.MESSAGE['msg'] = _("There is total %d plugins on Server")%count
+            else:
+                PluginsPipDialog.MESSAGE['msg'] = _("can't fetch plugin from Server")
+        #依次查询方式时只需获取插件数量
+        else:
+            self.GetPlugins()
+        for plugin_class,dist in GetApp().GetPluginManager().GetPluginDistros().items():
+            plugin_version = dist.version
+            plugin_name = dist.key
+            if not plugin_datas:
+                #调用api接口查询每个插件的信息
+                api_addr = '%s/member/get_plugin' % (UserDataDb.HOST_SERVER_ADDR)
+                plugin_data = utils.RequestData(api_addr,method='get',arg={'name':plugin_name})
+            else:
+                plugin_data = plugin_datas.get(plugin_name,{})
+            if not plugin_data:
+                pop_error(plugin_data)
+                return
+            elif 'id' not in plugin_data:
+                continue
+            check_plugin_update = utils.profile_get_int("CheckPluginUpdate", True)
+            plugin_name = plugin_data['name']
+            plugin_id = plugin_data['id']
+            free = int(plugin_data['free'])
+            if GetApp().GetDebug():
+                log = utils.get_logger().debug
+            else:
+                log = utils.get_logger().info
+            log("plugin %s version is %s latest verison is %s",plugin_name,plugin_version,plugin_data['version'])
+            #如果服务器插件收费而且用户未付费,强制检查更新
+            if GetApp().GetPluginManager().GetPlugin(plugin_name).IsEnabled() and not ui_utils.check_plugin_free_or_payed(plugin_data,installed=True):
+                check_plugin_update = True
+            elif plugin_name == "OpenWebBrowser":
+                check_plugin_update = True
+            #比较安装插件版本和服务器上的插件版本是否一致
+            if check_plugin_update  and parserutils.CompareCommonVersion(plugin_data['version'],plugin_version):
+                ret = messagebox.askyesno(_("Plugin Update Available"),_("Plugin '%s' latest version '%s' is available,do you want to download and update it?")%(plugin_name,plugin_data['version']))
+                if ret:
+                    new_version = plugin_data['version']
+                    app_version = apputils.get_app_version()
+                    #检查更新插件要求的软件版本是否大于当前版本,如果是则提示用户是否更新软件
+                    if parserutils.CompareCommonVersion(plugin_data['app_version'],app_version):
+                        ret = messagebox.askyesno(GetApp().GetAppName(),_("Plugin '%s' requires application version at least '%s',Do you want to update your application?"%(plugin_name,plugin_data['app_version'])))
+                        if ret == False:
+                            break
+                        #更新软件,如果用户执行更新安装,则程序会退出,不会执行下面的语句
+                        updateutils.CheckAppUpdate()
+                        break
+                    download_url = '%s/member/download_plugin' % (UserDataDb.HOST_SERVER_ADDR)
+                    payload = dict(app_version = app_version,\
+                        lang = GetApp().locale.GetLanguageCanonicalName(),os_name=sys.platform,plugin_id=plugin_id)
+                    #下载插件文件
+                    downutils.download_file(download_url,call_back=after_update_download,**payload)
+                #插件更新太多,每次只提示一个更新即可
+                break
