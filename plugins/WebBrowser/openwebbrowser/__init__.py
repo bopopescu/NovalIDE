@@ -22,7 +22,6 @@ import ctypes
 from pkg_resources import resource_filename,_manager
 import threading
 import base64
-from openwebbrowser.welcome_html_code import *
 from bs4 import Tag
 import noval.ui_utils as ui_utils
 import noval.preference as preference
@@ -35,7 +34,8 @@ from noval.python.plugins.pip_gui import PluginsPipDialog
 import json
 import zipimport
 import noval.python.interpreter.pythonpackages as pythonpackages
-
+GetApp().AddMessageCatalog('openwebbrowser', __name__)
+from openwebbrowser.welcome_html_code import *
 PLUGIN_INSTANCE = None
 
 egg_path = 'cefpython3-66.0-py3.6.egg'
@@ -402,6 +402,8 @@ class WebView(core.View):
         browser_row = 0
         if not (flags & APPLICATION_STARTUP_PAGE) and not (flags & INTERNAL_WEB_BROWSER):
             self.start_url = doc.GetFilename()
+            if utils.is_linux() and os.path.isfile(self.start_url):
+                self.start_url = "file://" + self.start_url
         if not (flags & APPLICATION_STARTUP_PAGE):
             self.navigation_bar = NavigationBar(frame,self)
             self.navigation_bar.grid(row=0, column=0,
@@ -794,6 +796,9 @@ class NavigationBar(toolbar.ToolBar):
         )
         if not url:
             return
+            
+        if utils.is_linux() and os.path.isfile(url):
+            url = "file://" + url
         self.load_url(url)
 
     def go_back(self):

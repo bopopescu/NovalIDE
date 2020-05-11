@@ -4,11 +4,11 @@ from setuptools import find_packages
 import platform
 
 data_files = {
-    'openwebbrowser':['resources/*.png','feeds.json']
+    'openwebbrowser':['resources/*.png','feeds.json','locale/zh_CN/LC_MESSAGES/openwebbrowser.mo']
 }
 
 setup(name='OpenWebBrowser',
-        version='1.2',
+        version='1.3',
         description='''这是内部web浏览器''',
         author='wukan',
         author_email='wekay102200@sohu.com',
