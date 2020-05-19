@@ -332,6 +332,10 @@ class TextviewFrame(ttk.Frame):
 
     def focus_set(self):
         self.text.focus_set()
+        """Fix CEF focus issues (#255). See also FocusHandler.OnGotFocus."""
+        #修复CEF控件焦点导致鼠标离开后text控件无法捕获键盘输入的BUG
+        if GetApp().focus_get() != self.text:
+            self.text.focus_force()
 
     def set_gutter_visibility(self, value):
         if value and not self._gutter.winfo_ismapped():
@@ -934,7 +938,18 @@ class CommonModaldialog(CommonDialog):
         if self.master is None:
             self.master = tk._default_root or GetApp()
         assert(self.master is not None)
-        focused_widget = self.master.focus_get()
+        try:
+            #这里偶尔会报下面的错误
+            ##  File "G:\work\project\Noval\noval\ui_base.py", line 941, in ShowModal
+            ##    focused_widget = self.master.focus_get()
+            ##  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python36-32\lib\tkinter\__init__.py", line 696, in focus_get
+            ##    return self._nametowidget(name)
+            ##  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python36-32\lib\tkinter\__init__.py", line 1347, in nametowidget
+            ##    w = w.children[n]
+            ##KeyError: 'popdown'
+            focused_widget = self.master.focus_get()
+        except:
+            focused_widget = None
         if utils.is_linux() and focused_widget is not None:
             #在linux系统点击工具栏新建按钮后,提示信息会一直存在不会消失,手动隐藏提示信息
             focused_widget.event_generate("<Leave>")

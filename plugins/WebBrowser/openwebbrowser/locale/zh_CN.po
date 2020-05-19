@@ -1,0 +1,189 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2020-05-11 09:22+0800\n"
+"PO-Revision-Date: 2020-05-11 09:23+0800\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.2.4\n"
+"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: __init__.py:58
+msgid "start unzip cefpython3 component"
+msgstr "开始解压内置浏览器所需组件cefpython3"
+
+#: __init__.py:67
+msgid "unzip cefpython3 component finished"
+msgstr "完成解压内置浏览器所需组件cefpython3"
+
+#: __init__.py:68
+msgid "install cefpython3 component success..."
+msgstr "内置浏览器所需组件cefpython3安装成功.."
+
+#: __init__.py:70
+msgid "unzip cefpython3 component failed"
+msgstr "内置浏览器所需组件cefpython3解压失败"
+
+#: __init__.py:71 __init__.py:83
+msgid "install cefpython3 component failed..."
+msgstr "内置浏览器所需组件cefpython3安装失败..."
+
+#: __init__.py:72
+msgid "Error"
+msgstr "错误"
+
+#: __init__.py:72
+msgid "install cefpython3 component failed,Please wait for next launch to install it"
+msgstr "内置浏览器所需组件cefpython3安装失败，请重新启动NovalIDE以再次安装"
+
+#: __init__.py:77 __init__.py:690
+msgid "installing cefpython3 component..."
+msgstr "正在安装内置浏览器所需组件cefpython3..."
+
+#: __init__.py:116
+msgid "Show start page on startup"
+msgstr "启动时显示起始页"
+
+#: __init__.py:124
+msgid "Project History length on start page"
+msgstr "起始页”最近项目“的最大显示个数"
+
+#: __init__.py:243
+#, python-format
+msgid "The project '%s' doesn't exist and couldn't be opened!"
+msgstr "项目 '%s' 不存在，无法打开项目！"
+
+#: __init__.py:472
+msgid "WebView"
+msgstr "网页视图"
+
+#: __init__.py:477 __init__.py:555
+msgid "Internal Web Browser"
+msgstr "内置浏览器"
+
+#: __init__.py:484
+msgid "&Tools"
+msgstr ""
+
+#: __init__.py:484
+msgid "&Web Browser"
+msgstr "内置浏览器"
+
+#: __init__.py:489
+msgid "&Help"
+msgstr ""
+
+#: __init__.py:489 __init__.py:543 __init__.py:561
+msgid "Start Page"
+msgstr "起始页"
+
+#: __init__.py:691
+msgid "Application is installing cef component.Please wait for a monment to exit!"
+msgstr "程序正在安装所需的cef组件，请等待安装完成后再退出!"
+
+#: __init__.py:716
+#, python-format
+msgid "this lastest version '%s' is available,click here to update it"
+msgstr "检测到最新版本'%s'，点击这里升级"
+
+#: __init__.py:749
+msgid "Open URL"
+msgstr "打开网址"
+
+#: __init__.py:755
+msgid "Go Back"
+msgstr "后退"
+
+#: __init__.py:762
+msgid "Go Forward"
+msgstr "前进"
+
+#: __init__.py:769
+msgid "Stop"
+msgstr "停止"
+
+#: __init__.py:775
+msgid "Reload"
+msgstr "刷新"
+
+#: __init__.py:777
+msgid "URL:"
+msgstr "网址："
+
+#: __init__.py:795
+msgid "Open URL:"
+msgstr "打开网址："
+
+#: __init__.py:796
+msgid "Enter a full URL or local path"
+msgstr "输入完整网址或本地路径"
+
+#: welcome_page_code.py:52
+msgid "Start"
+msgstr "开始"
+
+#: welcome_page_code.py:52
+msgid "New project"
+msgstr "建立新项目"
+
+#: welcome_page_code.py:52
+msgid "Open project..."
+msgstr "打开项目..."
+
+#: welcome_page_code.py:52
+msgid "Recent"
+msgstr "最近项目"
+
+#: welcome_page_code.py:52
+msgid "No recent projects"
+msgstr "暂无最近项目"
+
+#: welcome_page_code.py:52
+msgid "Help"
+msgstr "帮助"
+
+#: welcome_page_code.py:52
+msgid "News"
+msgstr "资讯"
+
+#: welcome_page_code.py:52
+msgid "Learn"
+msgstr "学习"
+
+#: welcome_page_code.py:52
+msgid "Code repository"
+msgstr "代码仓库"
+
+#: welcome_page_code.py:52
+msgid "Register&Login"
+msgstr "注册&登录"
+
+#: welcome_page_code.py:52
+msgid "Manage Plugins"
+msgstr "插件管理"
+
+#: welcome_page_code.py:52
+msgid "Product documentation"
+msgstr ""
+
+#: welcome_page_code.py:53
+msgid "Printable keyboard cheatsheet"
+msgstr "快捷键一览表"
+
+#: welcome_page_code.py:53
+msgid "loading..."
+msgstr "载入中..."
+
+#: welcome_page_code.py:53
+msgid "Introductory videos"
+msgstr "视频介绍"
+
+#~ msgid "Tips and Tricks"
+#~ msgstr "提示与使用技巧"

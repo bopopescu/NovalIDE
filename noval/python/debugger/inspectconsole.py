@@ -8,8 +8,9 @@ import noval.editor.text as texteditor
 import noval.ttkwidgets.textframe as textframe
 from noval.python.debugger.commandui import BaseDebuggerUI
 import noval.consts as consts
+import noval.ui_utils as ui_utils
 
-class InspectConsoleTab(ttk.Frame):
+class InspectConsoleTab(ttk.Frame,ui_utils.KillFocusEvent):
     """description of class"""
     def handleCommand(self,event=None):
         cmdStr = self.inputTxt.get()
@@ -104,7 +105,7 @@ class InspectConsoleTab(ttk.Frame):
             "<<ThemeChanged>>", self.reload_ui_theme, True
         )
         text_frame.pack(fill="both",expand=1)
-      #  wx.EVT_KEY_DOWN(self._cmdInput, OnKeyPressed)
+        ui_utils.KillFocusEvent.__init__(self)
         #回车键发送命令
         self._cmdInput.bind("<Return>",self.handleCommand,True)
         self._cmdList  = []
@@ -112,6 +113,14 @@ class InspectConsoleTab(ttk.Frame):
         
     def reload_ui_theme(self, event=None):
         self._cmdOutput._reload_theme_options(force=True)
+        
+    def GetTextCtrl(self):
+        return self._cmdInput
+        
+    def focus_set(self):
+        ttk.Frame.focus_set(self)
+        if GetApp().focus_get() != self.GetTextCtrl():
+            self.GetTextCtrl().focus_force()
 
 class InspectConsoleViewLoader(plugin.Plugin):
     plugin.Implements(iface.CommonPluginI)

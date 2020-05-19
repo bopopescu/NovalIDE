@@ -19,6 +19,7 @@ import noval.toolbar as toolbar
 from noval.project.output import *
 from noval.project.executor import *
 import noval.core as core
+import noval.ui_utils as ui_utils
 
 def common_run_exception(func):
     '''
@@ -35,7 +36,7 @@ def common_run_exception(func):
             messagebox.showerror(_("Run Error"),str(e),parent=GetApp().GetTopWindow())
     return _wrapper 
 
-class CommonRunCommandUI(ttk.Frame):
+class CommonRunCommandUI(ttk.Frame,ui_utils.KillFocusEvent):
     KILL_PROCESS_ID = NewId()
     CLOSE_TAB_ID = NewId()
     TERMINATE_ALL_PROCESS_ID = NewId()
@@ -62,6 +63,15 @@ class CommonRunCommandUI(ttk.Frame):
         if self._run_parameter is not None:
             self.CreateExecutor()
         self.EnableToolbar()
+        ui_utils.KillFocusEvent.__init__(self)
+        
+    def GetTextCtrl(self):
+        return self._textCtrl
+        
+    def focus_set(self):
+        ttk.Frame.focus_set(self)
+        if GetApp().focus_get() != self.GetTextCtrl():
+            self.GetTextCtrl().focus_force()
         
     def EnableToolbar(self):
         if self._executor is None:

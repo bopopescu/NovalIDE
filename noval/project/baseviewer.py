@@ -574,7 +574,7 @@ class ProjectView(misc.AlarmEventView):
             filename = self.GetDocument().GetFilename()
         else:
             filename = ''
-       # self._projectChoice.SetToolTipString(filename)
+        misc.create_tooltip(self._prject_browser.project_combox,filename)
 
     def WriteProjectConfig(self):
         config = GetApp().GetConfig()

@@ -13,7 +13,6 @@ from noval import GetApp,_,NewId
 import os
 import sys
 import logging
-#from noval.util.logger import app_debugLogger
 import tkinter as tk
 from tkinter import ttk
 import noval.editor.text as texteditor
@@ -21,6 +20,7 @@ import noval.util.utils as utils
 import noval.toolbar as toolbar
 import noval.ttkwidgets.textframe as textframe
 import queue
+import noval.ui_utils as ui_utils
 
 class LogCtrl(texteditor.TextCtrl):
     def __init__(self, parent,**kwargs):
@@ -33,7 +33,7 @@ class LogCtrl(texteditor.TextCtrl):
     def ClearAll(self):
         self.delete("1.0","end")
                     
-class LogView(ttk.Frame):
+class LogView(ttk.Frame,ui_utils.KillFocusEvent):
     #----------------------------------------------------------------------------
     # Overridden methods
     #----------------------------------------------------------------------------
@@ -44,6 +44,15 @@ class LogView(ttk.Frame):
         self.textCtrl = None
         self._loggers = []
         self._CreateControl()
+        ui_utils.KillFocusEvent.__init__(self)
+        
+    def GetTextCtrl(self):
+        return self.textCtrl
+        
+    def focus_set(self):
+        ttk.Frame.focus_set(self)
+        if GetApp().focus_get() != self.GetTextCtrl():
+            self.GetTextCtrl().focus_force()
             
     def _CreateControl(self):
         self.notify_queue = queue.Queue()

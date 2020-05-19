@@ -688,7 +688,7 @@ def CheckFileExtension(filename,external):
             return
     check_url = '%s/member/check_file_plugin' % (UserDataDb.HOST_SERVER_ADDR)
     try:
-        req = urlutils.RequestData(check_url,arg={'file_extension':file_extension})
+        req = urlutils.RequestData(check_url,arg={'file_extension':file_extension},timeout=3)
         plugin_names = req.get('plugin_names',[])
         if len(plugin_names) > 0:
             if external:
@@ -752,3 +752,17 @@ def check_plugin_free_or_payed(plugin,installed=False):
             else:
                 return False
     return True
+    
+
+class KillFocusEvent:
+    def __init__(self):
+        self.GetTextCtrl().bind("<Button-1>",self.KillFocus)
+
+    def GetTextCtrl(self):
+        return None
+        
+    def KillFocus(self,event):
+        """Fix CEF focus issues (#255). See also FocusHandler.OnGotFocus."""
+        #修复CEF控件焦点导致鼠标离开后text控件无法捕获键盘输入的BUG
+        if GetApp().focus_get() != self.GetTextCtrl():
+            self.focus_set()

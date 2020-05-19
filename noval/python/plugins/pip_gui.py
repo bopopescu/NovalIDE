@@ -1078,8 +1078,11 @@ class PluginsPipDialog(PipDialog):
         download_url = '%s/member/download_plugin' % (UserDataDb.HOST_SERVER_ADDR)
         payload = dict(new_version = package_data['version'],app_version = app_version,\
                     lang = lang,os_name=sys.platform,plugin_id=package_data['id'])
-        #下载插件文件
-        downutils.download_file(download_url,call_back=call_back,**payload)
+        try:
+            #下载插件文件
+            downutils.download_file(download_url,call_back=call_back,**payload)
+        except:
+            utils.get_logger().error("download plguin %s fail",name)
         
     def GetInstallEggPath(self,name):
         """Get the path of the plugin
@@ -1190,7 +1193,7 @@ class PluginsPipDialog(PipDialog):
 
         banner_msg = (
             _("This dialog is for managing Noval plug-ins and their dependencies.\n")
-            + _("If you want to install packages for your own programs please install PipManager plugin and then choose 'Tools → Manage packages...'\n")
+            + _("If you want to look all available plugins on server please click on the button at bottom.\n")
         )
         banner_msg += (
             "\n"

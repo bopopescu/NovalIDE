@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2020-05-06 09:19+0800\n"
-"PO-Revision-Date: 2020-05-06 09:20+0800\n"
+"POT-Creation-Date: 2020-05-09 10:56+0800\n"
+"PO-Revision-Date: 2020-05-09 10:57+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_CN\n"
@@ -43,7 +43,7 @@ msgid "Syntax Themes:"
 msgstr "语法主题:"
 
 #: G:/work/project/Noval/noval/colorfont.py:176
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:591
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:589
 msgid "Save configuration"
 msgstr "保持配置"
 
@@ -59,8 +59,8 @@ msgstr "字体与颜色配置已经被修改,需要保存当前配置吗?"
 #: G:/work/project/Noval/noval/project/document.py:152
 #: G:/work/project/Noval/noval/project/variables.py:195
 #: G:/work/project/Noval/noval/python/interpreter/environment.py:89
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:457
 #: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:459
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:461
 #: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1408
 #: G:/work/project/Noval/noval/ui_utils.py:548
 msgid "Warning"
@@ -500,9 +500,9 @@ msgstr "注意!更改键绑定设置以后需要重启NovalIDE!"
 #: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:180
 #: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:183
 #: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:300
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:361
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:427
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:507
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:360
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:425
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:505
 #: G:/work/project/Noval/noval/python/interpreter/pythonpackages.py:707
 #: G:/work/project/Noval/noval/python/interpreter/pythonpath.py:40
 #: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1001
@@ -629,7 +629,7 @@ msgstr "列 %i"
 #: G:/work/project/Noval/noval/plugins/about.py:105
 #: G:/work/project/Noval/noval/python/project/rundocument.py:277
 #: G:/work/project/Noval/noval/ttkwidgets/messagedialog.py:22
-#: G:/work/project/Noval/noval/ui_base.py:985
+#: G:/work/project/Noval/noval/ui_base.py:988
 msgid "&OK"
 msgstr "确定"
 
@@ -639,16 +639,16 @@ msgstr "确定"
 #: G:/work/project/Noval/noval/find/findindir.py:502
 #: G:/work/project/Noval/noval/find/findindir.py:651
 #: G:/work/project/Noval/noval/project/wizard.py:41
-#: G:/work/project/Noval/noval/ui_base.py:987
-#: G:/work/project/Noval/noval/ui_base.py:1064
+#: G:/work/project/Noval/noval/ui_base.py:990
+#: G:/work/project/Noval/noval/ui_base.py:1067
 msgid "Cancel"
 msgstr "取消"
 
-#: G:/work/project/Noval/noval/ui_base.py:1046
+#: G:/work/project/Noval/noval/ui_base.py:1049
 msgid "New Document"
 msgstr "新建文档"
 
-#: G:/work/project/Noval/noval/ui_base.py:1046
+#: G:/work/project/Noval/noval/ui_base.py:1049
 msgid "Select a document type:"
 msgstr "选择文档类型:"
 
@@ -1219,91 +1219,91 @@ msgid ""
 "in Editor?"
 msgstr "文件 \"%s\" 已经在外部被移动或删除，要继续保持文档标签页吗？"
 
-#: G:/work/project/Noval/noval/editor/text.py:1346
+#: G:/work/project/Noval/noval/editor/text.py:1340
 msgid "Convert tabs to spaces?"
 msgstr "制表符转换为空格？"
 
-#: G:/work/project/Noval/noval/editor/text.py:1347
+#: G:/work/project/Noval/noval/editor/text.py:1341
 msgid ""
 "NovalIDE (according to Python recommendation) uses spaces for indentation, "
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1348
+#: G:/work/project/Noval/noval/editor/text.py:1342
 #, python-format
 msgid "but the text you are about to insert/open contains %d tab characters. "
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1349
+#: G:/work/project/Noval/noval/editor/text.py:1343
 msgid ""
 "To avoid confusion, it's better to convert them into spaces (unless you know "
 "they should be kept as tabs).\n"
 "\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1350
+#: G:/work/project/Noval/noval/editor/text.py:1344
 #, python-format
 msgid ""
 "Do you want me to replace each tab with %d spaces?\n"
 "\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1512
+#: G:/work/project/Noval/noval/editor/text.py:1506
 msgid "Wrap words inside text area"
 msgstr "行内容超出范围时自动换行"
 
-#: G:/work/project/Noval/noval/editor/text.py:1521
+#: G:/work/project/Noval/noval/editor/text.py:1515
 msgid "Show right edge"
 msgstr "显示边界线"
 
-#: G:/work/project/Noval/noval/editor/text.py:1525
+#: G:/work/project/Noval/noval/editor/text.py:1519
 msgid "Show line numbers"
 msgstr "显示行号"
 
-#: G:/work/project/Noval/noval/editor/text.py:1529
+#: G:/work/project/Noval/noval/editor/text.py:1523
 msgid "Highlight Caret Line"
 msgstr "高亮光标所在行"
 
-#: G:/work/project/Noval/noval/editor/text.py:1533
+#: G:/work/project/Noval/noval/editor/text.py:1527
 msgid "Highlight parentheses"
 msgstr "高亮括号"
 
-#: G:/work/project/Noval/noval/editor/text.py:1537
+#: G:/work/project/Noval/noval/editor/text.py:1531
 msgid "Highlight syntax elements"
 msgstr "高亮语法"
 
-#: G:/work/project/Noval/noval/editor/text.py:1553
+#: G:/work/project/Noval/noval/editor/text.py:1547
 msgid "Warn when text contains Tabs"
 msgstr "当文本包含制表符时弹出警告"
 
-#: G:/work/project/Noval/noval/editor/text.py:1557
+#: G:/work/project/Noval/noval/editor/text.py:1551
 msgid "Edge Guide Width:"
 msgstr "边界线宽度:"
 
-#: G:/work/project/Noval/noval/editor/text.py:1566
+#: G:/work/project/Noval/noval/editor/text.py:1560
 msgid "Auto Indent"
 msgstr "自动缩进"
 
-#: G:/work/project/Noval/noval/editor/text.py:1569
+#: G:/work/project/Noval/noval/editor/text.py:1563
 msgid "Smart tips"
 msgstr "智能提示"
 
-#: G:/work/project/Noval/noval/editor/text.py:1571
+#: G:/work/project/Noval/noval/editor/text.py:1565
 msgid "Auto-Completion"
 msgstr "自动完成"
 
-#: G:/work/project/Noval/noval/editor/text.py:1574
+#: G:/work/project/Noval/noval/editor/text.py:1568
 msgid "Use Enhanced Auto-Completion"
 msgstr "启用增强版自动完成功能"
 
-#: G:/work/project/Noval/noval/editor/text.py:1578
+#: G:/work/project/Noval/noval/editor/text.py:1572
 msgid "Allow code completion with tab-key"
 msgstr "使用Tab键完成代码提示"
 
-#: G:/work/project/Noval/noval/editor/text.py:1582
+#: G:/work/project/Noval/noval/editor/text.py:1576
 msgid "Show tips when mouse hover over word"
 msgstr "当鼠标悬停在单词上时显示文档提示"
 
-#: G:/work/project/Noval/noval/editor/text.py:1668
+#: G:/work/project/Noval/noval/editor/text.py:1662
 msgid ""
 "You need to install 'AutoCompletion' plugin if you want to use enhanced auto-"
 "completion"
@@ -3343,39 +3343,41 @@ msgstr "修改名称"
 msgid "New VirtualEnv"
 msgstr "新建虚拟环境"
 
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:361
-msgid "Can not get virtualenv tool path"
-msgstr ""
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:360
+#, fuzzy
+#| msgid "Could not find the package from PyPI."
+msgid "Can not find virtualenv package"
+msgstr "没有找到该包."
 
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:404
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:402
 msgid "Modify Interpreter Name"
 msgstr "修改解释器名称"
 
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:420
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:418
 msgid "Add Interpreter"
 msgstr "添加解释器"
 
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:459
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:457
 msgid "Default Interpreter cannot be remove"
 msgstr "默认解释器不能移除"
 
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:461
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:459
 msgid ""
 "Interpreter remove action cannot be recover,Do you want to continue remove "
 "this interpreter?"
 msgstr "解释器移除操作将不可恢复，确定要继续移除该解释器吗?"
 
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:591
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:589
 msgid ""
 "Interpreter configuration has already been modified outside,Do you want to "
 "save?"
 msgstr "解释器配置已经被修改,需要保存当前配置吗?"
 
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:599
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:597
 msgid "Interpreter Smart Analyse"
 msgstr "解释器智能分析"
 
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:600
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:598
 msgid "Please wait a minute for end analysing"
 msgstr "请等待解释器数据分析完成"
 
@@ -4092,11 +4094,9 @@ msgstr "这个对话框是用来管理noval插件及其依赖包.\n"
 
 #: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1193
 msgid ""
-"If you want to install packages for your own programs please install "
-"PipManager plugin and then choose 'Tools → Manage packages...'\n"
-msgstr ""
-"如果你想在解释器中安装包请先安装PipManager插件并选择菜单'工具→Manage "
-"packages...'\n"
+"If you want to look all available plugins on server please click on the "
+"button at bottom.\n"
+msgstr "如果你想查看服务器上所有可用的插件,请点击底部的按钮.\n"
 
 #: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1197
 msgid ""
@@ -4707,6 +4707,13 @@ msgstr "正在下载 %s"
 #| msgid "Download fail:%s"
 msgid "Upload fail:%s"
 msgstr "下载失败:%s"
+
+#~ msgid ""
+#~ "If you want to install packages for your own programs please install "
+#~ "PipManager plugin and then choose 'Tools → Manage packages...'\n"
+#~ msgstr ""
+#~ "如果你想在解释器中安装包请先安装PipManager插件并选择菜单'工具→Manage "
+#~ "packages...'\n"
 
 #~ msgid "Check update at start up"
 #~ msgstr "启动时检查版本更新"

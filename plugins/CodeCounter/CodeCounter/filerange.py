@@ -1,5 +1,5 @@
 #coding:utf-8
-import md5
+#import md5
 
 def get_range_size(range_size_bytes):
 
@@ -140,4 +140,8 @@ def get_file_ranges_by_size(file_path,part_size,file_size):
             assert(remain_block_size == file_range.size)
 
     return file_ranges
-   
+ 
+if __name__=='__main__':
+    f=open('./codecounter/codecounter.png')
+    print(f)
+    f.close()

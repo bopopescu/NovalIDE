@@ -356,14 +356,12 @@ class InterpreterConfigurationPanel(ui_utils.BaseConfigurationPanel):
                 utils.get_logger().warning('user stop install virtualenv tool')
                 return
             self.ExecCommandAndOutput(command,progress_dlg)
-        virtual_env_path = self.GetVirtualEnvPath(interpreter)
-        if not os.path.exists(virtual_env_path):
-            messagebox.showerror(_('Error'),_("Can not get virtualenv tool path"),parent=self)
-            utils.get_logger().error('virtualenv tool path %s is not exist',virtual_env_path)
+        if not interpreter.GetInstallPackage('virtualenv'):
+            messagebox.showerror(_('Error'),_("Can not find virtualenv package"),parent=self)
+            utils.get_logger().error('virtualenv package is not exist in interpreter %s',interpreter.Path)
             return
         #开始使用virtualenv工具创建虚拟解释器环境
-        utils.get_logger().info('virtualenv tool path is %s',virtual_env_path)
-        command = strutils.emphasis_path(virtual_env_path) + " " + strutils.emphasis_path(location)
+        command = "%s -m virtualenv %s" % (interpreter.Path,strutils.emphasis_path(location))
         utils.get_logger().info('install virtual interpreter command is %s',command)
         if not sysutils.is_windows():
             root = not self.IsLocationWritable(location)

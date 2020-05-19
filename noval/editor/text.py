@@ -653,14 +653,8 @@ class TextCtrl(ui_base.TweakableText):
         #是否高亮当前行
         self.bind("<<CursorMove>>", self._tag_current_line, True)
         self.bind("<<TextChange>>", self._tag_current_line, True)
-        self.bind("<Button-1>",self.KillFocus)
         if tag_current_line:
             self._tag_current_line()
-            
-    def KillFocus(self,event=None):
-        """Fix CEF focus issues (#255). See also FocusHandler.OnGotFocus."""
-        #修复CEF控件焦点导致鼠标离开后text控件无法捕获键盘输入的BUG
-        self.focus_force()
         
     def GetEol(self):
         return self.eol
@@ -1488,10 +1482,10 @@ class SyntaxTextCtrl(TextCtrl,findtext.FindTextEngine):
         
     def SetSyntax(self,syntax_options):
         # apply new options
-        for tag_name in syntax_options:
-            if tag_name == "TEXT":
-                self.configure(**syntax_options[tag_name])
-                break
+        self.configure(**syntax_options["TEXT"])
+        #设置高亮行背景色
+        if "current_line" in syntax_options:
+            self.tag_configure('current_line', **syntax_options["current_line"])
         self.SetOtherOptions(syntax_options)
 
     def SetOtherOptions(self,syntax_options):

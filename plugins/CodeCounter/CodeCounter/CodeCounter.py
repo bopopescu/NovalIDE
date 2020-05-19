@@ -1,231 +1,265 @@
+#coding=utf-8
 import sys
 import os
 import datetime
-import filerange
 import argparse
-import yaml
+import chardet
+import re
 
+import noval.syntax.syntax as syntax
+from noval.util import logger
+import noval.util.utils as utils
+import noval.syntax.lang as lang
 
-PARSER_CONFIG_FILE = "parser.yml"
+import easyplugindev as epd
+from easyplugindev import _
 
-class CommentFlag(object):
-    def __init__(self,line_comment_flag,block_comment_start_flag=None,block_comment_end_flag=None):
-        self.line_comment_flag = line_comment_flag
-        self.block_comment_start_flag = block_comment_start_flag
-        self.block_comment_end_flag = block_comment_end_flag
+def getResourcePath():
+    from pkg_resources import resource_filename
+    path = resource_filename(__name__,'')  
+    clone_local_img_path = os.path.join(path,"codecounter.png") # 导入同一个包下的文件.
+    return clone_local_img_path
     
-    def __str__(self):
-     
-        str = "line comment:%s block comment start:%s block coment end:%s" % (self.line_comment_flag,self.block_comment_start_flag,self.block_comment_end_flag)
-        return str
+def isFileExclude(fullFilePath,excludeDirs,excludeFiles):#目前尚未做排除单个文件的工作。
+    fullFilePath=fullFilePath.replace('\\','/')
     
-class Parser(object):
-    def __init__(self,parse_id,ext_list_str,line_comment_flag,block_comment_start_flag=None,block_comment_end_flag=None):
-        self.parser_id = parse_id
-        if ext_list_str != "":
-            self.ext_list = ext_list_str.split(',')
-        else:
-            self.ext_list = []
-        self.comment_flag = CommentFlag(line_comment_flag,block_comment_start_flag,block_comment_end_flag)
-    
-    def is_ext_enable(self,ext):
-        ext = ext.lower()
-        if ext in self.ext_list:
+    for d in excludeDirs:
+        d = d.replace('\\','/')
+        
+        if(fullFilePath.find(d)!=-1):
             return True
-        return False
-    
-    def __str__(self):
-        str = "id:%d ext list:%s %s" % (self.parser_id,self.ext_list,self.comment_flag)
-        return str
-    
-    def is_filename_confirm(self,special_file_name):
-        return False
-    
-    @classmethod
-    def get_parser_by_ext(cls,ext):
-        
-        for parser_id in ALL_PARSERS:
-            parser = ALL_PARSERS[parser_id]
-            if parser.is_ext_enable(ext):
-                return parser
-        
-        return None
-    
-    @classmethod
-    def get_parser_by_filename(cls,filename):
-        
-        for parser_id in ALL_PARSERS:
-            parser = ALL_PARSERS[parser_id]
-            if parser.is_filename_confirm(filename):
-                return parser
-        
-        return None
+    return False
 
-class SpecialFileNameParser(Parser):
-    
-    def __init__(self,parse_id,file_name,line_comment_flag,block_comment_start_flag=None,block_comment_end_flag=None):
-        super(SpecialFileNameParser,self).__init__(parse_id,'',line_comment_flag,block_comment_start_flag,block_comment_end_flag)
-        self.file_name = file_name
-        
-    def is_filename_confirm(self,special_file_name):
-        return self.file_name == special_file_name
-        
-ALL_PARSERS = {
-}
+def isDirExclude(path,excludeDirs):
 
-def is_comment_line(line,line_comment_flag):
-    if line_comment_flag == None:
+    if path in excludeDirs:
+        return True
+    
+    loopPath = os.path.dirname(root)
+    while loopPath:
+        if loopPath in excludeDirs:
+            return True
+        parentPath = os.path.dirname(loopPath)
+        if parentPath == loopPath:
+            break
+        loopPath = parentPath
+    
+    return False
+def isCommentLine(line,lineCommentFlag):
+    
+    if lineCommentFlag == None:
         return False
     
-    line = line.lstrip()
-    if line.startswith(line_comment_flag):
+    if line.startswith(lineCommentFlag):
         return True
     return False
 
-def is_block_comment_start(line,block_comment_start_flag):
-    if block_comment_start_flag == None:
+def isBlockCommentStart(line,blockCommentStartFlag):
+    if blockCommentStartFlag == None:
         return False
 
-    return is_comment_line(line,block_comment_start_flag)
+    return isCommentLine(line,blockCommentStartFlag)
 
-def is_block_comment_end(line,block_comment_end_flag):
-    if block_comment_end_flag == None:
+def isBlockCommentEnd(line,blockCommentEndFlag):
+    if blockCommentEndFlag == None:
         return False
 
     line = line.rstrip()
-    if line.endswith(block_comment_end_flag):
+    if line.endswith(blockCommentEndFlag):
         return True
     return False
-    
-def count_file_line(file_path,is_comment_exclude,is_blank_line_exclude,parser=None):
-    
-    comment_flag_parser = None
-    if is_comment_exclude:
-        if parser is None:
-            filename = os.path.basename(file_path)
-            ext = os.path.splitext(filename)[1].lower()
-            parser = Parser.get_parser_by_ext(ext)
-            if parser is None:
-                parser = Parser.get_parser_by_filename(filename)
-        if None != parser: 
-            comment_flag_parser = parser.comment_flag
+
+def adaptEncoding(f):#自适应编码方式
+    text = f.read()
         
-    count = 0
-    with open(file_path) as f:
-        is_block_line_range = False
-        for line in f:
-            if is_comment_exclude and comment_flag_parser != None:
-                if is_comment_line(line,comment_flag_parser.line_comment_flag):
-                    continue                
-                elif is_block_comment_start(line,comment_flag_parser.block_comment_start_flag):
-                    is_block_line_range = True
-                    continue
-                elif is_block_comment_end(line,comment_flag_parser.block_comment_end_flag):
-                    is_block_line_range = False
-                    continue
-                elif is_block_line_range:
-                    continue
-            if is_blank_line_exclude:
-                line = line.strip()
-                if line == "":
-                    continue
+    encoding=chardet.detect(text)['encoding']
+    if(encoding==None):#对于无法检测出编码的文件，可以跳过去。所以直接返回None等待处理。
+        return None
+    return text.decode(encoding)
+    
+blockCommentStartFlagDict={"md":None,'py':('\'\'\'','\"\"\"','r\"\"\"'),'c':('/*'),'css':'/*'}
+blockCommentEndFlagDict={"md":None,'py':('\'\'\'','\"\"\"'),'c':('*/'),'css':'*/'}
+lineCommentFlagDict={"md":None,'py':('#'),'c':('//'),'css':'/*'}
+lineCommentEndDict={"css":"*/"}
+
+def getCommentPatternByExtName(ext=''):
+##    try:
+    fileLexer=syntax.SyntaxThemeManager().GetLangLexerFromExt(ext)
+    langId=fileLexer.GetLangId()
+    if(langId==lang.ID_LANG_TXT):
+        return None,None,None,True
+    pattern=fileLexer.GetCommentPatterns()
+    
+
+    if(len(pattern)==1):# 前三位分别是单行注释、多行注释开始、多行注释结束。第四位是是否为纯文本文件。
+        if(len(pattern[0])==1):
+            
+            return pattern[0][0],None,None,False
+        else:
+            return pattern[0][0],pattern[0][1],None,False
+    elif(len(pattern)==2):
+        if(len(pattern[0])==1):
+            return pattern[0][1],pattern[1][0],pattern[1][1],False
+        else:
+            return pattern[0][0],pattern[0][1],pattern[1][0],False
+        
+    else:
+        return pattern[2],pattern[0],pattern[1],False
+
+def countPlainText(content):
+    validLinesCount=0
+    blankLinesCount=0
+    
+    for i,line in enumerate(content):
+        
+        if line.strip() == "":
+            blankLinesCount+=1
+        else:
+            validLinesCount+=1
+    return [0,blankLinesCount,0,blankLinesCount+validLinesCount]   
+
+def countFileLine(filePath):
+    global blockCommentStartFlagDict,blockCommentEndFlagDict,lineCommentFlag
+    
+    fileType=filePath.split('.')[-1]
+    
+    lineCommentFlag, blockCommentStartFlag, blockCommentEndFlag,isTxt=getCommentPatternByExtName(fileType)
+    with open(filePath,'rb') as f: # 打开文件开始扫描
+        
+        content= adaptEncoding(f)
+        if(content==None):# 如果没有内容就返回[0,0,0]
+            return [0,0,0,0]
+            
+        content = content.strip() # 预先剪掉content头部和尾部的赘余，以免计入文件结尾的空行。
+        lines = content.split('\n') # re.split(r"([\n])", content)# 正则表达式应用。
+        
+        if(isTxt==True):# 如果没有“单行注释”这一说的话(说明多行注释也没有)
+            return countPlainText(lines)
+        isInBlockComment = False
+        count = 0
+        validLinesCount=0
+        commentLinesCount=0
+        blankLinesCount=0
+        for i,line in enumerate(lines): # 一行一行的扫描文件内部。
+            #print(i,line)
             count += 1
-
-    print file_path,"code line count is:",count
-    return count
-
-
-def count_dir_file_lines(dir_path,is_comment_exclude,is_blank_line_exclude,exclude_dirs=[],exclude_files=[]):
-    
-    def is_dir_exclude(path,exclude_dirs):
-        
-        if path in exclude_dirs:
-            return True
-        
-        loop_path = os.path.dirname(root)
-        while loop_path:
-            if loop_path in exclude_dirs:
-                return True
-            parent_path = os.path.dirname(loop_path)
-            if parent_path == loop_path:
-                break
-            loop_path = parent_path
-        
-        return False
-    
-    def is_file_exclude(full_file_path,dir_path,exclude_dirs,exclude_files):
-        
-        if full_file_path in exclude_files:
-            return True
-        
-        if is_dir_exclude(dir_path,exclude_dirs):
-            return True
-        
-        return False
-    
-    total_line_count = 0
-    total_file_count = 0
-    for root,dirnames,filenames in os.walk(dir_path):
-        root = os.path.abspath(root)
-        for filename in filenames:
-            full_file_path = os.path.join(root,filename)
-            ext = os.path.splitext(filename)[1].lower()
-            parser = Parser.get_parser_by_filename(filename)
-            if None == parser:
-                parser = Parser.get_parser_by_ext(ext)
-                if None == parser:
-                    continue
-            if is_file_exclude(full_file_path,root,exclude_dirs,exclude_files):
+            line = line.strip()
+            
+            if line == "":
+                blankLinesCount+=1
                 continue
             
-            total_line_count += count_file_line(full_file_path,is_comment_exclude,is_blank_line_exclude,parser)
-            total_file_count += 1
-    print 'total code file count is:',total_file_count,',total code line count is:',total_line_count
-    
-def load_all_parsers():
+            if isInBlockComment==True:
+                commentLinesCount+=1
+                if isBlockCommentEnd(line,blockCommentEndFlag):#如果是注释结束，就将标识符置为否
+                    isInBlockComment = False
+                    continue  
+                else:
+                    continue    
+            else:         
+                if isBlockCommentStart(line,blockCommentStartFlag):#如果是注释开始，就将标识符置为是
+                    isInBlockComment = True
+                    commentLinesCount+=1
+                    continue
+               
+     
+            if isCommentLine(line,lineCommentFlag):#如果是注释行，那么就跳转。
+                commentLinesCount+=1
+                continue      
+            
+            validLinesCount+=1
+    return [validLinesCount,blankLinesCount,commentLinesCount,validLinesCount+blankLinesCount+commentLinesCount]
 
-    global ALL_PARSERS
-    dir_path = os.path.abspath(os.path.split(__file__)[0])
-    parser_config_path = os.path.join(dir_path,PARSER_CONFIG_FILE)
-    f = open(parser_config_path)
-    lang_config_list = yaml.load(f)
-    f.close()
 
-    #import json
-    #print json.dumps(lang_config_list,indent=4)
-
-    for lang_config in lang_config_list:
-        lang_config = lang_config['lang']
-        lang_id = lang_config['id']
-        line_comment = lang_config['line_comment']
-        block_comment_start = lang_config.get('block_comment_start',None)
-        block_comment_end = lang_config.get('block_comment_end',None)
-        if lang_config.has_key('filename'):
-            special_file_name = lang_config['filename']
-            parser = SpecialFileNameParser(lang_id,special_file_name,line_comment,block_comment_start,block_comment_end)
+def getFileNames(dirPath,fileList):    
+    filenames=[]
+    if(dirPath!=''):
+        if(fileList!=[]):
+            raise Exception('不得同时输入文件列表和搜索的文件夹路径！')
         else:
-            ext = lang_config['ext']
-            parser = Parser(lang_id,ext,line_comment,block_comment_start,block_comment_end)
-
-        ALL_PARSERS[lang_id] = parser
-
-    
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("path")
-    parser.add_argument("-ignore-comment",type=int, dest="is_comment_exclude",help='indicate count the comment line or not',default = True)
-    parser.add_argument("-ignore-blank-line",type=int, dest="is_blank_line_exclude",help='indicate count the blank line or not',default = True)
-    parser.add_argument('-exclude-dir', action='append',dest='exclude_dirs',default=[],help='Add exclude dir to a list')
-    parser.add_argument('-exclude-file', action='append',dest='exclude_files',default=[],help='Add exclude file to a list')
-    args = parser.parse_args()
-    path = args.path
-
-    load_all_parsers()
-
-    if os.path.isfile(path):
-        count_file_line(path,args.is_comment_exclude,args.is_blank_line_exclude)
-    elif os.path.isdir(path):
-        count_dir_file_lines(path,args.is_comment_exclude,args.is_blank_line_exclude,args.exclude_dirs,args.exclude_files)
+            for root,dirnames,tmpFilenames in os.walk(dirPath):
+                root=os.path.abspath(root)
+                
+                for filename in tmpFilenames:
+                    
+                    
+                    fullFilePath=os.path.join(root,filename)
+                    filenames.append(fullFilePath)
         
+    else:#如果入口参数是个列表的话，就这么统计。
+        filenames=fileList
+       
+    return filenames
+def countDirFileLines(dirPath='',fileList=[],excludeDirs=[],excludeFiles=[],includeExts=[],
+                      progressBar=None,table=None,master=None,countingFlag=True):
+    if(master!=None):
+        table=master.table
+        countingFlag=master.countingFlag
+        
+    excludeDirs=set(excludeDirs)
+    excludeFiles=set(excludeFiles)
+    includeExts=set(includeExts)
+   
+    totalLineCount = [0,0,0] # 分别对应valid,comment和blank三种内容。
+    totalFileCount = 0
+    
+    
+
+
+    def isSupportedFileType(ext):
+        if ext in includeExts:
+            return True
+        else:
+            return False
+    filenames=getFileNames(dirPath=dirPath,fileList=fileList)
+    filesToWalk=len(filenames)# 取得需要遍历的文件数量列表。
+    
+    
+    walkedFiles=0
+    totalSumCount=0
+    
+    for filename in filenames:
+        walkedFiles+=1
+        if(progressBar!=None):#在调用的时候，如果有进度条的选项，就更新它。
+            progressBar['value']=walkedFiles/filesToWalk*100
+        fileType=filename.split('.')[-1] # 取文件名的最后一项,也就是扩展名
+
+        
+        if(isSupportedFileType(fileType)!=True): # 如果不是支持的文件类型，就跳过这个文件的扫描。
+            continue
+        
+        if isFileExclude(filename,excludeDirs,excludeFiles):
+            continue
+        
+        if not os.path.exists(filename):# 如果文件不存在，就跳过循环。
+            continue
+        countList= countFileLine(filename)
+        
+        for i in range(3):
+            totalLineCount[i] += countList[i]  
+            
+        countSum=countList[3]
+        totalSumCount+=countSum
+        
+        totalFileCount += 1
+       
+        if(master!=None):
+            if(master.countingFlag==False):
+                master.progressBar['value']=0
+                master.clearResultTable()
+                return
+            
+            master.table.insert("",0,values=[epd.formatPathForPlatform(filename)]+countList+[countSum])#构造列表，直接插入表格。
+    if(master!=None):
+        master.table.insert("",0,values=[_("Counted:%d Files. Total:")%totalFileCount]+totalLineCount+[totalSumCount])
+        master.startCountingButton.config(text=_("Start Counting!"))
+        master.countingFlag=False
+        return totalFileCount
+
+
+
 if __name__ == "__main__":
-    main()
+    pass
+##    r=countDirFileLines(r'C:\Users\hzy\Documents\python\NovalIDE\plugins\CodeCounter',excludeDirs=[],excludeFiles=[],includeExts=['py'])
+##    import noval.util.utils as utils
+##    utils.get_logger().info("sssssss")

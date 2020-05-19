@@ -198,7 +198,6 @@ class CodeCtrl(texteditor.SyntaxTextCtrl):
         self.CallTipHide()
         #关闭自动完成列表框
         self.AutoCompHide()
-        self.KillFocus()
 
     def CreatePopupMenu(self):
         texteditor.TextCtrl.CreatePopupMenu(self)

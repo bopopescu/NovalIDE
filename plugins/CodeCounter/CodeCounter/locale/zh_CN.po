@@ -1,0 +1,99 @@
+# Translations template for PROJECT.
+# Copyright (C) 2020 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2020-05-08 17:23+0800\n"
+"PO-Revision-Date: 2020-05-08 17:23+0800\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.8.0\n"
+"X-Generator: Poedit 2.3\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: CodeCounter.py:258
+#, python-format
+msgid "Counted:%d Files. Total:"
+msgstr "计数：%d 个文件。总计行数："
+
+#: CodeCounter.py:259 GUI.py:179 GUI.py:239
+msgid "Start Counting!"
+msgstr "开始统计！"
+
+#: GUI.py:88
+msgid "Current Project"
+msgstr "当前项目"
+
+#: GUI.py:90
+msgid "Folder"
+msgstr "文件夹"
+
+#: GUI.py:92
+msgid "Choose"
+msgstr "选择"
+
+#: GUI.py:93
+msgid "to Count Lines"
+msgstr "进行行数统计"
+
+#: GUI.py:105
+msgid "Source Path:\t"
+msgstr "源文件夹：\t"
+
+#: GUI.py:132
+msgid "Filter file Types:\t"
+msgstr "文件类型：\t"
+
+#: GUI.py:148
+msgid "Exclude Path:"
+msgstr "排除路径："
+
+#: GUI.py:204
+msgid "File Path"
+msgstr "文件路径"
+
+#: GUI.py:205
+msgid "Code Lines"
+msgstr "代码行数"
+
+#: GUI.py:207
+msgid "Blank Lines"
+msgstr "空行数"
+
+#: GUI.py:208
+msgid "Comment Lines"
+msgstr "注释行数"
+
+#: GUI.py:209
+msgid "Total Lines"
+msgstr "总行数"
+
+#: GUI.py:232
+msgid "Stop Counting!"
+msgstr "停止统计！"
+
+#: GUI.py:247
+msgid "Warning"
+msgstr "警告"
+
+#: GUI.py:334
+msgid "CodeCounter"
+msgstr "行数统计"
+
+#: __init__.py:34
+msgid "&Tools"
+msgstr ""
+
+#: __init__.py:35
+msgid "Code Counter"
+msgstr "代码行数统计"

@@ -22,6 +22,7 @@ from noval.util.command import *
 from noval.shell import *
 import noval.roughparse as roughparse
 import traceback
+import noval.ui_utils as ui_utils
 
 runner = None
 def get_runner():
@@ -488,7 +489,7 @@ class ShellText(PythonText):
     def CanStopbackend(self):
         return not (utils.profile_get("run.backend_name","SameAsFrontend") == "SameAsFrontend" or get_runner().get_backend_proxy() is None)
 
-class PyShell(BaseShell):
+class PyShell(BaseShell,ui_utils.KillFocusEvent):
     def __init__(self, mater):
         global runner
         default_editor_family = GetApp().GetDefaultEditorFamily()
@@ -504,9 +505,18 @@ class PyShell(BaseShell):
             ),
         ]
         BaseShell.__init__(self,mater)
+        ui_utils.KillFocusEvent.__init__(self)
         self._add_main_backends()
         runner = self._runner
+
+    def GetTextCtrl(self):
+        return self.text
         
+    def focus_set(self):
+        BaseShell.focus_set(self)
+        if GetApp().focus_get() != self.GetTextCtrl():
+            self.GetTextCtrl().focus_force()
+                
     def UpdateShell(self,event):
         current_interpreter = GetApp().GetCurrentInterpreter()
         backend = None

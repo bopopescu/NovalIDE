@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2020-05-06 09:19+0800\n"
+"POT-Creation-Date: 2020-05-09 10:56+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,7 +42,7 @@ msgid "Syntax Themes:"
 msgstr ""
 
 #: G:/work/project/Noval/noval/colorfont.py:176
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:591
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:589
 msgid "Save configuration"
 msgstr ""
 
@@ -58,8 +58,8 @@ msgstr ""
 #: G:/work/project/Noval/noval/project/document.py:152
 #: G:/work/project/Noval/noval/project/variables.py:195
 #: G:/work/project/Noval/noval/python/interpreter/environment.py:89
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:457
 #: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:459
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:461
 #: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1408
 #: G:/work/project/Noval/noval/ui_utils.py:548
 msgid "Warning"
@@ -491,9 +491,9 @@ msgstr ""
 #: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:180
 #: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:183
 #: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:300
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:361
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:427
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:507
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:360
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:425
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:505
 #: G:/work/project/Noval/noval/python/interpreter/pythonpackages.py:707
 #: G:/work/project/Noval/noval/python/interpreter/pythonpath.py:40
 #: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1001
@@ -618,7 +618,7 @@ msgstr ""
 #: G:/work/project/Noval/noval/plugins/about.py:105
 #: G:/work/project/Noval/noval/python/project/rundocument.py:277
 #: G:/work/project/Noval/noval/ttkwidgets/messagedialog.py:22
-#: G:/work/project/Noval/noval/ui_base.py:985
+#: G:/work/project/Noval/noval/ui_base.py:988
 msgid "&OK"
 msgstr ""
 
@@ -628,16 +628,16 @@ msgstr ""
 #: G:/work/project/Noval/noval/find/findindir.py:502
 #: G:/work/project/Noval/noval/find/findindir.py:651
 #: G:/work/project/Noval/noval/project/wizard.py:41
-#: G:/work/project/Noval/noval/ui_base.py:987
-#: G:/work/project/Noval/noval/ui_base.py:1064
+#: G:/work/project/Noval/noval/ui_base.py:990
+#: G:/work/project/Noval/noval/ui_base.py:1067
 msgid "Cancel"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_base.py:1046
+#: G:/work/project/Noval/noval/ui_base.py:1049
 msgid "New Document"
 msgstr ""
 
-#: G:/work/project/Noval/noval/ui_base.py:1046
+#: G:/work/project/Noval/noval/ui_base.py:1049
 msgid "Select a document type:"
 msgstr ""
 
@@ -1202,92 +1202,92 @@ msgid ""
 " it in Editor?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1346
+#: G:/work/project/Noval/noval/editor/text.py:1340
 msgid "Convert tabs to spaces?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1347
+#: G:/work/project/Noval/noval/editor/text.py:1341
 msgid ""
 "NovalIDE (according to Python recommendation) uses spaces for "
 "indentation, "
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1348
+#: G:/work/project/Noval/noval/editor/text.py:1342
 #, python-format
 msgid "but the text you are about to insert/open contains %d tab characters. "
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1349
+#: G:/work/project/Noval/noval/editor/text.py:1343
 msgid ""
 "To avoid confusion, it's better to convert them into spaces (unless you "
 "know they should be kept as tabs).\n"
 "\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1350
+#: G:/work/project/Noval/noval/editor/text.py:1344
 #, python-format
 msgid ""
 "Do you want me to replace each tab with %d spaces?\n"
 "\n"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1512
+#: G:/work/project/Noval/noval/editor/text.py:1506
 msgid "Wrap words inside text area"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1521
+#: G:/work/project/Noval/noval/editor/text.py:1515
 msgid "Show right edge"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1525
+#: G:/work/project/Noval/noval/editor/text.py:1519
 msgid "Show line numbers"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1529
+#: G:/work/project/Noval/noval/editor/text.py:1523
 msgid "Highlight Caret Line"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1533
+#: G:/work/project/Noval/noval/editor/text.py:1527
 msgid "Highlight parentheses"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1537
+#: G:/work/project/Noval/noval/editor/text.py:1531
 msgid "Highlight syntax elements"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1553
+#: G:/work/project/Noval/noval/editor/text.py:1547
 msgid "Warn when text contains Tabs"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1557
+#: G:/work/project/Noval/noval/editor/text.py:1551
 msgid "Edge Guide Width:"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1566
+#: G:/work/project/Noval/noval/editor/text.py:1560
 msgid "Auto Indent"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1569
+#: G:/work/project/Noval/noval/editor/text.py:1563
 msgid "Smart tips"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1571
+#: G:/work/project/Noval/noval/editor/text.py:1565
 msgid "Auto-Completion"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1574
+#: G:/work/project/Noval/noval/editor/text.py:1568
 msgid "Use Enhanced Auto-Completion"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1578
+#: G:/work/project/Noval/noval/editor/text.py:1572
 msgid "Allow code completion with tab-key"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1582
+#: G:/work/project/Noval/noval/editor/text.py:1576
 msgid "Show tips when mouse hover over word"
 msgstr ""
 
-#: G:/work/project/Noval/noval/editor/text.py:1668
+#: G:/work/project/Noval/noval/editor/text.py:1662
 msgid ""
 "You need to install 'AutoCompletion' plugin if you want to use enhanced "
 "auto-completion"
@@ -3296,39 +3296,39 @@ msgstr ""
 msgid "New VirtualEnv"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:361
-msgid "Can not get virtualenv tool path"
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:360
+msgid "Can not find virtualenv package"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:404
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:402
 msgid "Modify Interpreter Name"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:420
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:418
 msgid "Add Interpreter"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:459
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:457
 msgid "Default Interpreter cannot be remove"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:461
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:459
 msgid ""
 "Interpreter remove action cannot be recover,Do you want to continue "
 "remove this interpreter?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:591
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:589
 msgid ""
 "Interpreter configuration has already been modified outside,Do you want "
 "to save?"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:599
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:597
 msgid "Interpreter Smart Analyse"
 msgstr ""
 
-#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:600
+#: G:/work/project/Noval/noval/python/interpreter/interpreterconfigruation.py:598
 msgid "Please wait a minute for end analysing"
 msgstr ""
 
@@ -4032,8 +4032,8 @@ msgstr ""
 
 #: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1193
 msgid ""
-"If you want to install packages for your own programs please install "
-"PipManager plugin and then choose 'Tools → Manage packages...'\n"
+"If you want to look all available plugins on server please click on the "
+"button at bottom.\n"
 msgstr ""
 
 #: G:/work/project/Noval/noval/python/plugins/pip_gui.py:1197

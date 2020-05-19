@@ -1,0 +1,196 @@
+# Translations template for PROJECT.
+# Copyright (C) 2020 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2020-05-11 09:22+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.7.0\n"
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:58
+msgid "start unzip cefpython3 component"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:67
+msgid "unzip cefpython3 component finished"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:68
+msgid "install cefpython3 component success..."
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:70
+msgid "unzip cefpython3 component failed"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:71
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:83
+msgid "install cefpython3 component failed..."
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:72
+msgid "Error"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:72
+msgid ""
+"install cefpython3 component failed,Please wait for next launch to "
+"install it"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:77
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:690
+msgid "installing cefpython3 component..."
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:116
+msgid "Show start page on startup"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:124
+msgid "Project History length on start page"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:243
+#, python-format
+msgid "The project '%s' doesn't exist and couldn't be opened!"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:472
+msgid "WebView"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:477
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:555
+msgid "Internal Web Browser"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:484
+msgid "&Tools"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:484
+msgid "&Web Browser"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:489
+msgid "&Help"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:489
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:543
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:561
+msgid "Start Page"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:691
+msgid "Application is installing cef component.Please wait for a monment to exit!"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:716
+#, python-format
+msgid "this lastest version '%s' is available,click here to update it"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:749
+msgid "Open URL"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:755
+msgid "Go Back"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:762
+msgid "Go Forward"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:769
+msgid "Stop"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:775
+msgid "Reload"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:777
+msgid "URL:"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:795
+msgid "Open URL:"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:796
+msgid "Enter a full URL or local path"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/welcome_page_code.py:52
+msgid "Start"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/welcome_page_code.py:52
+msgid "New project"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/welcome_page_code.py:52
+msgid "Open project..."
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/welcome_page_code.py:52
+msgid "Recent"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/welcome_page_code.py:52
+msgid "No recent projects"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/welcome_page_code.py:52
+msgid "Help"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/welcome_page_code.py:52
+msgid "News"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/welcome_page_code.py:52
+msgid "Learn"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/welcome_page_code.py:52
+msgid "Code repository"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/welcome_page_code.py:52
+msgid "Register&Login"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/welcome_page_code.py:52
+msgid "Manage Plugins"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/welcome_page_code.py:52
+msgid "Product documentation"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/welcome_page_code.py:53
+msgid "Printable keyboard cheatsheet"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/welcome_page_code.py:53
+msgid "loading..."
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/welcome_page_code.py:53
+msgid "Introductory videos"
+msgstr ""
+

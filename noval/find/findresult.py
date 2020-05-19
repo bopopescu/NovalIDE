@@ -12,8 +12,9 @@ from noval.find.findindir import FILENAME_MARKER,PROJECT_MARKER,FILE_MARKER,Find
 import noval.ttkwidgets.textframe as textframe
 import noval.ui_base as ui_base
 import noval.util.utils as utils
+import noval.ui_utils as ui_utils
 
-class FindResultsview(ttk.Frame):
+class FindResultsview(ttk.Frame,ui_utils.KillFocusEvent):
     def __init__(self, master):
         ttk.Frame.__init__(self, master)
         #设置查找结果文本字体为小一号的字体并且控件为只读状态
@@ -26,6 +27,15 @@ class FindResultsview(ttk.Frame):
         )
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
+        ui_utils.KillFocusEvent.__init__(self)
+        
+    def GetTextCtrl(self):
+        return self.text
+        
+    def focus_set(self):
+        ttk.Frame.focus_set(self)
+        if GetApp().focus_get() != self.GetTextCtrl():
+            self.GetTextCtrl().focus_force()
         
     def destroy(self):
         self.unbind("<<ThemeChanged>>")
