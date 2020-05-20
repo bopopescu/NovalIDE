@@ -3,7 +3,7 @@ from setuptools import find_packages
 
 
 setup(name='PipManager',
-        version='1.0',
+        version='1.1',
         description='''this plugin is used to search,get,download install,uninstall and update pip package from pypi''',
         author='wukan',
         author_email='kan.wu@gentalks.com',

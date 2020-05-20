@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2020-05-11 09:22+0800\n"
+"POT-Creation-Date: 2020-05-18 09:51+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -49,7 +49,7 @@ msgid ""
 msgstr ""
 
 #: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:77
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:690
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:694
 msgid "installing cefpython3 component..."
 msgstr ""
 
@@ -61,76 +61,76 @@ msgstr ""
 msgid "Project History length on start page"
 msgstr ""
 
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:243
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:247
 #, python-format
 msgid "The project '%s' doesn't exist and couldn't be opened!"
 msgstr ""
 
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:472
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:476
 msgid "WebView"
 msgstr ""
 
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:477
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:555
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:481
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:559
 msgid "Internal Web Browser"
 msgstr ""
 
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:484
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:488
 msgid "&Tools"
 msgstr ""
 
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:484
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:488
 msgid "&Web Browser"
 msgstr ""
 
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:489
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:493
 msgid "&Help"
 msgstr ""
 
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:489
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:543
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:561
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:493
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:547
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:565
 msgid "Start Page"
 msgstr ""
 
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:691
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:695
 msgid "Application is installing cef component.Please wait for a monment to exit!"
 msgstr ""
 
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:716
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:720
 #, python-format
 msgid "this lastest version '%s' is available,click here to update it"
 msgstr ""
 
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:749
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:753
 msgid "Open URL"
 msgstr ""
 
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:755
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:759
 msgid "Go Back"
 msgstr ""
 
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:762
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:766
 msgid "Go Forward"
 msgstr ""
 
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:769
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:773
 msgid "Stop"
 msgstr ""
 
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:775
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:779
 msgid "Reload"
 msgstr ""
 
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:777
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:781
 msgid "URL:"
 msgstr ""
 
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:795
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:799
 msgid "Open URL:"
 msgstr ""
 
-#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:796
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/__init__.py:800
 msgid "Enter a full URL or local path"
 msgstr ""
 
@@ -192,5 +192,9 @@ msgstr ""
 
 #: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/welcome_page_code.py:53
 msgid "Introductory videos"
+msgstr ""
+
+#: G:/work/project/Noval/plugins/WebBrowser/openwebbrowser/welcome_page_code.py:53
+msgid "Tips and Tricks"
 msgstr ""
 

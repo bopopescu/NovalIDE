@@ -236,6 +236,10 @@ class Command(object):
             webbrowser.open("https://wekay.gitee.io/novalide")
         elif msg == "command:workbench.action.help.keybindingsReference":
             webbrowser.open("http://www.novalide.com/media/document/shortcuts.pdf")
+        elif msg == "command:workbench.action.help.openIntroductoryVideosUrl":
+            webbrowser.open("https://wekay.gitee.io/novalide/zh/getstarted/introductory/")
+        elif msg == "command:workbench.action.help.openTipsAndTricksUrl":
+            webbrowser.open("https://wekay.gitee.io/novalide/zh/getstarted/tips/")
         else:
             project_path = msg.split(':')[-1].replace('/',os.sep).replace('|',":")
             if not os.path.exists(project_path):
@@ -367,7 +371,8 @@ class WebView(core.View):
         self.zoom_level = 0
         if not IS_CEF_INITIALIZED:
             settings = {
-                'locale':GetApp().locale.GetLanguageCanonicalName()
+                'locale':GetApp().locale.GetLanguageCanonicalName(),
+                'single_process':True
             }
             if utils.is_windows():
                 settings.update({

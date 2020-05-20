@@ -195,7 +195,7 @@ class PyPi(plugin.Plugin):
                 free = instance.GetFree()
                 assert(type(free) == bool)
                 #是否禁止插件卸载
-                data['disable_uninstall'] = not int(instance.CanUninstall())
+                data['disable_uninstall'] = int(not int(instance.CanUninstall()))
                 data['match_platform'] = int(instance.MatchPlatform())
                 #操作系统名称,防止插件区分操作系统
                 data['os_name'] = sys.platform
@@ -262,8 +262,8 @@ class PyPi(plugin.Plugin):
         if not os.path.exists(egg_path):
             messagebox.showerror(_('Publish to local'),_("egg file %s is not exist")%egg_path,parent=self.parent)
         else:
-            plugin_path = self.GetInstallPluginPath(plugin_name)
             try:
+                plugin_path = self.GetInstallPluginPath(plugin_name)
                 shutil.copy(egg_path,plugin_path)
             except Exception as e:
                 utils.get_logger().error("%s",e)

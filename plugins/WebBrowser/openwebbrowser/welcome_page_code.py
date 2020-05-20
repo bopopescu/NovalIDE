@@ -22,8 +22,8 @@ content_code = '''
                         <h2 class="caption">{5}</h2>
                         <ul>
                             <li><a href="#" onclick="Command.action('command:workbench.action.help.keybindingsReference')">{12}</a></li>
-                            <li><a href="command:workbench.action.openIntroductoryVideosUrl">Introductory videos</a></li>
-                            <li><a href="command:workbench.action.openTipsAndTricksUrl">Tips and Tricks</a></li>
+                            <li><a href="#" onclick="Command.action('command:workbench.action.help.openIntroductoryVideosUrl')">{14}</a></li>
+                            <li><a href="#" onclick="Command.action('command:workbench.action.help.openTipsAndTricksUrl')">{15}</a></li>
                             <li><a href="javascript:void(0)" onclick="Command.action('command:workbench.action.help.openDocumentationUrl')">{11}</a></li>
                             <li><a href="javascript:void(0)" onclick="Command.action('command:workbench.action.help.openCodeRepositoryURL')">{8}</a></li>
                             <li><a href="javascript:void(0)" onclick="Command.action('command:workbench.action.help.register_or_login')">{9}</a></li>
@@ -50,4 +50,4 @@ content_code = '''
     </div>
 </div>
 '''.format(_('Start'),_('New project'),_('Open project...'),_('Recent'),_('No recent projects'),_('Help'),_('News'),_('Learn'),_('Code repository'),_('Register&Login'),_('Manage Plugins'),_("Product documentation"),\
-           _("Printable keyboard cheatsheet"),_("loading..."))
+           _("Printable keyboard cheatsheet"),_("loading..."),_("Introductory videos"),_('Tips and Tricks'))
