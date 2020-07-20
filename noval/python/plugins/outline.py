@@ -33,8 +33,8 @@ class PythonOutlineView(ui_base.OutlineView):
     DISPLAY_ITEM_CLASS_BASE = 2
     DISPLAY_ITEM_FUNCTION_PARAMETER = 4
     
-    def __init__(self, master):
-        ui_base.OutlineView.__init__(self, master)
+    def __init__(self, main):
+        ui_base.OutlineView.__init__(self, main)
         self.func_image = imageutils.load_image("","python/outline/func.png")
         self.class_image = imageutils.load_image("","python/outline/class.png")
         self.property_image = imageutils.load_image("","python/outline/property.png")

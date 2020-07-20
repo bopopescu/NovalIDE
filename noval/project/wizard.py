@@ -20,8 +20,8 @@ from noval.util import utils
 import noval.consts as consts
 
 class BaseWizard(ui_base.CommonModaldialog):
-    def __init__(self, master):
-        ui_base.CommonModaldialog.__init__(self, master)
+    def __init__(self, main):
+        ui_base.CommonModaldialog.__init__(self, main)
         self.current_page = None
         self.content_page = ttk.Frame(self)
         self.content_page.grid(column=0, row=0, sticky=tk.NSEW, padx=0, pady=0)
@@ -160,8 +160,8 @@ class BaseWizard(ui_base.CommonModaldialog):
         self.prev_button["state"] = "normal"
 
 class TitledWizardPage(ttk.Frame):
-    def __init__(self, master,title):
-        ttk.Frame.__init__(self,master=master.content_page)
+    def __init__(self, main,title):
+        ttk.Frame.__init__(self,main=main.content_page)
         self.title = title
         self.next = self.prev = None
         self.can_finish = True
@@ -200,8 +200,8 @@ class BitmapTitledWizardPage(TitledWizardPage):
     '''
         显示标题和图标的通用页面
     '''
-    def __init__(self, master,title,label,bitmap):
-        TitledWizardPage.__init__(self,master=master,title=title)
+    def __init__(self, main,title,label,bitmap):
+        TitledWizardPage.__init__(self,main=main,title=title)
         self.img = imageutils.load_image("",bitmap)
         #标题大号字体
         wizard_title_font = tk_font.Font(
@@ -237,8 +237,8 @@ class BitmapTitledContainerWizardPage(BitmapTitledWizardPage):
     '''
         显示标题和图标以及包含上下分隔符的通用页面
     '''
-    def __init__(self, master,title,label,bitmap,**kwargs):
-        BitmapTitledWizardPage.__init__(self,master,title,label,bitmap)
+    def __init__(self, main,title,label,bitmap,**kwargs):
+        BitmapTitledWizardPage.__init__(self,main,title,label,bitmap)
         
         #创建顶部分隔符
         top = ttk.Frame(self)

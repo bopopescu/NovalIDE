@@ -89,12 +89,12 @@ class GeneralOptionPanel(ui_utils.BaseConfigurationPanel):
     """
 
 
-    def __init__(self, master, **kwargs):
+    def __init__(self, main, **kwargs):
         """
         Initializes the panel by adding an "Options" folder tab to the parent notebook and
         populating the panel with the generic properties of a pydocview application.
         """
-        ui_utils.BaseConfigurationPanel.__init__(self,master=master,**kwargs)
+        ui_utils.BaseConfigurationPanel.__init__(self,main=main,**kwargs)
         
        # self._showTipsCheckBox = wx.CheckBox(self, -1, _("Show tips at start up"))
         #self._showTipsCheckBox.SetValue(config.ReadInt("ShowTipAtStartup", True))

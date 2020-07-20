@@ -25,15 +25,15 @@ class CheckListbox(checkboxtreeview.CheckboxTreeview):
         so to keep the checkbox, you cannot add an image to the item.
     """
 
-    def __init__(self, master=None, **kw):
+    def __init__(self, main=None, **kw):
         """
         Create a CheckboxTreeview.
 
-        :param master: master widget
-        :type master: widget
+        :param main: main widget
+        :type main: widget
         :param kw: options to be passed on to the :class:`ttk.Treeview` initializer
         """
-        checkboxtreeview.CheckboxTreeview.__init__(self, master, style_name="Checklistbox.Treeview",**kw)
+        checkboxtreeview.CheckboxTreeview.__init__(self, main, style_name="Checklistbox.Treeview",**kw)
         #隐藏checkbox左边距
         s = Style()
         s.layout('Checklistbox.Treeview.Item', [('Treeitem.padding',

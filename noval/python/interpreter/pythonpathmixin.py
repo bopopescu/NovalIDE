@@ -66,7 +66,7 @@ class PythonpathMixin:
             title = _("Choose a Wheel File")
         path = filedialog.askopenfilename(title=title ,
                        filetypes = filetypes,
-                       master=self)
+                       main=self)
         if not path:
             return
         self.AddPath(fileutils.opj(path))

@@ -115,8 +115,8 @@ class EOLFormatDlg(ui_base.CommonModaldialog):
     EOL_ITEMS = [consts.EOL_CR, consts.EOL_LF, consts.EOL_CRLF]
     EOL_CHOICES = ["Old Machintosh (\\r)", "Unix (\\n)",
                    "Windows (\\r\\n)"]    
-    def __init__(self, master,view):
-        ui_base.CommonModaldialog.__init__(self, master, takefocus=1)
+    def __init__(self, main,view):
+        ui_base.CommonModaldialog.__init__(self, main, takefocus=1)
         self.title(_("Format EOL?"))
         self.resizable(height=tk.FALSE, width=tk.FALSE)
         self.text_view = view        

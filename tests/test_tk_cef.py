@@ -73,9 +73,9 @@ class MainFrame(tk.Frame):
 
         # MainFrame
         tk.Frame.__init__(self, root)
-        self.master.title("Tkinter example")
-        self.master.protocol("WM_DELETE_WINDOW", self.on_close)
-        self.master.bind("<Configure>", self.on_root_configure)
+        self.main.title("Tkinter example")
+        self.main.protocol("WM_DELETE_WINDOW", self.on_close)
+        self.main.bind("<Configure>", self.on_root_configure)
         self.setup_icon()
         self.bind("<Configure>", self.on_configure)
         self.bind("<FocusIn>", self.on_focus_in)
@@ -121,7 +121,7 @@ class MainFrame(tk.Frame):
     def on_close(self):
         if self.browser_frame:
             self.browser_frame.on_root_close()
-        self.master.destroy()
+        self.main.destroy()
 
     def get_browser(self):
         if self.browser_frame:
@@ -139,16 +139,16 @@ class MainFrame(tk.Frame):
         if os.path.exists(icon_path):
             self.icon = tk.PhotoImage(file=icon_path)
             # noinspection PyProtectedMember
-            self.master.call("wm", "iconphoto", self.master._w, self.icon)
+            self.main.call("wm", "iconphoto", self.main._w, self.icon)
 
 
 class BrowserFrame(tk.Frame):
 
-    def __init__(self, master, navigation_bar=None):
+    def __init__(self, main, navigation_bar=None):
         self.navigation_bar = navigation_bar
         self.closing = False
         self.browser = None
-        tk.Frame.__init__(self, master)
+        tk.Frame.__init__(self, main)
         self.bind("<FocusIn>", self.on_focus_in)
         self.bind("<FocusOut>", self.on_focus_out)
         self.bind("<Configure>", self.on_configure)
@@ -238,8 +238,8 @@ class LoadHandler(object):
         self.browser_frame = browser_frame
 
     def OnLoadStart(self, browser, **_):
-        if self.browser_frame.master.navigation_bar:
-            self.browser_frame.master.navigation_bar.set_url(browser.GetUrl())
+        if self.browser_frame.main.navigation_bar:
+            self.browser_frame.main.navigation_bar.set_url(browser.GetUrl())
 
 
 class FocusHandler(object):
@@ -265,14 +265,14 @@ class FocusHandler(object):
 
 class NavigationBar(tk.Frame):
 
-    def __init__(self, master):
+    def __init__(self, main):
         self.back_state = tk.NONE
         self.forward_state = tk.NONE
         self.back_image = None
         self.forward_image = None
         self.reload_image = None
 
-        tk.Frame.__init__(self, master)
+        tk.Frame.__init__(self, main)
         resources = os.path.join(os.path.dirname(__file__), "resources")
 
         # Back button
@@ -314,16 +314,16 @@ class NavigationBar(tk.Frame):
         self.update_state()
 
     def go_back(self):
-        if self.master.get_browser():
-            self.master.get_browser().GoBack()
+        if self.main.get_browser():
+            self.main.get_browser().GoBack()
 
     def go_forward(self):
-        if self.master.get_browser():
-            self.master.get_browser().GoForward()
+        if self.main.get_browser():
+            self.main.get_browser().GoForward()
 
     def reload(self):
-        if self.master.get_browser():
-            self.master.get_browser().Reload()
+        if self.main.get_browser():
+            self.main.get_browser().Reload()
 
     def set_url(self, url):
         self.url_entry.delete(0, tk.END)
@@ -336,17 +336,17 @@ class NavigationBar(tk.Frame):
         logger.debug("NavigationBar.on_url_focus_out")
 
     def on_load_url(self, _):
-        if self.master.get_browser():
-            self.master.get_browser().StopLoad()
-            self.master.get_browser().LoadUrl(self.url_entry.get())
+        if self.main.get_browser():
+            self.main.get_browser().StopLoad()
+            self.main.get_browser().LoadUrl(self.url_entry.get())
 
     def on_button1(self, _):
         """Fix CEF focus issues (#255). See also FocusHandler.OnGotFocus."""
         logger.debug("NavigationBar.on_button1")
-        self.master.master.focus_force()
+        self.main.main.focus_force()
 
     def update_state(self):
-        browser = self.master.get_browser()
+        browser = self.main.get_browser()
         if not browser:
             if self.back_state != tk.DISABLED:
                 self.back_button.config(state=tk.DISABLED)

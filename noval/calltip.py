@@ -5,11 +5,11 @@ from tkinter import ttk
 
 class CalltipBox(ttk.Frame):
     def __init__(self, text):
-        ttk.Frame.__init__( self, master=text )
+        ttk.Frame.__init__( self, main=text )
         #设置鼠标样式
         self.text = text
         self.doc_label = ttk.Label(
-            master=self, text="Aaappiiiii"
+            main=self, text="Aaappiiiii"
         )
         self.doc_label.pack(fill="both",expand=1)
         # for cases when Listbox gets focus
@@ -37,7 +37,7 @@ class CalltipBox(ttk.Frame):
             text_box_x, text_box_y, _, text_box_height = self.text.bbox( "%d.%d"%(pos[0],pos[1]))
 
             # should the box appear below or above cursor?
-            space_below = self.master.winfo_height() - text_box_y - text_box_height
+            space_below = self.main.winfo_height() - text_box_y - text_box_height
             space_above = text_box_y
 
             if space_below >= height or space_below > space_above:

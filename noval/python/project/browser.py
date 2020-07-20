@@ -14,8 +14,8 @@ class PythonProjectTreeCtrl(ProjectTreeCtrl):
     # Overridden Methods
     #----------------------------------------------------------------------------
 
-    def __init__(self, master, **kw):
-        ProjectTreeCtrl.__init__(self,master,**kw)
+    def __init__(self, main, **kw):
+        ProjectTreeCtrl.__init__(self,main,**kw)
         
     def AppendPackageFolder(self, parent, folderName):
         '''

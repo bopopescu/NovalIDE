@@ -59,8 +59,8 @@ class PackageActionChoiceDialog(ui_base.CommonModaldialog):
     UPDATE_LATEST = 1
     #安装指定版本
     UPDATE_SPECIFIED = 2
-    def __init__(self, master,pkg_name):
-        ui_base.CommonModaldialog.__init__(self, master, takefocus=1)
+    def __init__(self, main,pkg_name):
+        ui_base.CommonModaldialog.__init__(self, main, takefocus=1)
         self.title(_("Package '%s' installed")%pkg_name)
         #禁止对话框改变大小
         label_ctrl = ttk.Label(self.main_frame,text=_("Please choose the action you want:"))
@@ -158,7 +158,7 @@ class CommonManagePackagesDialog(ui_base.CommonModaldialog):
     def BrowsePath(self):
         descrs = [(_("Text File"),".txt"),]
         title = _("Choose requirements.txt")
-        path = filedialog.askopenfilename(master=self,title=title ,
+        path = filedialog.askopenfilename(main=self,title=title ,
                        filetypes = descrs,
                        initialfile= "requirements.txt"
                        )
@@ -397,7 +397,7 @@ class InstallPackagesDialog(CommonManagePackagesDialog):
             #用户自定义输入安装参数
             else:
                 python_package = None
-                self.interpreter.LoadPackages(self.master,True)
+                self.interpreter.LoadPackages(self.main,True)
                 install_suc = True
         if install_suc:
             #只有安装成功才执行回调函数
@@ -494,7 +494,7 @@ class UninstallPackagesDialog(CommonManagePackagesDialog):
                 python_package = self.interpreter.GetInstallPackage(pkg_name)
                 uninstall_suc = False if python_package else True
             else:
-                self.interpreter.LoadPackages(self.master,True)
+                self.interpreter.LoadPackages(self.main,True)
                 uninstall_suc = True
         if uninstall_suc:
             #只有卸载成功才执行回调函数
@@ -596,7 +596,7 @@ class PackagePanel(ttk.Frame):
         self.NotifyPackageConfigurationChange()
 
     def InstallPip(self):
-        dlg = InstallPackagesDialog(self,self.interpreter,self.master.master._interpreters,call_back=self.InstallCallback)
+        dlg = InstallPackagesDialog(self,self.interpreter,self.main.main._interpreters,call_back=self.InstallCallback)
         status = dlg.ShowModal()
             
     def UninstallCallback(self,pkg_name,interpreter):
@@ -615,7 +615,7 @@ class PackagePanel(ttk.Frame):
         package_name = ""
         if selections:
             package_name = self.listview.tree.item(selections[0])['values'][0]
-        dlg = UninstallPackagesDialog(self,self.interpreter,self.master.master._interpreters,pkg_name=package_name,uninstall_args=package_name,call_back=self.UninstallCallback)
+        dlg = UninstallPackagesDialog(self,self.interpreter,self.main.main._interpreters,pkg_name=package_name,uninstall_args=package_name,call_back=self.UninstallCallback)
         status = dlg.ShowModal()
         
     def LoadPackages(self,interpreter,force=False):
@@ -684,14 +684,14 @@ class PackagePanel(ttk.Frame):
         return None,""
         
     def NotifyPackageConfigurationChange(self):
-        self.master.master.NotifyConfigurationChanged()
+        self.main.main.NotifyConfigurationChanged()
         
     def FreezePackage(self):
         text_docTemplate = GetApp().GetDocumentManager().FindTemplateForPath("test.txt")
         default_ext = text_docTemplate.GetDefaultExtension()
         descrs = strutils.get_template_filter(text_docTemplate)
         filename = filedialog.asksaveasfilename(
-            master = self,
+            main = self,
             filetypes=[descrs],
             defaultextension=default_ext,
             initialdir=text_docTemplate.GetDirectory(),

@@ -29,11 +29,11 @@ def get_runner():
     return runner
 
 class PythonText(BaseShellText):
-    def __init__(self, master=None, cnf={}, **kw):
+    def __init__(self, main=None, cnf={}, **kw):
         if "indent_with_tabs" not in kw:
             kw["indent_with_tabs"] = False
             
-        BaseShellText.__init__(self,master=master, cnf=cnf, **kw)
+        BaseShellText.__init__(self,main=main, cnf=cnf, **kw)
         self._should_tag_current_line = False
         
     def GetLangLexer(self):
@@ -163,9 +163,9 @@ class PythonText(BaseShellText):
             
 
 class ShellText(PythonText):
-    def __init__(self, master, cnf={}, **kw):
+    def __init__(self, main, cnf={}, **kw):
 
-        PythonText.__init__(self,master, cnf, **kw)
+        PythonText.__init__(self,main, cnf, **kw)
         self.bindtags(self.bindtags() + ("ShellText",))
         running.PythonInteractiveInterpreter.InitPrompt()
         prompt_font = tk.font.nametofont("BoldEditorFont")

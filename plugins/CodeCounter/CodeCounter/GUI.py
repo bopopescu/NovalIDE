@@ -68,8 +68,8 @@ def stdInputHandler(entry):
 
        
 class CodeCounterDialog(epd.ModalDialog):
-    def __init__(self, master,title,label,selection=-1,show_scrollbar=False):
-        epd.ModalDialog.__init__(self, master, takefocus=1)
+    def __init__(self, main,title,label,selection=-1,show_scrollbar=False):
+        epd.ModalDialog.__init__(self, main, takefocus=1)
         self.title(title)
         self.projectDocs=getCurrentProjectDocuments()
 
@@ -286,13 +286,13 @@ class CodeCounterDialog(epd.ModalDialog):
             self.path=self.pathEntry.get().strip()# 每次要从文本框中获取一次路径。
             if(os.path.isdir(self.path)):#判断路径是否存在。如果存在，执行if中的语句。
                 result=CodeCounter.countDirFileLines(self.path,excludeDirs=excFolderList,excludeFiles=[],
-                                                 includeExts=extNameList,progressBar=self.progressBar,master=self)
+                                                 includeExts=extNameList,progressBar=self.progressBar,main=self)
         else:
             self.projectDocs=getCurrentProjectDocuments()
             #print(self.projectDocs)
 
             fileNum=CodeCounter.countDirFileLines(fileList=self.projectDocs,excludeDirs=excFolderList,excludeFiles=[],
-                                                 includeExts=extNameList,progressBar=self.progressBar,master=self)
+                                                 includeExts=extNameList,progressBar=self.progressBar,main=self)
             if(fileNum==0):
                 #self.popWarningWindow("Current Project is Empty!")
                 #self.wait_window() 
@@ -337,18 +337,18 @@ def startDialog(app,ico):#这个函数用来启动插件。无论是装入IDE时
       dialog.ShowModal()
 
 class BaseAppForTest:#这是用于测试的基底界面，插件安装后不会运行。
-    def __init__(self, master):
-        self.master = master
+    def __init__(self, main):
+        self.main = main
         self.initWidgets()
  
     def initWidgets(self):
         
-        ttk.Button(self.master, text='打开Dialog',
+        ttk.Button(self.main, text='打开Dialog',
                    command=self.openDialog # 绑定 openDialog 方法
                    ).pack(side=tk.LEFT, ipadx=5, ipady=5, padx=10)
     
     def openDialog(self):
-        startDialog(self.master)
+        startDialog(self.main)
 
 
 

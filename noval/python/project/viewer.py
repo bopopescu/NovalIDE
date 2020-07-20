@@ -76,8 +76,8 @@ class NewPythonProjectWizard(NewProjectWizard):
         
 
 class BasePythonProjectNameLocationPage(ProjectNameLocationPage):
-    def __init__(self,master,**kwargs):
-        ProjectNameLocationPage.__init__(self,master,**kwargs)
+    def __init__(self,main,**kwargs):
+        ProjectNameLocationPage.__init__(self,main,**kwargs)
 
     def CreateNamePage(self,content_frame):
         name_frame = ProjectNameLocationPage.CreateNamePage(self,content_frame)
@@ -105,8 +105,8 @@ class BasePythonProjectNameLocationPage(ProjectNameLocationPage):
         
         
 class PythonProjectNameLocationPage(BasePythonProjectNameLocationPage):
-    def __init__(self,master,**kwargs):
-        BasePythonProjectNameLocationPage.__init__(self,master,**kwargs)
+    def __init__(self,main,**kwargs):
+        BasePythonProjectNameLocationPage.__init__(self,main,**kwargs)
         
     def CreateBottomFrame(self,content_frame,**kwargs):
         sizer_frame = ttk.Frame(content_frame)

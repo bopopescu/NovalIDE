@@ -250,13 +250,13 @@ class Command(object):
         
 class BrowserFrame(ttk.Frame):
 
-    def __init__(self, master, url,view,navigation_bar=None):
+    def __init__(self, main, url,view,navigation_bar=None):
         self.navigation_bar = navigation_bar
         self.closing = False
         self.browser = None
         self.url = url
         self.web_view = view
-        ttk.Frame.__init__(self, master)
+        ttk.Frame.__init__(self, main)
         self.bind("<FocusIn>", self.on_focus_in)
         self.bind("<FocusOut>", self.on_focus_out)
         self.bind("<Configure>", self.on_configure)
@@ -733,7 +733,7 @@ class NavigationBar(toolbar.ToolBar):
     ID_GO_FORWARD = NewId()
     ID_RELOAD = NewId()
     ID_STOP = NewId()
-    def __init__(self, master,view):
+    def __init__(self, main,view):
         self.web_view = view
         self.back_state = tk.NONE
         self.forward_state = tk.NONE
@@ -743,7 +743,7 @@ class NavigationBar(toolbar.ToolBar):
         self.go_image = None
         self.stop_image = None
 
-        toolbar.ToolBar.__init__(self, master)
+        toolbar.ToolBar.__init__(self, main)
         resources = os.path.join(pkg_path, "resources")
         
         go_png = os.path.join(resources, "go"+IMAGE_EXT)
@@ -786,7 +786,7 @@ class NavigationBar(toolbar.ToolBar):
         self.url_entry.bind("<Button-1>", self.on_button1)
         self.url_entry.bind("<<ComboboxSelected>>",self.on_load_url)
             
-        group_frame = self.pack_slaves()[0]
+        group_frame = self.pack_subordinates()[0]
         self.url_entry.grid(row=0, column=6, sticky="nsew", padx=5)
         group_frame.pack(fill="x",side=tk.LEFT,expand=1)
         group_frame.columnconfigure(6, weight=1)
@@ -845,7 +845,7 @@ class NavigationBar(toolbar.ToolBar):
     def on_button1(self, _):
         """Fix CEF focus issues (#255). See also FocusHandler.OnGotFocus."""
         utils.get_logger().debug("NavigationBar.on_button1")
-        self.master.master.focus_force()
+        self.main.main.focus_force()
 
     def update_state(self):
         browser = self.web_view.get_browser()

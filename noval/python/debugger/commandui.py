@@ -83,7 +83,7 @@ class RunCommandUI(CommonRunCommandUI):
         if append_runner:
             RunCommandUI.runners.append(self)
         #重写关闭窗口事件,关闭窗口时检查进程是否在运行
-        self.master.close = self.Close
+        self.main.close = self.Close
 
     def GetOutputviewClass(self):
         return DebugOutputView
@@ -141,7 +141,7 @@ class RunCommandUI(CommonRunCommandUI):
 
     def RemoveUI(self):
         #关闭调试窗口,关闭notebook的子窗口
-        self.master.master.close_child(self.master)
+        self.main.main.close_child(self.main)
         #务必从视图列表中移除
         for view_name in GetApp().MainFrame._views:
             view = GetApp().MainFrame._views[view_name]
@@ -159,9 +159,9 @@ class RunCommandUI(CommonRunCommandUI):
         self.UpdateRestartPagePaneText()
         
     def UpdatePagePaneText(self,src_text,to_text):
-        nb = self.master.master
+        nb = self.main.main
         for index in range(0,len(nb.tabs())):
-            if self.master == nb.get_child_by_index(index):
+            if self.main == nb.get_child_by_index(index):
                 text = nb.tab(nb.tabs()[index],"text")
                 newText = text.replace(src_text,to_text)
                 nb.tab(nb.tabs()[index], text=newText)
@@ -1092,7 +1092,7 @@ class PythonDebuggerCallback(BaseDebuggerCallback):
         if not self.CheckBreakServer():
             return
             
-        rbt = RequestBreakThread(self._breakServer, pushBreakpoints=True, breakDict=self._debuggerUI.framesTab.breakPointsTab.GetMasterBreakpointDict())
+        rbt = RequestBreakThread(self._breakServer, pushBreakpoints=True, breakDict=self._debuggerUI.framesTab.breakPointsTab.GetMainBreakpointDict())
         rbt.start()
         
     def PushExceptionBreakpoints(self):

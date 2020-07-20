@@ -6,8 +6,8 @@ import noval.constants as constants
 from tkinter import ttk
 
 class CodeSnippetView(ttk.Frame):
-    def __init__(self,master):
-        ttk.Frame.__init__(self,master)
+    def __init__(self,main):
+        ttk.Frame.__init__(self,main)
 
 class CodeSnippetPlugin(plugin.Plugin):
     """Simple Programmer's Calculator"""

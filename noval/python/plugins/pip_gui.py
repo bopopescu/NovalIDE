@@ -101,14 +101,14 @@ def GetPluginInstallpath():
     return plugin_install_path
 
 class PipDialog(ui_base.CommonModaldialog):
-    def __init__(self, master,package_count,message=None):
+    def __init__(self, main,package_count,message=None):
         self._state = "idle"  # possible values: "listing", "fetching", "idle"
         self._process = None
         self._active_distributions = {}
         #当前选中的包的信息
         self.current_package_data = {}
         self.package_count = package_count
-        ui_base.CommonModaldialog.__init__(self,master)
+        ui_base.CommonModaldialog.__init__(self,main)
 
         main_frame = ttk.Frame(self)
         main_frame.grid(sticky=tk.NSEW, ipadx=15, ipady=15)
@@ -661,7 +661,7 @@ class PipDialog(ui_base.CommonModaldialog):
             return
 
         filename = filedialog.askopenfilename(
-            master=self,
+            main=self,
             filetypes=[("Package", ".whl .zip .tar.gz"), ("all files", ".*")],
           #  initialdir=get_workbench().get_local_cwd,
         )
@@ -673,7 +673,7 @@ class PipDialog(ui_base.CommonModaldialog):
             return
 
         filename = filedialog.askopenfilename(
-            master=self,
+            main=self,
             filetypes=[("requirements", ".txt"), ("all files", ".*")],
            # initialdir=get_workbench().get_local_cwd,
         )
@@ -762,10 +762,10 @@ class PipDialog(ui_base.CommonModaldialog):
 
 class PluginsPipDialog(PipDialog):
     MESSAGE = {'msg':''}
-    def __init__(self, master,package_count):
+    def __init__(self, main,package_count):
         self._install_plugins = {}
         self._uninstall_plugins = set()
-        PipDialog.__init__(self, master,package_count,self.MESSAGE['msg'])
+        PipDialog.__init__(self, main,package_count,self.MESSAGE['msg'])
         #插件配置是否改变,如果改变关闭对话框时提示用户需要重启软件才能生效
         self._plugin_configuration_changed = False
 
@@ -873,7 +873,7 @@ class PluginsPipDialog(PipDialog):
             return
 
         filename = filedialog.askopenfilename(
-            master=self,
+            main=self,
             filetypes=[("Plugin", ".egg"), ("all files", ".*")],
             #initialdir=get_workbench().get_local_cwd,
         )
@@ -1293,9 +1293,9 @@ class PyPiPipDialog(PipDialog):
     
     #搜索包显示的最多结果数
     MAX_RESULTS_COUNT = 100
-    def __init__(self, master,package_count,message):
+    def __init__(self, main,package_count,message):
         #message表示正在获取pypi包过程的信息
-        PipDialog.__init__(self, master,package_count,message['msg'])
+        PipDialog.__init__(self, main,package_count,message['msg'])
  
     def _show_instructions(self):
         '''
@@ -1427,7 +1427,7 @@ class PyPiPipDialog(PipDialog):
             return
         #内建解释器直接执行
         if interpreter.IsBuiltIn:
-            pkg_resources._initialize_master_working_set()
+            pkg_resources._initialize_main_working_set()
             self._active_distributions = {
                 dist.key: {
                     "project_name": dist.project_name,
@@ -1656,9 +1656,9 @@ class PyPiPipDialog(PipDialog):
         PipDialog._perform_advanced(self,package_data)
 
 
-def _ask_installation_details(master, data, selected_version):
-    dlg = DetailsDialog(master, data, selected_version)
-    ui_utils.show_dialog(dlg, master)
+def _ask_installation_details(main, data, selected_version):
+    dlg = DetailsDialog(main, data, selected_version)
+    ui_utils.show_dialog(dlg, main)
     return dlg.result
 
 

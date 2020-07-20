@@ -35,9 +35,9 @@ class OutputView(OutputRunCommandUI):
     
   #  ID_PYINSTALLER_DEBUG = NewId()
   #  ID_PYINSTALLER_CONFIG = NewId()
-    def __init__(self,master):
+    def __init__(self,main):
         GetApp()._debugger_class = pythondebugger.PythonDebugger
-        OutputRunCommandUI.__init__(self,master,GetApp().GetDebugger())
+        OutputRunCommandUI.__init__(self,main,GetApp().GetDebugger())
         GetApp().bind(constants.PROJECTVIEW_POPUP_FILE_MENU_EVT, self.AppenFileMenu,True)
         GetApp().bind(constants.PROJECTVIEW_POPUP_ROOT_MENU_EVT, self.AppenRootMenu,True)
         

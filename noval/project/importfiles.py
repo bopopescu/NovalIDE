@@ -25,7 +25,7 @@ import noval.project.document as projectdocument
 DEFAULT_PROMPT_MESSAGE_ID = constants.ID_YES
 
 class ImportfilesPage(projectwizard.BitmapTitledContainerWizardPage):
-    def __init__(self,master,filters=[],rejects=[],is_wizard=True,folderPath=None):
+    def __init__(self,main,filters=[],rejects=[],is_wizard=True,folderPath=None):
         '''
             is_wizard表示该页面是否是新建项目向导时的页面
         '''
@@ -38,7 +38,7 @@ class ImportfilesPage(projectwizard.BitmapTitledContainerWizardPage):
         self.filters = filters
         self.rejects = rejects + projectdocument.ProjectDocument.BIN_FILE_EXTS
         
-        projectwizard.BitmapTitledContainerWizardPage.__init__(self,master,_("Import codes from File System"),_("Local File System"),"python_logo.png")
+        projectwizard.BitmapTitledContainerWizardPage.__init__(self,main,_("Import codes from File System"),_("Local File System"),"python_logo.png")
         self.can_finish = True
         self.project_browser = GetApp().MainFrame.GetProjectView()
 
@@ -238,10 +238,10 @@ class ImportfilesPage(projectwizard.BitmapTitledContainerWizardPage):
 
         self.DisableUI()
         if self._is_wizard:
-            self.master.master.ok_button['state'] = tk.DISABLED
-            self.master.master.prev_button['state'] = tk.DISABLED
+            self.main.main.ok_button['state'] = tk.DISABLED
+            self.main.main.prev_button['state'] = tk.DISABLED
         else:
-            self.master.master.ok_button['state'] = tk.DISABLED
+            self.main.main.ok_button['state'] = tk.DISABLED
         self.pb["maximum"] = len(file_list)
         prev_page = self.GetPrev()
         if GetApp().GetDefaultLangId() == lang.ID_LANG_PYTHON and self._is_wizard:
@@ -268,7 +268,7 @@ class ImportfilesPage(projectwizard.BitmapTitledContainerWizardPage):
                 msg = self.notify_queue.get()
                 if msg[0] == None:
                     utils.get_logger().info("finish import code files")
-                    self.master.master.destroy()
+                    self.main.main.destroy()
                 else:
                     cur_val,filename = msg
                     self.cur_prog_val.set(cur_val)
@@ -383,8 +383,8 @@ class ImportfilesPage(projectwizard.BitmapTitledContainerWizardPage):
 
 class ImportfilesDialog(ui_base.CommonModaldialog):
     
-    def __init__(self, master,folderPath):
-        ui_base.CommonModaldialog.__init__(self, master, takefocus=1)
+    def __init__(self, main,folderPath):
+        ui_base.CommonModaldialog.__init__(self, main, takefocus=1)
         self.title(_("Import Files"))
         self.main_frame.content_page = self.main_frame
         project_template = GetApp().GetDocumentManager().FindTemplateForTestPath(consts.PROJECT_EXTENSION)

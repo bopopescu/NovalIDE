@@ -87,9 +87,9 @@ def AddProjectMapping(doc, projectDoc=None, hint=None):
         project_view.AddProjectMapping(doc.GetModel(), projectDoc)
 
 class ProjectNameLocationPage(projectwizard.BitmapTitledContainerWizardPage):
-    def __init__(self,master,**kwargs):
+    def __init__(self,main,**kwargs):
         self.is_empty_project = kwargs.get('is_empty_project',False)
-        projectwizard.BitmapTitledContainerWizardPage.__init__(self,master,_("Enter the name and location for the project"),_("Name and Location"),"python_logo.png",**kwargs)
+        projectwizard.BitmapTitledContainerWizardPage.__init__(self,main,_("Enter the name and location for the project"),_("Name and Location"),"python_logo.png",**kwargs)
         self.can_finish = kwargs.get('can_finish',True)
         self.allowOverwriteOnPrompt = False
         self.new_project_doc = None
@@ -211,7 +211,7 @@ class ProjectNameLocationPage(projectwizard.BitmapTitledContainerWizardPage):
         image_docTemplate = GetApp().GetDocumentManager().FindTemplateForPath("test.%s"%default_ext)
         descr = strutils.get_template_filter(image_docTemplate)
         path = filedialog.askopenfilename(
-                master=self,
+                main=self,
                 filetypes=[descr]
         )
         if not path:
@@ -1272,7 +1272,7 @@ class ProjectView(misc.AlarmEventView):
         #注意这里最好不要设置initialdir,会自动选择上一次打开的目录
         descrs = strutils.gen_file_filters(project_template.GetDocumentType())
         paths = filedialog.askopenfilename(
-                master=self._prject_browser,
+                main=self._prject_browser,
                 filetypes=descrs,
                 multiple=True
         )
@@ -2062,8 +2062,8 @@ class ProjectFileDropTarget(newTkDnD.FileDropTarget):
 class ProjectOptionsPanel(ui_utils.BaseConfigurationPanel):
 
 
-    def __init__(self, master,**kwargs):
-        ui_utils.BaseConfigurationPanel.__init__(self,master=master,**kwargs)
+    def __init__(self, main,**kwargs):
+        ui_utils.BaseConfigurationPanel.__init__(self,main=main,**kwargs)
         self.projectsavedoc_chkvar = tk.IntVar(value=utils.profile_get_int(consts.PROJECT_DOCS_SAVED_KEY, True))
         projSaveDocsCheckBox = ttk.Checkbutton(self, text=_("Remember open projects"),variable=self.projectsavedoc_chkvar)
         projSaveDocsCheckBox.pack(padx=consts.DEFAUT_CONTRL_PAD_X,fill="x",pady=(consts.DEFAUT_CONTRL_PAD_Y,0))

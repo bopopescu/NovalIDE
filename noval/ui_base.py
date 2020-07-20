@@ -21,8 +21,8 @@ import noval.imageutils as imageutils
 import noval.ttkwidgets.listboxframe as listboxframe
 
 class ClosableNotebook(ttk.Notebook):
-    def __init__(self, master, style="ButtonNotebook.TNotebook", **kw):
-        ttk.Notebook.__init__(self,master, style=style, **kw)
+    def __init__(self, main, style="ButtonNotebook.TNotebook", **kw):
+        ttk.Notebook.__init__(self,main, style=style, **kw)
         self._popup_index = None
         self.pressed_index = None
 
@@ -199,7 +199,7 @@ class TextviewFrame(ttk.Frame):
 
     def __init__(
         self,
-        master,
+        main,
         line_numbers=False,
         line_length_margin=0,
         first_line_number=1,
@@ -220,7 +220,7 @@ class TextviewFrame(ttk.Frame):
             line_numbers:是否显示行号
             line_length_margin:为0表示不显示边界线,否则显示边界线
         '''
-        ttk.Frame.__init__(self, master=master, borderwidth=borderwidth, relief=relief)
+        ttk.Frame.__init__(self, main=main, borderwidth=borderwidth, relief=relief)
 
         final_text_options = {
             "borderwidth": 0,
@@ -537,8 +537,8 @@ class TextviewFrame(ttk.Frame):
 class TweakableText(tk.Text):
     """Allows intercepting Text commands at Tcl-level"""
     #read_only表示控件是否只读,只能查看数据不能写入数据
-    def __init__(self, master=None, cnf={}, read_only=False, **kw):
-        tk.Text.__init__(self,master=master, cnf=cnf, **kw)
+    def __init__(self, main=None, cnf={}, read_only=False, **kw):
+        tk.Text.__init__(self,main=main, cnf=cnf, **kw)
 
         self._read_only = read_only
         self._suppress_events = False
@@ -698,8 +698,8 @@ class TweakableText(tk.Text):
             
 
 class SafeScrollbar(ttk.Scrollbar):
-    def __init__(self, master=None, **kw):
-        ttk.Scrollbar.__init__(self,master=master, **kw)
+    def __init__(self, main=None, **kw):
+        ttk.Scrollbar.__init__(self,main=main, **kw)
 
     def set(self, first, last):
         try:
@@ -717,8 +717,8 @@ class OutlineView(ttk.Frame):
     #以类型排序
     SORT_BY_TYPE = 3
 
-    def __init__(self, master):
-        ttk.Frame.__init__(self, master)
+    def __init__(self, main):
+        ttk.Frame.__init__(self, main)
         self._init_widgets()
         self.menu = None
 
@@ -852,8 +852,8 @@ class OutlineView(ttk.Frame):
         return False
 
 class DockFrame(ttk.Frame):
-    def __init__(self, row,master=None,show=True,**kw):
-        ttk.Frame.__init__(self, master, **kw)
+    def __init__(self, row,main=None,show=True,**kw):
+        ttk.Frame.__init__(self, main, **kw)
         self._row = row
         self._is_show = show
         #复现菜单关联变量,通过这个变量控制复选菜单是否选中
@@ -887,8 +887,8 @@ class DockFrame(ttk.Frame):
         self._row = row
 
 class CommonDialog(tk.Toplevel):
-    def __init__(self, master,**kwargs):
-        tk.Toplevel.__init__(self, master,**kwargs)
+    def __init__(self, main,**kwargs):
+        tk.Toplevel.__init__(self, main,**kwargs)
         self.main_frame = ttk.Frame(self)
         self.main_frame.grid(row=0, column=0, sticky="nsew")
         self.columnconfigure(0, weight=1)
@@ -898,23 +898,23 @@ class CommonDialog(tk.Toplevel):
         # looks like it doesn't take window border into account
         self.update_idletasks()
 
-        if getattr(self.master, "initializing", False):
+        if getattr(self.main, "initializing", False):
             # can't get reliable positions when main window is not in mainloop yet
             left = (self.winfo_screenwidth() - 600) // 2
             top = (self.winfo_screenheight() - 400) // 2
         else:
-            if self.master is None:
+            if self.main is None:
                 left = self.winfo_screenwidth() - win.winfo_width() // 2
                 top = self.winfo_screenheight() - win.winfo_height() // 2
             else:
                 left = (
-                    self.master.winfo_rootx()
-                    + self.master.winfo_width() // 2
+                    self.main.winfo_rootx()
+                    + self.main.winfo_width() // 2
                     - self.winfo_width() // 2
                 )
                 top = (
-                    self.master.winfo_rooty()
-                    + self.master.winfo_height() // 2
+                    self.main.winfo_rooty()
+                    + self.main.winfo_height() // 2
                     - self.winfo_height() // 2
                 )
 
@@ -929,32 +929,32 @@ class CommonDialog(tk.Toplevel):
             btn.configure(text=text.replace("&",""))
 
 class CommonModaldialog(CommonDialog):
-    def __init__(self, master,**kwargs):
-        CommonDialog.__init__(self, master,**kwargs)
+    def __init__(self, main,**kwargs):
+        CommonDialog.__init__(self, main,**kwargs)
         self.protocol("WM_DELETE_WINDOW", self._cancel)
         self.status = -1
 
     def ShowModal(self,center=True):
-        if self.master is None:
-            self.master = tk._default_root or GetApp()
-        assert(self.master is not None)
+        if self.main is None:
+            self.main = tk._default_root or GetApp()
+        assert(self.main is not None)
         try:
             #这里偶尔会报下面的错误
             ##  File "G:\work\project\Noval\noval\ui_base.py", line 941, in ShowModal
-            ##    focused_widget = self.master.focus_get()
+            ##    focused_widget = self.main.focus_get()
             ##  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python36-32\lib\tkinter\__init__.py", line 696, in focus_get
             ##    return self._nametowidget(name)
             ##  File "C:\Users\Administrator\AppData\Local\Programs\Python\Python36-32\lib\tkinter\__init__.py", line 1347, in nametowidget
             ##    w = w.children[n]
             ##KeyError: 'popdown'
-            focused_widget = self.master.focus_get()
+            focused_widget = self.main.focus_get()
         except:
             focused_widget = None
         if utils.is_linux() and focused_widget is not None:
             #在linux系统点击工具栏新建按钮后,提示信息会一直存在不会消失,手动隐藏提示信息
             focused_widget.event_generate("<Leave>")
         #隐藏最小化按钮
-        self.transient(self.master)
+        self.transient(self.main)
         if utils.is_linux():
             #linux下经常出现这样的错误:'_tkinter.TclError: grab failed: window not viewable'
             #在grab_set调用之前调用wait_visibility可以避免这个错误
@@ -964,10 +964,10 @@ class CommonModaldialog(CommonDialog):
         self.focus_set()
         if center:
             self.CenterWindow()
-        self.master.wait_window(self)
+        self.main.wait_window(self)
         self.grab_release()
-        self.master.lift()
-        self.master.focus_force()
+        self.main.lift()
+        self.main.focus_force()
         if focused_widget is not None:
             try:
                 focused_widget.focus_set()
@@ -1010,8 +1010,8 @@ class CommonModaldialog(CommonDialog):
         self.cancel_button.bind("<Return>", self._cancel, True)
 
 class SingleChoiceDialog(CommonModaldialog):
-    def __init__(self, master,title,label,choices = [],selection=-1,show_scrollbar=False):
-        CommonModaldialog.__init__(self, master, takefocus=1)
+    def __init__(self, main,title,label,choices = [],selection=-1,show_scrollbar=False):
+        CommonModaldialog.__init__(self, main, takefocus=1)
         self.title(title)
         #禁止对话框改变大小
         self.resizable(height=tk.FALSE, width=tk.FALSE)
@@ -1062,8 +1062,8 @@ def GetNewDocumentChoiceIndex(parent,strings,default_selection):
 
 class GenericProgressDialog(CommonModaldialog):
     
-    def __init__(self,master,title,maximum=100,mode="determinate",length=400,info=""):
-        CommonModaldialog.__init__(self, master, takefocus=1)
+    def __init__(self,main,title,maximum=100,mode="determinate",length=400,info=""):
+        CommonModaldialog.__init__(self, main, takefocus=1)
         self.title(title)
         self.label_var = tk.StringVar(value=info)
         self.label_ctrl = ttk.Label(self.main_frame,textvariable=self.label_var,width=30)
@@ -1103,9 +1103,9 @@ class GenericProgressDialog(CommonModaldialog):
         
 
 class SplashScreen(CommonDialog):
-    def __init__(self, master,image_path,stay=1):
+    def __init__(self, main,image_path,stay=1):
         self.stay = stay
-        CommonDialog.__init__(self, master,background="white")
+        CommonDialog.__init__(self, main,background="white")
         #隐藏对话框标题栏
         self.overrideredirect(True)
         #窗口置顶

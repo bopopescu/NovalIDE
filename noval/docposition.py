@@ -15,7 +15,7 @@ def jumpto(func):
         arg = args[0]
         if isinstance(arg,tk.Text):
             text_ctrl = arg
-            doc_view = text_ctrl.master.master.GetView()
+            doc_view = text_ctrl.main.main.GetView()
         else:
             doc_view = arg
             text_ctrl = doc_view.GetCtrl()
@@ -43,7 +43,7 @@ def jump(func):
         arg = args[0]
         if isinstance(arg,tk.Text):
             text_ctrl = arg
-            doc_view = text_ctrl.master.master.GetView()
+            doc_view = text_ctrl.main.main.GetView()
         else:
             doc_view = arg
             text_ctrl = doc_view.GetCtrl()

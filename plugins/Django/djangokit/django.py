@@ -233,8 +233,8 @@ class DjangoProjectTemplate(PythonProjectTemplate):
 
 class DjangoProjectNameLocationPage(BasePythonProjectNameLocationPage):
 
-    def __init__(self,master,**kwargs):
-        BasePythonProjectNameLocationPage.__init__(self,master,**kwargs)
+    def __init__(self,main,**kwargs):
+        BasePythonProjectNameLocationPage.__init__(self,main,**kwargs)
         self.can_finish = False
 
     def GetProjectTemplate(self):
@@ -306,7 +306,7 @@ class DjangoInformationPanel(pyutils.PythonBaseConfigurationPanel):
         
     def GetCurrentProject(self):
         if self.current_project is None:
-            prev_page = self.master.master.GetPrev()
+            prev_page = self.main.main.GetPrev()
             self.current_project = prev_page.new_project_doc
         return self.current_project
 

@@ -64,8 +64,8 @@ SAVE_OPEN_FOLDER_KEY = "FileViewSaveFolder"
 OPEN_FOLDER_KEY = "FileViewLastFolder"
 
 class BaseFileBrowser(TreeViewFrame):
-    def __init__(self, master, show_hidden_files=False):
-        TreeViewFrame.__init__(self, master, ["#0", "kind", "path"], displaycolumns=(0,))
+    def __init__(self, main, show_hidden_files=False):
+        TreeViewFrame.__init__(self, main, ["#0", "kind", "path"], displaycolumns=(0,))
         self.default_extentsion = "." + syntax.SyntaxThemeManager().GetLexer(GetApp().GetDefaultLangId()).GetDefaultExt()
  
         self.show_hidden_files = show_hidden_files
@@ -299,8 +299,8 @@ class BaseFileBrowser(TreeViewFrame):
                 yield x
 
 class MainFileBrowser(BaseFileBrowser):
-    def __init__(self, master, show_hidden_files=False):
-        BaseFileBrowser.__init__(self, master, show_hidden_files)
+    def __init__(self, main, show_hidden_files=False):
+        BaseFileBrowser.__init__(self, main, show_hidden_files)
         self.menu = tkmenu.PopupMenu(tk._default_root)
         self.menu.Append(constants.ID_REFRESH_PATH, _("&Refresh"),handler=self.RefreshPath)
         self.menu.Append(constants.ID_OPEN_CMD_PATH, _("Open Command Prompt here..."),handler=self.OpenPathInterminal)

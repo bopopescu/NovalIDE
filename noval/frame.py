@@ -250,7 +250,7 @@ class DocTabbedParentFrame(ttk.Frame):
         """Adds item to "View" menu for showing/hiding given view. 
         Args:
             view_class: Class or constructor for view. Should be callable with single
-                argument (the master of the view)
+                argument (the main of the view)
             label: Label of the view tab
             location: Location descriptor. Can be "nw", "sw", "s", "se", "ne"
         Returns: None        
@@ -294,7 +294,7 @@ class DocTabbedParentFrame(ttk.Frame):
         # NB! Don't forget that view.home_widget is added to notebook, not view directly
         # get or create
         view = self.GetView(view_name,**kwargs)
-        notebook = view.home_widget.master  # type: ignore
+        notebook = view.home_widget.main  # type: ignore
         
         if not hidden:
             if hasattr(view, "before_show") and view.before_show() == False:  # type: ignore
@@ -339,12 +339,12 @@ class DocTabbedParentFrame(ttk.Frame):
         if "instance" not in self._views[view_name]:
             class_ = self._views[view_name]["class"]
             location = self._views[view_name]["location"]
-            master = self._view_notebooks[location]
-            home_widget = ttk.Frame(master)
+            main = self._view_notebooks[location]
+            home_widget = ttk.Frame(main)
             # create the view
             view = class_(
                 home_widget,**kwargs
-            )  # View's master is workbench to allow making it maximized
+            )  # View's main is workbench to allow making it maximized
             #设置视图在notebook中的位置顺序,如果放置在最后则设置为None
             view.position_key = self._views[view_name]["position_key"]
             self._views[view_name]["instance"] = view
@@ -484,8 +484,8 @@ class DocTabbedParentFrame(ttk.Frame):
             d['visible'] = visibility_flag.get()
             location = {}
             location['location'] = self._views[view_name]["location"]
-            location['width'] = instance.master.master.winfo_width()
-            location['height'] = instance.master.master.winfo_height()
+            location['width'] = instance.main.main.winfo_width()
+            location['height'] = instance.main.main.winfo_height()
             d["location"] = location
             self._last_perspective[view_name] = d
 

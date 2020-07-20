@@ -96,7 +96,7 @@ class EditorSelectionDlg(ui_base.CommonModaldialog):
     def _ok(self,event=None):
         selection = self.tree.selection()
         if not selection:
-            messagebox.showinfo(GetApp().GetAppName(),_("Please choose one editor"),master=self)
+            messagebox.showinfo(GetApp().GetAppName(),_("Please choose one editor"),main=self)
             return
         self.selected_template = self.templates[self.tree.get_children().index(selection[0])]
         self._is_changed = False if self._open_with_mode == self.val.get() else True

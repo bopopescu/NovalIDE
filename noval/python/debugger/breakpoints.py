@@ -96,11 +96,11 @@ class BreakpointsUI(treeviewframe.TreeViewFrame):
         self.tree.bind("<3>", self.OnListRightClick, True)
         self.tree.bind("<Double-Button-1>", self.OnDoubleClick, "+")
         self.currentItem = None
-        self._masterBPDict = {}
+        self._mainBPDict = {}
         self.PopulateBPList()
 
     def PopulateBPList(self):
-        breakpoints = utils.profile_get("MasterBreakpointDict",[])
+        breakpoints = utils.profile_get("MainBreakpointDict",[])
         for dct in breakpoints:
             self.tree.insert("","end",image=self.breakpoint_bmp,values=(dct['filename'],dct['lineno'],dct['path']))
             self.AddBreakpoint(dct['path'],dct['lineno'])
@@ -186,34 +186,34 @@ class BreakpointsUI(treeviewframe.TreeViewFrame):
                 "path":values[2],
             }
             breakpoints.append(dct)
-        utils.profile_set("MasterBreakpointDict", breakpoints)
+        utils.profile_set("MainBreakpointDict", breakpoints)
         
-    def GetMasterBreakpointDict(self):
-        return self._masterBPDict
+    def GetMainBreakpointDict(self):
+        return self._mainBPDict
         
     def AddBreakpoint(self,filename,lineno):
         '''
             通知断点服务器添加断点
         '''
         lineno = int(lineno)
-        if not filename in self._masterBPDict:
-            self._masterBPDict[filename] = [lineno]
+        if not filename in self._mainBPDict:
+            self._mainBPDict[filename] = [lineno]
         else:
-            self._masterBPDict[filename] += [lineno]
+            self._mainBPDict[filename] += [lineno]
             
     def RemoveBreakpoint(self,filename,lineno,notify=True):
         '''
             通知断点服务器删除断点
         '''
         lineno = int(lineno)
-        if not filename in self._masterBPDict:
+        if not filename in self._mainBPDict:
             utils.get_logger().error("In ClearBreak: no filename %s",filename)
             return
         else:
-            if lineno in self._masterBPDict[filename]:
-                self._masterBPDict[filename].remove(lineno)
-                if self._masterBPDict[filename] == []:
-                    del self._masterBPDict[filename]
+            if lineno in self._mainBPDict[filename]:
+                self._mainBPDict[filename].remove(lineno)
+                if self._mainBPDict[filename] == []:
+                    del self._mainBPDict[filename]
             #删除断点后通知断点服务器删除断点
             if notify and GetApp().GetDebugger()._debugger_ui:
                 GetApp().GetDebugger()._debugger_ui.NotifyDebuggersOfBreakpointChange()

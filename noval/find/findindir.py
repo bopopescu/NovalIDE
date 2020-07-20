@@ -408,13 +408,13 @@ class FindIndirService:
 
 class FindIndirDialog(ui_base.CommonModaldialog):
     
-    def __init__(self, master,findString=''):
-        ui_base.CommonModaldialog.__init__(self, master, takefocus=1)
+    def __init__(self, main,findString=''):
+        ui_base.CommonModaldialog.__init__(self, main, takefocus=1)
         self.title(_("Find in Directory"))
         self.resizable(height=tk.FALSE, width=tk.FALSE)
         self.default_extentsion = "." + syntax.SyntaxThemeManager().GetLexer(GetApp().GetDefaultLangId()).GetDefaultExt()
         #隐藏最小化按钮
-        self.transient(master)
+        self.transient(main)
         top_frame = ttk.Frame(self)
         top_frame.grid(column=0, row=0, sticky="nsew")
         self.columnconfigure(0, weight=1)
@@ -581,13 +581,13 @@ class FindIndirDialog(ui_base.CommonModaldialog):
 
 class SearchProgressDialog(ui_base.GenericProgressDialog):
     
-    def __init__(self,master,que,maximum):
-        ui_base.GenericProgressDialog.__init__(self, master,_("Find Text In Directory"), maximum=maximum,info=_("Please wait a minute for end find text"))
+    def __init__(self,main,que,maximum):
+        ui_base.GenericProgressDialog.__init__(self, main,_("Find Text In Directory"), maximum=maximum,info=_("Please wait a minute for end find text"))
         self.notify_queue = que
         self.process_msg()
         
     def process_msg(self):
-        self.master.after(400,self.process_msg)
+        self.main.after(400,self.process_msg)
         while not self.notify_queue.empty():
             try:
                 msg = self.notify_queue.get()
@@ -604,8 +604,8 @@ class SearchProgressDialog(ui_base.GenericProgressDialog):
 
 class FindInfileDialog(ui_base.CommonModaldialog):
     
-    def __init__(self, master,findString = ""):
-        ui_base.CommonModaldialog.__init__(self, master, takefocus=1)
+    def __init__(self, main,findString = ""):
+        ui_base.CommonModaldialog.__init__(self, main, takefocus=1)
         self.UpdateTitle()
         self.resizable(height=tk.FALSE, width=tk.FALSE)
         sizer_frame = ttk.Frame(self)
@@ -709,8 +709,8 @@ class FindInfileDialog(ui_base.CommonModaldialog):
 
 class FindInprojectDialog(FindInfileDialog):
     
-    def __init__(self, master,findString):
-        FindInfileDialog.__init__(self,master,findString)
+    def __init__(self, main,findString):
+        FindInfileDialog.__init__(self,main,findString)
         
     def UpdateTitle(self):
         self.dlg_title = _("Find in Project")
@@ -723,24 +723,24 @@ class FindInprojectDialog(FindInfileDialog):
         FindIndirService().FindInproject(findtext.CURERNT_FIND_OPTION,GetApp().MainFrame.GetSearchresultsView())
         self.destroy()
 
-def ShowFindIndirDialog(master,editor):
+def ShowFindIndirDialog(main,editor):
     if editor == None or not hasattr(editor.GetView(),"GetCtrl"):
         findString = ''
     else:
         findString = editor.GetView().GetCtrl().GetSelectionText()
         
-    dlg = FindIndirDialog(master,findString)
+    dlg = FindIndirDialog(main,findString)
     dlg.ShowModal()
 
-def ShowFindInfileDialog(master):
-    findString = master.GetView().GetCtrl().GetSelectionText()
-    dlg = FindInfileDialog(master,findString)
+def ShowFindInfileDialog(main):
+    findString = main.GetView().GetCtrl().GetSelectionText()
+    dlg = FindInfileDialog(main,findString)
     dlg.ShowModal()
 
-def ShowFindInprojectDialog(master,editor):
+def ShowFindInprojectDialog(main,editor):
     if editor == None or not hasattr(editor.GetView(),"GetCtrl"):
         findString = ''
     else:
         findString = editor.GetView().GetCtrl().GetSelectionText()
-    dlg = FindInprojectDialog(master,findString)
+    dlg = FindInprojectDialog(main,findString)
     dlg.ShowModal()

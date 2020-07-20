@@ -191,10 +191,10 @@ def getFileNames(dirPath,fileList):
        
     return filenames
 def countDirFileLines(dirPath='',fileList=[],excludeDirs=[],excludeFiles=[],includeExts=[],
-                      progressBar=None,table=None,master=None,countingFlag=True):
-    if(master!=None):
-        table=master.table
-        countingFlag=master.countingFlag
+                      progressBar=None,table=None,main=None,countingFlag=True):
+    if(main!=None):
+        table=main.table
+        countingFlag=main.countingFlag
         
     excludeDirs=set(excludeDirs)
     excludeFiles=set(excludeFiles)
@@ -243,17 +243,17 @@ def countDirFileLines(dirPath='',fileList=[],excludeDirs=[],excludeFiles=[],incl
         
         totalFileCount += 1
        
-        if(master!=None):
-            if(master.countingFlag==False):
-                master.progressBar['value']=0
-                master.clearResultTable()
+        if(main!=None):
+            if(main.countingFlag==False):
+                main.progressBar['value']=0
+                main.clearResultTable()
                 return
             
-            master.table.insert("",0,values=[epd.formatPathForPlatform(filename)]+countList+[countSum])#构造列表，直接插入表格。
-    if(master!=None):
-        master.table.insert("",0,values=[_("Counted:%d Files. Total:")%totalFileCount]+totalLineCount+[totalSumCount])
-        master.startCountingButton.config(text=_("Start Counting!"))
-        master.countingFlag=False
+            main.table.insert("",0,values=[epd.formatPathForPlatform(filename)]+countList+[countSum])#构造列表，直接插入表格。
+    if(main!=None):
+        main.table.insert("",0,values=[_("Counted:%d Files. Total:")%totalFileCount]+totalLineCount+[totalSumCount])
+        main.startCountingButton.config(text=_("Start Counting!"))
+        main.countingFlag=False
         return totalFileCount
 
 

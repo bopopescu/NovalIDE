@@ -179,8 +179,8 @@ class CodeCtrl(texteditor.SyntaxTextCtrl):
     elif utils.is_py3_plus():
         DEFAULT_WORD_CHARS = string.ascii_letters + string.digits + '_'
             
-    def __init__(self, master=None, cnf={}, **kw):
-        texteditor.SyntaxTextCtrl.__init__(self, master, cnf=cnf, **kw)
+    def __init__(self, main=None, cnf={}, **kw):
+        texteditor.SyntaxTextCtrl.__init__(self, main, cnf=cnf, **kw)
         self._lang_lexer = None
         #允许绑定所有CodeCtrl类文件控件事件
         self.bindtags(self.bindtags() + ("CodeCtrl",))
@@ -203,10 +203,10 @@ class CodeCtrl(texteditor.SyntaxTextCtrl):
         texteditor.TextCtrl.CreatePopupMenu(self)
         self._popup_menu.add_separator()
         self._popup_menu.AppendMenuItem(GetApp().Menubar.GetFormatMenu().FindMenuItem(consts.ID_COMMENT_LINES),\
-                                    handler=self.master.master.GetView().comment_region)
+                                    handler=self.main.main.GetView().comment_region)
                                     
         self._popup_menu.AppendMenuItem(GetApp().Menubar.GetFormatMenu().FindMenuItem(consts.ID_UNCOMMENT_LINES),\
-                                    handler=self.master.master.GetView().uncomment_region)
+                                    handler=self.main.main.GetView().uncomment_region)
 
     def DoIndent(self):
         self.AddText(self.GetEOLChar())
@@ -215,7 +215,7 @@ class CodeCtrl(texteditor.SyntaxTextCtrl):
             
     def GetLangLexer(self):
         if self._lang_lexer is None:
-            document = self.master.master.GetView().GetDocument()
+            document = self.main.main.GetView().GetDocument()
             file_ext = document.GetDocumentTemplate().GetDefaultExtension()
             self._lang_lexer = syntax.SyntaxThemeManager().GetLangLexerFromExt(file_ext)
         return self._lang_lexer

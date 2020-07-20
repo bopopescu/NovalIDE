@@ -209,8 +209,8 @@ class PythonDebugger(Debugger):
             判断单个文件是否包含断点信息
         '''
         doc_path = document.GetFilename()
-        masterBPDict = GetApp().MainFrame.GetView(consts.BREAKPOINTS_TAB_NAME).GetMasterBreakpointDict()
-        if doc_path in masterBPDict and len(masterBPDict[doc_path]) > 0:
+        mainBPDict = GetApp().MainFrame.GetView(consts.BREAKPOINTS_TAB_NAME).GetMainBreakpointDict()
+        if doc_path in mainBPDict and len(mainBPDict[doc_path]) > 0:
             return True
         return False
         
@@ -401,12 +401,12 @@ class OutputOptionsPanel(ui_utils.CommonOptionPanel):
         
     def _palette_cmd(self, event):
         label = event.widget
-        label.master.focus_set()
-        label.master.configure(relief="sunken")
+        label.main.focus_set()
+        label.main.configure(relief="sunken")
         rgb,result = colorchooser.askcolor(color=label.cget("background"),parent=self)
         if rgb and result:
             label.configure(background=result)
-        label.master.configure(relief="raised")
+        label.main.configure(relief="raised")
         
     def CheckLimitLine(self):
         if not self.limit_line_var.get():

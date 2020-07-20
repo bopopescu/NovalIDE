@@ -116,7 +116,7 @@ class TextDocument(core.Document):
             
         descrs = strutils.gen_file_filters()
         filename = filedialog.asksaveasfilename(
-            master = GetApp(),
+            main = GetApp(),
             filetypes=descrs,
             defaultextension=default_ext,
             initialdir=os.getcwd(),
@@ -614,7 +614,7 @@ class TextCtrl(ui_base.TweakableText):
     tag_current_line:表示是否高亮当前行
     """
 
-    def __init__(self, master=None, style="Text", tag_current_line=True,
+    def __init__(self, main=None, style="Text", tag_current_line=True,
                  indent_with_tabs=False, replace_tabs=False, cnf={},use_edit_tester=False,use_edit_image=False, **kw):
         # Parent class shouldn't autoseparate
         # TODO: take client provided autoseparators value into account
@@ -625,7 +625,7 @@ class TextCtrl(ui_base.TweakableText):
         self._use_edit_image = use_edit_image
         self._popup_menu = None
         
-        ui_base.TweakableText.__init__(self,master=master, cnf=cnf, **kw)
+        ui_base.TweakableText.__init__(self,main=main, cnf=cnf, **kw)
         self.tabwidth = 8  # See comments in idlelib.editor.EditorWindow
         self.indent_width = 4
         self.indent_with_tabs = indent_with_tabs
@@ -1471,8 +1471,8 @@ class SyntaxTextCtrl(TextCtrl,findtext.FindTextEngine):
         文本语法控件同时兼顾查找功能
     '''
 
-    def __init__(self, master=None, cnf={}, **kw):
-        TextCtrl.__init__(self, master, cnf=cnf, **kw)
+    def __init__(self, main=None, cnf={}, **kw):
+        TextCtrl.__init__(self, main, cnf=cnf, **kw)
         self.replace_tabs = utils.profile_get_int("check_text_tabs",True)
         findtext.FindTextEngine.__init__(self)
         self.UpdateSyntaxTheme()

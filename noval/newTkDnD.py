@@ -16,25 +16,25 @@ import os
 import sys
 import noval.util.fileutils as fileutils
 
-def _load_tkdnd(master):
+def _load_tkdnd(main):
     tkdndlib = os.path.normpath(os.path.join(utils.get_app_path(),"tkdnd"))
     if tkdndlib:
-        master.tk.eval('global auto_path; lappend auto_path {%s}' % tkdndlib)
+        main.tk.eval('global auto_path; lappend auto_path {%s}' % tkdndlib)
     try:
-        master.tk.eval('package require tkdnd')
-        master._tkdnd_loaded = True
+        main.tk.eval('package require tkdnd')
+        main._tkdnd_loaded = True
         utils.get_logger().info("load module tkdnd success")
     except tk.TclError as e:
         utils.get_logger().error("load module tkdnd error %s",e)
-        master._tkdnd_loaded = False
+        main._tkdnd_loaded = False
 
 class TkDND(object):
 
-    def __init__(self, master):
-        if not getattr(master, '_tkdnd_loaded', False):
-            _load_tkdnd(master)
-        self.master = master
-        self.tk = master.tk
+    def __init__(self, main):
+        if not getattr(main, '_tkdnd_loaded', False):
+            _load_tkdnd(main)
+        self.main = main
+        self.tk = main.tk
 
     def bindtarget(self, window, callback, dndtype, event='<Drop>', priority=50):
         cmd = self._prepare_tkdnd_func(callback)
@@ -69,7 +69,7 @@ class TkDND(object):
     _subst_format_str = (' ').join(_subst_format)
 
     def _prepare_tkdnd_func(self, callback):
-        funcid = self.master.register(callback, self._dndsubstitute)
+        funcid = self.main.register(callback, self._dndsubstitute)
         cmd = '%s %s' % (funcid, self._subst_format_str)
         return cmd
 
@@ -93,7 +93,7 @@ class TkDND(object):
         event.descr = d
         event.modifier = m
         event.dndtype = T
-        event.widget = self.master.nametowidget(W)
+        event.widget = self.main.nametowidget(W)
         event.x_root = X
         event.y_root = Y
         event.x = x

@@ -21,11 +21,11 @@ class LinkLabel(ttk.Label):
     A :class:`ttk.Label` that can be clicked to open a link with a default blue color, a purple color when clicked and a bright
     blue color when hovering over the Label.
     """
-    def __init__(self, master=None, **kwargs):
+    def __init__(self, main=None, **kwargs):
         """
         Create a LinkLabel.
         
-        :param master: master widget
+        :param main: main widget
         :param link: link to be opened
         :type link: str
         :param normal_color: text color when widget is created
@@ -47,7 +47,7 @@ class LinkLabel(ttk.Label):
         self._normal_color = kwargs.pop("normal_color", "#0563c1")
         self._hover_color = kwargs.pop("hover_color", "#057bc1")
         self._clicked_color = kwargs.pop("clicked_color", "#954f72")
-        ttk.Label.__init__(self, master, font="LinkLabelFont",**kwargs)
+        ttk.Label.__init__(self, main, font="LinkLabelFont",**kwargs)
         self.config(foreground=self._normal_color)
         self.__clicked = False
         self.bind("<Button-1>", self.open_link)

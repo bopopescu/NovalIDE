@@ -25,26 +25,26 @@ class ToolBar(ui_base.DockFrame):
         self._commands = []
         self.pad_y = 5
         
-    def CreateNewSlave(self):
+    def CreateNewSubordinate(self):
         group_frame = ttk.Frame(self)
         padx = (0, 10)
         group_frame.pack(fill="x",side=tk.RIGHT)
         return group_frame
         
-    def CreateSlave(self):
-        slaves = self.pack_slaves()
-        if len(slaves) == 0:
+    def CreateSubordinate(self):
+        subordinates = self.pack_subordinates()
+        if len(subordinates) == 0:
             group_frame = ttk.Frame(self)
             if self._orient == tk.HORIZONTAL:
                 group_frame.pack(fill="x",side=tk.LEFT)
             elif self._orient == tk.VERTICAL:
                 group_frame.pack(fill="y",side=tk.TOP)
         else:
-            group_frame = slaves[0]
+            group_frame = subordinates[0]
         return group_frame
 
     def AddButton(self,command_id,image,command_label,handler,accelerator=None,tester=None,pos=-1,style="Toolbutton"):
-        group_frame = self.CreateSlave()
+        group_frame = self.CreateSubordinate()
         button = ttk.Button(
             group_frame,
             command=handler,
@@ -74,8 +74,8 @@ class ToolBar(ui_base.DockFrame):
     def Update(self):
         if not self.winfo_ismapped():
            return
-        for group_frame in self.pack_slaves():
-            for button in group_frame.grid_slaves(0):
+        for group_frame in self.pack_subordinates():
+            for button in group_frame.grid_subordinates(0):
                 if isinstance(button,ttk.Button):
                     if button.tester and not button.tester():
                         button["state"] = tk.DISABLED
@@ -83,7 +83,7 @@ class ToolBar(ui_base.DockFrame):
                         button["state"] = tk.NORMAL
         
     def AddCombox(self,pos=-1,state='readonly'):
-        group_frame = self.CreateSlave()
+        group_frame = self.CreateSubordinate()
         combo = ttk.Combobox(group_frame)
         self.SetControlPos(-1,combo,pos)
         if state is not None:
@@ -91,7 +91,7 @@ class ToolBar(ui_base.DockFrame):
         return combo
 
     def AddLabel(self,text,pos=-1):
-        group_frame = self.CreateSlave()
+        group_frame = self.CreateSubordinate()
         label = ttk.Label(group_frame,text=text)
         self.SetControlPos(-1,label,pos)
 
@@ -128,8 +128,8 @@ class ToolBar(ui_base.DockFrame):
                     ctrl.grid(row=i,column=0)
 
     def AddSeparator(self):
-        slaves = self.pack_slaves()
-        group_frame = slaves[0]
+        subordinates = self.pack_subordinates()
+        group_frame = subordinates[0]
         separator = ttk.Separator(group_frame, orient = tk.VERTICAL)
         pos = len(self._commands)
         separator.grid(row=0,column=pos,sticky=tk.NSEW, padx=0, pady=3)

@@ -91,8 +91,8 @@ class OutputReader:
 
 class GitProjectNameLocationPage(BasePythonProjectNameLocationPage):
 
-    def __init__(self,master,**kwargs):
-        BasePythonProjectNameLocationPage.__init__(self,master,**kwargs)
+    def __init__(self,main,**kwargs):
+        BasePythonProjectNameLocationPage.__init__(self,main,**kwargs)
         self.can_finish = False
         
     def SaveProject(self,path):
@@ -102,8 +102,8 @@ class GitProjectNameLocationPage(BasePythonProjectNameLocationPage):
         return BasePythonProjectNameLocationPage.SaveProject(self,path)
 
 class LocationSelectionPage(projectwizard.BitmapTitledContainerWizardPage):
-    def __init__(self,master):
-        projectwizard.BitmapTitledContainerWizardPage.__init__(self,master,_("Import codes from Git Server"),_("Select Repository Source\nSelect a location of the source repository."),"python_logo.png")
+    def __init__(self,main):
+        projectwizard.BitmapTitledContainerWizardPage.__init__(self,main,_("Import codes from Git Server"),_("Select Repository Source\nSelect a location of the source repository."),"python_logo.png")
         self.can_finish = False
         
     def CreateContent(self,content_frame,**kwargs):
@@ -125,11 +125,11 @@ class LocationSelectionPage(projectwizard.BitmapTitledContainerWizardPage):
         self.tree.selection_set(item1)
         
     def on_double_click(self,event):
-        self.master.master.GotoNextPage()
+        self.main.main.GotoNextPage()
 
 class RepositorySourcePage(projectwizard.BitmapTitledContainerWizardPage):
-    def __init__(self,master):
-        projectwizard.BitmapTitledContainerWizardPage.__init__(self,master,_("Import codes from Git Server"),_("Source Git Repository\nEnter the location of the source repository."),"python_logo.png")
+    def __init__(self,main):
+        projectwizard.BitmapTitledContainerWizardPage.__init__(self,main,_("Import codes from Git Server"),_("Source Git Repository\nEnter the location of the source repository."),"python_logo.png")
         self.can_finish = False
 
     def CreateContent(self,content_frame,**kwargs):
@@ -279,8 +279,8 @@ class RepositorySourcePage(projectwizard.BitmapTitledContainerWizardPage):
             pass
 
 class BranchSelectionPage(projectwizard.BitmapTitledContainerWizardPage):
-    def __init__(self,master):
-        projectwizard.BitmapTitledContainerWizardPage.__init__(self,master,_("Import codes from Git Server"),_("Branch Selection\nSelect branches to clone from the remote repository."),"python_logo.png")
+    def __init__(self,main):
+        projectwizard.BitmapTitledContainerWizardPage.__init__(self,main,_("Import codes from Git Server"),_("Branch Selection\nSelect branches to clone from the remote repository."),"python_logo.png")
         self.can_finish = False
 
     def CreateContent(self,content_frame,**kwargs):
@@ -314,8 +314,8 @@ class BranchSelectionPage(projectwizard.BitmapTitledContainerWizardPage):
         return branches
 
 class LocalDestinationPage(projectwizard.BitmapTitledContainerWizardPage):
-    def __init__(self,master):
-        projectwizard.BitmapTitledContainerWizardPage.__init__(self,master,_("Import codes from Git Server"),_("Local Destination\nConfigure the local storage location for project."),"python_logo.png")
+    def __init__(self,main):
+        projectwizard.BitmapTitledContainerWizardPage.__init__(self,main,_("Import codes from Git Server"),_("Local Destination\nConfigure the local storage location for project."),"python_logo.png")
         self.can_finish = False
         
     def CreateContent(self,content_frame,**kwargs):
@@ -374,8 +374,8 @@ class LocalDestinationPage(projectwizard.BitmapTitledContainerWizardPage):
         t.start()
 
 class ImportGitfilesPage(importfiles.ImportfilesPage):
-    def __init__(self,master):
-        importfiles.ImportfilesPage.__init__(self,master)
+    def __init__(self,main):
+        importfiles.ImportfilesPage.__init__(self,main)
         self.can_finish = True
         self.rejects += [consts.PROJECT_SHORT_EXTENSION]
         

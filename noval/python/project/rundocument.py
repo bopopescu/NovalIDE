@@ -136,9 +136,9 @@ class PythonProjectDocument(ProjectDocument):
         return run_parameter
 
     def IsProjectContainBreakPoints(self):
-        masterBPDict = GetApp().MainFrame.GetView(consts.BREAKPOINTS_TAB_NAME).GetMasterBreakpointDict()
-        for key in masterBPDict:
-            if self.GetModel().FindFile(key) and len(masterBPDict[key]) > 0:
+        mainBPDict = GetApp().MainFrame.GetView(consts.BREAKPOINTS_TAB_NAME).GetMainBreakpointDict()
+        for key in mainBPDict:
+            if self.GetModel().FindFile(key) and len(mainBPDict[key]) > 0:
                 return True
         return False
         

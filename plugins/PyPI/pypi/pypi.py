@@ -210,8 +210,8 @@ class NovalPluginProjectTemplate(PyPIProjectTemplate):
 
 class PypiProjectNameLocationPage(BasePythonProjectNameLocationPage):
 
-    def __init__(self,master,**kwargs):
-        BasePythonProjectNameLocationPage.__init__(self,master,**kwargs)
+    def __init__(self,main,**kwargs):
+        BasePythonProjectNameLocationPage.__init__(self,main,**kwargs)
         self.can_finish = False
         
     def GetProjectTemplate(self):

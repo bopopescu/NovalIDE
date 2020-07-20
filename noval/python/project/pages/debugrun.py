@@ -224,7 +224,7 @@ class ArgumentsPage(BasePage):
         return arguments_text
         
     def GetConfiguration(self):
-        main_module_file = self.master.master.master.GetMainModuleFile()
+        main_module_file = self.main.main.main.GetMainModuleFile()
         return runconfiguration.AugumentsConfiguration(self.ProjectDocument,main_module_file,\
                        self.interpreter_option_textctrl.GetValue(),self.program_argument_textctrl.GetValue())
         
@@ -266,7 +266,7 @@ class InterpreterConfigurationPage(BasePage):
             return
         #拷贝一份列表否则会修改原列表
         values = copy.copy(interpreter.PythonPathList)
-        proprty_dlg = self.master.master.master.master.master.master.master.master
+        proprty_dlg = self.main.main.main.main.main.main.main.main
         if proprty_dlg.HasPanel("Project References"):
             project_reference_panel = proprty_dlg.GetOptionPanel("Project References")
             for project_filename in project_reference_panel.GetReferenceProjects():
@@ -279,7 +279,7 @@ class InterpreterConfigurationPage(BasePage):
         self.list_var.set(tuple(set(values)))
         
     def GetConfiguration(self):
-        main_module_file = self.master.master.master.GetMainModuleFile()
+        main_module_file = self.main.main.main.GetMainModuleFile()
         return runconfiguration.InterpreterConfiguration(self.ProjectDocument,main_module_file,\
                        self.interpreter_var.get().strip())
     
@@ -317,7 +317,7 @@ class EnvironmentPage(BasePage,ui_utils.BaseEnvironmentUI):
         
     def GetConfiguration(self):
         environ = self.GetEnviron()
-        main_module_file = self.master.master.master.GetMainModuleFile()
+        main_module_file = self.main.main.main.GetMainModuleFile()
         return runconfiguration.EnvironmentConfiguration(self.ProjectDocument,main_module_file,\
                        environ)
                        
@@ -580,8 +580,8 @@ class DebugRunPanel(pyutils.PythonBaseConfigurationPanel):
         if not run_file:
             run_file = self.GetStartupFile(False)
         current_interpreter = interpretermanager.InterpreterManager().GetCurrentInterpreter()
-        if self.master.master.master.master.HasPanel("Interpreter"):
-            interpreter_panel = self.master.master.master.master.GetOptionPanel("Interpreter")
+        if self.main.main.main.main.HasPanel("Interpreter"):
+            interpreter_panel = self.main.main.main.main.GetOptionPanel("Interpreter")
             current_interpreter = interpreter_panel.GetInterpreter()
         run_configuration = runconfiguration.RunConfiguration.CreateNewConfiguration(self.current_project_document,current_interpreter,run_file,self.GetConfigurationName())
         init_configuration_name = run_configuration.Name

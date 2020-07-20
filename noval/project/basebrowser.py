@@ -39,7 +39,7 @@ class EntryPopup(tk.Entry):
         self.focus_force()
         self.bind("<Control-a>", self.selectAll)
         self.bind("<Escape>", lambda *ignore: self.destroy())
-        self.bind("<Return>",self.master.FinishLabel)
+        self.bind("<Return>",self.main.FinishLabel)
         self.selectAll()
 
     def selectAll(self, *ignore):
@@ -58,8 +58,8 @@ class ProjectTreeCtrl(ttk.Treeview):
     # Overridden Methods
     #----------------------------------------------------------------------------
 
-    def __init__(self, master, **kw):
-        ttk.Treeview.__init__(self, master, **kw)
+    def __init__(self, main, **kw):
+        ttk.Treeview.__init__(self, main, **kw)
         self._iconLookup = {}
         self._blankIconImage = imageutils.getBlankIcon()
         self._packageFolderImage = imageutils.getPackageFolderIcon()
@@ -134,7 +134,7 @@ class ProjectTreeCtrl(ttk.Treeview):
     def FinishLabel(self,event):
         if not self.is_edit_state or self.entryPopup is None:
             return
-        self.master.GetView().OnEndLabelEdit(self.entryPopup.item,self.entryPopup.get())
+        self.main.GetView().OnEndLabelEdit(self.entryPopup.item,self.entryPopup.get())
         self.EndLabel(event)
         
     def EditLabel(self,item):
@@ -279,7 +279,7 @@ class ProjectTreeCtrl(ttk.Treeview):
 class BaseProjectbrowser(ttk.Frame):
     def __init__(
         self,
-        master,
+        main,
         columns=["#0", "kind", "path"],
         displaycolumns="#all",
         show_scrollbar=True,
@@ -287,7 +287,7 @@ class BaseProjectbrowser(ttk.Frame):
         relief="flat",
         **tree_kw
     ):
-        ttk.Frame.__init__(self, master, borderwidth=borderwidth, relief=relief)
+        ttk.Frame.__init__(self, main, borderwidth=borderwidth, relief=relief)
         #文档和项目的对照表
         self._mapToProject = dict()
         #绑定ShowView事件,在事件中加载保存的历史项目列表
@@ -389,7 +389,7 @@ class BaseProjectbrowser(ttk.Frame):
                     if not ret:
                         return
                     newpath = filedialog.askopenfilename(
-                            master=self,
+                            main=self,
                            ### filetypes=descrs,
                             initialdir=os.getcwd(),
                             title = _("Choose a file"),
@@ -667,7 +667,7 @@ class BaseProjectbrowser(ttk.Frame):
         #注意这里最好不要设置initialdir,会自动选择上一次打开的目录
         descrs = [strutils.get_template_filter(template),]
         project_path = filedialog.askopenfilename(
-            master=GetApp(),
+            main=GetApp(),
             filetypes=descrs
         )
         if not project_path:

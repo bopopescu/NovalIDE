@@ -335,7 +335,7 @@ class NsElement(object):
             strVal += '}'
         return strVal
                
-    def setKnownTypes(self, masterKnownTypes, masterKnownNamespaces, parentNSE):
+    def setKnownTypes(self, mainKnownTypes, mainKnownNamespaces, parentNSE):
         # if we're a nested element, extend our parent element's mapping
         if parentNSE != None:
             self.knownTypes = parentNSE.knownTypes.copy()
@@ -356,10 +356,10 @@ class NsElement(object):
         # TODO: instead of starting with the knownNamespaces, start with the "xmlms" mappings
         # for this element. Then we'd only process the namespaces and tags we need to.
         # But for now, this works.
-        for long, short in masterKnownNamespaces.iteritems():
+        for long, short in mainKnownNamespaces.iteritems():
             reversedKNS[short] = long
         mapLongs = self.nsMap.values()
-        for tag, mapClass in masterKnownTypes.iteritems():
+        for tag, mapClass in mainKnownTypes.iteritems():
             i = tag.rfind(':')
             if i >= 0:                                      # e.g. "wsdl:description"
                 knownTagShort = tag[:i]                     # "wsdl"

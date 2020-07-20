@@ -44,7 +44,7 @@ _active_find_dialog = None
 _active_find_replace_dialog = None
 
 class FindtextCombo(ttk.Combobox):
-    def __init__(self,master,findString="",**kw):
+    def __init__(self,main,findString="",**kw):
         if not findString:
             findString = CURERNT_FIND_OPTION.findstr
             #如果没有则从配置中查找存储的上次查找的文本
@@ -53,7 +53,7 @@ class FindtextCombo(ttk.Combobox):
         #去除搜索文本的换行符,运行文本末尾有空格
         strip_find_text = findString.split('\n')[0].rstrip('\r')
         self.find_entry_var = tk.StringVar(value=strip_find_text)
-        ttk.Combobox.__init__(self,master,textvariable=self.find_entry_var,**kw)
+        ttk.Combobox.__init__(self,main,textvariable=self.find_entry_var,**kw)
         
     def save_match_patters(self):
         values = self['values']
@@ -83,8 +83,8 @@ CURERNT_FIND_OPTION = FindOpt('')
 class FindDialog(tk.Toplevel):
     last_searched_word = None
     
-    def __init__(self, master,findString="",replace=False):
-        tk.Toplevel.__init__(self, master, takefocus=1)
+    def __init__(self, main,findString="",replace=False):
+        tk.Toplevel.__init__(self, main, takefocus=1)
         self.main_frame = ttk.Frame(self)
         self.main_frame.grid(row=0, column=0, sticky="nsew")
         self.columnconfigure(0, weight=1)
@@ -95,14 +95,14 @@ class FindDialog(tk.Toplevel):
         self.geometry(
             "+%d+%d"
             % (
-                master.winfo_rootx() + master.winfo_width() // 2,
-                master.winfo_rooty() + master.winfo_height() // 2 - 150,
+                main.winfo_rootx() + main.winfo_width() // 2,
+                main.winfo_rooty() + main.winfo_height() // 2 - 150,
             )
         )
 
         self.title(_("Find"))
         self.resizable(height=tk.FALSE, width=tk.FALSE)
-        self.transient(master)
+        self.transient(main)
         self.protocol("WM_DELETE_WINDOW", self._ok)
 
         # Find text label
@@ -517,12 +517,12 @@ class FindReplaceDialog(FindDialog):
             col = i + len(new)
             ok = 0
 
-def ShowFindReplaceDialog(master,replace=False,findString=""):
+def ShowFindReplaceDialog(main,replace=False,findString=""):
     if replace:
         global _active_find_replace_dialog
         if _active_find_replace_dialog == None:
-            _active_find_replace_dialog = FindReplaceDialog(master,findString)
+            _active_find_replace_dialog = FindReplaceDialog(main,findString)
     else:
         global _active_find_dialog
         if _active_find_dialog == None:
-            _active_find_dialog = FindDialog(master,findString)
+            _active_find_dialog = FindDialog(main,findString)

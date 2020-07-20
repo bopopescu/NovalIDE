@@ -24,15 +24,15 @@ class CheckboxTreeview(ttk.Treeview):
         so to keep the checkbox, you cannot add an image to the item.
     """
 
-    def __init__(self, master=None, style_name="Checkbox.Treeview",**kw):
+    def __init__(self, main=None, style_name="Checkbox.Treeview",**kw):
         """
         Create a CheckboxTreeview.
 
-        :param master: master widget
-        :type master: widget
+        :param main: main widget
+        :type main: widget
         :param kw: options to be passed on to the :class:`ttk.Treeview` initializer
         """
-        ttk.Treeview.__init__(self, master, style=style_name, **kw)
+        ttk.Treeview.__init__(self, main, style=style_name, **kw)
         # style (make a noticeable disabled style)
         style = ttk.Style(self)
         style.map(style_name,

@@ -555,7 +555,7 @@ class VM:
 
             import pkg_resources
 
-            pkg_resources._initialize_master_working_set()
+            pkg_resources._initialize_main_working_set()
             dists = {
                 dist.key: {
                     "project_name": dist.project_name,

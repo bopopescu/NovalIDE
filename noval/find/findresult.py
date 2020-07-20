@@ -15,8 +15,8 @@ import noval.util.utils as utils
 import noval.ui_utils as ui_utils
 
 class FindResultsview(ttk.Frame,ui_utils.KillFocusEvent):
-    def __init__(self, master):
-        ttk.Frame.__init__(self, master)
+    def __init__(self, main):
+        ttk.Frame.__init__(self, main)
         #设置查找结果文本字体为小一号的字体并且控件为只读状态
         text_frame = textframe.TextFrame(self,borderwidth=0,text_class=texteditor.TextCtrl,font="SmallEditorFont",read_only=True,undo=False)
         self.text = text_frame.text

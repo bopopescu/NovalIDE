@@ -39,8 +39,8 @@ class LogView(ttk.Frame,ui_utils.KillFocusEvent):
     #----------------------------------------------------------------------------
     ID_SETTINGS = NewId()
     ID_CLEAR = NewId()
-    def __init__(self, master):
-        ttk.Frame.__init__(self, master)
+    def __init__(self, main):
+        ttk.Frame.__init__(self, main)
         self.textCtrl = None
         self._loggers = []
         self._CreateControl()

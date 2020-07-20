@@ -21,8 +21,8 @@ from tkinter import ttk,messagebox
 import copy
 
 class RepositoryAddrDialog(ui_base.CommonModaldialog):
-    def __init__(self,master,face_ui):
-        ui_base.CommonModaldialog.__init__(self,master)
+    def __init__(self,main,face_ui):
+        ui_base.CommonModaldialog.__init__(self,main)
         self.title(_('Set repository remote addr'))
         self.ui = face_ui
         row = ttk.Frame(self.main_frame)
@@ -51,8 +51,8 @@ class RepositoryAddrDialog(ui_base.CommonModaldialog):
         ui_base.CommonModaldialog._ok(self,event)
 
 class GitConfigurationDialog(ui_base.CommonModaldialog):
-    def __init__(self,master,face_ui):
-        ui_base.CommonModaldialog.__init__(self,master)
+    def __init__(self,main,face_ui):
+        ui_base.CommonModaldialog.__init__(self,main)
         self.ui = face_ui
         self.title(_('Git Global Configuration'))
         sizer_frame = ttk.Frame(self.main_frame)
@@ -116,8 +116,8 @@ class GitConfigurationDialog(ui_base.CommonModaldialog):
                 configs['quotepath'] = True if quotepath=="true" else False
         
 class CommitDialog(ui_base.CommonModaldialog):
-    def __init__(self,master,branch,content,single_file=False,commit=True):
-        ui_base.CommonModaldialog.__init__(self,master,width=1000)
+    def __init__(self,main,branch,content,single_file=False,commit=True):
+        ui_base.CommonModaldialog.__init__(self,main,width=1000)
         if commit:
             self.title(_('Commit-[%s]'%branch))
         else:

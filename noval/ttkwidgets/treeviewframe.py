@@ -4,7 +4,7 @@ from tkinter import ttk
 class TreeViewFrame(ttk.Frame):
     def __init__(
         self,
-        master,
+        main,
         columns=[],
         displaycolumns="#all",
         show_scrollbar=True,
@@ -14,7 +14,7 @@ class TreeViewFrame(ttk.Frame):
         show="tree",
         **tree_kw
     ):
-        ttk.Frame.__init__(self, master, borderwidth=borderwidth, relief=relief)
+        ttk.Frame.__init__(self, main, borderwidth=borderwidth, relief=relief)
         # http://wiki.tcl.tk/44444#pagetoc50f90d9a
         self.vert_scrollbar = ttk.Scrollbar(
             self, orient=tk.VERTICAL, style=None

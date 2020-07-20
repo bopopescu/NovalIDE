@@ -6,7 +6,7 @@ import noval.ui_base as ui_base
 class TextFrame(ttk.Frame):
     def __init__(
         self,
-        master,
+        main,
         show_scrollbar=True,
         borderwidth=0,
         relief="flat",
@@ -14,7 +14,7 @@ class TextFrame(ttk.Frame):
         **kw
     ):
         #设置文本框边界高度
-        ttk.Frame.__init__(self, master, borderwidth=borderwidth, relief=relief)
+        ttk.Frame.__init__(self, main, borderwidth=borderwidth, relief=relief)
         # http://wiki.tcl.tk/44444#pagetoc50f90d9a
         self.vert_scrollbar = ui_base.SafeScrollbar(
             self, orient=tk.VERTICAL, style=None

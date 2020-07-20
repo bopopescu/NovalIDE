@@ -1,7 +1,7 @@
 import json
 import pkg_resources
 import sys
-pkg_resources._initialize_master_working_set()
+pkg_resources._initialize_main_working_set()
 distributions = {
     dist.key: {
         "project_name": dist.project_name,

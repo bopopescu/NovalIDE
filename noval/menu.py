@@ -330,13 +330,13 @@ class PopupMenu(tk.Menu):
     """Custom wxMenu class that makes it easier to customize and access items.
 
     """
-    def __init__(self,master=None,**kw):
+    def __init__(self,main=None,**kw):
         """Initialize a Menu Object
         @param title: menu title string
         @param style: type of menu to create
 
         """
-        tk.Menu.__init__(self,master=master,tearoff=False,**kw)
+        tk.Menu.__init__(self,main=main,tearoff=False,**kw)
         self.images = []
         self._items = []
         self._submenus = []
@@ -693,8 +693,8 @@ class CustomMenubar(ttk.Frame):
         自定义菜单栏menubar,可以随ui的主题改变而改变,默认菜单栏不会随ui的主题颜色改变,默认是白色背景
         这个可以随ui的主题改变而改变菜单栏的背景色
     '''
-    def __init__(self, master):
-        ttk.Frame.__init__(self, master, style="CustomMenubar.TFrame")
+    def __init__(self, main):
+        ttk.Frame.__init__(self, main, style="CustomMenubar.TFrame")
         self._opened_menu = None
 
         ttk.Style().map(
@@ -893,14 +893,14 @@ class DefaultMenuBar(tk.Menu,MenubarMixin):
     '''
         默认菜单栏,不能随ui主题颜色改变更改背景色
     '''
-    def __init__(self, master,**kwargs):
-        tk.Menu.__init__(self,master,**kwargs)
+    def __init__(self, main,**kwargs):
+        tk.Menu.__init__(self,main,**kwargs)
         MenubarMixin.__init__(self)
         
 class ThemeMenuBar(CustomMenubar,MenubarMixin):
     '''
         自定义菜单栏,能随ui主题颜色改变更改背景色
     '''
-    def __init__(self, master):
-        CustomMenubar.__init__(self,master)
+    def __init__(self, main):
+        CustomMenubar.__init__(self,main)
         MenubarMixin.__init__(self)

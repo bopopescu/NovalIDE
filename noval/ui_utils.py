@@ -390,8 +390,8 @@ def GetFullscreenDialog():
     
 class BaseConfigurationPanel(ttk.Frame):
     
-    def __init__(self,master,**kw):
-        ttk.Frame.__init__(self,master,**kw)
+    def __init__(self,main,**kw):
+        ttk.Frame.__init__(self,main,**kw)
         #某些情况下配置界面是禁止的
         self._is_disabled = False
         self._configuration_changed = False
@@ -459,8 +459,8 @@ class EnvironmentVariableDialog(ui_base.CommonModaldialog):
 class BaseEnvironmentUI(ttk.Frame):
     """description of class"""
     
-    def __init__(self,master):
-        ttk.Frame.__init__(self,master)
+    def __init__(self,main):
+        ttk.Frame.__init__(self,main)
         self.InitUI()
 
     def InitUI(self):
@@ -568,8 +568,8 @@ class BaseEnvironmentUI(ttk.Frame):
         
 
 class ThemedListbox(tk.Listbox):
-    def __init__(self, master=None, cnf={}, **kw):
-        tk.Listbox.__init__(self,master=master, cnf=cnf, **kw)
+    def __init__(self, main=None, cnf={}, **kw):
+        tk.Listbox.__init__(self,main=main, cnf=cnf, **kw)
 
         self._ui_theme_change_binding = self.bind(
             "<<ThemeChanged>>", self._reload_theme_options, True
@@ -624,8 +624,8 @@ def get_default_eol():
     return consts.EOL_CR
 
 class CommonOptionPanel(BaseConfigurationPanel):
-    def __init__(self,master):
-        BaseConfigurationPanel.__init__(self,master)
+    def __init__(self,main):
+        BaseConfigurationPanel.__init__(self,main)
         self.panel = ttk.Frame(self)
         self.panel.pack(fill="both",expand=1,padx=consts.DEFAUT_CONTRL_PAD_X,pady=consts.DEFAUT_CONTRL_PAD_Y)
         

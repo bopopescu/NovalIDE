@@ -300,9 +300,9 @@ def create_python_interpreter_process(interpreter,args):
 
 class PythonBaseConfigurationPanel(ui_utils.BaseConfigurationPanel):
     
-    def __init__(self,master,current_project,**kw):
+    def __init__(self,main,current_project,**kw):
         self.current_project_document = current_project
-        ui_utils.BaseConfigurationPanel.__init__(self,master,**kw)
+        ui_utils.BaseConfigurationPanel.__init__(self,main,**kw)
         
     def DisableNoPythonfile(self,item):
         '''

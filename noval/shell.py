@@ -24,10 +24,10 @@ SIMPLE_URL_SPLIT_REGEX = re.compile(
 class BaseShellText(CodeCtrl):
     """Passive version of ShellText. Used also for preview"""
 
-    def __init__(self, master, view=None, cnf={}, **kw):
+    def __init__(self, main, view=None, cnf={}, **kw):
         self.view = view
         #use_edit_image为true表示右键编辑菜单使用默认图标
-        CodeCtrl.__init__(self,master, cnf, use_edit_image=True,**kw)
+        CodeCtrl.__init__(self,main, cnf, use_edit_image=True,**kw)
         self._command_history = hiscache.HistoryCache(100)  # actually not really history, because each command occurs only once
         self._command_history_current_index = None
         self.disable_paren = True

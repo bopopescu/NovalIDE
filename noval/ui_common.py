@@ -22,13 +22,13 @@ import noval.consts as consts
 class AutomaticPanedWindow(tk.PanedWindow):
     """
     Enables inserting panes according to their position_key-s.
-    Automatically adds/removes itself to/from its master AutomaticPanedWindow.
+    Automatically adds/removes itself to/from its main AutomaticPanedWindow.
     Fixes some style glitches.
     """
 
-    def __init__(self, master, position_key=None, preferred_size_in_pw=None, **kwargs):
+    def __init__(self, main, position_key=None, preferred_size_in_pw=None, **kwargs):
 
-        tk.PanedWindow.__init__(self, master, **kwargs)
+        tk.PanedWindow.__init__(self, main, **kwargs)
         self._pane_minsize = 100
         self.position_key = position_key
         self._restoring_pane_sizes = False
@@ -94,10 +94,10 @@ class AutomaticPanedWindow(tk.PanedWindow):
         tk.PanedWindow.destroy(self)
 
     def is_visible(self):
-        if not isinstance(self.master, AutomaticPanedWindow):
+        if not isinstance(self.main, AutomaticPanedWindow):
             return self.winfo_ismapped()
         else:
-            return self in self.master.pane_widgets()
+            return self in self.main.pane_widgets()
 
     def pane_widgets(self):
         result = []
@@ -219,14 +219,14 @@ class AutomaticPanedWindow(tk.PanedWindow):
             self.sash_place(i, 0, distance)
 
     def _update_visibility(self):
-        if not isinstance(self.master, AutomaticPanedWindow):
+        if not isinstance(self.main, AutomaticPanedWindow):
             return
 
         if len(self.panes()) == 0 and self.is_visible():
-            self.master.forget(self)
+            self.main.forget(self)
 
         if len(self.panes()) > 0 and not self.is_visible():
-            self.master.insert("auto", self)
+            self.main.insert("auto", self)
 
     def _update_appearance(self, event=None):
         #设置窗口分割线宽度
@@ -239,8 +239,8 @@ class AutomaticNotebook(ui_base.ClosableNotebook):
     Remember its own position key. Automatically updates its visibility.
     """
 
-    def __init__(self, master, position_key, preferred_size_in_pw=None,style = "ButtonNotebook.TNotebook"):
-        ui_base.ClosableNotebook.__init__(self,master, style=style, padding=0)
+    def __init__(self, main, position_key, preferred_size_in_pw=None,style = "ButtonNotebook.TNotebook"):
+        ui_base.ClosableNotebook.__init__(self,main, style=style, padding=0)
         self.position_key = position_key
 
         # should be in the end, so that it can be detected when
@@ -279,7 +279,7 @@ class AutomaticNotebook(ui_base.ClosableNotebook):
         self._update_visibility()
 
     def is_visible(self):
-        return self in self.master.pane_widgets()
+        return self in self.main.pane_widgets()
 
     def get_visible_child(self):
         for child in self.winfo_children():
@@ -289,13 +289,13 @@ class AutomaticNotebook(ui_base.ClosableNotebook):
         return None
 
     def _update_visibility(self):
-        if not isinstance(self.master, AutomaticPanedWindow):
+        if not isinstance(self.main, AutomaticPanedWindow):
             return
         if len(self.tabs()) == 0 and self.is_visible():
-            self.master.remove(self)
+            self.main.remove(self)
 
         if len(self.tabs()) > 0 and not self.is_visible():
-            self.master.insert("auto", self)
+            self.main.insert("auto", self)
 
 
 class AutoScrollbar(ui_base.SafeScrollbar):
@@ -303,8 +303,8 @@ class AutoScrollbar(ui_base.SafeScrollbar):
     # a vert_scrollbar that hides itself if it's not needed.  only
     # works if you use the grid geometry manager.
 
-    def __init__(self, master=None, **kw):
-        ui_base.SafeScrollbar.__init__(self,master=master, **kw)
+    def __init__(self, main=None, **kw):
+        ui_base.SafeScrollbar.__init__(self,main=main, **kw)
 
     def set(self, first, last):
         if float(first) <= 0.0 and float(last) >= 1.0:
@@ -319,8 +319,8 @@ class AutoScrollbar(ui_base.SafeScrollbar):
         
 
 class PromptmessageBox(ui_base.CommonModaldialog):
-    def __init__(self,master,title,msg):
-        ui_base.CommonModaldialog.__init__(self, master, takefocus=1)
+    def __init__(self,main,title,msg):
+        ui_base.CommonModaldialog.__init__(self, main, takefocus=1)
         self.title(title)
         self.label_ctrl = ttk.Label(self.main_frame,text=msg)
         self.label_ctrl.pack(fill="x",padx=(consts.DEFAUT_CONTRL_PAD_X, consts.DEFAUT_CONTRL_PAD_X), pady=(consts.DEFAUT_CONTRL_PAD_Y, 0))

@@ -113,7 +113,7 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         
     def SetOutput(self):
         
-        preference_dlg = preference.PreferenceDialog(self.master,selection=preference.GetOptionName("Debug|Run","Output"))
+        preference_dlg = preference.PreferenceDialog(self.main,selection=preference.GetOptionName("Debug|Run","Output"))
         preference_dlg.ShowModal()
         
     def DoFind(self):
@@ -150,7 +150,7 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         default_ext = text_docTemplate.GetDefaultExtension()
         descrs = strutils.get_template_filter(text_docTemplate)
         filename = filedialog.asksaveasfilename(
-            master = self,
+            main = self,
             filetypes=[descrs],
             defaultextension=default_ext,
             initialdir=text_docTemplate.GetDirectory(),
@@ -252,8 +252,8 @@ class CommonOutputctrl(texteditor.TextCtrl,findtext.FindTextEngine):
         self.logs = {}
 
 class CommononOutputview(ttk.Frame):
-    def __init__(self, master,trace_log=False,is_debug=False):
-        ttk.Frame.__init__(self, master)
+    def __init__(self, main,trace_log=False,is_debug=False):
+        ttk.Frame.__init__(self, main)
         self.vert_scrollbar = ui_base.SafeScrollbar(self, orient=tk.VERTICAL)
         self.vert_scrollbar.grid(row=0, column=1, sticky=tk.NSEW)
 

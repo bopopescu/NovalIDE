@@ -9,8 +9,8 @@ class MultiStatusBar(ui_base.DockFrame):
     
     DEFUALT_LABEL = "default"
 
-    def __init__(self, master=None, **kw):
-        ui_base.DockFrame.__init__(self,consts.DEFAULT_STATUS_BAR_ROW, master,show=self.IsDefaultShown())
+    def __init__(self, main=None, **kw):
+        ui_base.DockFrame.__init__(self,consts.DEFAULT_STATUS_BAR_ROW, main,show=self.IsDefaultShown())
         self.labels = {}
         self.set_label(self.DEFUALT_LABEL,_('Ready'),expand=True)
 

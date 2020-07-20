@@ -195,7 +195,7 @@ class CommonRunCommandUI(ttk.Frame,ui_utils.KillFocusEvent):
             if ret == False:
                 return False
         #类似于右上角按钮关闭事件,会更新菜单是否选中
-        self.master.close()
+        self.main.close()
         return True
 
     def SaveProjectFiles(self):
@@ -334,8 +334,8 @@ class Debugger(object):
 
 
 class OutputRunCommandUI(CommonRunCommandUI):
-    def __init__(self,master,debugger):
-        CommonRunCommandUI.__init__(self,master,debugger,None)
+    def __init__(self,main,debugger):
+        CommonRunCommandUI.__init__(self,main,debugger,None)
         self._tb.AddLabel(text=" " + _("Source:") + " ",pos=0)
         self.combo = self._tb.AddCombox(pos=1)
         #根据输出来源来显示输出的日志

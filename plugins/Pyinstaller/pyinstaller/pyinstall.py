@@ -333,8 +333,8 @@ class PyinstallerProjectTemplate(PythonProjectTemplate):
 
 class PyinstallerProjectNameLocationPage(BasePythonProjectNameLocationPage):
 
-    def __init__(self,master,**kwargs):
-        BasePythonProjectNameLocationPage.__init__(self,master,**kwargs)
+    def __init__(self,main,**kwargs):
+        BasePythonProjectNameLocationPage.__init__(self,main,**kwargs)
         self.can_finish = False
 
     def GetProjectTemplate(self):
@@ -353,8 +353,8 @@ if __name__ == "__main__":
     main()
 
 '''
-    def __init__(self,master,**kwargs):
-        PyinstallerProjectNameLocationPage.__init__(self,master,**kwargs)
+    def __init__(self,main,**kwargs):
+        PyinstallerProjectNameLocationPage.__init__(self,main,**kwargs)
         self.name_var.trace("w", self.SetPyinstallProjectStartuppath)
         
     def SetPyinstallProjectStartuppath(self,*args):
@@ -461,7 +461,7 @@ class PyinstallerBaseInformationPanel(pyutils.PythonBaseConfigurationPanel):
     def SetIconPath(self):
         descr = (_("Icon File"),'.ico')
         path = filedialog.askopenfilename(
-                master=self,
+                main=self,
                 filetypes=[descr]
         )
         if not path:
@@ -599,27 +599,27 @@ class PyinstallerBaseInformationPanel(pyutils.PythonBaseConfigurationPanel):
         
     def GetCurrentProject(self):
         if self.current_project is None:
-            prev_page = self.master.master.GetPrev()
+            prev_page = self.main.main.GetPrev()
             self.current_project = prev_page.new_project_doc
         return self.current_project
 
     def GetOptionPanel(self):
         if self.item is None:
-            return self.master.master.GetNext().option_panel
+            return self.main.main.GetNext().option_panel
         else:
-            return self.master.master.master.master.GetOptionPanel("Spec option")
+            return self.main.main.main.main.GetOptionPanel("Spec option")
         
     def GetDatafilesPanel(self):
         if self.item is None:
-            if self.master.master.GetNext().GetNext() is None:
+            if self.main.main.GetNext().GetNext() is None:
                 return None
-            return self.master.master.GetNext().GetNext().datafiles_panel
+            return self.main.main.GetNext().GetNext().datafiles_panel
         else:
-            return self.master.master.master.master.GetOptionPanel("Data files")
+            return self.main.main.main.main.GetOptionPanel("Data files")
             
     def GetInterpreter(self):
         if self.item is None:
-            prev_page = self.master.master.GetPrev()
+            prev_page = self.main.main.GetPrev()
             interpreter_name = prev_page.GetNewPojectConfiguration().Interpreter
             interpreter = interpretermanager.InterpreterManager().GetInterpreterByName(interpreter_name)
             return interpreter
@@ -628,7 +628,7 @@ class PyinstallerBaseInformationPanel(pyutils.PythonBaseConfigurationPanel):
             
     def GetStartupfile(self):
         if self.item is None:
-            prev_page = self.master.master.GetPrev()
+            prev_page = self.main.main.GetPrev()
             startup_path = prev_page.GetStartupfile()
             return startup_path
         else:
@@ -636,7 +636,7 @@ class PyinstallerBaseInformationPanel(pyutils.PythonBaseConfigurationPanel):
             
     def GetProjectPath(self):
         if self.item is None:
-            prev_page = self.master.master.GetPrev()
+            prev_page = self.main.main.GetPrev()
             project_path = prev_page.GetProjectLocation()
             return project_path
         else:
@@ -804,7 +804,7 @@ class PyinstallSpecOptionPanel(pyutils.PythonBaseConfigurationPanel):
         
     def GetCurrentProject(self):
         if self.current_project_document is None:
-            prev_page = self.master.master.GetPrev().GetPrev()
+            prev_page = self.main.main.GetPrev().GetPrev()
             self.current_project = prev_page.new_project_doc
         return self.current_project_document
         
@@ -873,7 +873,7 @@ class AddSourcefilesDlg(CommonAddDatafilesDlg):
     def OnBrowseButton(self):
         descrs = strutils.gen_file_filters()
         path = filedialog.askopenfilename(
-                master=self,
+                main=self,
                 filetypes=descrs
         )
         if not path:

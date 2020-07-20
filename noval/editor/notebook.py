@@ -41,8 +41,8 @@ class EditorNotebook(ui_base.ClosableNotebook):
     Manages opened files / modules
     """
 
-    def __init__(self, master,**kw):
-        ui_base.ClosableNotebook.__init__(self,master, padding=0,**kw)
+    def __init__(self, main,**kw):
+        ui_base.ClosableNotebook.__init__(self,main, padding=0,**kw)
         self._popup_index = -1
         self._current_document = None
         self._tabs_menu = None
@@ -66,7 +66,7 @@ class EditorNotebook(ui_base.ClosableNotebook):
         
         #设置允许拖拽打开文件
         if GetApp().dnd is not None and utils.profile_get_int('ALLOW_DROP_OPENFILE',True):
-            GetApp().dnd.bindtarget(self, core.DocFrameFileDropTarget(GetApp().GetDocumentManager(),self.master), 'text/uri-list')
+            GetApp().dnd.bindtarget(self, core.DocFrameFileDropTarget(GetApp().GetDocumentManager(),self.main), 'text/uri-list')
         
     def OnTabChange(self,event):
         if self.get_current_editor() is None:
@@ -528,7 +528,7 @@ class EditorNotebook(ui_base.ClosableNotebook):
             
     def InsertFileContent(self):
         path = filedialog.askopenfilename(
-            master=self,
+            main=self,
             filetypes=[(_("All Files"),".*"),],
             initialdir=os.getcwd()
             )

@@ -28,8 +28,8 @@ def GetOptionName(caterory,name):
 
 class PreferenceDialog(ui_base.CommonModaldialog):
     
-    def __init__(self, master,selection=None):
-        ui_base.CommonModaldialog.__init__(self, master, takefocus=1)
+    def __init__(self, main,selection=None):
+        ui_base.CommonModaldialog.__init__(self, main, takefocus=1)
         self.title(_("Options"))
         self.geometry("%dx%d" % (PREFERENCE_DLG_WIDITH,PREFERENCE_DLG_HEIGHT))
         if not selection:

@@ -533,7 +533,7 @@ class DocManager(object):
         #注意这里最好不要设置initialdir,会自动选择上一次打开的目录
         #支持同时选择多个文件
         paths = filedialog.askopenfilename(
-                master=GetApp(),
+                main=GetApp(),
                 filetypes=descrs,
                 multiple=True
         )
@@ -1655,7 +1655,7 @@ class Document(object):
         if not docTemplate:
             return False
         filename = filedialog.asksaveasfilename(
-            master = GetApp(),
+            main = GetApp(),
             filetypes = [strutils.get_template_filter(docTemplate),],
             defaultextension=docTemplate.GetDefaultExtension(),
             initialdir=docTemplate.GetDirectory(),

@@ -86,12 +86,12 @@ class PropertyDialog(ui_base.CommonModaldialog):
     PANEL_WIDITH = 800
     PANEL_HEIGHT = 500
 
-    def __init__(self, master, title,selected_item,option_pages,option_name=None):#item_type
+    def __init__(self, main, title,selected_item,option_pages,option_name=None):#item_type
         """
         Initializes the options dialog with a notebook page that contains new
         instances of the passed optionsPanelClasses.
         """
-        ui_base.CommonModaldialog.__init__(self, master, takefocus=1)
+        ui_base.CommonModaldialog.__init__(self, main, takefocus=1)
         self.geometry("%dx%d" % (self.PANEL_WIDITH,self.PANEL_HEIGHT))
         self.title(title)
         self._optionsPanels = {}

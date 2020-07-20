@@ -58,15 +58,15 @@ class DebugOutputctrl(CommonOutputctrl):
         else:
             lineNum = int(lineText[fileEnd + 8:lineEnd])
         if filename and not os.path.exists(filename):
-            messagebox.showerror( _("File Error"),_("The file '%s' doesn't exist and couldn't be opened!") % filename,parent=self.master)
+            messagebox.showerror( _("File Error"),_("The file '%s' doesn't exist and couldn't be opened!") % filename,parent=self.main)
             return
         GetApp().GotoView(filename,lineNum,load_outline=False)
         #last activiate debug view
         self.ActivateView()
 
 class DebugOutputView(CommononOutputview):
-    def __init__(self, master,is_debug=False):
-        CommononOutputview.__init__(self, master)
+    def __init__(self, main,is_debug=False):
+        CommononOutputview.__init__(self, main)
 
     def GetOuputctrlClass(self):
         return DebugOutputctrl

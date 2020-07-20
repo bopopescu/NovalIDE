@@ -271,7 +271,7 @@ class PythonView(codeeditor.CodeView):
         linepos = int(self.bp_margin.index("@%s,%s" % (event.x, event.y)).split(".")[0])
         self.ToogleBreakpoint(linepos)
             
-    def DeleteBpMark(self,lineno,delete_master_bp=True,notify=True):
+    def DeleteBpMark(self,lineno,delete_main_bp=True,notify=True):
         try:
             self.bp_margin.image_cget("%d.0"%lineno,option="name")
             self.bp_margin.config(state="normal")
@@ -280,14 +280,14 @@ class PythonView(codeeditor.CodeView):
         except:
             return False
         #删除断点视图中断点数据
-        if delete_master_bp:
+        if delete_main_bp:
             GetApp().MainFrame.GetView(consts.BREAKPOINTS_TAB_NAME).ToogleBreakpoint(str(lineno),self.GetDocument().GetFilename(),delete=True,notify=notify)
         return True
         
     def SetCurrentBreakpointMarkers(self):
-        breakpoints = GetApp().MainFrame.GetView(consts.BREAKPOINTS_TAB_NAME).GetMasterBreakpointDict()
+        breakpoints = GetApp().MainFrame.GetView(consts.BREAKPOINTS_TAB_NAME).GetMainBreakpointDict()
         for linenum in breakpoints.get(self.GetDocument().GetFilename(),[]):
-            self.DeleteBpMark(linenum,delete_master_bp=False)
+            self.DeleteBpMark(linenum,delete_main_bp=False)
             self.bp_margin.image_create("%d.0"%linenum,image=self._text_frame.bp_bmp)
 
     def ToogleBreakpoint(self,lineno):
@@ -356,8 +356,8 @@ class PythonCtrl(codeeditor.CodeCtrl):
     TYPE_IMPORT_WORD = "import"
     TYPE_FROM_WORD = "from"
 
-    def __init__(self, master=None, cnf={}, **kw):
-        codeeditor.CodeCtrl.__init__(self, master, cnf=cnf, **kw)
+    def __init__(self, main=None, cnf={}, **kw):
+        codeeditor.CodeCtrl.__init__(self, main, cnf=cnf, **kw)
         #鼠标放在文本上方移动,显示文本的提示文档信息
         self.tag_bind("motion", "<Motion>", self.OnDwellStart)
         
@@ -455,8 +455,8 @@ class PythonCtrl(codeeditor.CodeCtrl):
         
     def SyncOutline(self):
         line_no = self.GetCurrentLine()
-        #获取文本控件对应的视图需要取2次master
-        GetApp().MainFrame.GetOutlineView(show=True).SyncToPosition(self.master.master.GetView(),line_no)
+        #获取文本控件对应的视图需要取2次main
+        GetApp().MainFrame.GetOutlineView(show=True).SyncToPosition(self.main.main.GetView(),line_no)
 
     def DebugRunScript(self):
         view = GetApp().GetDocumentManager().GetCurrentView()
@@ -832,7 +832,7 @@ class PythonCtrl(codeeditor.CodeCtrl):
     def GotoDefinition(self):
         
         def NotFoundDefinition(txt):
-            messagebox.showwarning(_("Goto Definition"),_("Cannot find definition") + "\"" + txt + "\"",parent = self.master)
+            messagebox.showwarning(_("Goto Definition"),_("Cannot find definition") + "\"" + txt + "\"",parent = self.main)
             
         line,col= self.GetCurrentLineColumn()
         text = self.GetTypeWord(line,col-1)

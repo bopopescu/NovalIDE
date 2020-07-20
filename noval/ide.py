@@ -346,7 +346,7 @@ class IDEApplication(core.App):
             text.tag_add("motion", "1.0", "end")
             
         #只有文本编辑区域才在内容更改时更新大纲显示内容
-        if isinstance(text.master.master,core.DocTabbedChildFrame):
+        if isinstance(text.main.main,core.DocTabbedChildFrame):
             self.MainFrame.GetView(consts.OUTLINE_VIEW_NAME)._update_frame_contents()
 
     def SetAppTitle(self):

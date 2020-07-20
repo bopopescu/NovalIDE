@@ -16,7 +16,7 @@ class Completer(listboxframe.ListboxFrame):
     def __init__(self, text):
         listboxframe.ListboxFrame.__init__(
             self,
-            master=text,
+            main=text,
             listbox_class=ui_utils.ThemedListbox,
             font="SmallEditorFont",
             activestyle="dotbox",
@@ -33,7 +33,7 @@ class Completer(listboxframe.ListboxFrame):
         self._typedlen = 0
 
         self.doc_label = tk.Label(
-            master=text, text="Aaappiiiii", bg="#ffffe0", justify="left", anchor="nw"
+            main=text, text="Aaappiiiii", bg="#ffffe0", justify="left", anchor="nw"
         )
 
         # Auto indenter will eat up returns, therefore I need to raise the priority
@@ -83,7 +83,7 @@ class Completer(listboxframe.ListboxFrame):
             )
 
             # should the box appear below or above cursor?
-            space_below = self.master.winfo_height() - text_box_y - text_box_height
+            space_below = self.main.winfo_height() - text_box_y - text_box_height
             space_above = text_box_y
 
             if space_below >= height or space_below > space_above:
